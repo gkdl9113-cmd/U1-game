@@ -952,7 +952,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.07'; // 업데이트할 때마다 변경
+const BUILD = 'v1.08'; // 업데이트할 때마다 변경
 
 // ── 상사 크리 보스키 ────────────────────────────────────────────────────────
 let bossKeyOn=false;
@@ -1857,6 +1857,11 @@ function restartFromResult(){
   } else if(currentScr?.id==='s-bb-game'){
     if(bbMode==='online') startBBOnline();
     else startBBGame();
+  } else if(currentScr?.id==='s-fish'){
+    // 물고기 사망 후 다시 하기 → 1단계로 리셋 후 재시작
+    FG.stage=1; FG.hp=50; FG.maxHp=50; FG.fullness=60; FG.xp=0; FG.isDead=false;
+    fishRenderInfo();
+    fishStartLoops();
   }
 }
 
@@ -2354,13 +2359,11 @@ function fishTick(){
 }
 
 function fishDie(){
-  fishStopLoops();
+  fishStopLoops(); // 루프 완전 정지, 다시하기 전까지 멈춤
   FG.hp=0; FG.xp=0; FG.fullness=0;
+  FG.isDead=true;
   fishRenderInfo();
-  showResultNotify('💀','물고기가 죽었습니다 😢\n먹이를 주지 않아 체력이 다했습니다.\n처음부터 다시 시작합니다.');
-  document.getElementById('result-confirm-btn').textContent='확인';
-  // 게임 리셋 (물고기만 초기화)
-  setTimeout(()=>{FG.stage=1;FG.hp=50;FG.maxHp=50;FG.fullness=60;FG.xp=0;fishStartLoops();fishRenderInfo();},500);
+  showResultNotify('💀','물고기가 죽었습니다 😢\n먹이를 주지 않아 체력이 다했습니다.');
 }
 
 // ── 먹이주기 ─────────────────────────────────────────────────────────────────
