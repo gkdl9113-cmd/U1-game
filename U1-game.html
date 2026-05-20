@@ -794,7 +794,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.01'; // 업데이트할 때마다 변경
+const BUILD = 'v1.02'; // 업데이트할 때마다 변경
 
 // ── 상사 크리 보스키 ────────────────────────────────────────────────────────
 let bossKeyOn=false;
@@ -924,9 +924,12 @@ function createRoom(code){
   const peerCfg={config:{iceServers:[
     {urls:'stun:stun.l.google.com:19302'},
     {urls:'stun:stun1.l.google.com:19302'},
-    {urls:'stun:stun2.l.google.com:19302'},
     {urls:'stun:stun.cloudflare.com:3478'},
-    {urls:'stun:global.stun.twilio.com:3478'},
+    // TURN 서버 (Symmetric NAT 환경에서 필수)
+    {urls:'turn:openrelay.metered.ca:80',   username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443',  username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:80?transport=tcp', username:'openrelayproject',credential:'openrelayproject'},
   ]}};
   roomPeer=new Peer('xlroom-'+roomCode, peerCfg);
   roomPeer.on('open', myId=>{
@@ -967,9 +970,11 @@ function joinRoom(code){
   const peerCfg2={config:{iceServers:[
     {urls:'stun:stun.l.google.com:19302'},
     {urls:'stun:stun1.l.google.com:19302'},
-    {urls:'stun:stun2.l.google.com:19302'},
     {urls:'stun:stun.cloudflare.com:3478'},
-    {urls:'stun:global.stun.twilio.com:3478'},
+    {urls:'turn:openrelay.metered.ca:80',   username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443',  username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:80?transport=tcp', username:'openrelayproject',credential:'openrelayproject'},
   ]}};
   roomPeer=new Peer(peerCfg2);
   // 10초 타임아웃
