@@ -794,7 +794,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.02'; // 업데이트할 때마다 변경
+const BUILD = 'v1.03'; // 업데이트할 때마다 변경
 
 // ── 상사 크리 보스키 ────────────────────────────────────────────────────────
 let bossKeyOn=false;
@@ -971,22 +971,28 @@ function joinRoom(code){
     {urls:'stun:stun.l.google.com:19302'},
     {urls:'stun:stun1.l.google.com:19302'},
     {urls:'stun:stun.cloudflare.com:3478'},
-    {urls:'turn:openrelay.metered.ca:80',   username:'openrelayproject',credential:'openrelayproject'},
-    {urls:'turn:openrelay.metered.ca:443',  username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'stun:freestun.net:3478'},
+    // TURN (UDP)
+    {urls:'turn:freestun.net:3478',       username:'free',credential:'free'},
+    {urls:'turn:openrelay.metered.ca:80', username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:numb.viagenie.ca',        username:'webrtc@live.com',credential:'muazkh'},
+    // TURN over TCP (방화벽 우회)
+    {urls:'turn:freestun.net:3479?transport=tcp',       username:'free',credential:'free'},
     {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
     {urls:'turn:openrelay.metered.ca:80?transport=tcp', username:'openrelayproject',credential:'openrelayproject'},
   ]}};
   roomPeer=new Peer(peerCfg2);
-  // 10초 타임아웃
+  // 20초 타임아웃 (TURN 서버 연결에 더 긴 시간 필요)
   const timeout=setTimeout(()=>{
     if(!roomConn?.open){
-      showJoinStatus('연결 시간 초과 — 코드를 확인하거나 다시 시도하세요','#C00000');
+      showJoinStatus('연결 시간 초과 — 네트워크 환경에 따라 VPN 사용이 필요할 수 있습니다','#C00000');
     }
-  },10000);
+  },20000);
 
   roomPeer.on('open', myId=>{
     myPeerId=myId;
-    showJoinStatus('방에 연결 중… (코드: '+code+')','#595959');
+    showJoinStatus('방에 연결 중… (코드: '+code+') TURN 서버 시도 중…','#595959');
     roomConn=roomPeer.connect('xlroom-'+code,{reliable:true,serialization:'json'});
 
     roomConn.on('open',()=>{
