@@ -687,63 +687,114 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 </div>
 
 <!-- 결과 알림 (공통) -->
-<!-- 상사 크리 보스키 오버레이 -->
-<div id="boss-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#F2F2F2;overflow:auto;font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:11px">
-  <div style="background:#217346;color:#fff;padding:4px 10px;font-size:11px;display:flex;justify-content:space-between">
-    <span>2026년_1분기_업무성과보고서_v3_최종_수정본.xlsx - Microsoft Excel</span>
+<!-- 상사 크리 보스키 오버레이 (Part List 기반) -->
+<div id="boss-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#fff;overflow:auto;font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:11px;color:#000">
+  <!-- 타이틀바 -->
+  <div style="background:#217346;color:#fff;padding:3px 10px;font-size:11px;display:flex;justify-content:space-between;flex-shrink:0">
+    <span>YWHRV-1500_Part_List_Rev.3.xlsx - Microsoft Excel</span>
     <span>─ □ ✕</span>
   </div>
-  <div style="background:#217346;display:flex;padding:0 4px">
+  <!-- 리본 탭 -->
+  <div style="background:#217346;display:flex;padding:0 4px;flex-shrink:0">
     <span style="background:#F2F2F2;color:#217346;padding:5px 12px;font-size:11px;font-weight:700">홈</span>
     <span style="color:rgba(255,255,255,.8);padding:5px 12px;font-size:11px">파일</span>
     <span style="color:rgba(255,255,255,.8);padding:5px 12px;font-size:11px">삽입</span>
     <span style="color:rgba(255,255,255,.8);padding:5px 12px;font-size:11px">데이터</span>
     <span style="color:rgba(255,255,255,.8);padding:5px 12px;font-size:11px">검토</span>
   </div>
-  <div style="background:#F2F2F2;border-bottom:1px solid #C8C8C8;padding:4px 8px;display:flex;align-items:center;gap:4px;min-height:40px">
-    <span style="padding:3px 8px;background:#E8E8E8;border:1px solid #C8C8C8;font-size:10px;cursor:pointer">📋 붙여넣기</span>
-    <span style="width:1px;height:28px;background:#C8C8C8;margin:0 4px"></span>
-    <span style="font-size:10px;padding:2px 6px;border:1px solid #C8C8C8;background:#fff">맑은 고딕</span>
-    <span style="font-size:10px;padding:2px 6px;border:1px solid #C8C8C8;background:#fff">11</span>
-    <span style="padding:2px 6px;font-weight:700;border:1px solid #C8C8C8;font-size:11px">B</span>
-    <span style="padding:2px 6px;font-style:italic;border:1px solid #C8C8C8;font-size:11px">I</span>
-    <span style="padding:2px 6px;text-decoration:underline;border:1px solid #C8C8C8;font-size:11px">U</span>
-    <span style="width:1px;height:28px;background:#C8C8C8;margin:0 4px"></span>
-    <span style="font-size:10px;color:#595959">P키를 누르면 재개됩니다</span>
+  <!-- 리본 -->
+  <div style="background:#F2F2F2;border-bottom:1px solid #C8C8C8;padding:3px 8px;display:flex;align-items:center;gap:4px;min-height:38px;flex-shrink:0">
+    <span style="padding:2px 7px;background:#E8E8E8;border:1px solid #C8C8C8;font-size:10px">📋 붙여넣기</span>
+    <span style="width:1px;height:26px;background:#C8C8C8;margin:0 3px"></span>
+    <span style="font-size:10px;padding:2px 5px;border:1px solid #C8C8C8;background:#fff">맑은 고딕</span>
+    <span style="font-size:10px;padding:2px 5px;border:1px solid #C8C8C8;background:#fff">10</span>
+    <span style="padding:2px 5px;font-weight:700;border:1px solid #C8C8C8;font-size:11px">B</span>
+    <span style="padding:2px 5px;font-style:italic;border:1px solid #C8C8C8;font-size:11px">I</span>
+    <span style="width:1px;height:26px;background:#C8C8C8;margin:0 3px"></span>
+    <span style="font-size:10px;color:#C00000;font-weight:700">※ P키를 누르면 이전 화면으로 돌아갑니다</span>
   </div>
-  <div style="display:flex;align-items:center;background:#fff;border-bottom:1px solid #C8C8C8;height:22px;padding:0 6px;gap:4px">
-    <span style="width:60px;border-right:1px solid #C8C8C8;font-size:11px;padding-right:4px;font-family:monospace">C14</span>
-    <span style="color:#217346;font-style:italic;font-weight:700;border-right:1px solid #E0E0E0;padding:0 6px">fx</span>
-    <span style="font-size:11px;color:#333;font-family:monospace">=SUMPRODUCT(B5:B13,C5:C13)/SUM(B5:B13)</span>
+  <!-- 수식입력줄 -->
+  <div style="display:flex;align-items:center;background:#fff;border-bottom:1px solid #C8C8C8;height:22px;padding:0 5px;gap:4px;flex-shrink:0">
+    <span style="width:52px;border-right:1px solid #C8C8C8;font-size:11px;font-family:monospace;padding-right:4px">A1</span>
+    <span style="color:#217346;font-style:italic;font-weight:700;border-right:1px solid #E0E0E0;padding:0 5px">fx</span>
+    <span style="font-size:11px;font-family:monospace;color:#333">[ Part List ]</span>
   </div>
-  <table style="border-collapse:collapse;width:100%;font-size:11px">
-    <thead>
-      <tr style="background:#F2F2F2;position:sticky;top:0">
-        <th style="width:28px;border:1px solid #D0D0D0;padding:2px"></th>
-        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:80px">A</th>
-        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:100px">B</th>
-        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:80px">C</th>
-        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:80px">D</th>
-        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:80px">E</th>
-        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:80px">F</th>
+  <!-- 스프레드시트 본문 -->
+  <div style="overflow:auto;padding:4px 0 40px">
+    <table style="border-collapse:collapse;font-size:10.5px;min-width:700px;margin:0 auto">
+      <!-- 열 헤더 -->
+      <tr style="background:#F2F2F2">
+        <td style="width:22px;border:1px solid #D0D0D0;text-align:center"></td>
+        <td style="border:1px solid #D0D0D0;text-align:center;padding:1px 4px;min-width:30px">A</td>
+        <td style="border:1px solid #D0D0D0;text-align:center;padding:1px 4px;min-width:60px">B</td>
+        <td style="border:1px solid #D0D0D0;text-align:center;padding:1px 4px;min-width:160px">C</td>
+        <td style="border:1px solid #D0D0D0;text-align:center;padding:1px 4px;min-width:110px">D</td>
+        <td style="border:1px solid #D0D0D0;text-align:center;padding:1px 4px;min-width:40px">E</td>
+        <td style="border:1px solid #D0D0D0;text-align:center;padding:1px 4px;min-width:90px">F</td>
+        <td style="border:1px solid #D0D0D0;text-align:center;padding:1px 4px;min-width:80px">G</td>
       </tr>
-    </thead>
-    <tbody>
-      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;padding:2px">1</td><td colspan="6" style="border:1px solid #D0D0D0;background:#1F3864;color:#fff;font-weight:700;padding:4px 10px;font-size:13px">2026년 1분기 업무 성과 보고서</td></tr>
-      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">2</td><td style="border:1px solid #D0D0D0;padding:2px 8px;color:#595959">작성일</td><td style="border:1px solid #D0D0D0;padding:2px 8px">2026-05-21</td><td colspan="4" style="border:1px solid #D0D0D0"></td></tr>
-      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">3</td><td style="border:1px solid #D0D0D0;padding:2px 8px;color:#595959">담당자</td><td style="border:1px solid #D0D0D0;padding:2px 8px">김수한</td><td colspan="4" style="border:1px solid #D0D0D0"></td></tr>
-      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">4</td><td colspan="6" style="border:1px solid #D0D0D0"></td></tr>
-      <tr style="background:#DEEAF1"><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">5</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">항목</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">목표</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">실적</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">달성률</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">전분기</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">증감</td></tr>
-      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">6</td><td style="border:1px solid #D0D0D0;padding:2px 8px">매출액(억원)</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">285</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">312</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;background:#E2EFDA;color:#375623">109.5%</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">278</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;color:#375623">▲ 34</td></tr>
-      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">7</td><td style="border:1px solid #D0D0D0;padding:2px 8px">신규계약(건)</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">42</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">38</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;background:#FFF2CC;color:#7F6000">90.5%</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">45</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;color:#C00000">▼ 7</td></tr>
-      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">8</td><td style="border:1px solid #D0D0D0;padding:2px 8px">고객만족도</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">88</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">91.2</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;background:#E2EFDA;color:#375623">103.6%</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">87.5</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;color:#375623">▲ 3.7</td></tr>
-      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">9</td><td style="border:1px solid #D0D0D0;padding:2px 8px">비용절감(백만)</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">150</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">183</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;background:#E2EFDA;color:#375623">122.0%</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">142</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;color:#375623">▲ 41</td></tr>
-      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">10</td><td colspan="6" style="border:1px solid #D0D0D0"></td></tr>
-      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">11</td><td style="border:1px solid #D0D0D0;padding:2px 8px;color:#595959">특이사항</td><td colspan="5" style="border:1px solid #D0D0D0;padding:2px 8px;color:#333">2분기 신규 프로젝트 3건 착수 예정. 하반기 목표 조정 필요.</td></tr>
-    </tbody>
-  </table>
-  <div style="position:fixed;bottom:0;left:0;right:0;background:#F2F2F2;border-top:1px solid #C8C8C8;padding:2px 10px;font-size:10px;color:#444;display:flex;gap:14px">
-    <span>분기보고</span><span>업무현황</span><span>예산계획</span><span style="margin-left:auto;color:#C00000;font-weight:700">P 키를 누르면 이전 화면으로 돌아갑니다</span>
+      <!-- Row1: 타이틀 -->
+      <tr>
+        <td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">1</td>
+        <td colspan="7" style="border:2px solid #000;text-align:center;font-weight:700;font-size:13px;padding:4px;letter-spacing:2px">[ Part List ]</td>
+      </tr>
+      <!-- Row2: 작성일자 / 품목·모델명·규격 -->
+      <tr>
+        <td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">2</td>
+        <td colspan="2" style="border:1px solid #000;padding:2px 6px;font-weight:700;text-align:center">작 성 일 자</td>
+        <td style="border:1px solid #000;padding:2px 6px;text-align:center">2026-05-21</td>
+        <td style="border:1px solid #D0D0D0"></td>
+        <td colspan="2" style="border:1px solid #000;padding:2px 6px;font-weight:700;text-align:center">품목 / 모델명 / 규격</td>
+        <td style="border:1px solid #000;padding:2px 6px;text-align:center;font-weight:700">YWHRV-1500 (유효폭)</td>
+      </tr>
+      <!-- Row3: 공백 -->
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">3</td><td colspan="7" style="border:1px solid #D0D0D0;height:6px"></td></tr>
+      <!-- Row4: 컬럼 헤더 -->
+      <tr style="background:#D9D9D9;font-weight:700;text-align:center">
+        <td style="background:#F2F2F2;border:1px solid #D0D0D0;font-size:9px">4</td>
+        <td style="border:2px solid #000;padding:3px 4px">번호</td>
+        <td style="border:2px solid #000;padding:3px 4px">분  류</td>
+        <td style="border:2px solid #000;padding:3px 4px">품          명</td>
+        <td style="border:2px solid #000;padding:3px 4px">규          격</td>
+        <td style="border:2px solid #000;padding:3px 4px">수량</td>
+        <td style="border:2px solid #000;padding:3px 4px">재     체</td>
+        <td style="border:2px solid #000;padding:3px 4px">비          고</td>
+      </tr>
+      <!-- 데이터 행: 판금밀 그룹 -->
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">5</td><td style="border:1px solid #000;text-align:center">1</td><td rowspan="10" style="border:1px solid #000;text-align:center;vertical-align:middle;writing-mode:vertical-rl;font-size:10px;font-weight:700">판  금  밀</td><td style="border:1px solid #000;padding:1px 5px">Top/Bottom Cover L/R</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">602*1304*10</td><td style="border:1px solid #000;text-align:center">4</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">6</td><td style="border:1px solid #000;text-align:center">2</td><td style="border:1px solid #000;padding:1px 5px">Door</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">600*520*10</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄</td><td style="border:1px solid #000;padding:1px 5px;font-size:9px">1500*1220 / 7매</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">7</td><td style="border:1px solid #000;text-align:center">3</td><td style="border:1px solid #000;padding:1px 5px">Side R</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">518*1298*20</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄</td><td style="border:1px solid #000;padding:1px 5px;font-size:9px">2400*1220 / 1매</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">8</td><td style="border:1px solid #000;text-align:center">4</td><td style="border:1px solid #000;padding:1px 5px">Side L</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">518*1298*20</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">9</td><td style="border:1px solid #000;text-align:center"></td><td style="border:1px solid #000;padding:1px 5px">Front Cover</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">1200*518*20</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">10</td><td style="border:1px solid #000;text-align:center"></td><td style="border:1px solid #000;padding:1px 5px">Rear Cover</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">1200*518*20</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">11</td><td style="border:1px solid #000;text-align:center"></td><td style="border:1px solid #000;padding:1px 5px">Side Section</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">338.5*320*15</td><td style="border:1px solid #000;text-align:center">2</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">12</td><td style="border:1px solid #000;text-align:center">6</td><td style="border:1px solid #000;padding:1px 5px">Front/Rear Section</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">656.5*339.5*161</td><td style="border:1px solid #000;text-align:center">4</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">13</td><td style="border:1px solid #000;text-align:center">7</td><td style="border:1px solid #000;padding:1px 5px">Hanger</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">80*50*50</td><td style="border:1px solid #000;text-align:center">8</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">14</td><td style="border:1px solid #000;text-align:center">8</td><td style="border:1px solid #000;padding:1px 5px">Control Case</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">200*125*60</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <!-- 외주가공 그룹 -->
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">15</td><td style="border:1px solid #000;text-align:center">10</td><td rowspan="7" style="border:1px solid #000;text-align:center;vertical-align:middle;writing-mode:vertical-rl;font-size:10px;font-weight:700">외  주  가  공</td><td style="border:1px solid #000;padding:1px 5px">Top/Bottom Cover</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">1301*600*5t</td><td style="border:1px solid #000;text-align:center">4</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">아크릴셀</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">16</td><td style="border:1px solid #000;text-align:center">11</td><td style="border:1px solid #000;padding:1px 5px">Door</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">580*500*10t</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">아크릴셀</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">17</td><td style="border:1px solid #000;text-align:center">12</td><td style="border:1px solid #000;padding:1px 5px">Side L/R</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">515*1295*5t</td><td style="border:1px solid #000;text-align:center">2</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">아크릴셀</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">18</td><td style="border:1px solid #000;text-align:center">13</td><td style="border:1px solid #000;padding:1px 5px">Rear Cover</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">1190*515*5t</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">아크릴셀</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">19</td><td style="border:1px solid #000;text-align:center">14</td><td style="border:1px solid #000;padding:1px 5px">Front/Rear Section - II</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">653.5*159*5t</td><td style="border:1px solid #000;text-align:center">4</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">아크릴셀</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">20</td><td style="border:1px solid #000;text-align:center">15</td><td style="border:1px solid #000;padding:1px 5px">Flange Bracket</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">457*389*10t</td><td style="border:1px solid #000;text-align:center">2</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">아크릴셀</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">21</td><td style="border:1px solid #000;text-align:center"></td><td style="border:1px solid #000;padding:1px 5px">Flange Bracket - 보강재</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">487*409*3t</td><td style="border:1px solid #000;text-align:center">2</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">아크릴셀</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <!-- 부품 그룹 -->
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">22</td><td style="border:1px solid #000;text-align:center">17</td><td rowspan="4" style="border:1px solid #000;text-align:center;vertical-align:middle;writing-mode:vertical-rl;font-size:10px;font-weight:700">부  품</td><td style="border:1px solid #000;padding:1px 5px">팬 (EAC-980BLI 알루미늄)</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">EAC-980BLI</td><td style="border:1px solid #000;text-align:center">2</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">산세</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">23</td><td style="border:1px solid #000;text-align:center">21</td><td style="border:1px solid #000;padding:1px 5px">가이드레일 (길이 1297mm)</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">길이 : 1297mm</td><td style="border:1px solid #000;text-align:center">4</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">중앙배관</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">24</td><td style="border:1px solid #000;text-align:center">31</td><td style="border:1px solid #000;padding:1px 5px">Control PCB</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">BLDC-1000MD2</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄가공</td><td style="border:1px solid #000;padding:1px 5px;font-size:9px">PCB Support 포함</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">25</td><td style="border:1px solid #000;text-align:center">32</td><td style="border:1px solid #000;padding:1px 5px">인버터</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">JNSR-1000</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;padding:1px 5px;text-align:center">알루미늄가공</td><td style="border:1px solid #000;padding:1px 5px"></td></tr>
+      <!-- 특이사항 -->
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">26</td><td colspan="7" style="border:2px solid #000;padding:2px 8px;font-weight:700">특  이  사  항</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:9px">27</td><td colspan="7" style="border:1px solid #000;padding:3px 8px;min-height:30px"></td></tr>
+    </table>
+  </div>
+  <!-- 하단 시트탭 -->
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#F2F2F2;border-top:1px solid #C8C8C8;padding:2px 8px;font-size:10px;color:#444;display:flex;gap:12px;align-items:center">
+    <span style="background:#fff;border:1px solid #C8C8C8;border-bottom:none;padding:1px 10px">YWHRV-1500</span>
+    <span style="color:#888;padding:1px 10px">Rev.이력</span>
+    <span style="color:#888;padding:1px 10px">자재현황</span>
+    <span style="margin-left:auto;color:#C00000;font-weight:700">P 키를 누르면 이전 화면으로 돌아갑니다</span>
   </div>
 </div>
 
@@ -794,7 +845,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.03'; // 업데이트할 때마다 변경
+const BUILD = 'v1.04'; // 업데이트할 때마다 변경
 
 // ── 상사 크리 보스키 ────────────────────────────────────────────────────────
 let bossKeyOn=false;
