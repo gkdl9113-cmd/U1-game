@@ -380,6 +380,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="lobbyStartSolo('omok')" title="로비 유지하며 AI 오목"><span class="xl-rico">⬛</span><span class="xl-rlbl">혼자오목</span></button>
     <button class="xl-rbtn" onclick="lobbyStartSolo('baseball')" title="로비 유지하며 AI 숫자야구"><span class="xl-rico">🔢</span><span class="xl-rlbl">혼자야구</span></button>
+    <button class="xl-rbtn" onclick="lobbyStartSolo('fish')" title="로비 유지하며 물고기 키우기"><span class="xl-rico">🐟</span><span class="xl-rlbl">물고기</span></button>
   </div>
   <div class="xl-fbar">
     <div class="xl-namebox" id="lobby-namebox">A1</div><div class="xl-fx">fx</div>
@@ -951,7 +952,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.06'; // 업데이트할 때마다 변경
+const BUILD = 'v1.07'; // 업데이트할 때마다 변경
 
 // ── 상사 크리 보스키 ────────────────────────────────────────────────────────
 let bossKeyOn=false;
@@ -1404,8 +1405,9 @@ function sendChat(){
 }
 function copyLobbyCode(){navigator.clipboard?.writeText(roomCode).then(()=>alert('코드 복사됨: '+roomCode));}
 function lobbyStartSolo(g){
-  fromLobby=true; // 로비에서 시작했음을 기록
+  fromLobby=true;
   if(g==='omok'){oMode='ai';show('s-omok');buildOmokTable();omokNewGame();}
+  else if(g==='fish'){startFishGame();}
   else{bbMode='ai';openBBSetup();}
 }
 function backToLobby(){
@@ -2262,7 +2264,8 @@ function fishExit(){
   fishSave();
   fishStopLoops();
   window.removeEventListener('resize',fishResizeCanvas);
-  show('s-solo');
+  if(fromLobby){fromLobby=false;show('s-lobby');}
+  else show('s-solo');
 }
 function fishResizeCanvas(){
   if(!FG.cvs) return;
