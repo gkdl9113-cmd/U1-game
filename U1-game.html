@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>업무포털_2026_Q1.xlsx - Microsoft Excel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI',sans-serif;background:#F2F2F2;color:#1F1F1F;height:100dvh;overflow:hidden;max-width:480px;margin:0 auto;display:flex;flex-direction:column;font-size:13px;user-select:none}
+
+/* ── 화면 전환 ── */
+.scr{display:none;flex-direction:column;height:100%;overflow:hidden}
+.scr.on{display:flex}
+
+/* ══════════════ EXCEL 공통 크롬 ══════════════ */
+.xl-titlebar{background:#217346;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 8px;height:30px;flex-shrink:0}
+.xl-tb-l{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.xl-logo{background:#fff;color:#217346;font-weight:900;font-size:13px;padding:1px 4px;border-radius:2px;flex-shrink:0}
+.xl-tb-title{font-size:11px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xl-wc{display:flex}
+.xl-wbtn{background:none;border:none;color:#fff;padding:4px 11px;font-size:11px;cursor:pointer;line-height:1}
+.xl-wbtn:hover{background:rgba(255,255,255,.18)}
+.xl-wbtn.xbtn:hover{background:#E81123}
+.xl-tabs{background:#217346;display:flex;padding:0 4px;flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+.xl-tabs::-webkit-scrollbar{display:none}
+.xl-tab{background:none;border:none;color:rgba(255,255,255,.8);padding:6px 10px;font-size:12px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;font-family:inherit;flex-shrink:0}
+.xl-tab.on{background:#F2F2F2;color:#217346;font-weight:700;border-bottom-color:#F2F2F2}
+.xl-ribbon{background:#F2F2F2;border-bottom:1px solid #C8C8C8;padding:4px 8px;display:flex;align-items:center;gap:4px;flex-shrink:0;min-height:48px;overflow-x:auto;scrollbar-width:none}
+.xl-ribbon::-webkit-scrollbar{display:none}
+.xl-rsep{width:1px;height:30px;background:#C8C8C8;margin:0 3px;flex-shrink:0}
+.xl-rbtn{background:none;border:none;padding:4px 7px;cursor:pointer;border-radius:2px;color:#333;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+.xl-rbtn:hover{background:#E0E0E0}
+.xl-rbtn:active{background:#C8C8C8}
+.xl-rico{font-size:17px;line-height:1.3}
+.xl-rlbl{font-size:9.5px;color:#555;white-space:nowrap}
+.xl-rsel{font-size:11px;border:1px solid #B4B4B4;border-radius:2px;padding:3px 5px;background:#fff;color:#333;cursor:pointer;height:24px;font-family:inherit;flex-shrink:0;max-width:72px}
+.xl-fbar{display:flex;align-items:center;background:#fff;border-bottom:1px solid #C8C8C8;height:26px;flex-shrink:0}
+.xl-namebox{width:62px;border-right:1px solid #C8C8C8;padding:0 6px;font-size:12px;color:#333;display:flex;align-items:center;height:100%;flex-shrink:0;font-family:'Consolas',monospace}
+.xl-fx{padding:0 7px;font-size:12px;color:#217346;font-style:italic;border-right:1px solid #E0E0E0;height:100%;display:flex;align-items:center;flex-shrink:0;font-weight:700}
+.xl-ftext{flex:1;padding:0 6px;font-size:11.5px;color:#333;overflow:hidden;white-space:nowrap;font-family:'Consolas',monospace;opacity:.85}
+.xl-bottombar{background:#F2F2F2;border-top:1px solid #C8C8C8;display:flex;align-items:center;height:26px;flex-shrink:0}
+.xl-stabs{display:flex;flex:1;overflow-x:auto;align-items:flex-end;height:100%;scrollbar-width:none}
+.xl-stabs::-webkit-scrollbar{display:none}
+.xl-stab{background:#fff;border:1px solid #C8C8C8;border-bottom:none;padding:2px 11px;font-size:10px;cursor:pointer;white-space:nowrap;color:#333;font-family:inherit;margin-right:2px;height:100%}
+.xl-stab:not(.on){background:#E0E0E0;color:#888}
+.xl-stab-plus{background:none;border:none;padding:2px 8px;font-size:13px;cursor:pointer;color:#888}
+.xl-statusbar{padding:0 8px;font-size:10px;color:#444;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.xl-sitem{white-space:nowrap}
+.xl-sheet{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#fff;
+  background-image:linear-gradient(rgba(208,208,208,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(208,208,208,.55) 1px,transparent 1px);
+  background-size:64px 22px;background-position:22px 0}
+
+/* ══════════════ 홈 화면 (대시보드 셀) ══════════════ */
+.home-tbl{border-collapse:collapse;min-width:100%}
+.home-tbl td,.home-tbl th{border:1px solid #D0D0D0;padding:0;vertical-align:middle;height:20px}
+.hcol{background:#F2F2F2;color:#555;font-size:10px;text-align:center;width:22px;min-width:22px;position:sticky;left:0;z-index:1}
+.hrow{background:#F2F2F2;color:#555;font-size:10px;text-align:center;width:26px;min-width:26px;position:sticky;top:0;z-index:2}
+.hcorner{background:#F2F2F2;position:sticky;top:0;left:0;z-index:3;width:22px;min-width:22px}
+.hcell{background:#fff;height:20px;min-width:26px;width:26px}
+/* 타이틀 셀 */
+.htitle-cell{background:#217346;color:#fff;font-size:13px;font-weight:800;padding:8px 14px;text-align:left;height:36px}
+/* 버튼 셀 */
+.hbtn-cell{background:#D6E4F0;color:#1F497D;font-size:11px;font-weight:700;text-align:center;cursor:pointer;height:44px;padding:0 8px;transition:background .12s;border:2px solid #9DC3E6}
+.hbtn-cell:hover,.hbtn-cell:active{background:#B8D3EC}
+.hbtn-cell.green{background:#E2EFDA;color:#375623;border-color:#A9D18E}
+.hbtn-cell.green:hover{background:#C6DFAF}
+.hdesc-cell{font-size:10px;color:#595959;padding:3px 8px;height:28px;vertical-align:top;padding-top:4px}
+.hspacer{height:14px}
+.hmain-label{font-size:11px;font-weight:700;color:#1F1F1F;padding:4px 8px}
+
+/* ══════════════ 오버레이 모달 (엑셀 다이얼로그) ══════════════ */
+.xl-dlg-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:800;display:none;align-items:center;justify-content:center;max-width:480px;margin:0 auto}
+.xl-dlg-ov.on{display:flex}
+.xl-dlg{background:#F2F2F2;border:1px solid #888;min-width:290px;max-width:340px;box-shadow:5px 5px 14px rgba(0,0,0,.3)}
+.xl-dlg-title{background:#000080;color:#fff;padding:5px 10px;font-size:11px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.xl-dlg-x{background:none;border:none;color:#fff;cursor:pointer;font-size:14px;padding:0 2px;line-height:1}
+.xl-dlg-body{padding:14px}
+.xl-dlg-lbl{font-size:11px;font-weight:700;color:#333;margin-bottom:4px}
+.xl-dlg-inp{width:100%;padding:6px 8px;border:2px solid #7F9DB9;font-size:14px;background:#fff;color:#333;outline:none;font-family:inherit;margin-bottom:10px}
+.xl-dlg-inp:focus{border-color:#217346}
+.xl-dlg-code{font-size:28px;font-weight:900;color:#C00000;letter-spacing:5px;text-align:center;padding:8px 0;font-family:monospace}
+.xl-dlg-st{font-size:10px;color:#666;text-align:center;margin-bottom:8px}
+.xl-dlg-btns{display:flex;gap:6px;justify-content:flex-end;margin-top:4px}
+.xl-dlg-btn{padding:4px 16px;font-size:11px;border:1px solid #7F9DB9;background:#E8E8E8;cursor:pointer;font-family:inherit;color:#333}
+.xl-dlg-btn.ok{background:#217346;color:#fff;border-color:#1A5C35}
+.xl-dlg-btn:active{opacity:.8}
+.xl-dlg-sep{border:none;border-top:1px solid #C8C8C8;margin:10px 0}
+
+/* ══════════════ 로비 (공유 통합문서 패널) ══════════════ */
+.lobby-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.lobby-body{flex:1;display:flex;overflow:hidden}
+.lobby-left{flex:1;overflow-y:auto;border-right:1px solid #C8C8C8}
+.lobby-right{width:145px;display:flex;flex-direction:column;flex-shrink:0}
+/* 플레이어 테이블 */
+.ptbl{border-collapse:collapse;width:100%}
+.ptbl th{background:#E0E0E0;border:1px solid #C8C8C8;padding:4px 8px;font-size:12px;font-weight:700;color:#444;text-align:left;position:sticky;top:0;z-index:1}
+.ptbl td{border:1px solid #D0D0D0;padding:5px 8px;font-size:12px;background:#fff}
+.ptbl tr.me td{background:#E2EFDA}
+.ptbl tr.ingame td{background:#FFF2CC;color:#888}
+.p-badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
+.p-badge.ready{background:#E2EFDA;color:#375623}
+.p-badge.ingame{background:#FFF2CC;color:#7F6000}
+.p-badge.me{background:#DEEAF1;color:#1F497D}
+.challenge-btn{background:#217346;border:none;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap}
+.challenge-btn:active{opacity:.8}
+.lobby-code-bar{background:#DEEAF1;border-top:1px solid #9DC3E6;padding:4px 8px;font-size:10px;color:#1F497D;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.lobby-code{font-family:monospace;font-weight:800;letter-spacing:2px;font-size:12px}
+.lobby-exit-btn{background:none;border:1px solid #9DC3E6;color:#1F497D;font-size:10px;cursor:pointer;padding:2px 6px;font-family:inherit}
+/* 채팅 */
+.chat-hdr{background:#E0E0E0;border-bottom:1px solid #C8C8C8;padding:3px 7px;font-size:10px;font-weight:700;color:#444;flex-shrink:0}
+.chat-msgs{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:4px;background:#fff}
+.chat-msg{font-size:12px;line-height:1.5}
+.chat-msg-name{font-weight:700;color:#217346}
+.chat-msg-name.me{color:#1F497D}
+.chat-msg-text{color:#333}
+.chat-sys{font-size:10px;color:#999;font-style:italic;text-align:center;margin:3px 0}
+.chat-inp-row{display:flex;border-top:1px solid #C8C8C8;flex-shrink:0}
+.chat-inp{flex:1;border:none;outline:none;padding:5px 7px;font-size:12px;font-family:inherit;background:#fff}
+.chat-send{background:#217346;border:none;color:#fff;padding:5px 9px;font-size:13px;cursor:pointer}
+
+/* ══════════════ 솔로 게임 선택 ══════════════ */
+.solo-tbl{border-collapse:collapse;min-width:100%}
+.game-pick-cell{background:#fff;cursor:pointer;padding:12px 10px;border:1px solid #D0D0D0;transition:background .1s}
+.game-pick-cell:hover{background:#EFF6FF}
+.game-pick-cell:active{background:#DEEAF1}
+.gp-title{font-size:13px;font-weight:700;color:#1F497D;margin-bottom:3px}
+.gp-sub{font-size:10px;color:#666}
+
+/* ══════════════ 오목 (엑셀 시트) ══════════════ */
+.xtbl{border-collapse:collapse;font-size:11px}
+.xtbl th,.xtbl td{border:1px solid #D0D0D0;text-align:center;vertical-align:middle;padding:0}
+.xcol-hdr{background:#F2F2F2;color:#555;font-weight:500;font-size:10px;height:18px;min-width:26px;width:26px;position:sticky;top:0;z-index:2}
+.xrow-hdr{background:#F2F2F2;color:#555;font-weight:500;font-size:10px;width:20px;min-width:20px;position:sticky;left:0;z-index:1;cursor:default}
+.xcorner{background:#F2F2F2;position:sticky;top:0;left:0;z-index:3;width:20px;min-width:20px}
+.xcell{background:#fff;cursor:pointer;height:26px;min-width:30px;width:30px;border:1px solid #D0D0D0}
+.xcell:hover{background:#EFF6FF}
+.xcell.b1{background:#17375E}
+.xcell.b2{background:#C55A11}
+.xcell.lb{box-shadow:inset 0 0 0 2px #4BACC6}
+.xcell.lw{box-shadow:inset 0 0 0 2px #FFC000}
+.xcell.win{background:#FFFF00!important}
+
+/* ══════════════ 숫자야구 ══════════════ */
+.bb-setup-tbl{border-collapse:collapse;min-width:100%}
+.bb-opt-hdr{background:#DEEAF1;border:1px solid #9DC3E6;padding:5px 10px;font-size:11px;font-weight:700;color:#1F497D}
+.bb-opt-cell{background:#fff;border:1px solid #D0D0D0;padding:6px 10px}
+.bb-chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.bb-chip{padding:5px 14px;border:1.5px solid #B4B4B4;background:#E8E8E8;color:#333;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit}
+.bb-chip.on{background:#217346;color:#fff;border-color:#1A5C35}
+.bb-chip:active{opacity:.85}
+.bb-start-cell{background:#217346;color:#fff;font-size:13px;font-weight:800;text-align:center;cursor:pointer;padding:12px;border:none}
+.bb-start-cell:active{background:#1A5C35}
+.bb-game-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.bb-panels{flex:1;display:flex;overflow:hidden}
+.bb-panel{flex:1;border-right:1px solid #D0D0D0;display:flex;flex-direction:column;overflow:hidden}
+.bb-panel:last-child{border-right:none}
+.bb-panel-hdr{background:#E0E0E0;border-bottom:1px solid #C8C8C8;padding:3px 8px;font-size:10px;font-weight:700;color:#444;flex-shrink:0}
+.bb-hist{flex:1;overflow-y:auto;padding:4px;display:flex;flex-direction:column;gap:3px}
+.bb-hist-row{display:flex;justify-content:space-between;background:#F8F8F8;border:1px solid #E0E0E0;padding:3px 7px;font-size:11px}
+.bb-hist-num{font-family:monospace;font-weight:700;letter-spacing:2px}
+.bb-hist-res{font-size:10px;font-weight:700}
+.bb-hist-res .s{color:#375623}
+.bb-hist-res .b{color:#7F6000}
+.bb-input-bar{padding:8px 10px 6px;background:#E8EFF8;border-top:3px solid #4472C4;flex-shrink:0}
+.bb-inp-label{font-size:10px;font-weight:700;color:#1F497D;margin-bottom:5px;letter-spacing:.5px}
+.bb-inp-row{display:flex;gap:5px;align-items:center}
+.bb-digit{width:40px;height:38px;border:2px solid #7F9DB9;background:#fff;color:#1F1F1F;font-size:18px;font-weight:800;text-align:center;outline:none;font-family:monospace}
+.bb-digit:focus{border-color:#217346}
+.bb-submit{padding:0 14px;height:38px;background:#217346;color:#fff;border:none;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
+.bb-status{font-size:10px;color:#595959;margin-top:4px}
+
+/* ══════════════ 도전/결과 알림 ══════════════ */
+.xl-notify-ov{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:900;display:none;align-items:center;justify-content:center;max-width:480px;margin:0 auto}
+.xl-notify-ov.on{display:flex}
+.xl-notify{background:#F2F2F2;border:1px solid #888;width:280px;box-shadow:4px 4px 12px rgba(0,0,0,.3)}
+.xl-notify-title{background:#000080;color:#fff;padding:4px 8px;font-size:11px;font-weight:700;display:flex;justify-content:space-between}
+.xl-notify-body{padding:12px;display:flex;gap:10px;align-items:flex-start}
+.xl-notify-ico{font-size:24px;flex-shrink:0;margin-top:2px}
+.xl-notify-txt{font-size:12px;line-height:1.6;color:#333}
+.xl-notify-btns{display:flex;justify-content:center;gap:6px;padding:8px 12px 12px}
+.xl-notify-btn{padding:4px 18px;font-size:11px;border:1px solid #7F9DB9;background:#E8E8E8;cursor:pointer;font-family:inherit;min-width:60px;color:#333}
+.xl-notify-btn.ok{background:#217346;color:#fff;border-color:#1A5C35}
+
+/* 게임 선택 (도전 시) */
+.game-sel-btns{display:flex;gap:8px;margin-top:10px}
+.game-sel-btn{flex:1;padding:8px 6px;border:1px solid #7F9DB9;background:#DEEAF1;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;color:#1F497D;text-align:center}
+.game-sel-btn:hover{background:#B8D3EC}
+
+/* ══════════════════════════════════════════
+   데스크탑 (769px 이상) — 16:9 확장 레이아웃
+══════════════════════════════════════════ */
+@media (min-width:769px){
+  /* body: max-width 제거, 전체 화면 사용 */
+  body{max-width:100%;font-size:12px}
+  .xl-dlg-ov,.xl-notify-ov{max-width:100%}
+
+  /* 타이틀 바 */
+  .xl-titlebar{height:36px}
+  .xl-tb-title{font-size:13px}
+  .xl-wbtn{padding:5px 16px;font-size:12px}
+  .xl-logo{font-size:15px;padding:2px 5px}
+
+  /* 탭 */
+  .xl-tab{padding:7px 14px;font-size:12px}
+
+  /* 리본 */
+  .xl-ribbon{min-height:56px;padding:4px 12px;gap:5px}
+  .xl-rbtn{padding:4px 8px;gap:2px}
+  .xl-rico{font-size:18px;line-height:1.4}
+  .xl-rlbl{font-size:9.5px}
+  .xl-rsel{height:24px;font-size:11px;max-width:90px}
+  .xl-rsep{height:36px;margin:0 5px}
+
+  /* 수식 입력줄 */
+  .xl-fbar{height:26px}
+  .xl-namebox{width:72px;font-size:12px}
+  .xl-fx{font-size:12px;padding:0 8px}
+  .xl-ftext{font-size:12px}
+
+  /* 상태 표시줄 */
+  .xl-statusbar{padding:0 12px;gap:18px}
+  .xl-sitem{font-size:11px}
+  .xl-stab{padding:2px 16px;font-size:11px}
+  .xl-bottombar{height:26px}
+
+  /* 홈 대시보드 셀 */
+  .hcell{width:56px;min-width:56px;height:22px}
+  .hrow{width:56px;min-width:56px;height:22px}
+  .hcol{width:30px;min-width:30px}
+  .htitle-cell{font-size:16px;height:44px;padding:10px 18px}
+  .hbtn-cell{height:56px;font-size:13px;padding:0 12px}
+  .hdesc-cell{font-size:11px;height:32px}
+
+  /* 오목 셀 — 더 크게 */
+  .xcell{width:36px;min-width:36px;height:30px}
+  .xcol-hdr{width:36px;min-width:36px;height:22px;font-size:11px}
+  .xrow-hdr{width:28px;min-width:28px;font-size:11px}
+  .xcorner{width:28px;min-width:28px}
+
+  /* 숫자야구 입력 */
+  .bb-digit{width:54px;height:48px;font-size:22px;border-width:2px}
+  .bb-submit{height:48px;padding:0 20px;font-size:15px}
+  .bb-panel-hdr{padding:5px 10px;font-size:11px}
+  .bb-hist-row{padding:4px 10px;font-size:12px}
+  .bb-hist-num{font-size:15px}
+  .bb-input-bar{padding:8px 14px}
+  .bb-opt-hdr{padding:7px 14px;font-size:12px}
+  .bb-opt-cell{padding:8px 14px}
+  .bb-chip{padding:7px 18px;font-size:12px}
+  .bb-start-cell{font-size:15px;padding:14px}
+
+  /* 로비 */
+  .lobby-right{width:300px}
+  .chat-hdr{padding:5px 10px;font-size:11px}
+  .chat-msg{font-size:11px}
+  .chat-inp{font-size:11px;padding:5px 8px}
+  .ptbl th{padding:4px 10px;font-size:11px}
+  .ptbl td{padding:5px 10px;font-size:12px}
+  .challenge-btn{font-size:11px;padding:3px 10px}
+  .lobby-code-bar{padding:5px 12px;font-size:11px}
+
+  /* 다이얼로그 */
+  .xl-dlg{min-width:360px;max-width:420px}
+  .xl-dlg-title{padding:6px 12px;font-size:12px}
+  .xl-dlg-body{padding:16px}
+  .xl-dlg-lbl{font-size:12px}
+  .xl-dlg-inp{font-size:15px;padding:7px 10px}
+  .xl-dlg-btn{padding:5px 20px;font-size:12px}
+  .xl-dlg-code{font-size:34px}
+
+  /* 결과/알림 */
+  .xl-notify{width:340px}
+  .xl-notify-title{padding:5px 10px;font-size:12px}
+  .xl-notify-ico{font-size:30px}
+  .xl-notify-txt{font-size:13px}
+  .xl-notify-btn{padding:5px 22px;font-size:12px;min-width:72px}
+
+  /* 솔로 게임 선택 */
+  .gp-title{font-size:15px}
+  .gp-sub{font-size:11px}
+  .game-pick-cell{padding:16px 14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     홈 화면 (엑셀 대시보드)
+════════════════════════════════════════════ -->
+<div id="s-home" class="scr on">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">업무포털_2026_Q1.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn">✕</button></div>
+  </div>
+  <div class="xl-tabs">
+    <button class="xl-tab">파일</button><button class="xl-tab on">홈</button><button class="xl-tab">삽입</button><button class="xl-tab">페이지 레이아웃</button><button class="xl-tab">수식</button><button class="xl-tab">데이터</button><button class="xl-tab">검토</button><button class="xl-tab">보기</button>
+  </div>
+  <div class="xl-ribbon">
+    <button class="xl-rbtn"><span class="xl-rico">📋</span><span class="xl-rlbl">붙여넣기</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn"><span class="xl-rico">B</span><span class="xl-rlbl">굵게</span></button>
+    <button class="xl-rbtn"><span class="xl-rico"><i>I</i></span><span class="xl-rlbl">기울임</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn"><span class="xl-rico">🔍</span><span class="xl-rlbl">찾기</span></button>
+    <button class="xl-rbtn"><span class="xl-rico">Σ</span><span class="xl-rlbl">자동합계</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn" onclick="showNameDlg('create')"><span class="xl-rico">🌐</span><span class="xl-rlbl">방 만들기</span></button>
+    <button class="xl-rbtn" onclick="showNameDlg('join')"><span class="xl-rico">🔗</span><span class="xl-rlbl">방 참여</span></button>
+    <button class="xl-rbtn" onclick="showSoloGames()"><span class="xl-rico">📊</span><span class="xl-rlbl">개인작업</span></button>
+  </div>
+  <div class="xl-fbar">
+    <div class="xl-namebox">D5</div><div class="xl-fx">fx</div>
+    <div class="xl-ftext">=HYPERLINK("#매크로","업무 포털 v2.6")</div>
+  </div>
+  <div class="xl-sheet">
+    <table class="home-tbl" id="home-tbl"></table>
+  </div>
+  <div class="xl-bottombar">
+    <div class="xl-stabs"><button class="xl-stab on">대시보드</button><button class="xl-stab">업무현황</button><button class="xl-stab">보고서</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-statusbar"><span class="xl-sitem">준비</span><span class="xl-sitem">100%</span></div>
+  </div>
+</div>
+
+<!-- 닉네임 입력 다이얼로그 -->
+<div class="xl-dlg-ov" id="name-dlg">
+  <div class="xl-dlg">
+    <div class="xl-dlg-title" id="name-dlg-title">사용자 계정 확인 <button class="xl-dlg-x" onclick="hideDlg('name-dlg')">✕</button></div>
+    <div class="xl-dlg-body">
+      <div class="xl-dlg-lbl">표시 닉네임</div>
+      <input class="xl-dlg-inp" id="f-myname" type="text" placeholder="닉네임을 입력하세요" maxlength="10"
+             onkeydown="if(event.key==='Enter')document.getElementById('f-roomcode').style.display!=='none'?document.getElementById('f-roomcode').focus():confirmName()">
+
+      <!-- 방 만들기: 방 코드 직접 입력 -->
+      <div id="name-dlg-create-area" style="display:none">
+        <div class="xl-dlg-lbl">방 코드 설정 <span style="font-size:10px;color:#888;font-weight:400">(영문·숫자 6자리, 직접 입력)</span></div>
+        <input class="xl-dlg-inp" id="f-create-code" type="text" placeholder="예: GAME01" maxlength="6"
+               style="letter-spacing:5px;font-family:monospace;font-size:18px;text-transform:uppercase"
+               oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+               onkeydown="if(event.key==='Enter')confirmName()">
+      </div>
+
+      <!-- 방 참여: 코드 입력 -->
+      <div id="name-dlg-join-area" style="display:none">
+        <div class="xl-dlg-lbl">방 코드 입력</div>
+        <input class="xl-dlg-inp" id="f-roomcode" type="text" placeholder="6자리 코드" maxlength="6"
+               style="letter-spacing:5px;font-family:monospace;font-size:18px;text-transform:uppercase"
+               oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+               onkeydown="if(event.key==='Enter')confirmName()">
+      </div>
+
+      <div class="xl-dlg-btns" style="margin-top:6px">
+        <button class="xl-dlg-btn" onclick="hideDlg('name-dlg')">취소</button>
+        <button class="xl-dlg-btn ok" onclick="confirmName()">확인</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     로비 (공유 통합문서 패널)
+════════════════════════════════════════════ -->
+<div id="s-lobby" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">팀_공유문서_실시간.xlsx - 공동 작업 중</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="exitLobby()">✕</button></div>
+  </div>
+  <div class="xl-tabs">
+    <button class="xl-tab">파일</button><button class="xl-tab">홈</button><button class="xl-tab">삽입</button><button class="xl-tab">데이터</button><button class="xl-tab on">검토</button><button class="xl-tab">보기</button>
+  </div>
+  <div class="xl-ribbon">
+    <button class="xl-rbtn"><span class="xl-rico">💬</span><span class="xl-rlbl">메모</span></button>
+    <button class="xl-rbtn"><span class="xl-rico">👥</span><span class="xl-rlbl">공유</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn"><span class="xl-rico">🔒</span><span class="xl-rlbl">시트보호</span></button>
+    <button class="xl-rbtn"><span class="xl-rico">📝</span><span class="xl-rlbl">변경내역</span></button>
+    <div class="xl-rsep"></div>
+    <span style="font-size:10px;color:#595959;padding:0 4px">참가자: <strong id="lobby-count">0</strong>명</span>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn" onclick="lobbyStartSolo('omok')" title="로비 유지하며 AI 오목"><span class="xl-rico">⬛</span><span class="xl-rlbl">혼자오목</span></button>
+    <button class="xl-rbtn" onclick="lobbyStartSolo('baseball')" title="로비 유지하며 AI 숫자야구"><span class="xl-rico">🔢</span><span class="xl-rlbl">혼자야구</span></button>
+  </div>
+  <div class="xl-fbar">
+    <div class="xl-namebox" id="lobby-namebox">A1</div><div class="xl-fx">fx</div>
+    <div class="xl-ftext" id="lobby-ftext">=COUNTA(공유사용자!A:A)</div>
+  </div>
+  <div class="lobby-wrap">
+    <div class="lobby-body">
+      <div class="lobby-left">
+        <table class="ptbl">
+          <thead><tr><th>#</th><th>편집자</th><th>상태</th><th>협업</th></tr></thead>
+          <tbody id="player-list"></tbody>
+        </table>
+      </div>
+      <div class="lobby-right">
+        <div class="chat-hdr">변경 내역</div>
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="chat-inp-row">
+          <input class="chat-inp" id="chat-inp" type="text" placeholder="메모 입력…" maxlength="60" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="chat-send" onclick="sendChat()">→</button>
+        </div>
+      </div>
+    </div>
+    <div class="lobby-code-bar">
+      <span>방 코드: <span class="lobby-code" id="lobby-code-display">------</span></span>
+      <div style="display:flex;gap:6px">
+        <button class="lobby-exit-btn" onclick="copyLobbyCode()">복사</button>
+        <button class="lobby-exit-btn" onclick="exitLobby()">나가기</button>
+      </div>
+    </div>
+  </div>
+  <div class="xl-bottombar">
+    <div class="xl-stabs"><button class="xl-stab on">공유</button><button class="xl-stab">현황</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-statusbar"><span class="xl-sitem" id="lobby-st">준비</span><span class="xl-sitem">100%</span></div>
+  </div>
+</div>
+
+<!-- 게임 선택 (도전 시) -->
+<div class="xl-dlg-ov" id="challenge-dlg">
+  <div class="xl-dlg" style="min-width:260px">
+    <div class="xl-dlg-title">공동 작업 시작 <button class="xl-dlg-x" onclick="hideDlg('challenge-dlg')">✕</button></div>
+    <div class="xl-dlg-body">
+      <div class="xl-dlg-lbl">공동 편집 방식 선택</div>
+      <div id="challenge-target-name" style="font-size:12px;color:#595959;margin-bottom:8px"></div>
+      <div class="game-sel-btns">
+        <button class="game-sel-btn" onclick="sendChallenge('omok')">⬛ 오목</button>
+        <button class="game-sel-btn" onclick="showBBDigitPick()">🔢 숫자야구</button>
+        <button class="game-sel-btn" onclick="sendChallenge('pikachu')" style="background:#FFF9C4;color:#7F6000;border-color:#FFC000">🏐 피카츄배구</button>
+      </div>
+      <!-- 숫자야구 자릿수 선택 (숫자야구 클릭 후 표시) -->
+      <div id="bb-digit-pick" style="display:none;margin-top:10px">
+        <div class="xl-dlg-lbl" style="margin-bottom:6px">자릿수 선택</div>
+        <div class="game-sel-btns">
+          <button class="game-sel-btn" onclick="sendChallenge('baseball',3)">3자리</button>
+          <button class="game-sel-btn" onclick="sendChallenge('baseball',4)">4자리</button>
+        </div>
+      </div>
+      <div class="xl-dlg-btns" style="margin-top:10px"><button class="xl-dlg-btn" onclick="hideDlg('challenge-dlg')">취소</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- 도전 수신 알림 -->
+<div class="xl-notify-ov" id="challenged-notify">
+  <div class="xl-notify">
+    <div class="xl-notify-title">Microsoft Excel <span onclick="rejectChallenge()" style="cursor:pointer">✕</span></div>
+    <div class="xl-notify-body"><div class="xl-notify-ico">📩</div><div class="xl-notify-txt" id="challenged-txt">대전 신청이 왔습니다.</div></div>
+    <div class="xl-notify-btns">
+      <button class="xl-notify-btn" onclick="rejectChallenge()">거절</button>
+      <button class="xl-notify-btn ok" onclick="acceptChallenge()">수락</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     솔로 게임 선택
+════════════════════════════════════════════ -->
+<div id="s-solo" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">개인업무_템플릿.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="goHome()">✕</button></div>
+  </div>
+  <div class="xl-tabs"><button class="xl-tab">파일</button><button class="xl-tab on">홈</button><button class="xl-tab">삽입</button><button class="xl-tab">데이터</button><button class="xl-tab">검토</button></div>
+  <div class="xl-ribbon">
+    <button class="xl-rbtn" onclick="goHome()"><span class="xl-rico">◀</span><span class="xl-rlbl">뒤로</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn"><span class="xl-rico">📊</span><span class="xl-rlbl">차트</span></button>
+    <button class="xl-rbtn"><span class="xl-rico">🔍</span><span class="xl-rlbl">찾기</span></button>
+  </div>
+  <div class="xl-fbar"><div class="xl-namebox">B4</div><div class="xl-fx">fx</div><div class="xl-ftext">=INDEX(매크로목록,MATCH(B4,닉네임열,0))</div></div>
+  <div class="xl-sheet">
+    <table class="solo-tbl">
+      <tbody>
+        <tr><td colspan="2" style="background:#217346;color:#fff;font-size:13px;font-weight:800;padding:10px 14px;height:36px">매크로 선택</td></tr>
+        <tr><td style="background:#F2F2F2;color:#555;font-size:10px;padding:3px 8px;border:1px solid #D0D0D0">1</td>
+            <td class="game-pick-cell" onclick="startSoloGame('omok')">
+              <div class="gp-title">⬛ 오목 (五目)</div>
+              <div class="gp-sub">AI 난이도: 초급 ~ 유단자 · 15×15 바둑판</div>
+            </td></tr>
+        <tr><td style="background:#F2F2F2;color:#555;font-size:10px;padding:3px 8px;border:1px solid #D0D0D0">2</td>
+            <td class="game-pick-cell" onclick="startSoloGame('baseball')">
+              <div class="gp-title">🔢 숫자야구</div>
+              <div class="gp-sub">AI 대전 · 3자리/4자리 선택 가능</div>
+            </td></tr>
+        <tr><td style="background:#F2F2F2;color:#555;font-size:10px;padding:3px 8px;border:1px solid #D0D0D0">3</td>
+            <td class="game-pick-cell" onclick="openPikachuVball()">
+              <div class="gp-title">🏐 피카츄 배구</div>
+              <div class="gp-sub">2인 대전 · 방향키 조작 · <span style="color:#C00000;font-weight:700">PC 전용 (모바일 불가)</span></div>
+            </td></tr>
+        <tr><td style="height:12px;border:1px solid #D0D0D0;background:#F2F2F2"></td><td style="height:12px;border:1px solid #D0D0D0;background:#fff"></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="xl-bottombar">
+    <div class="xl-stabs"><button class="xl-stab on">매크로</button><button class="xl-stab">설정</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-statusbar"><span class="xl-sitem">준비</span><span class="xl-sitem">100%</span></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     피카츄 배구 (PC 전용)
+════════════════════════════════════════════ -->
+<div id="s-pikachu" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">피카츄배구_업무용.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="closePikachu()">✕</button></div>
+  </div>
+  <div class="xl-tabs">
+    <button class="xl-tab" onclick="closePikachu()">◀ 파일</button>
+    <button class="xl-tab on">홈</button>
+    <button class="xl-tab">삽입</button>
+    <button class="xl-tab">보기</button>
+  </div>
+  <div class="xl-ribbon">
+    <button class="xl-rbtn" onclick="closePikachu()"><span class="xl-rico">◀</span><span class="xl-rlbl">뒤로</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn" onclick="openPikachuNewTab()"><span class="xl-rico">🔗</span><span class="xl-rlbl">새 탭</span></button>
+    <div class="xl-rsep"></div>
+    <span style="font-size:11px;color:#595959;padding:0 6px">
+      ⌨️ 1P: ←→↑ · 2P: A D W &nbsp;|&nbsp; 공격: 1P=X &nbsp;2P=Z
+    </span>
+  </div>
+  <div class="xl-fbar">
+    <div class="xl-namebox">B2</div><div class="xl-fx">fx</div>
+    <div class="xl-ftext">=VLOOKUP("피카츄",스포츠!A:Z,2,0)</div>
+  </div>
+  <!-- 게임 iframe -->
+  <div style="flex:1;position:relative;background:#1a1a2e;min-height:0">
+    <iframe id="pikachu-frame"
+      src="https://gorisanson.github.io/pikachu-volleyball/ko/"
+      style="width:100%;height:100%;border:none;display:block"
+      allow="autoplay"
+      title="피카츄 배구"></iframe>
+    <!-- iframe 실패 시 표시 -->
+    <div id="pikachu-fallback" style="display:none;position:absolute;inset:0;background:#1a1a2e;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center">
+      <div style="font-size:48px">🏐</div>
+      <div style="font-size:16px;font-weight:700">피카츄 배구</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.65)">보안 설정으로 인해 직접 임베드가 제한될 수 있습니다.<br>아래 버튼으로 새 탭에서 플레이하세요.</div>
+      <button onclick="openPikachuNewTab()" style="background:#217346;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">🔗 새 탭에서 열기</button>
+    </div>
+  </div>
+  <div class="xl-bottombar">
+    <div class="xl-stabs"><button class="xl-stab on">배구시트</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-statusbar"><span class="xl-sitem" id="pikachu-st">로딩 중…</span><span class="xl-sitem">100%</span></div>
+  </div>
+</div>
+
+<!-- 모바일 전용 안내 (피카츄 배구) -->
+<div class="xl-notify-ov" id="pikachu-mobile-notify">
+  <div class="xl-notify">
+    <div class="xl-notify-title">Microsoft Excel — 실행 오류</div>
+    <div class="xl-notify-body">
+      <div class="xl-notify-ico">⌨️</div>
+      <div class="xl-notify-txt">
+        이 매크로는 <strong>키보드가 필요</strong>하여<br>
+        <strong>PC 환경에서만 실행 가능</strong>합니다.<br><br>
+        <span style="font-size:11px;color:#888">방향키로 이동 · 키보드 조작 게임</span>
+      </div>
+    </div>
+    <div class="xl-notify-btns">
+      <button class="xl-notify-btn ok" onclick="document.getElementById('pikachu-mobile-notify').classList.remove('on')">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     오목 (엑셀 시트)
+════════════════════════════════════════════ -->
+<div id="s-omok" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">4분기_업무현황_최종수정본.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="omokExit()">✕</button></div>
+  </div>
+  <div class="xl-tabs">
+    <button class="xl-tab" onclick="omokExit()">◀ 파일</button><button class="xl-tab on">홈</button><button class="xl-tab">삽입</button><button class="xl-tab">수식</button><button class="xl-tab">데이터</button><button class="xl-tab">검토</button>
+  </div>
+  <div class="xl-ribbon">
+    <button class="xl-rbtn" onclick="omokNewGame()"><span class="xl-rico">📋</span><span class="xl-rlbl">붙여넣기</span></button>
+    <div class="xl-rsep"></div>
+    <select class="xl-rsel" id="omok-diff" onchange="omokNewGame()"><option value="easy">초급</option><option value="mid" selected>중급</option><option value="hard">상급</option><option value="expert">유단자</option></select>
+    <button class="xl-rbtn" id="omok-color-btn" onclick="omokToggleColor()"><span class="xl-rico" id="omok-color-ico">B</span><span class="xl-rlbl" id="omok-color-lbl">흑</span></button>
+    <select class="xl-rsel" id="omok-time" onchange="omokNewGame()"><option value="0">무제한</option><option value="10">10초</option><option value="30">30초</option><option value="60">60초</option></select>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn"><span class="xl-rico">Σ</span><span class="xl-rlbl">자동합계</span></button>
+  </div>
+  <div class="xl-fbar"><div class="xl-namebox" id="omok-nb">H8</div><div class="xl-fx">fx</div><div class="xl-ftext" id="omok-ft">=IFERROR(VLOOKUP(H8,업무현황!$A:$Z,3,0),"")</div></div>
+  <div class="xl-sheet"><table class="xtbl" id="omok-tbl"></table></div>
+  <div class="xl-bottombar">
+    <div class="xl-stabs"><button class="xl-stab on">분기실적</button><button class="xl-stab">인원현황</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-statusbar"><span class="xl-sitem" id="omok-st">준비</span><span class="xl-sitem" id="omok-timer" style="color:#C00000;font-weight:700"></span><span class="xl-sitem">100%</span></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     숫자야구 설정
+════════════════════════════════════════════ -->
+<div id="s-bb-setup" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">데이터검증_도구.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="bbExit()">✕</button></div>
+  </div>
+  <div class="xl-tabs"><button class="xl-tab" onclick="bbExit()">◀ 파일</button><button class="xl-tab on">홈</button><button class="xl-tab">데이터</button><button class="xl-tab">수식</button></div>
+  <div class="xl-ribbon"><button class="xl-rbtn"><span class="xl-rico">📋</span><span class="xl-rlbl">붙여넣기</span></button><div class="xl-rsep"></div><button class="xl-rbtn"><span class="xl-rico">🔍</span><span class="xl-rlbl">찾기</span></button></div>
+  <div class="xl-fbar"><div class="xl-namebox">B3</div><div class="xl-fx">fx</div><div class="xl-ftext">=RAND()*9+1</div></div>
+  <div class="xl-sheet">
+    <table class="bb-setup-tbl">
+      <tbody>
+        <tr><td colspan="2" class="bb-opt-hdr" style="font-size:13px;background:#217346;color:#fff;height:36px">데이터 유효성 검사 설정</td></tr>
+        <tr><td class="bb-opt-hdr">자릿수</td><td class="bb-opt-cell" style="font-size:12px;font-weight:700;color:#217346">4자리 고정</td></tr>
+        <tr><td class="bb-opt-hdr">나의 비밀번호</td>
+            <td class="bb-opt-cell">
+              <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+                <div id="bb-secret-inp" style="display:flex;gap:3px"></div>
+                <button onclick="bbShuffleSecret()" style="background:#E8E8E8;border:1px solid #B4B4B4;padding:4px 8px;font-size:11px;cursor:pointer;border-radius:2px;font-family:inherit">🔀 랜덤</button>
+              </div>
+              <div style="font-size:10px;color:#888;margin-top:4px">중복 없이 입력 · 첫 자리 0 불가</div>
+            </td></tr>
+        <tr><td class="bb-opt-hdr">난이도 (AI)</td><td class="bb-opt-cell"><div class="bb-chip-row"><button class="bb-chip on" id="bb-easy" onclick="selBBDiff('easy')">초급</button><button class="bb-chip" id="bb-hard" onclick="selBBDiff('hard')">고수</button></div></td></tr>
+        <tr><td colspan="2" style="height:8px;border:1px solid #D0D0D0;background:#fff"></td></tr>
+        <tr><td colspan="2" class="bb-start-cell" onclick="startBBGame()">▶ 검사 실행</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="xl-bottombar"><div class="xl-stabs"><button class="xl-stab on">설정</button><button class="xl-stab-plus">＋</button></div><div class="xl-statusbar"><span class="xl-sitem">준비</span><span class="xl-sitem">100%</span></div></div>
+</div>
+
+<!-- 숫자야구 게임 -->
+<div id="s-bb-game" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">데이터검증_도구.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="bbExit()">✕</button></div>
+  </div>
+  <div class="xl-tabs"><button class="xl-tab" onclick="bbExit()">◀ 파일</button><button class="xl-tab on">데이터</button><button class="xl-tab">수식</button></div>
+  <div class="xl-fbar"><div class="xl-namebox" id="bb-nb">A1</div><div class="xl-fx">fx</div><div class="xl-ftext" id="bb-ft">=검증결과</div></div>
+  <div class="bb-game-wrap">
+    <div class="bb-panels">
+      <div class="bb-panel"><div class="bb-panel-hdr">내 입력 기록</div><div class="bb-hist" id="bb-my-hist"></div></div>
+      <div class="bb-panel" id="bb-ai-panel"><div class="bb-panel-hdr" id="bb-ai-panel-hdr">AI 입력 기록</div><div class="bb-hist" id="bb-ai-hist"></div></div>
+    </div>
+    <div class="bb-input-bar">
+      <div class="bb-inp-label" id="bb-inp-label">▶ 지금 입력 (추측)</div>
+      <div class="bb-inp-row"><div id="bb-inp"></div><button class="bb-submit" onclick="bbSubmit()">입력</button></div>
+      <div class="bb-status" id="bb-st">숫자를 입력하세요</div>
+    </div>
+  </div>
+  <div class="xl-bottombar"><div class="xl-stabs"><button class="xl-stab on">검증결과</button><button class="xl-stab-plus">＋</button></div><div class="xl-statusbar"><span class="xl-sitem" id="bb-status-bar">진행 중</span><span class="xl-sitem">100%</span></div></div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     피카츄 배구 온라인 게임 화면
+════════════════════════════════════════════ -->
+<div id="s-pikachu-game" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">피카츄배구_Q4경기결과.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="pkExit()">✕</button></div>
+  </div>
+  <div class="xl-tabs">
+    <button class="xl-tab" onclick="pkExit()">◀ 파일</button>
+    <button class="xl-tab on">홈</button>
+    <button class="xl-tab">삽입</button>
+    <button class="xl-tab">검토</button>
+  </div>
+  <div class="xl-ribbon" style="justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="xl-rbtn" onclick="pkExit()"><span class="xl-rico">◀</span><span class="xl-rlbl">로비로</span></button>
+      <div class="xl-rsep"></div>
+      <span style="font-size:11px;color:#595959;padding:0 6px">🏐 피카츄 배구 | ← → ↑ 로 조작</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;padding-right:6px">
+      <span style="font-size:10px;color:#888">15점 선취 승리</span>
+    </div>
+  </div>
+  <div class="xl-fbar">
+    <div class="xl-namebox" id="pk-nb">B3</div>
+    <div class="xl-fx">fx</div>
+    <div class="xl-ftext" id="pk-ft">=SCORE("나",0,"상대",0)</div>
+  </div>
+  <!-- 게임 캔버스 -->
+  <div id="pk-area" style="flex:1;display:flex;align-items:center;justify-content:center;background:#F2F2F2;overflow:hidden;min-height:0">
+    <canvas id="pk-canvas" style="display:block;max-width:100%;max-height:100%;border:1px solid #C8C8C8"></canvas>
+  </div>
+  <div class="xl-bottombar">
+    <div class="xl-stabs"><button class="xl-stab on">경기현황</button><button class="xl-stab">점수판</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-statusbar"><span class="xl-sitem" id="pk-st">준비</span><span class="xl-sitem">100%</span></div>
+  </div>
+</div>
+
+<!-- 결과 알림 (공통) -->
+<!-- 상사 크리 보스키 오버레이 -->
+<div id="boss-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#F2F2F2;overflow:auto;font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:11px">
+  <div style="background:#217346;color:#fff;padding:4px 10px;font-size:11px;display:flex;justify-content:space-between">
+    <span>2026년_1분기_업무성과보고서_v3_최종_수정본.xlsx - Microsoft Excel</span>
+    <span>─ □ ✕</span>
+  </div>
+  <div style="background:#217346;display:flex;padding:0 4px">
+    <span style="background:#F2F2F2;color:#217346;padding:5px 12px;font-size:11px;font-weight:700">홈</span>
+    <span style="color:rgba(255,255,255,.8);padding:5px 12px;font-size:11px">파일</span>
+    <span style="color:rgba(255,255,255,.8);padding:5px 12px;font-size:11px">삽입</span>
+    <span style="color:rgba(255,255,255,.8);padding:5px 12px;font-size:11px">데이터</span>
+    <span style="color:rgba(255,255,255,.8);padding:5px 12px;font-size:11px">검토</span>
+  </div>
+  <div style="background:#F2F2F2;border-bottom:1px solid #C8C8C8;padding:4px 8px;display:flex;align-items:center;gap:4px;min-height:40px">
+    <span style="padding:3px 8px;background:#E8E8E8;border:1px solid #C8C8C8;font-size:10px;cursor:pointer">📋 붙여넣기</span>
+    <span style="width:1px;height:28px;background:#C8C8C8;margin:0 4px"></span>
+    <span style="font-size:10px;padding:2px 6px;border:1px solid #C8C8C8;background:#fff">맑은 고딕</span>
+    <span style="font-size:10px;padding:2px 6px;border:1px solid #C8C8C8;background:#fff">11</span>
+    <span style="padding:2px 6px;font-weight:700;border:1px solid #C8C8C8;font-size:11px">B</span>
+    <span style="padding:2px 6px;font-style:italic;border:1px solid #C8C8C8;font-size:11px">I</span>
+    <span style="padding:2px 6px;text-decoration:underline;border:1px solid #C8C8C8;font-size:11px">U</span>
+    <span style="width:1px;height:28px;background:#C8C8C8;margin:0 4px"></span>
+    <span style="font-size:10px;color:#595959">P키를 누르면 재개됩니다</span>
+  </div>
+  <div style="display:flex;align-items:center;background:#fff;border-bottom:1px solid #C8C8C8;height:22px;padding:0 6px;gap:4px">
+    <span style="width:60px;border-right:1px solid #C8C8C8;font-size:11px;padding-right:4px;font-family:monospace">C14</span>
+    <span style="color:#217346;font-style:italic;font-weight:700;border-right:1px solid #E0E0E0;padding:0 6px">fx</span>
+    <span style="font-size:11px;color:#333;font-family:monospace">=SUMPRODUCT(B5:B13,C5:C13)/SUM(B5:B13)</span>
+  </div>
+  <table style="border-collapse:collapse;width:100%;font-size:11px">
+    <thead>
+      <tr style="background:#F2F2F2;position:sticky;top:0">
+        <th style="width:28px;border:1px solid #D0D0D0;padding:2px"></th>
+        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:80px">A</th>
+        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:100px">B</th>
+        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:80px">C</th>
+        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:80px">D</th>
+        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:80px">E</th>
+        <th style="border:1px solid #D0D0D0;padding:2px 8px;min-width:80px">F</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;padding:2px">1</td><td colspan="6" style="border:1px solid #D0D0D0;background:#1F3864;color:#fff;font-weight:700;padding:4px 10px;font-size:13px">2026년 1분기 업무 성과 보고서</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">2</td><td style="border:1px solid #D0D0D0;padding:2px 8px;color:#595959">작성일</td><td style="border:1px solid #D0D0D0;padding:2px 8px">2026-05-21</td><td colspan="4" style="border:1px solid #D0D0D0"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">3</td><td style="border:1px solid #D0D0D0;padding:2px 8px;color:#595959">담당자</td><td style="border:1px solid #D0D0D0;padding:2px 8px">김수한</td><td colspan="4" style="border:1px solid #D0D0D0"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">4</td><td colspan="6" style="border:1px solid #D0D0D0"></td></tr>
+      <tr style="background:#DEEAF1"><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">5</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">항목</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">목표</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">실적</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">달성률</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">전분기</td><td style="border:1px solid #D0D0D0;padding:2px 8px;font-weight:700">증감</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">6</td><td style="border:1px solid #D0D0D0;padding:2px 8px">매출액(억원)</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">285</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">312</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;background:#E2EFDA;color:#375623">109.5%</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">278</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;color:#375623">▲ 34</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">7</td><td style="border:1px solid #D0D0D0;padding:2px 8px">신규계약(건)</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">42</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">38</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;background:#FFF2CC;color:#7F6000">90.5%</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">45</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;color:#C00000">▼ 7</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">8</td><td style="border:1px solid #D0D0D0;padding:2px 8px">고객만족도</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">88</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">91.2</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;background:#E2EFDA;color:#375623">103.6%</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">87.5</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;color:#375623">▲ 3.7</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">9</td><td style="border:1px solid #D0D0D0;padding:2px 8px">비용절감(백만)</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">150</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">183</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;background:#E2EFDA;color:#375623">122.0%</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right">142</td><td style="border:1px solid #D0D0D0;padding:2px 8px;text-align:right;color:#375623">▲ 41</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">10</td><td colspan="6" style="border:1px solid #D0D0D0"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">11</td><td style="border:1px solid #D0D0D0;padding:2px 8px;color:#595959">특이사항</td><td colspan="5" style="border:1px solid #D0D0D0;padding:2px 8px;color:#333">2분기 신규 프로젝트 3건 착수 예정. 하반기 목표 조정 필요.</td></tr>
+    </tbody>
+  </table>
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#F2F2F2;border-top:1px solid #C8C8C8;padding:2px 10px;font-size:10px;color:#444;display:flex;gap:14px">
+    <span>분기보고</span><span>업무현황</span><span>예산계획</span><span style="margin-left:auto;color:#C00000;font-weight:700">P 키를 누르면 이전 화면으로 돌아갑니다</span>
+  </div>
+</div>
+
+<!-- 업데이트 알림 -->
+<div class="xl-notify-ov" id="update-notify" style="z-index:2000">
+  <div class="xl-notify">
+    <div class="xl-notify-title">Microsoft Excel — 업데이트 알림</div>
+    <div class="xl-notify-body">
+      <div class="xl-notify-ico">🔄</div>
+      <div class="xl-notify-txt">새 버전이 있습니다.<br>새로고침하여 업데이트하시겠습니까?</div>
+    </div>
+    <div class="xl-notify-btns">
+      <button class="xl-notify-btn" onclick="document.getElementById('update-notify').classList.remove('on')">나중에</button>
+      <button class="xl-notify-btn ok" onclick="location.reload(true)">새로고침</button>
+    </div>
+  </div>
+</div>
+
+<div class="xl-notify-ov" id="result-notify">
+  <div class="xl-notify">
+    <div class="xl-notify-title">Microsoft Excel <span onclick="closeResultNotify()" style="cursor:pointer">✕</span></div>
+    <div class="xl-notify-body"><div class="xl-notify-ico" id="result-ico">ℹ️</div><div class="xl-notify-txt" id="result-txt"></div></div>
+    <div class="xl-notify-btns">
+      <button class="xl-notify-btn" onclick="restartFromResult()">다시 하기</button>
+      <button class="xl-notify-btn ok" id="result-confirm-btn" onclick="confirmResult()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 인게임 채팅 플로팅 패널 ── -->
+<div id="ingame-chat-panel" style="display:none;position:fixed;bottom:26px;right:0;width:175px;background:#fff;border:1px solid #C8C8C8;border-bottom:none;border-right:none;z-index:600;flex-direction:column;box-shadow:-3px -3px 10px rgba(0,0,0,.15)">
+  <div style="background:#217346;color:#fff;padding:3px 8px;font-size:11px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+    <span>💬 변경 내역 (채팅)</span>
+    <button onclick="toggleIngameChat()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:14px;line-height:1;padding:0">✕</button>
+  </div>
+  <div id="ingame-msgs" style="height:160px;overflow-y:auto;padding:5px;font-size:11px;background:#FAFAFA"></div>
+  <div style="display:flex;border-top:1px solid #C8C8C8;flex-shrink:0">
+    <input id="ingame-inp" type="text" placeholder="메모 입력…" maxlength="50" style="flex:1;border:none;outline:none;padding:4px 6px;font-size:11px;font-family:inherit;background:#fff"
+      onkeydown="if(event.key==='Enter')sendIngameChat()">
+    <button onclick="sendIngameChat()" style="background:#217346;border:none;color:#fff;padding:4px 7px;font-size:12px;cursor:pointer;flex-shrink:0">→</button>
+  </div>
+</div>
+<!-- 채팅 토글 버튼 (게임 중 우하단 고정) -->
+<button id="ingame-chat-btn" onclick="toggleIngameChat()" style="display:none;position:fixed;bottom:30px;right:4px;background:#217346;color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;z-index:599;box-shadow:0 2px 6px rgba(0,0,0,.3)">💬</button>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// 상태
+// ══════════════════════════════════════════════════════════════════════════════
+const BUILD = '20260521-2'; // 업데이트할 때마다 변경
+
+// ── 상사 크리 보스키 ────────────────────────────────────────────────────────
+let bossKeyOn=false;
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  if((e.key==='s'||e.key==='S')&&!bossKeyOn){
+    bossKeyOn=true;
+    document.getElementById('boss-overlay').style.display='block';
+    if(PK.running){PK.running=false;}
+    stopOmokTimer();
+  }
+  if((e.key==='p'||e.key==='P')&&bossKeyOn){
+    bossKeyOn=false;
+    document.getElementById('boss-overlay').style.display='none';
+    // 피카츄 재개
+    if(!PK.gameOver&&PK.ball&&!PK.running){PK.running=true;PK.raf=requestAnimationFrame(pkLoop);}
+    // 오목 재개
+    if(!oOver&&oBoard&&oMode==='online') omokStartTurn();
+    // 상대에게 알림
+    const chatMsg='상사 크리 ☠️ 잠시 자리 비웠습니다';
+    if(isHost) sendToHostAsHost({type:'chat',text:chatMsg});
+    else if(roomConn?.open) roomConn.send({type:'chat',text:chatMsg});
+  }
+});
+
+let myName='', myPeerId='', roomCode='', isHost=false;
+let fromLobby=false; // 로비에서 솔로 게임 시작했는지
+let roomPeer=null, roomConn=null;                    // 클라이언트: roomConn = 호스트와의 연결
+let hostConns = new Map();                           // 호스트: peerId→{conn,name,inGame}
+let lobbyPlayers = [];                               // [{id,name,inGame}]
+let chatLog = [];
+let pendingChallengeFrom = null;                     // 수신한 도전 {fromId,fromName,game}
+let challengeTarget = null;                          // 내가 도전 중인 상대 {id,name}
+let currentGame = null;                              // {type,myColor,opponentId,opponentName,gameId}
+let nameDlgMode = 'online';                          // 'online' or 'join'
+
+// ── 화면 전환 ────────────────────────────────────────────────────────────────
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function goHome(){stopOmokTimer();show('s-home');}
+function showSoloGames(){show('s-solo');}
+function hideDlg(id){document.getElementById(id).classList.remove('on');}
+
+// 홈 대시보드 테이블 빌드
+(function buildHome(){
+  const tbl=document.getElementById('home-tbl');
+  const isDesktop=window.innerWidth>=769;
+  const COLS=isDesktop
+    ?['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V']
+    :['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'];
+  let h=`<thead><tr><th class="hcorner"></th>`;
+  COLS.forEach(c=>h+=`<th class="hrow" style="min-width:26px;width:26px;position:sticky;top:0;z-index:2;background:#F2F2F2;border:1px solid #D0D0D0;font-size:10px;text-align:center">${c}</th>`);
+  h+=`</tr></thead><tbody>`;
+  for(let r=1;r<=20;r++){
+    h+=`<tr><td class="hcol">${r}</td>`;
+    for(let c=0;c<COLS.length;c++){
+      if(r===2&&c===1){h+=`<td colspan="13" class="htitle-cell">2026년 1분기 업무 포털 대시보드</td>`;c+=12;}
+      else if(r===4&&c===2){h+=`<td colspan="4" class="hbtn-cell green" onclick="showNameDlg('create')">🌐 방 만들기<br><span style="font-size:9px;font-weight:400">새 방 코드 설정</span></td>`;c+=3;}
+      else if(r===4&&c===6){h+=`<td colspan="4" class="hbtn-cell" onclick="showNameDlg('join')">🔗 방 참여<br><span style="font-size:9px;font-weight:400">코드 입력 후 입장</span></td>`;c+=3;}
+      else if(r===4&&c===9){h+=`<td colspan="5" class="hbtn-cell" onclick="showSoloGames()">📊 개인 업무<br><span style="font-size:9px;font-weight:400">AI와 혼자 작업</span></td>`;c+=4;}
+      else if(r===6&&c===3){h+=`<td colspan="5" style="font-size:10px;color:#595959;padding:3px 8px;border:1px solid #D0D0D0;height:22px;background:#fff">방 생성 또는 코드로 참여</td>`;c+=4;}
+      else if(r===6&&c===9){h+=`<td colspan="5" style="font-size:10px;color:#595959;padding:3px 8px;border:1px solid #D0D0D0;height:22px;background:#fff">오목 · 숫자야구 · AI 대전</td>`;c+=4;}
+      else{h+=`<td class="hcell"></td>`;}
+    }
+    h+=`</tr>`;
+  }
+  tbl.innerHTML=h+'</tbody>';
+})();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 닉네임 다이얼로그 & 온라인 진입
+// ══════════════════════════════════════════════════════════════════════════════
+function showNameDlg(mode){
+  nameDlgMode=mode;
+  // 영역 초기화
+  document.getElementById('name-dlg-create-area').style.display='none';
+  document.getElementById('name-dlg-join-area').style.display='none';
+  document.getElementById('f-myname').value='';
+  document.getElementById('f-create-code').value='';
+  document.getElementById('f-roomcode').value='';
+  // 모드별 표시
+  if(mode==='create'){
+    document.getElementById('name-dlg-title').childNodes[0].textContent='방 만들기 ';
+    document.getElementById('name-dlg-create-area').style.display='block';
+  } else if(mode==='join'){
+    document.getElementById('name-dlg-title').childNodes[0].textContent='방 참여하기 ';
+    document.getElementById('name-dlg-join-area').style.display='block';
+  } else {
+    document.getElementById('name-dlg-title').childNodes[0].textContent='온라인 협업 ';
+    document.getElementById('name-dlg-create-area').style.display='block';
+  }
+  document.getElementById('name-dlg').classList.add('on');
+  setTimeout(()=>document.getElementById('f-myname').focus(),120);
+}
+
+function confirmName(){
+  const name=document.getElementById('f-myname').value.trim();
+  if(!name){document.getElementById('f-myname').style.borderColor='#C00000';return;}
+  myName=name;
+
+  if(nameDlgMode==='join'){
+    const code=document.getElementById('f-roomcode').value.trim().toUpperCase();
+    if(code.length<6){
+      document.getElementById('f-roomcode').style.borderColor='#C00000';
+      document.getElementById('f-roomcode').focus(); return;
+    }
+    hideDlg('name-dlg');
+    joinRoom(code);
+  } else {
+    // create or online → 방 코드 직접 입력
+    const code=document.getElementById('f-create-code').value.trim().toUpperCase();
+    if(code.length<6){
+      document.getElementById('f-create-code').style.borderColor='#C00000';
+      document.getElementById('f-create-code').focus(); return;
+    }
+    hideDlg('name-dlg');
+    createRoom(code);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 방 시스템
+// ══════════════════════════════════════════════════════════════════════════════
+function createRoom(code){
+  if(roomPeer){roomPeer.destroy();roomPeer=null;}
+  roomCode=code;
+  isHost=true;
+  const peerCfg={config:{iceServers:[
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun1.l.google.com:19302'},
+    {urls:'stun:stun2.l.google.com:19302'},
+    {urls:'stun:stun.cloudflare.com:3478'},
+    {urls:'stun:global.stun.twilio.com:3478'},
+  ]}};
+  roomPeer=new Peer('xlroom-'+roomCode, peerCfg);
+  roomPeer.on('open', myId=>{
+    myPeerId=myId;
+    hostConns.clear();
+    lobbyPlayers=[{id:myPeerId,name:myName,inGame:false}];
+    document.getElementById('lobby-code-display').textContent=roomCode;
+    renderLobby();
+    show('s-lobby');
+    addChatSys('방이 생성되었습니다. 코드: '+roomCode);
+  });
+  roomPeer.on('connection', conn=>{
+    conn.on('data', d=>hostHandleMsg(conn, d));
+    conn.on('close', ()=>{
+      const p=hostConns.get(conn.peer);
+      // 게임 중이었다면 상대방에게 탈주 알림
+      if(p?.inGame){
+        hostConns.forEach((other,pid)=>{
+          if(pid!==conn.peer&&other.inGame&&other.conn.open)
+            other.conn.send({type:'opponent_quit',name:p.name||'상대방'});
+        });
+        // 방장 자신이 게임 중이었으면
+        if(currentGame&&currentGame.opponentId===conn.peer){
+          showResultNotify('🏃','상대방이 당신의 실력에 감탄하여 탈주했습니다');
+        }
+      }
+      hostPlayerLeft(conn.peer);
+    });
+  });
+  roomPeer.on('error', e=>alert('오류: '+e.type));
+}
+
+function joinRoom(code){
+  if(roomPeer){roomPeer.destroy();roomPeer=null;}
+  isHost=false; roomCode=code;
+  showJoinStatus('PeerJS 서버 연결 중…','#595959');
+
+  const peerCfg2={config:{iceServers:[
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun1.l.google.com:19302'},
+    {urls:'stun:stun2.l.google.com:19302'},
+    {urls:'stun:stun.cloudflare.com:3478'},
+    {urls:'stun:global.stun.twilio.com:3478'},
+  ]}};
+  roomPeer=new Peer(peerCfg2);
+  // 10초 타임아웃
+  const timeout=setTimeout(()=>{
+    if(!roomConn?.open){
+      showJoinStatus('연결 시간 초과 — 코드를 확인하거나 다시 시도하세요','#C00000');
+    }
+  },10000);
+
+  roomPeer.on('open', myId=>{
+    myPeerId=myId;
+    showJoinStatus('방에 연결 중… (코드: '+code+')','#595959');
+    roomConn=roomPeer.connect('xlroom-'+code,{reliable:true,serialization:'json'});
+
+    roomConn.on('open',()=>{
+      clearTimeout(timeout);
+      showJoinStatus('연결됨 ✓ 입장 중…','#217346');
+      roomConn.send({type:'join',name:myName});
+    });
+    roomConn.on('data', d=>clientHandleMsg(d));
+    roomConn.on('close',()=>{
+      clearTimeout(timeout);
+      if(currentGame&&!document.querySelector('.scr.on')?.id?.includes('lobby')){
+        showResultNotify('🏃','상대방이 당신의 실력에 감탄하여 탈주했습니다');
+      } else {
+        alert('방장과 연결이 끊겼습니다');goHome();
+      }
+    });
+    roomConn.on('error',e=>{
+      clearTimeout(timeout);
+      showJoinStatus('연결 실패 — 코드를 다시 확인하세요 ('+( e?.type||'')+')','#C00000');
+    });
+  });
+  roomPeer.on('error',e=>{
+    clearTimeout(timeout);
+    showJoinStatus('서버 오류 ('+e.type+') — 잠시 후 다시 시도하세요','#C00000');
+  });
+}
+function showJoinStatus(msg, color){
+  // name-dlg 상태 표시
+  let st=document.getElementById('join-status-line');
+  if(!st){
+    const dlg=document.querySelector('#name-dlg .xl-dlg-body');
+    if(dlg){st=document.createElement('div');st.id='join-status-line';st.style.cssText='font-size:11px;margin-top:6px;padding:4px 6px;border-radius:3px;background:#F5F5F5';dlg.appendChild(st);}
+  }
+  if(st){st.textContent=msg;st.style.color=color||'#595959';}
+}
+
+// ── 호스트: 메시지 처리 ──────────────────────────────────────────────────────
+function hostHandleMsg(conn, msg){
+  const pid=conn.peer;
+  if(msg.type==='join'){
+    hostConns.set(pid,{conn,name:msg.name,inGame:false});
+    // 기존 플레이어 목록 전송
+    conn.send({type:'welcome',yourId:pid,players:hostGetPlayerList()});
+    // 전체에게 신규 입장 알림
+    hostBroadcast({type:'player_join',id:pid,name:msg.name},pid);
+    hostUpdateLobbyPlayers();
+    addChatSys(msg.name+'님이 입장했습니다');
+  } else if(msg.type==='chat'){
+    const senderName = pid===myPeerId ? myName : (hostConns.get(pid)?.name||'?');
+    const chatMsg={type:'chat',fromId:pid,fromName:senderName,text:msg.text,ts:Date.now()};
+    // hostBroadcast → clientHandleMsg → addChatMsg 로 처리되므로 중복 호출 금지
+    hostBroadcast(chatMsg, null);
+  } else if(msg.type==='challenge'){
+    const fromName = pid===myPeerId ? myName : (hostConns.get(pid)?.name||'?');
+    const challengeMsg = {type:'challenged',fromId:pid,fromName,game:msg.game,digits:msg.digits||4};
+    if(msg.target===myPeerId){
+      // 방장이 도전 대상 — 직접 처리
+      clientHandleMsg(challengeMsg);
+    } else {
+      hostConns.get(msg.target)?.conn?.send(challengeMsg);
+    }
+  } else if(msg.type==='accept'){
+    const p1=msg.challenger, p2=pid;
+    const p1Name = p1===myPeerId ? myName : (hostConns.get(p1)?.name||'?');
+    const p2Name = hostConns.get(p2)?.name||'?';
+    const digits  = msg.digits||4;
+    // challenger(p1)에게 game_start
+    if(p1===myPeerId){
+      // 방장이 도전자 — 직접 처리
+      clientHandleMsg({type:'game_start',opponentId:p2,opponentName:p2Name,game:msg.game,youAre:1,digits});
+    } else {
+      hostConns.get(p1)?.conn?.send({type:'game_start',opponentId:p2,opponentName:p2Name,game:msg.game,youAre:1,digits});
+    }
+    // 수락자(p2)에게 game_start
+    conn.send({type:'game_start',opponentId:p1,opponentName:p1Name,game:msg.game,youAre:2,digits});
+    // 파트너 정보 저장 (나가면 상대 알림에 사용)
+    if(hostConns.has(p1)){hostConns.get(p1).inGame=true;hostConns.get(p1).partner=p2;}
+    hostConns.get(p2).inGame=true;hostConns.get(p2).partner=p1;
+    hostBroadcastPlayerList();
+    addChatSys(p1Name+'님과 '+p2Name+'님이 '+msg.game+' 대전을 시작했습니다');
+  } else if(msg.type==='reject'){
+    const fromConn=hostConns.get(msg.challenger)?.conn;
+    if(fromConn) fromConn.send({type:'challenge_rejected',byName:hostConns.get(pid)?.name||'?'});
+  } else if(msg.type==='game_move'){
+    const moveMsg = {type:'game_move',fromId:pid,data:msg.data};
+    if(msg.target===myPeerId){
+      clientHandleMsg(moveMsg);
+    } else {
+      hostConns.get(msg.target)?.conn?.send(moveMsg);
+    }
+  } else if(msg.type==='game_end'){
+    hostNotifyPartnerQuit(pid);
+  }
+}
+
+// 게임 중 나가기 — 파트너에게 알림
+function hostNotifyPartnerQuit(pid){
+  const p=hostConns.get(pid);
+  const name=p?.name||'?';
+  const partnerId=p?.partner;
+  // 파트너 게임 종료 알림
+  if(partnerId){
+    if(partnerId===myPeerId){
+      // 방장이 파트너
+      clientHandleMsg({type:'opponent_quit',name});
+    } else {
+      hostConns.get(partnerId)?.conn?.send({type:'opponent_quit',name});
+    }
+    if(hostConns.has(partnerId)){hostConns.get(partnerId).inGame=false;hostConns.get(partnerId).partner=null;}
+  }
+  if(hostConns.has(pid)){hostConns.get(pid).inGame=false;hostConns.get(pid).partner=null;}
+  hostBroadcastPlayerList();
+  addChatSys(name+'님이 게임을 종료했습니다');
+}
+function hostPlayerLeft(pid){
+  const p=hostConns.get(pid);
+  const name=p?.name||'?';
+  // 게임 중이었으면 파트너에게 알림
+  if(p?.inGame) hostNotifyPartnerQuit(pid);
+  hostConns.delete(pid);
+  hostBroadcast({type:'player_leave',id:pid,name},null);
+  hostUpdateLobbyPlayers();
+  addChatSys(name+'님이 퇴장했습니다');
+}
+function hostBroadcast(msg, excludePid){
+  hostConns.forEach((p,pid)=>{if(pid!==excludePid&&p.conn.open)p.conn.send(msg);});
+  if(excludePid!==myPeerId)clientHandleMsg(msg); // 호스트 자신에게도
+}
+function hostGetPlayerList(){
+  const list=[{id:myPeerId,name:myName,inGame:false}];
+  hostConns.forEach((p,pid)=>list.push({id:pid,name:p.name,inGame:p.inGame}));
+  return list;
+}
+function hostUpdateLobbyPlayers(){
+  lobbyPlayers=hostGetPlayerList();
+  renderLobby();
+  hostBroadcast({type:'room_update',players:lobbyPlayers},null);
+}
+function hostBroadcastPlayerList(){hostUpdateLobbyPlayers();}
+
+// ── 클라이언트: 메시지 처리 ────────────────────────────────────────────────
+function clientHandleMsg(msg){
+  if(msg.type==='welcome'){myPeerId=msg.yourId;lobbyPlayers=msg.players;document.getElementById('lobby-code-display').textContent=roomCode;renderLobby();show('s-lobby');}
+  else if(msg.type==='room_update'){lobbyPlayers=msg.players;renderLobby();}
+  else if(msg.type==='player_join'){lobbyPlayers.push({id:msg.id,name:msg.name,inGame:false});renderLobby();addChatSys(msg.name+'님이 입장했습니다');}
+  else if(msg.type==='player_leave'){
+    lobbyPlayers=lobbyPlayers.filter(p=>p.id!==msg.id);
+    renderLobby();
+    addChatSys(msg.name+'님이 퇴장했습니다');
+    // 게임 중에 상대방이 나갔으면 탈주 처리
+    if(currentGame && currentGame.opponentId===msg.id){
+      currentGame=null;
+      showResultNotify('🏃‍♂️ 탈주!','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
+    }
+  }
+  else if(msg.type==='chat'){addChatMsg(msg);}
+  else if(msg.type==='challenged'){
+    pendingChallengeFrom={fromId:msg.fromId,fromName:msg.fromName,game:msg.game,digits:msg.digits||4};
+    document.getElementById('challenged-txt').textContent=`${msg.fromName}님이 ${msg.game==='omok'?'오목':'숫자야구'} 대전을 신청했습니다.`;
+    document.getElementById('challenged-notify').classList.add('on');
+  } else if(msg.type==='challenge_rejected'){
+    alert(msg.byName+'님이 거절했습니다');
+  } else if(msg.type==='game_start'){
+    currentGame={type:msg.game,myColor:msg.youAre,opponentId:msg.opponentId,opponentName:msg.opponentName,gameId:null};
+    bbDigits = msg.digits||4; // 숫자야구 자릿수 동기화
+    document.getElementById('challenged-notify').classList.remove('on');
+    startOnlineGame(msg.game);
+  } else if(msg.type==='game_move'){
+    if(currentGame?.type==='omok') omokOnlineMove(msg.data);
+    else if(currentGame?.type==='baseball') bbOnlineMove(msg.data);
+    else if(currentGame?.type==='pikachu')  pkOnlineMove(msg.data);
+  } else if(msg.type==='opponent_quit'){
+    // 진행 중인 게임 정리
+    stopOmokTimer();
+    if(PK.running){PK.running=false;PK.gameOver=true;pkUnbindKeys();if(PK.raf){cancelAnimationFrame(PK.raf);PK.raf=null;}}
+    bbOver=true;
+    currentGame=null;
+    showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
+  }
+}
+
+function sendToHost(msg){
+  if(isHost) hostHandleMsg({peer:myPeerId,send:()=>{}},{...msg}); // 호스트가 자기 메시지 처리
+  else if(roomConn?.open) roomConn.send(msg);
+}
+// 호스트가 자신의 메시지를 처리하는 래퍼
+function sendToHostAsHost(msg){
+  // 호스트 자신이 보내는 메시지 처리
+  const fakeConn={peer:myPeerId,open:true,send:(m)=>clientHandleMsg(m)};
+  hostHandleMsg(fakeConn,msg);
+}
+
+function sendGameMsg(msg){
+  if(!currentGame) return;
+  if(isHost) sendToHostAsHost({...msg,target:currentGame.opponentId});
+  else roomConn?.send({...msg,target:currentGame.opponentId});
+}
+
+// ── 로비 UI ──────────────────────────────────────────────────────────────────
+function renderLobby(){
+  const tbody=document.getElementById('player-list');
+  document.getElementById('lobby-count').textContent=lobbyPlayers.length;
+  tbody.innerHTML=lobbyPlayers.map((p,i)=>{
+    const isMe=p.id===myPeerId;
+    const badge=isMe?'<span class="p-badge me">나</span>':(p.inGame?'<span class="p-badge ingame">게임중</span>':'<span class="p-badge ready">대기</span>');
+    const btn=(!isMe&&!p.inGame)?`<button class="challenge-btn" onclick="openChallengeDialog('${p.id}','${p.name.replace(/'/g,"\\'")}')">▶</button>`:`<span style="font-size:10px;color:#999">-</span>`;
+    return `<tr class="${isMe?'me':(p.inGame?'ingame':'')}"><td>${i+1}</td><td>${p.name} ${badge}</td><td>${p.inGame?'게임':'대기'}</td><td>${btn}</td></tr>`;
+  }).join('');
+}
+
+function addChatMsg(msg){
+  chatLog.push(msg);
+  const isMe=msg.fromId===myPeerId;
+  // 로비 채팅
+  const lobbyDiv=document.getElementById('chat-msgs');
+  if(lobbyDiv){
+    const el=document.createElement('div');
+    el.className='chat-msg';
+    el.innerHTML=`<span class="chat-msg-name ${isMe?'me':''}">${msg.fromName}</span><br><span class="chat-msg-text">${msg.text}</span>`;
+    lobbyDiv.appendChild(el); lobbyDiv.scrollTop=lobbyDiv.scrollHeight;
+  }
+  // 인게임 채팅
+  const gameDiv=document.getElementById('ingame-msgs');
+  if(gameDiv){
+    const el=document.createElement('div');
+    el.style.cssText='margin-bottom:4px;font-size:11px;line-height:1.4';
+    el.innerHTML=`<span style="font-weight:700;color:${isMe?'#1F497D':'#217346'}">${msg.fromName}</span><br><span style="color:#333">${msg.text}</span>`;
+    gameDiv.appendChild(el); gameDiv.scrollTop=gameDiv.scrollHeight;
+  }
+}
+function addChatSys(text){
+  // 로비 채팅
+  const lobbyDiv=document.getElementById('chat-msgs');
+  if(lobbyDiv){
+    const el=document.createElement('div');
+    el.className='chat-sys'; el.textContent=text;
+    lobbyDiv.appendChild(el); lobbyDiv.scrollTop=lobbyDiv.scrollHeight;
+  }
+  // 인게임 채팅
+  const gameDiv=document.getElementById('ingame-msgs');
+  if(gameDiv){
+    const el=document.createElement('div');
+    el.style.cssText='font-size:9px;color:#999;text-align:center;margin:2px 0;font-style:italic';
+    el.textContent=text; gameDiv.appendChild(el); gameDiv.scrollTop=gameDiv.scrollHeight;
+  }
+}
+function sendChat(){
+  const inp=document.getElementById('chat-inp');
+  const text=inp.value.trim(); if(!text) return; inp.value='';
+  if(isHost) sendToHostAsHost({type:'chat',text});
+  else roomConn?.send({type:'chat',text});
+}
+function copyLobbyCode(){navigator.clipboard?.writeText(roomCode).then(()=>alert('코드 복사됨: '+roomCode));}
+function lobbyStartSolo(g){
+  fromLobby=true; // 로비에서 시작했음을 기록
+  if(g==='omok'){oMode='ai';show('s-omok');buildOmokTable();omokNewGame();}
+  else{bbMode='ai';openBBSetup();}
+}
+function backToLobby(){
+  stopOmokTimer();showIngameChat(false);
+  show('s-lobby');renderLobby();
+}
+function exitLobby(){
+  if(roomPeer){roomPeer.destroy();roomPeer=null;}
+  roomConn=null; hostConns.clear(); lobbyPlayers=[];
+  isHost=false; chatLog=[]; currentGame=null;
+  document.getElementById('chat-msgs').innerHTML='';
+  goHome();
+}
+
+// ── 도전 시스템 ──────────────────────────────────────────────────────────────
+function openChallengeDialog(targetId, targetName){
+  challengeTarget={id:targetId,name:targetName};
+  document.getElementById('challenge-target-name').textContent=`상대: ${targetName}`;
+  document.getElementById('bb-digit-pick').style.display='none'; // 초기화
+  document.getElementById('challenge-dlg').classList.add('on');
+}
+function showBBDigitPick(){
+  document.getElementById('bb-digit-pick').style.display='block';
+}
+function sendChallenge(game, digits){
+  hideDlg('challenge-dlg');
+  document.getElementById('bb-digit-pick').style.display='none';
+  if(!challengeTarget) return;
+  const d = digits||4;
+  if(isHost) sendToHostAsHost({type:'challenge',target:challengeTarget.id,game,digits:d});
+  else roomConn?.send({type:'challenge',target:challengeTarget.id,game,digits:d});
+}
+function acceptChallenge(){
+  document.getElementById('challenged-notify').classList.remove('on');
+  if(!pendingChallengeFrom) return;
+  const {fromId,game,digits} = pendingChallengeFrom;
+  if(isHost) sendToHostAsHost({type:'accept',challenger:fromId,game,digits:digits||4});
+  else roomConn?.send({type:'accept',challenger:fromId,game,digits:digits||4});
+}
+function rejectChallenge(){
+  document.getElementById('challenged-notify').classList.remove('on');
+  if(!pendingChallengeFrom) return;
+  if(isHost) sendToHostAsHost({type:'reject',challenger:pendingChallengeFrom.fromId});
+  else roomConn?.send({type:'reject',challenger:pendingChallengeFrom.fromId});
+  pendingChallengeFrom=null;
+}
+function startOnlineGame(gameType){
+  if(gameType==='omok')     startOmokOnline();
+  else if(gameType==='baseball') startBBOnline();
+  else if(gameType==='pikachu')  startPikachuOnline();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 오목
+// ══════════════════════════════════════════════════════════════════════════════
+const N=15, OCOLS=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'], ODIRS=[[0,1],[1,0],[1,1],[1,-1]];
+let oBoard,oTurn,oOver,oMode,oMyColor,oAiColor,oDiff,oTimeLimit,oTimerLeft,oTimerInterval,oLastMove,oWinCells,oMyPick=1;
+
+function startSoloGame(g){if(g==='omok'){oMode='ai';show('s-omok');buildOmokTable();omokNewGame();}else{bbMode='ai';openBBSetup();}}
+
+// ── 피카츄 배구 ───────────────────────────────────────────────────────────────
+function isMobileDevice(){
+  return ('ontouchstart' in window) ||
+         (navigator.maxTouchPoints > 0) ||
+         window.innerWidth < 769 ||
+         /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+function openPikachuVball(){
+  if(isMobileDevice()){
+    document.getElementById('pikachu-mobile-notify').classList.add('on');
+    return;
+  }
+  show('s-pikachu');
+  // iframe 로드 체크
+  const frame=document.getElementById('pikachu-frame');
+  const st=document.getElementById('pikachu-st');
+  st.textContent='로딩 중…';
+  // 5초 후에도 로드 안되면 fallback 표시
+  let loaded=false;
+  frame.onload=()=>{
+    loaded=true;
+    st.textContent='준비';
+    document.getElementById('pikachu-fallback').style.display='none';
+  };
+  setTimeout(()=>{
+    if(!loaded){
+      st.textContent='로드 실패 — 새 탭 이용 권장';
+      document.getElementById('pikachu-fallback').style.display='flex';
+    }
+  },5000);
+}
+function closePikachu(){
+  // iframe 멈추기 (src 초기화)
+  const frame=document.getElementById('pikachu-frame');
+  frame.src='about:blank';
+  setTimeout(()=>{ frame.src='https://gorisanson.github.io/pikachu-volleyball/ko/'; },100);
+  fromLobby ? (fromLobby=false, show('s-lobby')) : show('s-solo');
+}
+function openPikachuNewTab(){
+  window.open('https://gorisanson.github.io/pikachu-volleyball/ko/','_blank');
+}
+function startOmokOnline(){oMode='online';oMyColor=currentGame.myColor;oAiColor=3-oMyColor;show('s-omok');buildOmokTable();omokNewGame();showIngameChat(true);}
+
+function buildOmokTable(){
+  const tbl=document.getElementById('omok-tbl');
+  if(tbl.querySelector('thead'))return;
+  let h=`<thead><tr><th class="xcorner"></th>`;
+  OCOLS.forEach(c=>h+=`<th class="xcol-hdr">${c}</th>`);
+  h+=`</tr></thead><tbody>`;
+  for(let r=0;r<N;r++){h+=`<tr><th class="xrow-hdr">${r+1}</th>`;for(let c=0;c<N;c++)h+=`<td class="xcell" id="ox${r}_${c}" onclick="omokCell(${r},${c})"></td>`;h+=`</tr>`;}
+  tbl.innerHTML=h+'</tbody>';
+}
+function omokNewGame(){
+  stopOmokTimer(); oBoard=Array.from({length:N},()=>new Int8Array(N));
+  oTurn=1;oOver=false;oLastMove=null;oWinCells=null;
+  if(oMode!=='online'){oDiff=document.getElementById('omok-diff').value;oTimeLimit=parseInt(document.getElementById('omok-time').value);oMyColor=oMyPick;oAiColor=3-oMyPick;}
+  else{oDiff='mid';oTimeLimit=0;}
+  renderOmok();omokStartTurn();
+}
+function omokToggleColor(){oMyPick=3-oMyPick;document.getElementById('omok-color-ico').textContent=oMyPick===1?'B':'W';document.getElementById('omok-color-lbl').textContent=oMyPick===1?'흑':'백';omokNewGame();}
+function renderOmok(){
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.getElementById(`ox${r}_${c}`);const v=oBoard[r][c];let cl='xcell';if(v===1)cl+=' b1';if(v===2)cl+=' b2';if(oLastMove&&oLastMove[0]===r&&oLastMove[1]===c)cl+=v===1?' lb':' lw';if(oWinCells&&oWinCells.some(([wr,wc])=>wr===r&&wc===c))cl+=' win';el.className=cl;}
+  if(oLastMove){const[r,c]=oLastMove;document.getElementById('omok-nb').textContent=OCOLS[c]+(r+1);}
+  const ml={ai:'AI 대전',local:'로컬',online:'온라인 대전'}[oMode]||'';
+  const oppName=oMode==='online'?(currentGame?.opponentName||'상대'):(oMode==='ai'?'AI':'상대');
+  const myTurn=oMode==='online'?oTurn===oMyColor:(oMode==='ai'?oTurn!==oAiColor:true);
+  const turnTxt=oOver?'게임 종료':(myTurn?'⚡ 내 차례 — 돌을 놓으세요':`⏳ ${oppName} 차례 — 기다리세요`);
+  const ftEl=document.getElementById('omok-ft');
+  ftEl.textContent=`vs ${oppName}  |  ${turnTxt}`;
+  ftEl.style.fontWeight=myTurn&&!oOver?'800':'400';
+  ftEl.style.color=myTurn&&!oOver?'#217346':'#595959';
+  document.getElementById('omok-st').textContent=oOver?'완료':`${oTurn===1?'⬛ 흑':'🟫 백'} | ${ml}`;
+}
+function omokCell(r,c){
+  if(oOver||oBoard[r][c])return;
+  if(oMode==='ai'&&oTurn!==oMyColor)return;
+  if(oMode==='online'&&oTurn!==oMyColor)return;
+  omokPlace(r,c);
+  if(oMode==='online')sendGameMsg({type:'game_move',data:{r,c}});
+}
+// omokOnlineMove는 아래에 재정의됨
+function omokPlace(r,c){
+  oBoard[r][c]=oTurn;oLastMove=[r,c];
+  if(omokCheckWin(r,c,oTurn)){oWinCells=omokGetWinCells(r,c,oTurn);renderOmok();omokEndGame(oTurn,false);return;}
+  let full=true;outer:for(let i=0;i<N;i++)for(let j=0;j<N;j++)if(!oBoard[i][j]){full=false;break outer;}
+  if(full){renderOmok();omokEndGame(0,false);return;}
+  oTurn=3-oTurn;renderOmok();omokStartTurn();
+}
+function omokStartTurn(){
+  stopOmokTimer();
+  if(oTimeLimit>0){oTimerLeft=oTimeLimit;document.getElementById('omok-timer').textContent=`합계: ${oTimerLeft}`;oTimerInterval=setInterval(()=>{oTimerLeft--;document.getElementById('omok-timer').textContent=`합계: ${oTimerLeft}`;if(oTimerLeft<=0){stopOmokTimer();const cands=omokCands();const[tr,tc]=cands[Math.floor(Math.random()*cands.length)];omokPlace(tr,tc);}},1000);}
+  else document.getElementById('omok-timer').textContent='';
+  if(oMode==='ai'&&oTurn===oAiColor&&!oOver){document.getElementById('omok-st').textContent='계산 중...';setTimeout(omokDoAI,80);}
+}
+function stopOmokTimer(){if(oTimerInterval){clearInterval(oTimerInterval);oTimerInterval=null;}}
+function omokCheckWin(r,c,color){return ODIRS.some(([dr,dc])=>{let cnt=1;for(let i=1;i<5;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cnt++;}for(let i=1;i<5;i++){const nr=r-dr*i,nc=c-dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cnt++;}return cnt>=5;});}
+function omokGetWinCells(r,c,color){for(const[dr,dc]of ODIRS){const cells=[[r,c]];for(let i=1;i<5;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cells.push([nr,nc]);}for(let i=1;i<5;i++){const nr=r-dr*i,nc=c-dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cells.push([nr,nc]);}if(cells.length>=5)return cells;}return[];}
+let lastOmokLoserColor = null; // 마지막으로 진 색 (다음 재시작 시 흑)
+function omokEndGame(winner,resigned){
+  oOver=true;stopOmokTimer();document.getElementById('omok-timer').textContent='';renderOmok();
+  if(winner!==0&&!resigned) lastOmokLoserColor=3-winner; // 패자 색 기록
+  if(oMode==='online'&&!resigned)sendGameMsg({type:'game_end',data:{}});
+  const isMe=(oMode==='ai'&&winner===oMyColor)||(oMode==='online'&&winner===oMyColor);
+  let ico,txt;
+  if(winner===0){ico='ℹ️';txt='셀 범위가 가득 찼습니다 (무승부)';}
+  else if(resigned){ico='⚠️';txt=`${winner===1?'흑':'백'} 중단`;}
+  else{ico=isMe?'ℹ️':'⚠️';txt=oMode==='ai'?(isMe?'분석 결과: 흑 우세':'분석 결과: 백 우세'):`${winner===1?'⬛ 흑':'🟫 백'} 승리!`;}
+  showResultNotify(ico,txt);
+}
+function omokExit(){
+  if(!oOver&&oBoard){if(!confirm('종료하시겠습니까?'))return;}
+  showIngameChat(false);
+  if(oMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;show('s-lobby');}
+  else if(fromLobby){fromLobby=false;show('s-lobby');}
+  else goHome();
+}
+// AI
+const OSEQ=(l,o)=>{if(l>=5)return 1000000;if(!o)return 0;return[[0,0,0],[0,1,2],[0,5,50],[0,500,5000],[0,10000,100000]][Math.min(l,4)][Math.min(o,2)]||0;};
+function omokEval(b,color){let s=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(!b[r][c])continue;const me=b[r][c]===color;for(const[dr,dc]of ODIRS){const pr=r-dr,pc=c-dc;if(pr>=0&&pr<N&&pc>=0&&pc<N&&b[pr][pc]===b[r][c])continue;let len=0,nr=r,nc=c;while(nr>=0&&nr<N&&nc>=0&&nc<N&&b[nr][nc]===b[r][c]){len++;nr+=dr;nc+=dc;}let open=0;if(r-dr>=0&&r-dr<N&&c-dc>=0&&c-dc<N&&b[r-dr][c-dc]===0)open++;if(nr>=0&&nr<N&&nc>=0&&nc<N&&b[nr][nc]===0)open++;s+=me?OSEQ(len,open):-OSEQ(len,open);}}return s;}
+function omokCands(){const vis=new Uint8Array(N*N),res=[];let any=false;for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(!oBoard[r][c])continue;any=true;for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const nr=r+dr,nc=c+dc;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc])continue;const k=nr*N+nc;if(!vis[k]){vis[k]=1;res.push([nr,nc]);}}}return any?res:[[7,7]];}
+function omokWinAt(b,r,c,color){for(const[dr,dc]of ODIRS){let cnt=1;for(let i=1;i<5;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||b[nr][nc]!==color)break;cnt++;}for(let i=1;i<5;i++){const nr=r-dr*i,nc=c-dc*i;if(nr<0||nr>=N||nc<0||nc>=N||b[nr][nc]!==color)break;cnt++;}if(cnt>=5)return true;}return false;}
+function omokMM(b,depth,a,be,isMax,aiC){if(!depth)return omokEval(b,aiC);const opp=3-aiC,cands=omokCands();if(!cands.length)return 0;const cur=isMax?aiC:opp;const sc=cands.map(([r,c])=>{let s=0;for(const[dr,dc]of ODIRS){let cnt=1;for(let i=1;i<3;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||b[nr][nc]!==cur)break;cnt++;}s+=cnt*cnt;}return[r,c,s];}).sort((x,y)=>y[2]-x[2]).slice(0,depth>=3?12:20);if(isMax){let best=-Infinity;for(const[r,c]of sc){b[r][c]=aiC;if(omokWinAt(b,r,c,aiC)){b[r][c]=0;return 1000000+depth;}const v=omokMM(b,depth-1,a,be,false,aiC);b[r][c]=0;if(v>best)best=v;a=Math.max(a,best);if(be<=a)break;}return best;}else{let best=Infinity;for(const[r,c]of sc){b[r][c]=opp;if(omokWinAt(b,r,c,opp)){b[r][c]=0;return-1000000-depth;}const v=omokMM(b,depth-1,a,be,true,aiC);b[r][c]=0;if(v<best)best=v;be=Math.min(be,best);if(be<=a)break;}return best;}}
+function omokDoAI(){if(oOver)return;const[r,c]=omokGetAI();omokPlace(r,c);}
+function omokGetAI(){const DEPTH={easy:0,mid:2,hard:3,expert:4}[oDiff];const cands=omokCands();for(const[r,c]of cands){oBoard[r][c]=oAiColor;if(omokWinAt(oBoard,r,c,oAiColor)){oBoard[r][c]=0;return[r,c];}oBoard[r][c]=0;}for(const[r,c]of cands){oBoard[r][c]=oMyColor;if(omokWinAt(oBoard,r,c,oMyColor)){oBoard[r][c]=0;return[r,c];}oBoard[r][c]=0;}if(oDiff==='easy'&&Math.random()<0.5)return cands[Math.floor(Math.random()*Math.min(cands.length,8))];if(DEPTH===0){let best=-Infinity,bm=cands[0];for(const[r,c]of cands){oBoard[r][c]=oAiColor;const s=omokEval(oBoard,oAiColor);oBoard[r][c]=0;if(s>best){best=s;bm=[r,c];}}return bm;}const sorted=[...cands].sort((a,b)=>{oBoard[a[0]][a[1]]=oAiColor;const sa=omokEval(oBoard,oAiColor);oBoard[a[0]][a[1]]=0;oBoard[b[0]][b[1]]=oAiColor;const sb=omokEval(oBoard,oAiColor);oBoard[b[0]][b[1]]=0;return sb-sa;}).slice(0,15);let best=-Infinity,bm=sorted[0];for(const[r,c]of sorted){oBoard[r][c]=oAiColor;const v=omokMM(oBoard,DEPTH-1,-Infinity,Infinity,false,oAiColor);oBoard[r][c]=0;if(v>best){best=v;bm=[r,c];}}return bm;}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 숫자야구
+// ══════════════════════════════════════════════════════════════════════════════
+let bbDigits=4,bbDiff='easy',bbMode='ai',bbMySecret='',bbAISecret='',bbAICands=[],bbMyHist=[],bbAIHist=[],bbOver=false,bbMyTurn=true;
+
+function selBBDiff(d){bbDiff=d;document.getElementById('bb-easy').classList.toggle('on',d==='easy');document.getElementById('bb-hard').classList.toggle('on',d==='hard');}
+function bbExit(){showIngameChat(false);if(bbMode==='online'){currentGame=null;show('s-lobby');}else if(fromLobby){fromLobby=false;show('s-lobby');}else goHome();}
+
+// ── 비밀번호 입력 UI ──────────────────────────────────────────────────────────
+function buildBBSecretInput(){
+  const wrap=document.getElementById('bb-secret-inp');
+  wrap.innerHTML='';
+  for(let i=0;i<bbDigits;i++){
+    const inp=document.createElement('input');
+    inp.style.cssText='width:34px;height:34px;border:2px solid #7F9DB9;text-align:center;font-size:18px;font-weight:800;font-family:monospace;outline:none;background:#fff;color:#1F1F1F';
+    inp.maxLength=1; inp.inputMode='numeric'; inp.type='password';
+    inp.addEventListener('input',e=>{
+      e.target.value=e.target.value.replace(/[^0-9]/g,'').slice(-1);
+      if(e.target.value&&i<bbDigits-1) wrap.children[i+1].focus();
+    });
+    inp.addEventListener('keydown',e=>{
+      if(e.key==='Backspace'&&!e.target.value&&i>0) wrap.children[i-1].focus();
+    });
+    inp.addEventListener('focus',()=>inp.style.borderColor='#217346');
+    inp.addEventListener('blur',()=>inp.style.borderColor='#7F9DB9');
+    wrap.appendChild(inp);
+  }
+}
+function getBBSecretInput(){
+  const wrap=document.getElementById('bb-secret-inp');
+  return wrap ? Array.from(wrap.children).map(el=>el.value).join('') : '';
+}
+function bbShuffleSecret(){
+  const secret=bbRandSecret(bbDigits);
+  const wrap=document.getElementById('bb-secret-inp');
+  if(!wrap)return;
+  [...wrap.children].forEach((el,i)=>el.value=secret[i]);
+}
+function validateBBSecret(secret){
+  if(secret.length<bbDigits) return '4자리를 모두 입력하세요';
+  if(secret[0]==='0') return '첫 자리는 0이 올 수 없습니다';
+  if(new Set(secret).size<bbDigits) return '중복 없이 입력하세요';
+  return null;
+}
+
+// 설정 화면 열릴 때 입력창 초기화
+function openBBSetup(){
+  show('s-bb-setup');
+  setTimeout(()=>{buildBBSecretInput();document.getElementById('bb-secret-inp')?.children[0]?.focus();},50);
+}
+
+function startBBGame(){
+  const secret=getBBSecretInput();
+  const err=validateBBSecret(secret);
+  if(err){alert(err);document.getElementById('bb-secret-inp')?.children[0]?.focus();return;}
+  bbMyHist=[];bbAIHist=[];bbOver=false;
+  bbMySecret=secret;
+  bbAISecret=bbRandSecret(bbDigits);
+  bbAICands=bbGenAll(bbDigits);
+  show('s-bb-game');
+  document.getElementById('bb-ai-panel').style.display='flex';
+  document.getElementById('bb-ai-panel-hdr').textContent='AI 입력 기록';
+  document.getElementById('bb-nb').textContent='A1';
+  buildBBInput();renderBBHist();
+  document.getElementById('bb-st').textContent=`내 비밀번호: ${bbMySecret}  |  AI 비밀번호를 맞혀보세요!`;
+  document.getElementById('bb-status-bar').textContent='진행 중';
+}
+
+function startBBOnline(){
+  // 설정 화면으로 → 비밀번호 입력 후 실제 시작
+  show('s-bb-setup');
+  setTimeout(()=>{buildBBSecretInput();document.getElementById('bb-secret-inp')?.children[0]?.focus();},50);
+  // startBBGame 버튼을 온라인 시작으로 교체
+  document.querySelector('.bb-start-cell').onclick=doStartBBOnline;
+}
+function doStartBBOnline(){
+  const secret=getBBSecretInput();
+  const err=validateBBSecret(secret);
+  if(err){alert(err);return;}
+  // 원래 버튼 복원
+  document.querySelector('.bb-start-cell').onclick=startBBGame;
+  showIngameChat(true);
+  bbMode='online';bbMyColor=currentGame.myColor;
+  bbMyHist=[];bbAIHist=[];bbOver=false;
+  bbMySecret=secret;
+  bbMyTurn=(currentGame.myColor===1);
+  show('s-bb-game');
+  document.getElementById('bb-ai-panel-hdr').textContent='상대방 입력 기록';
+  buildBBInput();renderBBHist();
+  document.getElementById('bb-st').textContent=`내 비밀번호: ${bbMySecret}  |  ${bbMyTurn?'✏️ 내 차례':'⏳ 상대방 차례'}`;
+}
+
+function bbGenAll(d){const res=[];function gen(cur,used){if(cur.length===d){if(cur[0]!=='0')res.push(cur.join(''));return;}for(const x of '0123456789'){if(!used.has(x)){used.add(x);cur.push(x);gen(cur,used);cur.pop();used.delete(x);}}}gen([],new Set());return res;}
+function bbRandSecret(d){const all=bbGenAll(d);return all[Math.floor(Math.random()*all.length)];}
+function bbScore(secret,guess){let s=0,b=0;for(let i=0;i<secret.length;i++){if(secret[i]===guess[i])s++;else if(secret.includes(guess[i]))b++;}return{s,b};}
+
+function buildBBInput(){
+  const wrap=document.getElementById('bb-inp');wrap.innerHTML='';
+  for(let i=0;i<bbDigits;i++){const inp=document.createElement('input');inp.className='bb-digit';inp.type='text';inp.maxLength=1;inp.inputMode='numeric';inp.dataset.i=i;inp.addEventListener('input',e=>{e.target.value=e.target.value.replace(/[^0-9]/g,'').slice(-1);if(e.target.value&&i<bbDigits-1)wrap.children[i+1].focus();});inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!e.target.value&&i>0)wrap.children[i-1].focus();if(e.key==='Enter')bbSubmit();});wrap.appendChild(inp);}
+}
+function getBBInput(){return Array.from(document.getElementById('bb-inp').children).map(el=>el.value).join('');}
+function clearBBInput(){Array.from(document.getElementById('bb-inp').children).forEach(el=>el.value='');document.getElementById('bb-inp').children[0]?.focus();}
+
+function bbSubmit(){
+  if(bbOver)return;
+  const guess=getBBInput();
+  if(guess.length<bbDigits){document.getElementById('bb-st').textContent=bbDigits+'자리를 모두 입력하세요';return;}
+  if(new Set(guess).size<bbDigits){document.getElementById('bb-st').textContent='중복 없이 입력하세요';return;}
+  if(guess[0]==='0'){document.getElementById('bb-st').textContent='첫 자리는 0이 올 수 없습니다';return;}
+  if(bbMode==='ai'){
+    const {s,b}=bbScore(bbAISecret,guess);
+    bbMyHist.push({guess,s,b});renderBBHist();clearBBInput();
+    document.getElementById('bb-nb').textContent=`C${bbMyHist.length}`;
+    document.getElementById('bb-ft').textContent=`="${guess}" → ${s}S${b}B`;
+    if(s===bbDigits){bbOver=true;showResultNotify('ℹ️',`정답! ${bbDigits}자리 맞혔습니다!\nAI 비밀번호: ${bbAISecret}`);return;}
+    // AI 추측
+    setTimeout(()=>{
+      if(bbOver)return;
+      const aiGuess=bbDiff==='easy'?bbAICands[Math.floor(Math.random()*Math.min(bbAICands.length,5))]:bbAICands[0];
+      if(!aiGuess)return;
+      const r=bbScore(bbMySecret,aiGuess);
+      bbAIHist.push({guess:aiGuess,s:r.s,b:r.b});
+      bbAICands=bbAICands.filter(c=>{const x=bbScore(c,aiGuess);return x.s===r.s&&x.b===r.b;});
+      renderBBHist();
+      document.getElementById('bb-st').textContent=`내 비밀번호: ${bbMySecret} | ${bbAICands.length}개 후보 남음`;
+      document.getElementById('bb-status-bar').textContent=`내 ${bbMyHist.length}회 | AI ${bbAIHist.length}회`;
+      if(r.s===bbDigits){bbOver=true;showResultNotify('⚠️',`AI가 맞혔습니다!\n내 비밀번호: ${bbMySecret}`);}
+    },600);
+  } else if(bbMode==='online'){
+    if(!bbMyTurn){document.getElementById('bb-st').textContent='상대방 차례입니다';return;}
+    bbMyHist.push({guess,s:'?',b:'?'});renderBBHist();clearBBInput();
+    sendGameMsg({type:'game_move',data:{type:'guess',guess}});
+    bbMyTurn=false;
+    document.getElementById('bb-st').textContent='상대방이 결과를 계산 중…';
+  }
+}
+
+function omokOnlineMove(data){
+  if(data.type==='restart'){
+    // 상대가 재시작 → 나의 색은 상대 색의 반대
+    oMyColor = data.myColorWas===1 ? 2 : 1;
+    oAiColor = 3-oMyColor;
+    oBoard=Array.from({length:N},()=>new Int8Array(N));
+    oTurn=1;oOver=false;oLastMove=null;oWinCells=null;
+    lastOmokLoserColor=null;
+    closeResultNotify();renderOmok();omokStartTurn();
+  } else {
+    omokPlace(data.r, data.c);
+  }
+}
+
+function bbOnlineMove(data){
+  if(data.type==='guess'){
+    // 상대방이 내 번호를 추측 → 결과 계산 후 전송
+    const{s,b}=bbScore(bbMySecret,data.guess);
+    bbAIHist.push({guess:data.guess,s,b});
+    renderBBHist();
+    sendGameMsg({type:'game_move',data:{type:'result',s,b}});
+    if(s===bbDigits){
+      bbOver=true;
+      showResultNotify('⚠️',`상대방이 맞혔습니다!\n내 비밀번호: ${bbMySecret}`);
+    } else {
+      // 상대 추측 처리 후 → 내 차례
+      bbMyTurn=true;
+      bbUpdateOnlineSt();
+    }
+  } else if(data.type==='result'){
+    // 내 추측의 결과 수신
+    const last=bbMyHist[bbMyHist.length-1];
+    if(last){last.s=data.s; last.b=data.b;}
+    renderBBHist();
+    if(data.s===bbDigits){
+      bbOver=true;
+      showResultNotify('ℹ️','내가 맞혔습니다!');
+    } else {
+      // 결과 받은 후 → 상대방 차례 (상대가 guess를 보내면 처리 후 내 차례)
+      bbMyTurn=false;
+      bbUpdateOnlineSt();
+    }
+  }
+}
+function bbUpdateOnlineSt(){
+  const tries=bbMyHist.length;
+  document.getElementById('bb-st').textContent=
+    bbMyTurn
+      ? `내 비밀번호: ${bbMySecret}  |  ✏️ 내 차례 (${tries}회 시도)`
+      : `내 비밀번호: ${bbMySecret}  |  ⏳ 상대방 차례 (${tries}회 시도)`;
+  document.getElementById('bb-status-bar').textContent=
+    `내 ${tries}회 | 상대 ${bbAIHist.length}회`;
+}
+
+function renderBBHist(){
+  ['my','ai'].forEach(who=>{
+    const div=document.getElementById(`bb-${who}-hist`);
+    if(!div) return;
+    const hist=who==='my'?bbMyHist:bbAIHist;
+    // 최신이 맨 아래 (시간순), 구분선으로 각 입력 분리
+    div.innerHTML=hist.map((h,i)=>`
+      <div class="bb-hist-row" style="border-bottom:1px solid #E0E0E0;margin-bottom:3px;${i===hist.length-1?'margin-top:18px;border-top:2px dashed #9DC3E6;padding-top:6px':''}">
+        <span style="font-size:10px;color:#9CA3AF;min-width:18px">${i+1}</span>
+        <span class="bb-hist-num">${h.guess}</span>
+        <span class="bb-hist-res"><span class="s">${h.s}S</span> <span class="b">${h.b}B</span></span>
+        ${i===hist.length-1?'<span style="font-size:9px;color:#4472C4;margin-left:4px">최근</span>':''}
+      </div>`).join('');
+    div.scrollTop=div.scrollHeight; // 최신 입력이 보이도록 아래로 스크롤
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 결과 알림 & 재시작
+// ══════════════════════════════════════════════════════════════════════════════
+function showResultNotify(ico,txt){
+  document.getElementById('result-ico').textContent=ico;
+  document.getElementById('result-txt').textContent=txt;
+  // 온라인이면 "확인 = 로비로", 솔로면 "확인 = 게임 유지"
+  const confirmBtn=document.getElementById('result-confirm-btn');
+  const isOnline=(oMode==='online'||bbMode==='online');
+  if(confirmBtn) confirmBtn.textContent=isOnline?'로비로 돌아가기':'확인';
+  document.getElementById('result-notify').classList.add('on');
+}
+function closeResultNotify(){document.getElementById('result-notify').classList.remove('on');}
+function confirmResult(){
+  closeResultNotify();
+  const scr=document.querySelector('.scr.on')?.id;
+  if(oMode==='online'||bbMode==='online'){
+    // 온라인: 로비로
+    currentGame=null;showIngameChat(false);
+    if(scr==='s-omok') sendGameMsg({type:'game_end',data:{}});
+    show('s-lobby');
+  } else if(fromLobby){
+    fromLobby=false;show('s-lobby');
+  }
+  // AI/로컬: 그냥 결과창만 닫음 (게임 화면 유지)
+}
+function restartFromResult(){
+  closeResultNotify();
+  const currentScr=document.querySelector('.scr.on');
+  if(currentScr?.id==='s-omok'){
+    if(oMode==='online'){
+      // 진 사람이 흑(선공)
+      if(lastOmokLoserColor!==null){
+        if(lastOmokLoserColor!==oMyColor){
+          // 내가 이긴 쪽 → 상대가 흑, 나는 백
+          oMyColor=2; oAiColor=1;
+        } else {
+          // 내가 진 쪽 → 내가 흑
+          oMyColor=1; oAiColor=2;
+        }
+      }
+      oBoard=Array.from({length:N},()=>new Int8Array(N));
+      oTurn=1;oOver=false;oLastMove=null;oWinCells=null;
+      lastOmokLoserColor=null;
+      renderOmok();omokStartTurn();
+      sendGameMsg({type:'game_move',data:{type:'restart',myColorWas:oMyColor}});
+    } else {
+      // AI 모드: 진 사람이 흑
+      if(lastOmokLoserColor!==null) oMyColor=lastOmokLoserColor;
+      oAiColor=3-oMyColor;
+      lastOmokLoserColor=null;
+      omokNewGame();
+    }
+  } else if(currentScr?.id==='s-bb-game'){
+    if(bbMode==='online') startBBOnline();
+    else startBBGame();
+  }
+}
+
+// ── 인게임 채팅 ──────────────────────────────────────────────────────────────
+function showIngameChat(visible){
+  const btn=document.getElementById('ingame-chat-btn');
+  const panel=document.getElementById('ingame-chat-panel');
+  if(!visible){btn.style.display='none';panel.style.display='none';return;}
+  btn.style.display='flex';
+}
+function toggleIngameChat(){
+  const panel=document.getElementById('ingame-chat-panel');
+  const isOpen=panel.style.display==='flex';
+  panel.style.display=isOpen?'none':'flex';
+}
+function sendIngameChat(){
+  const inp=document.getElementById('ingame-inp');
+  const text=inp.value.trim(); if(!text)return; inp.value='';
+  if(isHost) sendToHostAsHost({type:'chat',text});
+  else roomConn?.send({type:'chat',text});
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 🏐 피카츄 배구 온라인
+// ══════════════════════════════════════════════════════════════════════════════
+const PK = {
+  cvs:null, ctx:null, W:480, H:280, FLOOR:250,
+  NET_W:12, NET_H:80,
+  BALL_R:12, GRAVITY:0.22, JUMP_VEL:-9, MOVE_SPD:3.8, PR:24,
+  running:false, gameOver:false, frameCount:0,
+  myColor:1, isAuth:false,
+  ball:null, p1:null, p2:null,
+  myKeys:{l:false,r:false,u:false},
+  theirKeys:{l:false,r:false,u:false},
+  serveTimer:0, raf:null,
+  keyHandler:null, keyUpHandler:null,
+};
+
+function startPikachuOnline(){
+  PK.myColor=currentGame.myColor;
+  PK.isAuth=(PK.myColor===1);
+  PK.running=true; PK.gameOver=false; PK.frameCount=0;
+  PK.p1={x:0,y:0,vy:0,vx:0,onGround:true,score:0};
+  PK.p2={x:0,y:0,vy:0,vx:0,onGround:true,score:0};
+  PK.theirKeys={l:false,r:false,u:false};
+  show('s-pikachu-game');
+  showIngameChat(true);
+  // 캔버스 초기화
+  setTimeout(()=>{
+    const area=document.getElementById('pk-area');
+    PK.cvs=document.getElementById('pk-canvas');
+    PK.ctx=PK.cvs.getContext('2d');
+    // 논리 좌표 고정 (양쪽 기기가 동일한 좌표계 사용)
+    PK.W=480; PK.H=288; PK.FLOOR=256; PK.NET_H=86;
+    PK.cvs.width=PK.W; PK.cvs.height=PK.H;
+    pkResetPositions(1);
+    pkBindKeys();
+    if(PK.raf) cancelAnimationFrame(PK.raf);
+    PK.raf=requestAnimationFrame(pkLoop);
+  },80);
+}
+
+function pkResetPositions(serveFor){
+  const W=PK.W, NX=W/2;
+  PK.ball={x:serveFor===1?W*0.28:W*0.72, y:PK.FLOOR-120,
+            vx:0, vy:0}; // 공 건드리면 시작
+  PK.p1.x=W*0.22; PK.p1.y=PK.FLOOR; PK.p1.vy=0; PK.p1.onGround=true;
+  PK.p2.x=W*0.78; PK.p2.y=PK.FLOOR; PK.p2.vy=0; PK.p2.onGround=true;
+  PK.serveTimer=70;
+}
+
+function pkBindKeys(){
+  PK.keyHandler=e=>{
+    if(!PK.running)return;
+    if(e.key==='ArrowLeft')  PK.myKeys.l=true;
+    if(e.key==='ArrowRight') PK.myKeys.r=true;
+    if(e.key==='ArrowUp')    PK.myKeys.u=true;
+    if(['ArrowLeft','ArrowRight','ArrowUp'].includes(e.key)) e.preventDefault();
+  };
+  PK.keyUpHandler=e=>{
+    if(e.key==='ArrowLeft')  PK.myKeys.l=false;
+    if(e.key==='ArrowRight') PK.myKeys.r=false;
+    if(e.key==='ArrowUp')    PK.myKeys.u=false;
+  };
+  document.addEventListener('keydown',PK.keyHandler);
+  document.addEventListener('keyup',  PK.keyUpHandler);
+}
+function pkUnbindKeys(){
+  if(PK.keyHandler)   document.removeEventListener('keydown',PK.keyHandler);
+  if(PK.keyUpHandler) document.removeEventListener('keyup',  PK.keyUpHandler);
+}
+
+function pkLoop(){
+  if(!PK.running){return;}
+  if(PK.isAuth){
+    pkUpdatePlayer(PK.p1, PK.myKeys,    1);
+    pkUpdatePlayer(PK.p2, PK.theirKeys, 2);
+    pkUpdateBall();
+    pkCheckScore();
+    if(PK.frameCount%2===0) pkSendState(); // 30fps 전송
+  } else {
+    pkSendKeys(); // 60fps 키 전송
+  }
+  pkRender();
+  PK.frameCount++;
+  PK.raf=requestAnimationFrame(pkLoop);
+}
+
+function pkUpdatePlayer(p,keys,side){
+  const NX=PK.W/2, NW=PK.NET_W, PR=PK.PR;
+  const boundary=side===1 ? NX-NW/2-PR : NX+NW/2+PR;
+  p.vx=keys.l?-PK.MOVE_SPD:(keys.r?PK.MOVE_SPD:0);
+  p.x+=p.vx;
+  if(side===1) p.x=Math.max(PR,Math.min(boundary,p.x));
+  else         p.x=Math.max(boundary,Math.min(PK.W-PR,p.x));
+  if(keys.u&&p.onGround){p.vy=PK.JUMP_VEL;p.onGround=false;}
+  p.vy+=PK.GRAVITY; p.y+=p.vy;
+  if(p.y>=PK.FLOOR){p.y=PK.FLOOR;p.vy=0;p.onGround=true;}
+}
+
+function pkUpdateBall(){
+  if(PK.serveTimer>0){
+    // 서브 대기 중: 공 정지, 충돌 시 시작
+    pkBallPlayerHit(PK.p1,1,true);
+    pkBallPlayerHit(PK.p2,2,true);
+    return;
+  }
+  const b=PK.ball, R=PK.BALL_R, W=PK.W, NX=W/2, NW=PK.NET_W, NT=PK.FLOOR-PK.NET_H;
+  b.vy+=PK.GRAVITY; b.x+=b.vx; b.y+=b.vy;
+  // 벽
+  if(b.x-R<=0){b.x=R;b.vx=Math.abs(b.vx);}
+  if(b.x+R>=W){b.x=W-R;b.vx=-Math.abs(b.vx);}
+  // 네트
+  if(b.y+R>=NT&&b.y-R<=PK.FLOOR){
+    const inNet=Math.abs(b.x-NX)<NW/2+R;
+    if(inNet&&b.y+R>=NT){
+      if(b.x<NX){b.x=NX-NW/2-R;b.vx=-Math.abs(b.vx)*0.85;}
+      else       {b.x=NX+NW/2+R;b.vx= Math.abs(b.vx)*0.85;}
+      if(b.vy>0)b.vy*=-0.7;
+    }
+  }
+  // 플레이어 충돌
+  pkBallPlayerHit(PK.p1,1); pkBallPlayerHit(PK.p2,2);
+}
+
+function pkBallPlayerHit(p,side,serveMode){
+  const b=PK.ball, R=PK.BALL_R, PR=PK.PR;
+  // 타격 포인트를 캐릭터 상단 (머리/손)으로 올려서 원형 느낌
+  const cx=p.x, cy=p.y-PR*1.1;
+  // 타원형 히트박스: 좌우 좁고 위아래 넓게 (사각형 평면 느낌 제거)
+  const hw=PR*0.75, hh=PR*0.95; // 가로폭 줄임
+  const dx=b.x-cx, dy=b.y-cy;
+  // 타원 내부 판정
+  const ellipseDist=Math.sqrt((dx/hw)**2+(dy/hh)**2);
+  const minEllipse=1+R/Math.min(hw,hh);
+  if(ellipseDist<minEllipse&&ellipseDist>0.01){
+    if(serveMode){PK.serveTimer=0;} // 서브 시작
+    const nx=dx/hw/ellipseDist*(1/hw)/Math.sqrt((1/hw)**2+(1/hh)**2+1e-9);
+    const ny=dy/hh/ellipseDist*(1/hh)/Math.sqrt((1/hw)**2+(1/hh)**2+1e-9);
+    // 튕기는 방향
+    const dot=b.vx*nx+b.vy*ny;
+    b.vx=b.vx-2*dot*nx + p.vx*0.35;
+    b.vy=b.vy-2*dot*ny - 2.5;
+    if(b.vy>-4)b.vy=-6;
+    const spd=Math.sqrt(b.vx**2+b.vy**2);
+    if(spd>8){b.vx*=8/spd;b.vy*=8/spd;}
+    if(spd<2.5){b.vx*=2.5/spd;b.vy*=2.5/spd;}
+    // 공을 히트박스 밖으로 밀어내기
+    const pushX=cx+dx/ellipseDist*hw*minEllipse/hw;
+    const pushY=cy+dy/ellipseDist*hh*minEllipse/hh;
+    b.x=pushX; b.y=pushY;
+  }
+}
+
+function pkCheckScore(){
+  const b=PK.ball;
+  if(b.y+PK.BALL_R>=PK.FLOOR){
+    const scorer=b.x<PK.W/2?2:1; // 바닥 어느 코트?
+    if(scorer===1)PK.p1.score++; else PK.p2.score++;
+    pkUpdateScoreUI();
+    if(PK.p1.score>=15||PK.p2.score>=15){
+      pkSendState(); // 최종 점수를 게스트에 먼저 전송
+      pkEndGame(); return;
+    }
+    pkResetPositions(scorer);
+    pkSendState();
+  }
+}
+
+function pkEndGame(){
+  PK.running=false; PK.gameOver=true;
+  pkUnbindKeys();
+  const iWon=(PK.myColor===1&&PK.p1.score>=15)||(PK.myColor===2&&PK.p2.score>=15);
+  showResultNotify(iWon?'🏆':'😢',
+    iWon?`승리! 🏐\n${PK.p1.score} : ${PK.p2.score}`:
+         `패배 😢\n${PK.p1.score} : ${PK.p2.score}`);
+  // game_end 대신 pk_gameover로 전달 (game_end는 탈주 처리되므로)
+  sendGameMsg({type:'game_move',data:{type:'pk_gameover',
+    s1:PK.p1.score, s2:PK.p2.score}});
+  currentGame=null;
+}
+
+function pkSendState(){
+  const b=PK.ball;
+  sendGameMsg({type:'game_move',data:{type:'pk_state',
+    b:{x:b.x,y:b.y,vx:b.vx,vy:b.vy},
+    p1:{x:PK.p1.x,y:PK.p1.y,s:PK.p1.score},
+    p2:{x:PK.p2.x,y:PK.p2.y,s:PK.p2.score},
+    sv:PK.serveTimer,
+  }});
+}
+function pkSendKeys(){
+  sendGameMsg({type:'game_move',data:{type:'pk_keys',
+    l:PK.myKeys.l,r:PK.myKeys.r,u:PK.myKeys.u}});
+}
+
+function pkOnlineMove(data){
+  if(data.type==='pk_state'&&!PK.isAuth){
+    const b=data.b;
+    PK.ball.x=b.x;PK.ball.y=b.y;PK.ball.vx=b.vx;PK.ball.vy=b.vy;
+    PK.p1.x=data.p1.x;PK.p1.y=data.p1.y;PK.p1.score=data.p1.s;
+    PK.p2.x=data.p2.x;PK.p2.y=data.p2.y;PK.p2.score=data.p2.s;
+    PK.serveTimer=data.sv;
+    pkUpdateScoreUI();
+    if((data.p1.s>=15||data.p2.s>=15)&&!PK.gameOver){
+      PK.running=false;PK.gameOver=true;pkUnbindKeys();
+      const iWon=PK.myColor===2&&data.p2.s>=15;
+      showResultNotify(iWon?'🏆':'😢',
+        iWon?`승리! 🏐\n${data.p1.s}:${data.p2.s}`:`패배 😢\n${data.p1.s}:${data.p2.s}`);
+    }
+  } else if(data.type==='pk_gameover'&&!PK.isAuth){
+    if(!PK.gameOver){
+      PK.running=false;PK.gameOver=true;pkUnbindKeys();
+      const iWon=(PK.myColor===2&&data.s2>=15)||(PK.myColor===1&&data.s1>=15);
+      showResultNotify(iWon?'🏆':'😢',
+        iWon?`승리! 🏐\n${data.s1} : ${data.s2}`:`패배 😢\n${data.s1} : ${data.s2}`);
+    }
+  } else if(data.type==='pk_keys'&&PK.isAuth){
+    PK.theirKeys.l=data.l;PK.theirKeys.r=data.r;PK.theirKeys.u=data.u;
+  }
+}
+
+function pkUpdateScoreUI(){
+  const myS=PK.myColor===1?PK.p1.score:PK.p2.score;
+  const theirS=PK.myColor===1?PK.p2.score:PK.p1.score;
+  const ftEl=document.getElementById('pk-ft');
+  if(ftEl)ftEl.textContent=`=SCORE("나",${myS},"상대",${theirS})`;
+  const stEl=document.getElementById('pk-st');
+  if(stEl)stEl.textContent=`${myS} : ${theirS} | 15점 선취 승리 | ← → ↑`;
+}
+
+function pkExit(){
+  PK.running=false;pkUnbindKeys();
+  if(PK.raf){cancelAnimationFrame(PK.raf);PK.raf=null;}
+  showIngameChat(false);
+  if(currentGame){sendGameMsg({type:'game_end',data:{}});currentGame=null;}
+  show('s-lobby');
+}
+
+// ── 렌더링 ──────────────────────────────────────────────────────────────────
+function pkRender(){
+  if(!PK.ctx||!PK.p1||!PK.p2||!PK.ball)return;
+  const c=PK.ctx;
+  const W=480, H=288, FL=256, NX=240, NW=12, NT=FL-86;
+
+  // ── 엑셀 셀 그리드 배경 ──
+  c.fillStyle='#FFFFFF';c.fillRect(0,0,W,H);
+  c.strokeStyle='#D0D0D0';c.lineWidth=0.5;
+  const CW=30,CH=20;
+  for(let x=0;x<=W;x+=CW){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
+  for(let y=0;y<=H;y+=CH){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
+
+  // 행/열 헤더
+  const XH=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P'];
+  c.fillStyle='#9E9E9E';c.font='7px monospace';c.textAlign='center';
+  for(let i=0;i<XH.length;i++) c.fillText(XH[i],i*CW+CW/2,8);
+  c.textAlign='right';
+  for(let i=0;i<Math.ceil(H/CH);i++) c.fillText(i+1,17,i*CH+CH*0.72);
+
+  // ── 바닥선 (굵은 행 구분선) ──
+  c.strokeStyle='#888';c.lineWidth=2;
+  c.beginPath();c.moveTo(0,FL);c.lineTo(W,FL);c.stroke();
+  // 바닥 아래 (연두 조건부서식 느낌)
+  c.fillStyle='rgba(198,224,180,0.3)';c.fillRect(0,FL,W,H-FL);
+
+  // ── 네트 (열 고정 구분선) ──
+  c.strokeStyle='#217346';c.lineWidth=3;
+  c.beginPath();c.moveTo(NX,NT);c.lineTo(NX,FL);c.stroke();
+  c.fillStyle='#217346';c.fillRect(NX-5,NT-4,10,7);
+
+  // ── 선수 (조건부서식 셀 스타일) ──
+  const oppName=currentGame?.opponentName||'상대';
+  const p1IsMe=PK.myColor===1;
+  pkDrawXlCell(c,PK.p1.x,PK.p1.y,'#4472C4','#1F3864',p1IsMe?'나':oppName);
+  pkDrawXlCell(c,PK.p2.x,PK.p2.y,'#ED7D31','#843C00',p1IsMe?oppName:'나');
+
+  // ── 공 (데이터 마커) ──
+  const b=PK.ball,BR=PK.BALL_R;
+  c.fillStyle='rgba(0,0,0,0.1)';
+  c.beginPath();c.ellipse(b.x,FL+2,BR*0.8,3.5,0,0,Math.PI*2);c.fill();
+  const bg=c.createRadialGradient(b.x-BR*0.25,b.y-BR*0.25,0.5,b.x,b.y,BR);
+  bg.addColorStop(0,'#FFFDE7');bg.addColorStop(0.5,'#FFD700');bg.addColorStop(1,'#FF8F00');
+  c.fillStyle=bg;c.beginPath();c.arc(b.x,b.y,BR,0,Math.PI*2);c.fill();
+  c.strokeStyle='#BF360C';c.lineWidth=1.5;c.stroke();
+
+  // ── 점수 (셀 스타일 박스) ──
+  const myS=PK.myColor===1?PK.p1.score:PK.p2.score;
+  const thS=PK.myColor===1?PK.p2.score:PK.p1.score;
+  // 내 점수
+  c.fillStyle='rgba(68,114,196,0.12)';c.strokeStyle='#4472C4';c.lineWidth=1;
+  c.fillRect(2,2,70,18);c.strokeRect(2,2,70,18);
+  c.font='bold 11px monospace';c.textAlign='left';c.fillStyle='#1F3864';
+  c.fillText(`나: ${myS}`,7,14);
+  // 상대 점수
+  c.fillStyle='rgba(237,125,49,0.12)';c.strokeStyle='#ED7D31';c.lineWidth=1;
+  c.fillRect(W-72,2,70,18);c.strokeRect(W-72,2,70,18);
+  c.textAlign='right';c.fillStyle='#843C00';
+  c.fillText(`상대: ${thS}`,W-7,14);
+
+  // ── 서브 대기 ──
+  if(PK.serveTimer>20){
+    c.fillStyle='rgba(33,115,70,0.88)';
+    const sw=130,sh=22,sx=NX-sw/2,sy=H*0.38;
+    c.fillRect(sx,sy,sw,sh);
+    c.strokeStyle='#1A5C35';c.lineWidth=1;c.strokeRect(sx,sy,sw,sh);
+    c.font='bold 11px monospace';c.textAlign='center';c.fillStyle='#fff';
+    c.fillText('서브 준비 중…',NX,sy+14);
+  }
+
+  // 수식창 업데이트
+  const ftEl=document.getElementById('pk-ft');
+  if(ftEl)ftEl.textContent=`=SCORE("나",${myS},"상대",${thS})`;
+  const stEl=document.getElementById('pk-st');
+  if(stEl)stEl.textContent=`${myS} : ${thS} | 15점 선취 | ← → ↑ 조작`;
+}
+
+function pkDrawXlCell(c,x,y,fill,dark,label){
+  const PR=PK.PR;
+  const pw=PR*1.9,ph=PR*2.1,px=x-pw/2,py=y-ph;
+  // 그림자
+  c.fillStyle='rgba(0,0,0,0.1)';c.fillRect(px+3,py+3,pw,ph);
+  // 셀 본문
+  c.fillStyle=fill+'22';c.fillRect(px,py,pw,ph);
+  // 왼쪽 액센트 바 (Excel 데이터바 스타일)
+  c.fillStyle=fill;c.fillRect(px,py,5,ph);
+  // 위쪽 테두리
+  c.fillRect(px,py,pw,3);
+  // 셀 테두리
+  c.strokeStyle=dark;c.lineWidth=1.5;c.strokeRect(px,py,pw,ph);
+  // 텍스트
+  const fs=Math.max(8,Math.min(11,pw/label.length*1.1));
+  c.font=`bold ${fs}px 맑은 고딕,sans-serif`;
+  c.textAlign='center';c.fillStyle=dark;
+  c.fillText(label.length>4?label.slice(0,3)+'…':label, x, py+ph*0.55);
+}
+
+// sendToHostAsHost: 호스트가 자신의 메시지를 처리할 때 사용
+function sendToHostAsHost(msg){
+  const fakeConn={peer:myPeerId,open:true,send:(m)=>clientHandleMsg(m)};
+  hostHandleMsg(fakeConn,msg);
+}
+
+// ── 자동 업데이트 체크 (GitHub Pages 등 호스팅 시에만 작동) ──────────────
+function checkForUpdate(){
+  if(location.protocol==='file:') return; // 로컬 파일에서는 스킵
+  fetch(location.href+'?_='+Date.now(),{cache:'no-store'})
+    .then(r=>r.text())
+    .then(html=>{
+      const m=html.match(/const BUILD\s*=\s*['"]([^'"]+)['"]/);
+      if(m && m[1] !== BUILD){
+        document.getElementById('update-notify').classList.add('on');
+      }
+    }).catch(()=>{});
+}
+// 접속 후 1분 뒤 첫 체크, 이후 5분마다 반복
+setTimeout(checkForUpdate, 60000);
+setInterval(checkForUpdate, 300000);
+</script>
+</body>
+</html>
