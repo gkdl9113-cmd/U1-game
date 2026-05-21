@@ -428,7 +428,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div class="game-sel-btns">
         <button class="game-sel-btn" onclick="sendChallenge('omok')">⬛ 오목</button>
         <button class="game-sel-btn" onclick="showBBDigitPick()">🔢 숫자야구</button>
-        <button class="game-sel-btn" onclick="sendChallenge('pikachu')" style="background:#FFF9C4;color:#7F6000;border-color:#FFC000">🏐 피카츄배구</button>
       </div>
       <!-- 숫자야구 자릿수 선택 (숫자야구 클릭 후 표시) -->
       <div id="bb-digit-pick" style="display:none;margin-top:10px">
@@ -485,11 +484,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
               <div class="gp-title">🔢 숫자야구</div>
               <div class="gp-sub">AI 대전 · 3자리/4자리 선택 가능</div>
             </td></tr>
-        <tr><td style="background:#F2F2F2;color:#555;font-size:10px;padding:3px 8px;border:1px solid #D0D0D0">3</td>
-            <td class="game-pick-cell" onclick="openPikachuVball()">
-              <div class="gp-title">🏐 피카츄 배구</div>
-              <div class="gp-sub">2인 대전 · 방향키 조작 · <span style="color:#C00000;font-weight:700">PC 전용 (모바일 불가)</span></div>
-            </td></tr>
         <tr><td style="background:#F2F2F2;color:#555;font-size:10px;padding:3px 8px;border:1px solid #D0D0D0">4</td>
             <td class="game-pick-cell" onclick="startFishGame()">
               <div class="gp-title">🐟 물고기 키우기</div>
@@ -505,71 +499,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     피카츄 배구 (PC 전용)
-════════════════════════════════════════════ -->
-<div id="s-pikachu" class="scr">
-  <div class="xl-titlebar">
-    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">피카츄배구_업무용.xlsx - Microsoft Excel</span></div>
-    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="closePikachu()">✕</button></div>
-  </div>
-  <div class="xl-tabs">
-    <button class="xl-tab" onclick="closePikachu()">◀ 파일</button>
-    <button class="xl-tab on">홈</button>
-    <button class="xl-tab">삽입</button>
-    <button class="xl-tab">보기</button>
-  </div>
-  <div class="xl-ribbon">
-    <button class="xl-rbtn" onclick="closePikachu()"><span class="xl-rico">◀</span><span class="xl-rlbl">뒤로</span></button>
-    <div class="xl-rsep"></div>
-    <button class="xl-rbtn" onclick="openPikachuNewTab()"><span class="xl-rico">🔗</span><span class="xl-rlbl">새 탭</span></button>
-    <div class="xl-rsep"></div>
-    <span style="font-size:11px;color:#595959;padding:0 6px">
-      ⌨️ 1P: ←→↑ · 2P: A D W &nbsp;|&nbsp; 공격: 1P=X &nbsp;2P=Z
-    </span>
-  </div>
-  <div class="xl-fbar">
-    <div class="xl-namebox">B2</div><div class="xl-fx">fx</div>
-    <div class="xl-ftext">=VLOOKUP("피카츄",스포츠!A:Z,2,0)</div>
-  </div>
-  <!-- 게임 iframe -->
-  <div style="flex:1;position:relative;background:#1a1a2e;min-height:0">
-    <iframe id="pikachu-frame"
-      src="https://gorisanson.github.io/pikachu-volleyball/ko/"
-      style="width:100%;height:100%;border:none;display:block"
-      allow="autoplay"
-      title="피카츄 배구"></iframe>
-    <!-- iframe 실패 시 표시 -->
-    <div id="pikachu-fallback" style="display:none;position:absolute;inset:0;background:#1a1a2e;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center">
-      <div style="font-size:48px">🏐</div>
-      <div style="font-size:16px;font-weight:700">피카츄 배구</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.65)">보안 설정으로 인해 직접 임베드가 제한될 수 있습니다.<br>아래 버튼으로 새 탭에서 플레이하세요.</div>
-      <button onclick="openPikachuNewTab()" style="background:#217346;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">🔗 새 탭에서 열기</button>
-    </div>
-  </div>
-  <div class="xl-bottombar">
-    <div class="xl-stabs"><button class="xl-stab on">배구시트</button><button class="xl-stab-plus">＋</button></div>
-    <div class="xl-statusbar"><span class="xl-sitem" id="pikachu-st">로딩 중…</span><span class="xl-sitem">100%</span></div>
-  </div>
-</div>
-
-<!-- 모바일 전용 안내 (피카츄 배구) -->
-<div class="xl-notify-ov" id="pikachu-mobile-notify">
-  <div class="xl-notify">
-    <div class="xl-notify-title">Microsoft Excel — 실행 오류</div>
-    <div class="xl-notify-body">
-      <div class="xl-notify-ico">⌨️</div>
-      <div class="xl-notify-txt">
-        이 매크로는 <strong>키보드가 필요</strong>하여<br>
-        <strong>PC 환경에서만 실행 가능</strong>합니다.<br><br>
-        <span style="font-size:11px;color:#888">방향키로 이동 · 키보드 조작 게임</span>
-      </div>
-    </div>
-    <div class="xl-notify-btns">
-      <button class="xl-notify-btn ok" onclick="document.getElementById('pikachu-mobile-notify').classList.remove('on')">확인</button>
-    </div>
-  </div>
-</div>
 
 <!-- ════════════════════════════════════════════
      오목 (엑셀 시트)
@@ -655,43 +584,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 </div>
 
 <!-- ════════════════════════════════════════════
-     피카츄 배구 온라인 게임 화면
-════════════════════════════════════════════ -->
-<div id="s-pikachu-game" class="scr">
-  <div class="xl-titlebar">
-    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">피카츄배구_Q4경기결과.xlsx - Microsoft Excel</span></div>
-    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="pkExit()">✕</button></div>
-  </div>
-  <div class="xl-tabs">
-    <button class="xl-tab" onclick="pkExit()">◀ 파일</button>
-    <button class="xl-tab on">홈</button>
-    <button class="xl-tab">삽입</button>
-    <button class="xl-tab">검토</button>
-  </div>
-  <div class="xl-ribbon" style="justify-content:space-between">
-    <div style="display:flex;align-items:center;gap:4px">
-      <button class="xl-rbtn" onclick="pkExit()"><span class="xl-rico">◀</span><span class="xl-rlbl">로비로</span></button>
-      <div class="xl-rsep"></div>
-      <span style="font-size:11px;color:#595959;padding:0 6px">🏐 피카츄 배구 | ← → ↑ 로 조작</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;padding-right:6px">
-      <span style="font-size:10px;color:#888">15점 선취 승리</span>
-    </div>
-  </div>
-  <div class="xl-fbar">
-    <div class="xl-namebox" id="pk-nb">B3</div>
-    <div class="xl-fx">fx</div>
-    <div class="xl-ftext" id="pk-ft">=SCORE("나",0,"상대",0)</div>
-  </div>
-  <!-- 게임 캔버스 -->
-  <div id="pk-area" style="flex:1;display:flex;align-items:center;justify-content:center;background:#F2F2F2;overflow:hidden;min-height:0">
-    <canvas id="pk-canvas" style="display:block;max-width:100%;max-height:100%;border:1px solid #C8C8C8"></canvas>
-  </div>
-  <div class="xl-bottombar">
-    <div class="xl-stabs"><button class="xl-stab on">경기현황</button><button class="xl-stab">점수판</button><button class="xl-stab-plus">＋</button></div>
-    <div class="xl-statusbar"><span class="xl-sitem" id="pk-st">준비</span><span class="xl-sitem">100%</span></div>
-  </div>
-</div>
 
 <!-- 결과 알림 (공통) -->
 <!-- ════════════════════ 물고기 키우기 ════════════════════ -->
@@ -974,107 +866,147 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.12'; // 업데이트할 때마다 변경
+const BUILD = 'v1.13'; // 업데이트할 때마다 변경
 
 // ── U1U1U1 고정방 & 자동재연결 ─────────────────────────────────────────────
+
+let _tryingRoom = false; // 중복 실행 방지
 
 // 새로고침 전 현재 상태 저장
 function refreshWithState(){
   sessionStorage.setItem('u1_reconnect', JSON.stringify({
-    roomCode, myName: myName||localStorage.getItem('u1_name')||'',
-    isFixed: roomCode==='U1U1U1', ts: Date.now()
+    roomCode, myName: myName||localStorage.getItem('u1_name')||'', ts: Date.now()
   }));
   location.reload(true);
 }
 
-// U1U1U1 고정방: 이름 없으면 먼저 입력
+// U1U1U1 고정방 입장
 function joinFixedRoom(){
-  const savedName=localStorage.getItem('u1_name')||'';
-  if(!myName && !savedName){
-    nameDlgMode='fixed';
-    document.getElementById('name-dlg-title').childNodes[0].textContent='U1U1U1 공개방 ';
-    document.getElementById('name-dlg-create-area').style.display='none';
-    document.getElementById('name-dlg-join-area').style.display='none';
+  if(_tryingRoom) return; // 중복 클릭 방지
+  const savedName = localStorage.getItem('u1_name')||'';
+  const name = myName || savedName;
+  if(!name){
+    // 이름 미설정 → 이름 입력 후 joinFixedRoom 재호출
+    nameDlgMode = 'fixed';
+    document.getElementById('name-dlg-title').childNodes[0].textContent = 'U1U1U1 공개방 입장 ';
+    document.getElementById('name-dlg-create-area').style.display = 'none';
+    document.getElementById('name-dlg-join-area').style.display = 'none';
     document.getElementById('name-dlg').classList.add('on');
-    setTimeout(()=>document.getElementById('f-myname').focus(),120);
+    setTimeout(()=>document.getElementById('f-myname').focus(), 120);
     return;
   }
-  if(!myName) myName=savedName;
+  myName = name;
   tryJoinOrCreate('U1U1U1');
 }
 
-// 참여 시도 → 실패 시 개설
+// 참여 시도 → 8초 안에 열리면 게스트, 실패 시 방장 개설
 function tryJoinOrCreate(code){
-  if(roomPeer){roomPeer.destroy();roomPeer=null;}
-  const cfg={config:{iceServers:[
+  if(_tryingRoom) return;
+  _tryingRoom = true;
+
+  // 기존 연결 정리
+  if(roomPeer){ try{roomPeer.destroy();}catch(e){} roomPeer=null; }
+  roomConn = null;
+
+  const iceCfg = {config:{iceServers:[
     {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun1.l.google.com:19302'},
     {urls:'stun:stun.cloudflare.com:3478'},
-    {urls:'turn:freestun.net:3478',username:'free',credential:'free'},
+    {urls:'turn:freestun.net:3478',    username:'free',credential:'free'},
     {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
   ]}};
-  showJoinStatus('연결 시도 중…','#595959');
-  // 먼저 참여 시도
-  const guestPeer=new Peer(cfg);
-  let joined=false;
-  guestPeer.on('open',()=>{
-    const c=guestPeer.connect('xlroom-'+code,{reliable:true,serialization:'json'});
-    const timeout=setTimeout(()=>{
-      if(!joined){
-        guestPeer.destroy();
-        // 참여 실패 → 개설
-        createRoom(code);
-      }
-    },5000);
-    c.on('open',()=>{
-      joined=true; clearTimeout(timeout);
-      roomPeer=guestPeer; roomConn=c; isHost=false; roomCode=code;
-      c.send({type:'join',name:myName});
-      c.on('data',d=>clientHandleMsg(d));
-      c.on('close',()=>{
-        if(currentGame&&!document.querySelector('.scr.on')?.id?.includes('lobby')){
+
+  showJoinStatus('연결 중… (U1U1U1)','#595959');
+
+  const gp = new Peer(iceCfg);
+  let done = false;
+
+  // 8초 타임아웃: 방 없으면 개설
+  const giveUp = setTimeout(()=>{
+    if(done) return;
+    done = true;
+    try{gp.destroy();}catch(e){}
+    _tryingRoom = false;
+    createRoom(code); // 방장으로 개설
+  }, 8000);
+
+  gp.on('error', ()=>{
+    if(done) return;
+    done = true;
+    clearTimeout(giveUp);
+    try{gp.destroy();}catch(e){}
+    _tryingRoom = false;
+    createRoom(code);
+  });
+
+  gp.on('open', ()=>{
+    const c = gp.connect('xlroom-'+code, {reliable:true, serialization:'json'});
+
+    c.on('open', ()=>{
+      if(done) return; // 이미 타임아웃 처리됨
+      done = true;
+      clearTimeout(giveUp);
+      _tryingRoom = false;
+      // 게스트 참여 성공
+      roomPeer = gp; roomConn = c; isHost = false; roomCode = code;
+      c.send({type:'join', name:myName});
+      c.on('data', d=>clientHandleMsg(d));
+      c.on('close', ()=>{
+        if(currentGame && !document.querySelector('.scr.on')?.id?.includes('lobby')){
           showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
         } else if(roomCode){
-          const delay=Math.max(0,myRoomOrder)*1500;
-          const savedCode=roomCode; roomConn=null;
-          setTimeout(()=>tryJoinOrCreate(savedCode), delay===0?200:delay);
-        } else goHome();
+          const delay = Math.max(0, myRoomOrder) * 1500;
+          const savedCode = roomCode;
+          roomConn = null;
+          setTimeout(()=>tryJoinOrCreate(savedCode), delay===0?300:delay);
+        } else {
+          goHome();
+        }
       });
       showJoinStatus('연결됨 ✓','#217346');
     });
-    c.on('error',()=>{clearTimeout(timeout);if(!joined){guestPeer.destroy();createRoom(code);}});
+
+    c.on('error', ()=>{
+      if(done) return;
+      done = true;
+      clearTimeout(giveUp);
+      try{gp.destroy();}catch(e){}
+      _tryingRoom = false;
+      createRoom(code);
+    });
   });
-  guestPeer.on('error',()=>createRoom(code));
 }
 
-// 이름 입력 후 처리 (고정방 모드)
-const _origConfirmName=confirmName;
-function confirmName(){
+// confirmName: fixed 모드 처리 추가 (기존 함수에 직접 패치)
+// → 기존 confirmName 정의 안에서 nameDlgMode==='fixed' 케이스 처리
+// 아래는 고정방 이름 저장 + 기존 흐름 유지를 위한 wrapper
+const _u1ConfirmName = window.confirmName || confirmName;
+window.confirmName = function confirmName(){
   if(nameDlgMode==='fixed'){
-    const name=document.getElementById('f-myname').value.trim();
+    const name = document.getElementById('f-myname').value.trim();
     if(!name){document.getElementById('f-myname').style.borderColor='#C00000';return;}
-    myName=name; localStorage.setItem('u1_name',name);
-    hideDlg('name-dlg'); tryJoinOrCreate('U1U1U1'); return;
+    myName = name; localStorage.setItem('u1_name', name);
+    hideDlg('name-dlg');
+    tryJoinOrCreate('U1U1U1');
+    return;
   }
-  // 이름 저장
-  const n=document.getElementById('f-myname').value.trim();
-  if(n) localStorage.setItem('u1_name',n);
-  _origConfirmName();
-}
+  // 이름 localStorage 저장 후 기존 처리
+  const n = document.getElementById('f-myname').value.trim();
+  if(n) localStorage.setItem('u1_name', n);
+  _u1ConfirmName();
+};
 
-// 페이지 로드 시 자동재연결 체크
-(function autoReconnect(){
-  const raw=sessionStorage.getItem('u1_reconnect');
+// 페이지 로드 시 자동재연결
+(function(){
+  const raw = sessionStorage.getItem('u1_reconnect');
   if(!raw) return;
   sessionStorage.removeItem('u1_reconnect');
   try{
-    const d=JSON.parse(raw);
-    if(Date.now()-d.ts>40000) return; // 40초 이상 지나면 포기
-    if(!d.roomCode||!d.myName) return;
-    myName=d.myName;
-    setTimeout(()=>{
-      document.getElementById('f-status-reconnect')&&(document.getElementById('f-status-reconnect').textContent='재연결 중…');
-      tryJoinOrCreate(d.roomCode);
-    },1200); // 페이지 로드 후 잠깐 대기
+    const d = JSON.parse(raw);
+    if(Date.now()-d.ts > 30000 || !d.roomCode || !d.myName) return;
+    myName = d.myName;
+    setTimeout(()=>tryJoinOrCreate(d.roomCode), 1000);
   }catch(e){}
 })();
 
@@ -1091,8 +1023,6 @@ document.addEventListener('keydown',e=>{
   if((e.key==='p'||e.key==='P')&&bossKeyOn){
     bossKeyOn=false;
     document.getElementById('boss-overlay').style.display='none';
-    // 피카츄 재개
-    if(!PK.gameOver&&PK.ball&&!PK.running){PK.running=true;PK.raf=requestAnimationFrame(pkLoop);}
     // 오목 재개
     if(!oOver&&oBoard&&oMode==='online') omokStartTurn();
     // 상대에게 알림
@@ -1463,14 +1393,12 @@ function clientHandleMsg(msg){
   } else if(msg.type==='game_move'){
     if(currentGame?.type==='omok') omokOnlineMove(msg.data);
     else if(currentGame?.type==='baseball') bbOnlineMove(msg.data);
-    else if(currentGame?.type==='pikachu')  pkOnlineMove(msg.data);
   } else if(msg.type==='host_order'){
     // 입장 순서에서 내 위치 파악 (0 = 가장 먼저 들어온 게스트)
     myRoomOrder=msg.order.indexOf(myPeerId);
   } else if(msg.type==='opponent_quit'){
     // 진행 중인 게임 정리
     stopOmokTimer();
-    if(PK.running){PK.running=false;PK.gameOver=true;pkUnbindKeys();if(PK.raf){cancelAnimationFrame(PK.raf);PK.raf=null;}}
     bbOver=true;
     currentGame=null;
     showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
@@ -1602,7 +1530,6 @@ function rejectChallenge(){
 function startOnlineGame(gameType){
   if(gameType==='omok')     startOmokOnline();
   else if(gameType==='baseball') startBBOnline();
-  else if(gameType==='pikachu')  startPikachuOnline();
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1613,47 +1540,6 @@ let oBoard,oTurn,oOver,oMode,oMyColor,oAiColor,oDiff,oTimeLimit,oTimerLeft,oTime
 
 function startSoloGame(g){if(g==='omok'){oMode='ai';show('s-omok');buildOmokTable();omokNewGame();}else{bbMode='ai';openBBSetup();}}
 
-// ── 피카츄 배구 ───────────────────────────────────────────────────────────────
-function isMobileDevice(){
-  return ('ontouchstart' in window) ||
-         (navigator.maxTouchPoints > 0) ||
-         window.innerWidth < 769 ||
-         /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-function openPikachuVball(){
-  if(isMobileDevice()){
-    document.getElementById('pikachu-mobile-notify').classList.add('on');
-    return;
-  }
-  show('s-pikachu');
-  // iframe 로드 체크
-  const frame=document.getElementById('pikachu-frame');
-  const st=document.getElementById('pikachu-st');
-  st.textContent='로딩 중…';
-  // 5초 후에도 로드 안되면 fallback 표시
-  let loaded=false;
-  frame.onload=()=>{
-    loaded=true;
-    st.textContent='준비';
-    document.getElementById('pikachu-fallback').style.display='none';
-  };
-  setTimeout(()=>{
-    if(!loaded){
-      st.textContent='로드 실패 — 새 탭 이용 권장';
-      document.getElementById('pikachu-fallback').style.display='flex';
-    }
-  },5000);
-}
-function closePikachu(){
-  // iframe 멈추기 (src 초기화)
-  const frame=document.getElementById('pikachu-frame');
-  frame.src='about:blank';
-  setTimeout(()=>{ frame.src='https://gorisanson.github.io/pikachu-volleyball/ko/'; },100);
-  fromLobby ? (fromLobby=false, show('s-lobby')) : show('s-solo');
-}
-function openPikachuNewTab(){
-  window.open('https://gorisanson.github.io/pikachu-volleyball/ko/','_blank');
-}
 function startOmokOnline(){oMode='online';oMyColor=currentGame.myColor;oAiColor=3-oMyColor;show('s-omok');buildOmokTable();omokNewGame();showIngameChat(true);}
 
 function buildOmokTable(){
@@ -2035,339 +1921,6 @@ function sendIngameChat(){
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 🏐 피카츄 배구 온라인
-// ══════════════════════════════════════════════════════════════════════════════
-const PK = {
-  cvs:null, ctx:null, W:480, H:280, FLOOR:250,
-  NET_W:12, NET_H:80,
-  BALL_R:12, GRAVITY:0.22, JUMP_VEL:-9, MOVE_SPD:3.8, PR:24,
-  running:false, gameOver:false, frameCount:0,
-  myColor:1, isAuth:false,
-  ball:null, p1:null, p2:null,
-  myKeys:{l:false,r:false,u:false},
-  theirKeys:{l:false,r:false,u:false},
-  serveTimer:0, raf:null,
-  keyHandler:null, keyUpHandler:null,
-};
-
-function startPikachuOnline(){
-  PK.myColor=currentGame.myColor;
-  PK.isAuth=(PK.myColor===1);
-  PK.running=true; PK.gameOver=false; PK.frameCount=0;
-  PK.p1={x:0,y:0,vy:0,vx:0,onGround:true,score:0};
-  PK.p2={x:0,y:0,vy:0,vx:0,onGround:true,score:0};
-  PK.theirKeys={l:false,r:false,u:false};
-  show('s-pikachu-game');
-  showIngameChat(true);
-  // 캔버스 초기화
-  setTimeout(()=>{
-    const area=document.getElementById('pk-area');
-    PK.cvs=document.getElementById('pk-canvas');
-    PK.ctx=PK.cvs.getContext('2d');
-    // 논리 좌표 고정 (양쪽 기기가 동일한 좌표계 사용)
-    PK.W=480; PK.H=288; PK.FLOOR=256; PK.NET_H=86;
-    PK.cvs.width=PK.W; PK.cvs.height=PK.H;
-    pkResetPositions(1);
-    pkBindKeys();
-    if(PK.raf) cancelAnimationFrame(PK.raf);
-    PK.raf=requestAnimationFrame(pkLoop);
-  },80);
-}
-
-function pkResetPositions(serveFor){
-  const W=PK.W, NX=W/2;
-  PK.ball={x:serveFor===1?W*0.28:W*0.72, y:PK.FLOOR-120,
-            vx:0, vy:0}; // 공 건드리면 시작
-  PK.p1.x=W*0.22; PK.p1.y=PK.FLOOR; PK.p1.vy=0; PK.p1.onGround=true;
-  PK.p2.x=W*0.78; PK.p2.y=PK.FLOOR; PK.p2.vy=0; PK.p2.onGround=true;
-  PK.serveTimer=70;
-}
-
-function pkBindKeys(){
-  PK.keyHandler=e=>{
-    if(!PK.running)return;
-    if(e.key==='ArrowLeft')  PK.myKeys.l=true;
-    if(e.key==='ArrowRight') PK.myKeys.r=true;
-    if(e.key==='ArrowUp')    PK.myKeys.u=true;
-    if(['ArrowLeft','ArrowRight','ArrowUp'].includes(e.key)) e.preventDefault();
-  };
-  PK.keyUpHandler=e=>{
-    if(e.key==='ArrowLeft')  PK.myKeys.l=false;
-    if(e.key==='ArrowRight') PK.myKeys.r=false;
-    if(e.key==='ArrowUp')    PK.myKeys.u=false;
-  };
-  document.addEventListener('keydown',PK.keyHandler);
-  document.addEventListener('keyup',  PK.keyUpHandler);
-}
-function pkUnbindKeys(){
-  if(PK.keyHandler)   document.removeEventListener('keydown',PK.keyHandler);
-  if(PK.keyUpHandler) document.removeEventListener('keyup',  PK.keyUpHandler);
-}
-
-function pkLoop(){
-  if(!PK.running){return;}
-  if(PK.isAuth){
-    pkUpdatePlayer(PK.p1, PK.myKeys,    1);
-    pkUpdatePlayer(PK.p2, PK.theirKeys, 2);
-    pkUpdateBall();
-    pkCheckScore();
-    if(PK.frameCount%2===0) pkSendState(); // 30fps 전송
-  } else {
-    pkSendKeys(); // 60fps 키 전송
-  }
-  pkRender();
-  PK.frameCount++;
-  PK.raf=requestAnimationFrame(pkLoop);
-}
-
-function pkUpdatePlayer(p,keys,side){
-  const NX=PK.W/2, NW=PK.NET_W, PR=PK.PR;
-  const boundary=side===1 ? NX-NW/2-PR : NX+NW/2+PR;
-  p.vx=keys.l?-PK.MOVE_SPD:(keys.r?PK.MOVE_SPD:0);
-  p.x+=p.vx;
-  if(side===1) p.x=Math.max(PR,Math.min(boundary,p.x));
-  else         p.x=Math.max(boundary,Math.min(PK.W-PR,p.x));
-  if(keys.u&&p.onGround){p.vy=PK.JUMP_VEL;p.onGround=false;}
-  p.vy+=PK.GRAVITY; p.y+=p.vy;
-  if(p.y>=PK.FLOOR){p.y=PK.FLOOR;p.vy=0;p.onGround=true;}
-}
-
-function pkUpdateBall(){
-  if(PK.serveTimer>0){
-    // 서브 대기 중: 공 정지, 충돌 시 시작
-    pkBallPlayerHit(PK.p1,1,true);
-    pkBallPlayerHit(PK.p2,2,true);
-    return;
-  }
-  const b=PK.ball, R=PK.BALL_R, W=PK.W, NX=W/2, NW=PK.NET_W, NT=PK.FLOOR-PK.NET_H;
-  b.vy+=PK.GRAVITY; b.x+=b.vx; b.y+=b.vy;
-  // 벽
-  if(b.x-R<=0){b.x=R;b.vx=Math.abs(b.vx);}
-  if(b.x+R>=W){b.x=W-R;b.vx=-Math.abs(b.vx);}
-  // 네트
-  if(b.y+R>=NT&&b.y-R<=PK.FLOOR){
-    const inNet=Math.abs(b.x-NX)<NW/2+R;
-    if(inNet&&b.y+R>=NT){
-      if(b.x<NX){b.x=NX-NW/2-R;b.vx=-Math.abs(b.vx)*0.85;}
-      else       {b.x=NX+NW/2+R;b.vx= Math.abs(b.vx)*0.85;}
-      if(b.vy>0)b.vy*=-0.7;
-    }
-  }
-  // 플레이어 충돌
-  pkBallPlayerHit(PK.p1,1); pkBallPlayerHit(PK.p2,2);
-}
-
-function pkBallPlayerHit(p,side,serveMode){
-  const b=PK.ball, R=PK.BALL_R, PR=PK.PR;
-  // 타격 포인트를 캐릭터 상단 (머리/손)으로 올려서 원형 느낌
-  const cx=p.x, cy=p.y-PR*1.1;
-  // 타원형 히트박스: 좌우 좁고 위아래 넓게 (사각형 평면 느낌 제거)
-  const hw=PR*0.75, hh=PR*0.95; // 가로폭 줄임
-  const dx=b.x-cx, dy=b.y-cy;
-  // 타원 내부 판정
-  const ellipseDist=Math.sqrt((dx/hw)**2+(dy/hh)**2);
-  const minEllipse=1+R/Math.min(hw,hh);
-  if(ellipseDist<minEllipse&&ellipseDist>0.01){
-    if(serveMode){PK.serveTimer=0;} // 서브 시작
-    const nx=dx/hw/ellipseDist*(1/hw)/Math.sqrt((1/hw)**2+(1/hh)**2+1e-9);
-    const ny=dy/hh/ellipseDist*(1/hh)/Math.sqrt((1/hw)**2+(1/hh)**2+1e-9);
-    // 튕기는 방향
-    const dot=b.vx*nx+b.vy*ny;
-    b.vx=b.vx-2*dot*nx + p.vx*0.35;
-    b.vy=b.vy-2*dot*ny - 2.5;
-    if(b.vy>-4)b.vy=-6;
-    const spd=Math.sqrt(b.vx**2+b.vy**2);
-    if(spd>8){b.vx*=8/spd;b.vy*=8/spd;}
-    if(spd<2.5){b.vx*=2.5/spd;b.vy*=2.5/spd;}
-    // 공을 히트박스 밖으로 밀어내기
-    const pushX=cx+dx/ellipseDist*hw*minEllipse/hw;
-    const pushY=cy+dy/ellipseDist*hh*minEllipse/hh;
-    b.x=pushX; b.y=pushY;
-  }
-}
-
-function pkCheckScore(){
-  const b=PK.ball;
-  if(b.y+PK.BALL_R>=PK.FLOOR){
-    const scorer=b.x<PK.W/2?2:1; // 바닥 어느 코트?
-    if(scorer===1)PK.p1.score++; else PK.p2.score++;
-    pkUpdateScoreUI();
-    if(PK.p1.score>=15||PK.p2.score>=15){
-      pkSendState(); // 최종 점수를 게스트에 먼저 전송
-      pkEndGame(); return;
-    }
-    pkResetPositions(scorer);
-    pkSendState();
-  }
-}
-
-function pkEndGame(){
-  PK.running=false; PK.gameOver=true;
-  pkUnbindKeys();
-  const iWon=(PK.myColor===1&&PK.p1.score>=15)||(PK.myColor===2&&PK.p2.score>=15);
-  showResultNotify(iWon?'🏆':'😢',
-    iWon?`승리! 🏐\n${PK.p1.score} : ${PK.p2.score}`:
-         `패배 😢\n${PK.p1.score} : ${PK.p2.score}`);
-  // game_end 대신 pk_gameover로 전달 (game_end는 탈주 처리되므로)
-  sendGameMsg({type:'game_move',data:{type:'pk_gameover',
-    s1:PK.p1.score, s2:PK.p2.score}});
-  currentGame=null;
-}
-
-function pkSendState(){
-  const b=PK.ball;
-  sendGameMsg({type:'game_move',data:{type:'pk_state',
-    b:{x:b.x,y:b.y,vx:b.vx,vy:b.vy},
-    p1:{x:PK.p1.x,y:PK.p1.y,s:PK.p1.score},
-    p2:{x:PK.p2.x,y:PK.p2.y,s:PK.p2.score},
-    sv:PK.serveTimer,
-  }});
-}
-function pkSendKeys(){
-  sendGameMsg({type:'game_move',data:{type:'pk_keys',
-    l:PK.myKeys.l,r:PK.myKeys.r,u:PK.myKeys.u}});
-}
-
-function pkOnlineMove(data){
-  if(data.type==='pk_state'&&!PK.isAuth){
-    const b=data.b;
-    PK.ball.x=b.x;PK.ball.y=b.y;PK.ball.vx=b.vx;PK.ball.vy=b.vy;
-    PK.p1.x=data.p1.x;PK.p1.y=data.p1.y;PK.p1.score=data.p1.s;
-    PK.p2.x=data.p2.x;PK.p2.y=data.p2.y;PK.p2.score=data.p2.s;
-    PK.serveTimer=data.sv;
-    pkUpdateScoreUI();
-    if((data.p1.s>=15||data.p2.s>=15)&&!PK.gameOver){
-      PK.running=false;PK.gameOver=true;pkUnbindKeys();
-      const iWon=PK.myColor===2&&data.p2.s>=15;
-      showResultNotify(iWon?'🏆':'😢',
-        iWon?`승리! 🏐\n${data.p1.s}:${data.p2.s}`:`패배 😢\n${data.p1.s}:${data.p2.s}`);
-    }
-  } else if(data.type==='pk_gameover'&&!PK.isAuth){
-    if(!PK.gameOver){
-      PK.running=false;PK.gameOver=true;pkUnbindKeys();
-      const iWon=(PK.myColor===2&&data.s2>=15)||(PK.myColor===1&&data.s1>=15);
-      showResultNotify(iWon?'🏆':'😢',
-        iWon?`승리! 🏐\n${data.s1} : ${data.s2}`:`패배 😢\n${data.s1} : ${data.s2}`);
-    }
-  } else if(data.type==='pk_keys'&&PK.isAuth){
-    PK.theirKeys.l=data.l;PK.theirKeys.r=data.r;PK.theirKeys.u=data.u;
-  }
-}
-
-function pkUpdateScoreUI(){
-  const myS=PK.myColor===1?PK.p1.score:PK.p2.score;
-  const theirS=PK.myColor===1?PK.p2.score:PK.p1.score;
-  const ftEl=document.getElementById('pk-ft');
-  if(ftEl)ftEl.textContent=`=SCORE("나",${myS},"상대",${theirS})`;
-  const stEl=document.getElementById('pk-st');
-  if(stEl)stEl.textContent=`${myS} : ${theirS} | 15점 선취 승리 | ← → ↑`;
-}
-
-function pkExit(){
-  PK.running=false;pkUnbindKeys();
-  if(PK.raf){cancelAnimationFrame(PK.raf);PK.raf=null;}
-  showIngameChat(false);
-  if(currentGame){sendGameMsg({type:'game_end',data:{}});currentGame=null;}
-  show('s-lobby');
-}
-
-// ── 렌더링 ──────────────────────────────────────────────────────────────────
-function pkRender(){
-  if(!PK.ctx||!PK.p1||!PK.p2||!PK.ball)return;
-  const c=PK.ctx;
-  const W=480, H=288, FL=256, NX=240, NW=12, NT=FL-86;
-
-  // ── 엑셀 셀 그리드 배경 ──
-  c.fillStyle='#FFFFFF';c.fillRect(0,0,W,H);
-  c.strokeStyle='#D0D0D0';c.lineWidth=0.5;
-  const CW=30,CH=20;
-  for(let x=0;x<=W;x+=CW){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
-  for(let y=0;y<=H;y+=CH){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
-
-  // 행/열 헤더
-  const XH=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P'];
-  c.fillStyle='#9E9E9E';c.font='7px monospace';c.textAlign='center';
-  for(let i=0;i<XH.length;i++) c.fillText(XH[i],i*CW+CW/2,8);
-  c.textAlign='right';
-  for(let i=0;i<Math.ceil(H/CH);i++) c.fillText(i+1,17,i*CH+CH*0.72);
-
-  // ── 바닥선 (굵은 행 구분선) ──
-  c.strokeStyle='#888';c.lineWidth=2;
-  c.beginPath();c.moveTo(0,FL);c.lineTo(W,FL);c.stroke();
-  // 바닥 아래 (연두 조건부서식 느낌)
-  c.fillStyle='rgba(198,224,180,0.3)';c.fillRect(0,FL,W,H-FL);
-
-  // ── 네트 (열 고정 구분선) ──
-  c.strokeStyle='#217346';c.lineWidth=3;
-  c.beginPath();c.moveTo(NX,NT);c.lineTo(NX,FL);c.stroke();
-  c.fillStyle='#217346';c.fillRect(NX-5,NT-4,10,7);
-
-  // ── 선수 (조건부서식 셀 스타일) ──
-  const oppName=currentGame?.opponentName||'상대';
-  const p1IsMe=PK.myColor===1;
-  pkDrawXlCell(c,PK.p1.x,PK.p1.y,'#4472C4','#1F3864',p1IsMe?'나':oppName);
-  pkDrawXlCell(c,PK.p2.x,PK.p2.y,'#ED7D31','#843C00',p1IsMe?oppName:'나');
-
-  // ── 공 (데이터 마커) ──
-  const b=PK.ball,BR=PK.BALL_R;
-  c.fillStyle='rgba(0,0,0,0.1)';
-  c.beginPath();c.ellipse(b.x,FL+2,BR*0.8,3.5,0,0,Math.PI*2);c.fill();
-  const bg=c.createRadialGradient(b.x-BR*0.25,b.y-BR*0.25,0.5,b.x,b.y,BR);
-  bg.addColorStop(0,'#FFFDE7');bg.addColorStop(0.5,'#FFD700');bg.addColorStop(1,'#FF8F00');
-  c.fillStyle=bg;c.beginPath();c.arc(b.x,b.y,BR,0,Math.PI*2);c.fill();
-  c.strokeStyle='#BF360C';c.lineWidth=1.5;c.stroke();
-
-  // ── 점수 (셀 스타일 박스) ──
-  const myS=PK.myColor===1?PK.p1.score:PK.p2.score;
-  const thS=PK.myColor===1?PK.p2.score:PK.p1.score;
-  // 내 점수
-  c.fillStyle='rgba(68,114,196,0.12)';c.strokeStyle='#4472C4';c.lineWidth=1;
-  c.fillRect(2,2,70,18);c.strokeRect(2,2,70,18);
-  c.font='bold 11px monospace';c.textAlign='left';c.fillStyle='#1F3864';
-  c.fillText(`나: ${myS}`,7,14);
-  // 상대 점수
-  c.fillStyle='rgba(237,125,49,0.12)';c.strokeStyle='#ED7D31';c.lineWidth=1;
-  c.fillRect(W-72,2,70,18);c.strokeRect(W-72,2,70,18);
-  c.textAlign='right';c.fillStyle='#843C00';
-  c.fillText(`상대: ${thS}`,W-7,14);
-
-  // ── 서브 대기 ──
-  if(PK.serveTimer>20){
-    c.fillStyle='rgba(33,115,70,0.88)';
-    const sw=130,sh=22,sx=NX-sw/2,sy=H*0.38;
-    c.fillRect(sx,sy,sw,sh);
-    c.strokeStyle='#1A5C35';c.lineWidth=1;c.strokeRect(sx,sy,sw,sh);
-    c.font='bold 11px monospace';c.textAlign='center';c.fillStyle='#fff';
-    c.fillText('서브 준비 중…',NX,sy+14);
-  }
-
-  // 수식창 업데이트
-  const ftEl=document.getElementById('pk-ft');
-  if(ftEl)ftEl.textContent=`=SCORE("나",${myS},"상대",${thS})`;
-  const stEl=document.getElementById('pk-st');
-  if(stEl)stEl.textContent=`${myS} : ${thS} | 15점 선취 | ← → ↑ 조작`;
-}
-
-function pkDrawXlCell(c,x,y,fill,dark,label){
-  const PR=PK.PR;
-  const pw=PR*1.9,ph=PR*2.1,px=x-pw/2,py=y-ph;
-  // 그림자
-  c.fillStyle='rgba(0,0,0,0.1)';c.fillRect(px+3,py+3,pw,ph);
-  // 셀 본문
-  c.fillStyle=fill+'22';c.fillRect(px,py,pw,ph);
-  // 왼쪽 액센트 바 (Excel 데이터바 스타일)
-  c.fillStyle=fill;c.fillRect(px,py,5,ph);
-  // 위쪽 테두리
-  c.fillRect(px,py,pw,3);
-  // 셀 테두리
-  c.strokeStyle=dark;c.lineWidth=1.5;c.strokeRect(px,py,pw,ph);
-  // 텍스트
-  const fs=Math.max(8,Math.min(11,pw/label.length*1.1));
-  c.font=`bold ${fs}px 맑은 고딕,sans-serif`;
-  c.textAlign='center';c.fillStyle=dark;
-  c.fillText(label.length>4?label.slice(0,3)+'…':label, x, py+ph*0.55);
-}
-
 // ══════════════════════════════════════════════════════════════════════════════
 // 🐟 물고기 키우기
 // ══════════════════════════════════════════════════════════════════════════════
