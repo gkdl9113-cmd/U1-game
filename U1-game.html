@@ -408,6 +408,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <span>방 코드: <span class="lobby-code" id="lobby-code-display">------</span></span>
       <div style="display:flex;gap:6px">
         <button class="lobby-exit-btn" onclick="copyLobbyCode()">복사</button>
+        <button class="lobby-exit-btn" onclick="changeNickname()">닉네임</button>
         <button class="lobby-exit-btn" onclick="exitLobby()">나가기</button>
       </div>
     </div>
@@ -866,7 +867,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.16'; // 업데이트할 때마다 변경
+const BUILD = 'v1.17'; // 업데이트할 때마다 변경
 
 // ── U1U1U1 고정방 & 자동재연결 ─────────────────────────────────────────────
 
@@ -882,21 +883,18 @@ function refreshWithState(){
 
 // U1U1U1 고정방 입장
 function joinFixedRoom(){
-  if(_tryingRoom) return; // 중복 클릭 방지
-  const savedName = localStorage.getItem('u1_name')||'';
-  const name = myName || savedName;
-  if(!name){
-    // 이름 미설정 → 이름 입력 후 joinFixedRoom 재호출
-    nameDlgMode = 'fixed';
-    document.getElementById('name-dlg-title').childNodes[0].textContent = 'U1U1U1 공개방 입장 ';
-    document.getElementById('name-dlg-create-area').style.display = 'none';
-    document.getElementById('name-dlg-join-area').style.display = 'none';
-    document.getElementById('name-dlg').classList.add('on');
-    setTimeout(()=>document.getElementById('f-myname').focus(), 120);
-    return;
-  }
-  myName = name;
-  tryJoinOrCreate('U1U1U1');
+  if(_tryingRoom) return;
+  // 항상 다이얼로그 표시 (저장된 이름 미리 채움, 변경 가능)
+  nameDlgMode = 'fixed';
+  document.getElementById('name-dlg-title').childNodes[0].textContent = 'U1U1U1 공개방 입장 ';
+  document.getElementById('name-dlg-create-area').style.display = 'none';
+  document.getElementById('name-dlg-join-area').style.display = 'none';
+  // 저장된 이름 미리 채우기
+  const savedName = myName || localStorage.getItem('u1_name') || '';
+  const nameInput = document.getElementById('f-myname');
+  nameInput.value = savedName;
+  document.getElementById('name-dlg').classList.add('on');
+  setTimeout(()=>{ nameInput.focus(); nameInput.select(); }, 120);
 }
 
 // 참여 시도 → 8초 안에 열리면 게스트, 실패 시 방장 개설
@@ -1536,6 +1534,25 @@ function sendChat(){
   else roomConn?.send({type:'chat',text});
 }
 function copyLobbyCode(){navigator.clipboard?.writeText(roomCode).then(()=>alert('코드 복사됨: '+roomCode));}
+function changeNickname(){
+  const newName = prompt('새 닉네임을 입력하세요', myName||'');
+  if(newName===null) return; // 취소
+  const trimmed = newName.trim();
+  if(!trimmed){alert('닉네임을 입력해주세요');return;}
+  myName = trimmed;
+  localStorage.setItem('u1_name', trimmed);
+  // 로비 참여자 목록에 이름 변경 알림
+  if(isHost){
+    lobbyPlayers=lobbyPlayers.map(p=>p.id===myPeerId?{...p,name:trimmed}:p);
+    hostUpdateLobbyPlayers();
+    addChatSys(myName+'으로 닉네임을 변경했습니다');
+  } else if(roomConn?.open){
+    roomConn.send({type:'chat', text:`닉네임을 '${trimmed}'으로 변경했습니다`});
+    // 로비에서 자신의 이름 업데이트
+    lobbyPlayers=lobbyPlayers.map(p=>p.id===myPeerId?{...p,name:trimmed}:p);
+    renderLobby();
+  }
+}
 function lobbyStartSolo(g){
   fromLobby=true;
   if(g==='omok'){oMode='ai';show('s-omok');buildOmokTable();omokNewGame();}
