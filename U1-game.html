@@ -866,7 +866,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.14'; // 업데이트할 때마다 변경
+const BUILD = 'v1.15'; // 업데이트할 때마다 변경
 
 // ── U1U1U1 고정방 & 자동재연결 ─────────────────────────────────────────────
 
@@ -917,6 +917,7 @@ function tryJoinOrCreate(code){
     {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
   ]}};
 
+  u1Toast('🔌 U1U1U1 연결 중…');
   showJoinStatus('연결 중… (U1U1U1)','#595959');
 
   const gp = new Peer(iceCfg);
@@ -964,6 +965,7 @@ function tryJoinOrCreate(code){
           goHome();
         }
       });
+      u1Toast('✅ U1U1U1 입장 완료!','#217346');
       showJoinStatus('연결됨 ✓','#217346');
     });
 
@@ -1180,6 +1182,7 @@ function createRoom(code){
     document.getElementById('lobby-code-display').textContent=roomCode;
     renderLobby();
     show('s-lobby');
+    if(roomCode==='U1U1U1') u1Toast('⚡ U1U1U1 방장으로 입장!','#217346');
     addChatSys('방이 생성되었습니다. 코드: '+roomCode);
   });
   roomPeer.on('connection', conn=>{
@@ -1200,7 +1203,17 @@ function createRoom(code){
       hostPlayerLeft(conn.peer);
     });
   });
-  roomPeer.on('error', e=>alert('오류: '+e.type));
+  roomPeer.on('error', e=>{
+    if(e.type==='unavailable-id'){
+      // ID 이미 사용 중 → 잠시 후 참여 시도
+      u1Toast('방이 이미 열려 있습니다. 입장 시도 중…');
+      isHost=false; roomPeer=null;
+      setTimeout(()=>tryJoinOrCreate(code), 2500);
+    } else {
+      u1Toast('연결 오류: '+e.type+' — 잠시 후 다시 시도하세요');
+      _tryingRoom=false;
+    }
+  });
 }
 
 function joinRoom(code){
@@ -1274,13 +1287,30 @@ function joinRoom(code){
   });
 }
 function showJoinStatus(msg, color){
-  // name-dlg 상태 표시
   let st=document.getElementById('join-status-line');
   if(!st){
     const dlg=document.querySelector('#name-dlg .xl-dlg-body');
     if(dlg){st=document.createElement('div');st.id='join-status-line';st.style.cssText='font-size:11px;margin-top:6px;padding:4px 6px;border-radius:3px;background:#F5F5F5';dlg.appendChild(st);}
   }
   if(st){st.textContent=msg;st.style.color=color||'#595959';}
+  // U1U1U1 진행 중이면 토스트도 표시
+  u1Toast(msg, color);
+}
+// 항상 보이는 토스트 (U1U1U1 상태용)
+let _u1ToastTimer;
+function u1Toast(msg, color){
+  let el=document.getElementById('u1-toast');
+  if(!el){
+    el=document.createElement('div');
+    el.id='u1-toast';
+    el.style.cssText='position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#1F3864;color:#fff;padding:8px 18px;border-radius:6px;font-size:12px;font-weight:700;z-index:9998;max-width:320px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.3);pointer-events:none;transition:opacity .3s';
+    document.body.appendChild(el);
+  }
+  el.textContent=msg;
+  el.style.background=color==='#C00000'?'#C00000':color==='#217346'?'#217346':'#1F3864';
+  el.style.opacity='1';
+  clearTimeout(_u1ToastTimer);
+  _u1ToastTimer=setTimeout(()=>{el.style.opacity='0';},3500);
 }
 
 // ── 호스트: 메시지 처리 ──────────────────────────────────────────────────────
@@ -2109,7 +2139,7 @@ function fishTick(){
   }
 
   // 수입 (물고기 마리 수 × 단계 수입)
-  if(Math.floor(now/1000)%30===0) FG.money+=2*FG.fishCount; // 30초마다 2원
+  const STAGE_INCOME=[0,2,4,8,18,45]; if(Math.floor(now/1000)%30===0) FG.money+=(STAGE_INCOME[FG.stage]||2)*FG.fishCount;
 
   // XP (포만감 30 이상일 때)
   if(FG.fullness>30 && Math.floor(now/1000)%10===0){
@@ -2148,7 +2178,7 @@ function fishFeedAnim(){
 function fishUpdateStatus(){
   const s=fishStage();
   document.getElementById('f-status').textContent=
-    `${s.name} | 단계: ${FG.stage}/5 | 수입: 2원/30초`;
+    `${s.name} | 단계: ${FG.stage}/5 | 수입: ${[0,2,4,8,18,45][FG.stage]||2}원/30초`;
 }
 
 // ── 진화 ─────────────────────────────────────────────────────────────────────
@@ -2222,13 +2252,18 @@ function fishBuyTank(level){
 function fishBuy(id){
   const item=F_SHOP.find(i=>i.id===id);
   if(!item||FG.money<item.price) return;
-  FG.money-=item.price;
-  if(item.type==='lottery'){hideDlg('f-shop-modal');buyLottery();return;}
+  if(item.type==='lottery'){FG.money-=item.price;hideDlg('f-shop-modal');buyLottery();return;}
   if(item.type==='newfish'){
     if(!FG.isDead){document.getElementById('f-status').textContent='물고기가 살아있을 때는 구매 불필요!';return;}
+    if(FG.fishCount>=FG.tankMax){
+      document.getElementById('f-status').textContent=`수조가 꽉 찼습니다! (${FG.fishCount}/${FG.tankMax}마리) 수조를 먼저 확장하세요.`;
+      return;
+    }
+    FG.money-=item.price;
     FG.stage=1;FG.hp=50;FG.maxHp=50;FG.fullness=60;FG.xp=0;FG.isDead=false;
     fishRenderInfo();fishStartLoops();hideDlg('f-shop-modal');return;
   }
+  FG.money-=item.price;
   if(item.type==='food') FG.food+=item.qty;
   if(item.type==='auto') FG.autoLevel=Math.max(FG.autoLevel,item.level);
   if(item.type==='tank'){
@@ -2264,7 +2299,7 @@ function fishRenderInfo(){
   // 스탯
   document.getElementById('f-atk').textContent=s.atk;
   document.getElementById('f-def').textContent=s.def;
-  document.getElementById('f-income').textContent='2원/30초';
+  document.getElementById('f-income').textContent=([0,2,4,8,18,45][FG.stage]||2)+'원/30초';
   // 돈·먹이
   document.getElementById('f-money').textContent=FG.money;
   document.getElementById('f-food-count').textContent=FG.food;
