@@ -866,7 +866,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.13'; // 업데이트할 때마다 변경
+const BUILD = 'v1.14'; // 업데이트할 때마다 변경
 
 // ── U1U1U1 고정방 & 자동재연결 ─────────────────────────────────────────────
 
@@ -1060,16 +1060,43 @@ function hideDlg(id){document.getElementById(id).classList.remove('on');}
   let h=`<thead><tr><th class="hcorner"></th>`;
   COLS.forEach(c=>h+=`<th class="hrow" style="min-width:26px;width:26px;position:sticky;top:0;z-index:2;background:#F2F2F2;border:1px solid #D0D0D0;font-size:10px;text-align:center">${c}</th>`);
   h+=`</tr></thead><tbody>`;
-  for(let r=1;r<=20;r++){
+  const LOG=[
+    {v:'v1.13',d:'2026-05-21',s:'U1U1U1 버그 수정, 피카츄배구 제거'},
+    {v:'v1.12',d:'2026-05-21',s:'입장 순서 기반 방장 자동 승계'},
+    {v:'v1.11',d:'2026-05-21',s:'U1U1U1 고정방, 업데이트 후 자동재연결'},
+    {v:'v1.10',d:'2026-05-21',s:'물고기 경제 밸런스, 복권 시스템'},
+    {v:'v1.09',d:'2026-05-21',s:'물고기 엑셀배경, 수조확장, 낚시대 하급1~4'},
+    {v:'v1.08',d:'2026-05-21',s:'물고기 사망 수동재시작, 구매비 55원'},
+    {v:'v1.07',d:'2026-05-21',s:'로비에서 물고기 키우기 접근'},
+    {v:'v1.06',d:'2026-05-21',s:'물고기 키우기 방치형 게임 추가'},
+  ];
+  const maxRow=10+LOG.length+2;
+  for(let r=1;r<=maxRow;r++){
     h+=`<tr><td class="hcol">${r}</td>`;
     for(let c=0;c<COLS.length;c++){
-      if(r===2&&c===1){h+=`<td colspan="13" class="htitle-cell">2026년 1분기 업무 포털 대시보드</td>`;c+=12;}
+      if(r===2&&c===1){h+=`<td colspan="${COLS.length-1}" class="htitle-cell">2026년 1분기 업무 포털 대시보드</td>`;c=COLS.length;}
       else if(r===4&&c===1){h+=`<td colspan="3" class="hbtn-cell green" onclick="showNameDlg('create')">🌐 방 만들기<br><span style="font-size:9px;font-weight:400">새 방 코드 설정</span></td>`;c+=2;}
       else if(r===4&&c===4){h+=`<td colspan="3" class="hbtn-cell" style="background:#FFF9C4;color:#7F6000;border-color:#FFC000" onclick="joinFixedRoom()">⚡ U1U1U1<br><span style="font-size:9px;font-weight:400">공개 고정방 바로입장</span></td>`;c+=2;}
       else if(r===4&&c===7){h+=`<td colspan="3" class="hbtn-cell" onclick="showNameDlg('join')">🔗 방 참여<br><span style="font-size:9px;font-weight:400">코드 입력 후 입장</span></td>`;c+=2;}
       else if(r===4&&c===9){h+=`<td colspan="5" class="hbtn-cell" onclick="showSoloGames()">📊 개인 업무<br><span style="font-size:9px;font-weight:400">AI와 혼자 작업</span></td>`;c+=4;}
       else if(r===6&&c===3){h+=`<td colspan="5" style="font-size:10px;color:#595959;padding:3px 8px;border:1px solid #D0D0D0;height:22px;background:#fff">방 생성 또는 코드로 참여</td>`;c+=4;}
       else if(r===6&&c===9){h+=`<td colspan="5" style="font-size:10px;color:#595959;padding:3px 8px;border:1px solid #D0D0D0;height:22px;background:#fff">오목 · 숫자야구 · AI 대전</td>`;c+=4;}
+      else if(r===8&&c===1){h+=`<td colspan="${COLS.length-1}" style="background:#1F3864;color:#fff;font-size:12px;font-weight:800;padding:5px 10px;border:1px solid #1F3864">📋 업데이트 내역</td>`;c=COLS.length;}
+      else if(r===9&&c===1){
+        h+=`<td style="background:#D9E1F2;border:1px solid #B4C4E4;font-size:10px;font-weight:700;padding:2px 6px;text-align:center;min-width:44px">버전</td>`;
+        h+=`<td style="background:#D9E1F2;border:1px solid #B4C4E4;font-size:10px;font-weight:700;padding:2px 6px;text-align:center;min-width:70px">날짜</td>`;
+        h+=`<td colspan="${COLS.length-3}" style="background:#D9E1F2;border:1px solid #B4C4E4;font-size:10px;font-weight:700;padding:2px 8px">변경 내용</td>`;
+        c=COLS.length;
+      }
+      else if(r>=10&&r<10+LOG.length&&c===1){
+        const log=LOG[r-10];
+        const isNew=r===10;
+        const bg=isNew?'#E2EFDA':'#fff'; const bc=isNew?'#A9D18E':'#D0D0D0';
+        h+=`<td style="background:${bg};border:1px solid ${bc};font-size:10px;font-weight:800;padding:2px 6px;text-align:center;color:#217346">${log.v}</td>`;
+        h+=`<td style="background:${bg};border:1px solid ${bc};font-size:10px;padding:2px 6px;text-align:center;color:#595959">${log.d}</td>`;
+        h+=`<td colspan="${COLS.length-3}" style="background:${bg};border:1px solid ${bc};font-size:10px;padding:2px 8px">${log.s}</td>`;
+        c=COLS.length;
+      }
       else{h+=`<td class="hcell"></td>`;}
     }
     h+=`</tr>`;
