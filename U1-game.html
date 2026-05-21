@@ -974,7 +974,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.11'; // 업데이트할 때마다 변경
+const BUILD = 'v1.12'; // 업데이트할 때마다 변경
 
 // ── U1U1U1 고정방 & 자동재연결 ─────────────────────────────────────────────
 
@@ -1030,7 +1030,15 @@ function tryJoinOrCreate(code){
       roomPeer=guestPeer; roomConn=c; isHost=false; roomCode=code;
       c.send({type:'join',name:myName});
       c.on('data',d=>clientHandleMsg(d));
-      c.on('close',()=>{if(currentGame&&!document.querySelector('.scr.on')?.id?.includes('lobby'))showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');else{alert('방장과 연결이 끊겼습니다');goHome();}});
+      c.on('close',()=>{
+        if(currentGame&&!document.querySelector('.scr.on')?.id?.includes('lobby')){
+          showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
+        } else if(roomCode){
+          const delay=Math.max(0,myRoomOrder)*1500;
+          const savedCode=roomCode; roomConn=null;
+          setTimeout(()=>tryJoinOrCreate(savedCode), delay===0?200:delay);
+        } else goHome();
+      });
       showJoinStatus('연결됨 ✓','#217346');
     });
     c.on('error',()=>{clearTimeout(timeout);if(!joined){guestPeer.destroy();createRoom(code);}});
@@ -1095,6 +1103,7 @@ document.addEventListener('keydown',e=>{
 });
 
 let myName='', myPeerId='', roomCode='', isHost=false;
+let myRoomOrder = -1; // 방 입장 순서 (0=첫 번째 게스트)
 let fromLobby=false; // 로비에서 솔로 게임 시작했는지
 let roomPeer=null, roomConn=null;                    // 클라이언트: roomConn = 호스트와의 연결
 let hostConns = new Map();                           // 호스트: peerId→{conn,name,inGame}
@@ -1280,8 +1289,21 @@ function joinRoom(code){
       clearTimeout(timeout);
       if(currentGame&&!document.querySelector('.scr.on')?.id?.includes('lobby')){
         showResultNotify('🏃','상대방이 당신의 실력에 감탄하여 탈주했습니다');
+      } else if(roomCode){
+        // 입장 순서 기반 방장 승계
+        const delay = Math.max(0, myRoomOrder) * 1500; // 0번=즉시, 1번=1.5초, 2번=3초...
+        const savedCode = roomCode;
+        roomConn=null;
+        if(delay===0){
+          // 첫 번째 게스트 → 즉시 방장 개설
+          addChatSys&&addChatSys('방장이 나갔습니다. 방장을 승계합니다…');
+          setTimeout(()=>tryJoinOrCreate(savedCode), 200);
+        } else {
+          // 나머지 → 딜레이 후 참여 (첫 번째 게스트가 개설한 방에 참여)
+          setTimeout(()=>tryJoinOrCreate(savedCode), delay);
+        }
       } else {
-        alert('방장과 연결이 끊겼습니다');goHome();
+        goHome();
       }
     });
     roomConn.on('error',e=>{
@@ -1405,6 +1427,9 @@ function hostUpdateLobbyPlayers(){
   lobbyPlayers=hostGetPlayerList();
   renderLobby();
   hostBroadcast({type:'room_update',players:lobbyPlayers},null);
+  // 입장 순서 목록 전송 (방장 승계용)
+  const order=[...(hostConns.keys())]; // 입장한 순서대로
+  hostBroadcast({type:'host_order',order},null);
 }
 function hostBroadcastPlayerList(){hostUpdateLobbyPlayers();}
 
@@ -1439,6 +1464,9 @@ function clientHandleMsg(msg){
     if(currentGame?.type==='omok') omokOnlineMove(msg.data);
     else if(currentGame?.type==='baseball') bbOnlineMove(msg.data);
     else if(currentGame?.type==='pikachu')  pkOnlineMove(msg.data);
+  } else if(msg.type==='host_order'){
+    // 입장 순서에서 내 위치 파악 (0 = 가장 먼저 들어온 게스트)
+    myRoomOrder=msg.order.indexOf(myPeerId);
   } else if(msg.type==='opponent_quit'){
     // 진행 중인 게임 정리
     stopOmokTimer();
