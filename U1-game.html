@@ -308,6 +308,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="showNameDlg('create')"><span class="xl-rico">🌐</span><span class="xl-rlbl">방 만들기</span></button>
     <button class="xl-rbtn" onclick="showNameDlg('join')"><span class="xl-rico">🔗</span><span class="xl-rlbl">방 참여</span></button>
+    <button class="xl-rbtn" onclick="joinFixedRoom()" style="background:#FFF9C4;border-radius:4px" title="U1U1U1 공개방 - 항상 열려있는 고정방"><span class="xl-rico">⚡</span><span class="xl-rlbl">U1U1U1</span></button>
     <button class="xl-rbtn" onclick="showSoloGames()"><span class="xl-rico">📊</span><span class="xl-rlbl">개인작업</span></button>
   </div>
   <div class="xl-fbar">
@@ -936,7 +937,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     </div>
     <div class="xl-notify-btns">
       <button class="xl-notify-btn" onclick="document.getElementById('update-notify').classList.remove('on')">나중에</button>
-      <button class="xl-notify-btn ok" onclick="location.reload(true)">새로고침</button>
+      <button class="xl-notify-btn ok" onclick="refreshWithState()">새로고침</button>
     </div>
   </div>
 </div>
@@ -973,7 +974,101 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.10'; // 업데이트할 때마다 변경
+const BUILD = 'v1.11'; // 업데이트할 때마다 변경
+
+// ── U1U1U1 고정방 & 자동재연결 ─────────────────────────────────────────────
+
+// 새로고침 전 현재 상태 저장
+function refreshWithState(){
+  sessionStorage.setItem('u1_reconnect', JSON.stringify({
+    roomCode, myName: myName||localStorage.getItem('u1_name')||'',
+    isFixed: roomCode==='U1U1U1', ts: Date.now()
+  }));
+  location.reload(true);
+}
+
+// U1U1U1 고정방: 이름 없으면 먼저 입력
+function joinFixedRoom(){
+  const savedName=localStorage.getItem('u1_name')||'';
+  if(!myName && !savedName){
+    nameDlgMode='fixed';
+    document.getElementById('name-dlg-title').childNodes[0].textContent='U1U1U1 공개방 ';
+    document.getElementById('name-dlg-create-area').style.display='none';
+    document.getElementById('name-dlg-join-area').style.display='none';
+    document.getElementById('name-dlg').classList.add('on');
+    setTimeout(()=>document.getElementById('f-myname').focus(),120);
+    return;
+  }
+  if(!myName) myName=savedName;
+  tryJoinOrCreate('U1U1U1');
+}
+
+// 참여 시도 → 실패 시 개설
+function tryJoinOrCreate(code){
+  if(roomPeer){roomPeer.destroy();roomPeer=null;}
+  const cfg={config:{iceServers:[
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun.cloudflare.com:3478'},
+    {urls:'turn:freestun.net:3478',username:'free',credential:'free'},
+    {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+  ]}};
+  showJoinStatus('연결 시도 중…','#595959');
+  // 먼저 참여 시도
+  const guestPeer=new Peer(cfg);
+  let joined=false;
+  guestPeer.on('open',()=>{
+    const c=guestPeer.connect('xlroom-'+code,{reliable:true,serialization:'json'});
+    const timeout=setTimeout(()=>{
+      if(!joined){
+        guestPeer.destroy();
+        // 참여 실패 → 개설
+        createRoom(code);
+      }
+    },5000);
+    c.on('open',()=>{
+      joined=true; clearTimeout(timeout);
+      roomPeer=guestPeer; roomConn=c; isHost=false; roomCode=code;
+      c.send({type:'join',name:myName});
+      c.on('data',d=>clientHandleMsg(d));
+      c.on('close',()=>{if(currentGame&&!document.querySelector('.scr.on')?.id?.includes('lobby'))showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');else{alert('방장과 연결이 끊겼습니다');goHome();}});
+      showJoinStatus('연결됨 ✓','#217346');
+    });
+    c.on('error',()=>{clearTimeout(timeout);if(!joined){guestPeer.destroy();createRoom(code);}});
+  });
+  guestPeer.on('error',()=>createRoom(code));
+}
+
+// 이름 입력 후 처리 (고정방 모드)
+const _origConfirmName=confirmName;
+function confirmName(){
+  if(nameDlgMode==='fixed'){
+    const name=document.getElementById('f-myname').value.trim();
+    if(!name){document.getElementById('f-myname').style.borderColor='#C00000';return;}
+    myName=name; localStorage.setItem('u1_name',name);
+    hideDlg('name-dlg'); tryJoinOrCreate('U1U1U1'); return;
+  }
+  // 이름 저장
+  const n=document.getElementById('f-myname').value.trim();
+  if(n) localStorage.setItem('u1_name',n);
+  _origConfirmName();
+}
+
+// 페이지 로드 시 자동재연결 체크
+(function autoReconnect(){
+  const raw=sessionStorage.getItem('u1_reconnect');
+  if(!raw) return;
+  sessionStorage.removeItem('u1_reconnect');
+  try{
+    const d=JSON.parse(raw);
+    if(Date.now()-d.ts>40000) return; // 40초 이상 지나면 포기
+    if(!d.roomCode||!d.myName) return;
+    myName=d.myName;
+    setTimeout(()=>{
+      document.getElementById('f-status-reconnect')&&(document.getElementById('f-status-reconnect').textContent='재연결 중…');
+      tryJoinOrCreate(d.roomCode);
+    },1200); // 페이지 로드 후 잠깐 대기
+  }catch(e){}
+})();
 
 // ── 상사 크리 보스키 ────────────────────────────────────────────────────────
 let bossKeyOn=false;
@@ -1030,8 +1125,9 @@ function hideDlg(id){document.getElementById(id).classList.remove('on');}
     h+=`<tr><td class="hcol">${r}</td>`;
     for(let c=0;c<COLS.length;c++){
       if(r===2&&c===1){h+=`<td colspan="13" class="htitle-cell">2026년 1분기 업무 포털 대시보드</td>`;c+=12;}
-      else if(r===4&&c===2){h+=`<td colspan="4" class="hbtn-cell green" onclick="showNameDlg('create')">🌐 방 만들기<br><span style="font-size:9px;font-weight:400">새 방 코드 설정</span></td>`;c+=3;}
-      else if(r===4&&c===6){h+=`<td colspan="4" class="hbtn-cell" onclick="showNameDlg('join')">🔗 방 참여<br><span style="font-size:9px;font-weight:400">코드 입력 후 입장</span></td>`;c+=3;}
+      else if(r===4&&c===1){h+=`<td colspan="3" class="hbtn-cell green" onclick="showNameDlg('create')">🌐 방 만들기<br><span style="font-size:9px;font-weight:400">새 방 코드 설정</span></td>`;c+=2;}
+      else if(r===4&&c===4){h+=`<td colspan="3" class="hbtn-cell" style="background:#FFF9C4;color:#7F6000;border-color:#FFC000" onclick="joinFixedRoom()">⚡ U1U1U1<br><span style="font-size:9px;font-weight:400">공개 고정방 바로입장</span></td>`;c+=2;}
+      else if(r===4&&c===7){h+=`<td colspan="3" class="hbtn-cell" onclick="showNameDlg('join')">🔗 방 참여<br><span style="font-size:9px;font-weight:400">코드 입력 후 입장</span></td>`;c+=2;}
       else if(r===4&&c===9){h+=`<td colspan="5" class="hbtn-cell" onclick="showSoloGames()">📊 개인 업무<br><span style="font-size:9px;font-weight:400">AI와 혼자 작업</span></td>`;c+=4;}
       else if(r===6&&c===3){h+=`<td colspan="5" style="font-size:10px;color:#595959;padding:3px 8px;border:1px solid #D0D0D0;height:22px;background:#fff">방 생성 또는 코드로 참여</td>`;c+=4;}
       else if(r===6&&c===9){h+=`<td colspan="5" style="font-size:10px;color:#595959;padding:3px 8px;border:1px solid #D0D0D0;height:22px;background:#fff">오목 · 숫자야구 · AI 대전</td>`;c+=4;}
@@ -2444,7 +2540,7 @@ function fishFeedAnim(){
 function fishUpdateStatus(){
   const s=fishStage();
   document.getElementById('f-status').textContent=
-    `${s.name} | 단계: ${FG.stage}/5 | 수입: ${s.income}원/20초`;
+    `${s.name} | 단계: ${FG.stage}/5 | 수입: 2원/30초`;
 }
 
 // ── 진화 ─────────────────────────────────────────────────────────────────────
@@ -2560,7 +2656,7 @@ function fishRenderInfo(){
   // 스탯
   document.getElementById('f-atk').textContent=s.atk;
   document.getElementById('f-def').textContent=s.def;
-  document.getElementById('f-income').textContent=s.income+'/20초';
+  document.getElementById('f-income').textContent='2원/30초';
   // 돈·먹이
   document.getElementById('f-money').textContent=FG.money;
   document.getElementById('f-food-count').textContent=FG.food;
