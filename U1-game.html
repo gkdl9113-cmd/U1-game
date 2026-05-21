@@ -867,7 +867,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 // ══════════════════════════════════════════════════════════════════════════════
 // 상태
 // ══════════════════════════════════════════════════════════════════════════════
-const BUILD = 'v1.17'; // 업데이트할 때마다 변경
+const BUILD = 'v1.18'; // 업데이트할 때마다 변경
 
 // ── U1U1U1 고정방 & 자동재연결 ─────────────────────────────────────────────
 
@@ -1019,10 +1019,14 @@ document.addEventListener('keydown',e=>{
     document.getElementById('boss-overlay').style.display='block';
     if(PK.running){PK.running=false;}
     stopOmokTimer();
+    // 물고기 게임 정지 (보스키)
+    if(!FG.paused && FG.tickInterval){ FG._bossPaused=true; fishPause(); }
   }
   if((e.key==='p'||e.key==='P')&&bossKeyOn){
     bossKeyOn=false;
     document.getElementById('boss-overlay').style.display='none';
+    // 물고기 게임 재개 (보스키 해제)
+    if(FG._bossPaused){ FG._bossPaused=false; fishResume(); }
     // 오목 재개
     if(!oOver&&oBoard&&oMode==='online') omokStartTurn();
     // 상대에게 알림
@@ -2001,6 +2005,13 @@ function sendIngameChat(){
 // 🐟 물고기 키우기
 // ══════════════════════════════════════════════════════════════════════════════
 
+// ══ 물고기 게임 관리자 제어 ══════════════════════════════════════════════════
+// [1] 연결 종료(브라우저 닫기) 시 자동 정지 여부
+//   true  = 닫으면 정지, 다시 열면 그대로 재개 (오프라인 시간 미적용)
+//   false = 닫아도 시간 진행, 다시 열면 오프라인 보상 계산
+let FISH_STOP_ON_DISCONNECT = true;
+// ═════════════════════════════════════════════════════════════════════════════
+
 // ── 단계별 물고기 데이터 (실제 어종) ─────────────────────────────────────────
 const F_STAGES = [null,
   {name:'금붕어 치어',  species:'금붕어',   color:'#FF8C00',fin:'#FFD700',hp:50, atk:5,  def:2,  income:1,  xpRate:1,   xpNeed:100,  evoCost:300,  foodRate:8},
@@ -2033,7 +2044,8 @@ const FG = {
   stage:1, hp:50, maxHp:50, fullness:80, xp:0,
   money:100, food:5, autoLevel:0,
   fishCount:1, tankLevel:0, tankMax:1,
-  rodActive:false, rodTimer:0, rodProb:0, // rodTimer: 3600→0 (1시간), rodProb: 분당 확률
+  rodActive:false, rodTimer:0, rodProb:0,
+  paused:false, pausedAt:null, // 일시정지 상태
   lastTick: Date.now(), lastSave: Date.now(),
   fishPos:null, // 다중 물고기 위치
   tickInterval:null, swimInterval:null, saveInterval:null,
@@ -2070,15 +2082,71 @@ function fishResizeCanvas(){
 }
 function fishStartLoops(){
   fishStopLoops();
+  FG.paused=false;
   FG.tickInterval=setInterval(fishTick, 1000);
   FG.swimInterval=setInterval(fishDraw, 50);
   FG.saveInterval=setInterval(()=>{fishSave();}, 30000);
+  updatePauseBtn();
 }
 function fishStopLoops(){
   clearInterval(FG.tickInterval);
   clearInterval(FG.swimInterval);
   clearInterval(FG.saveInterval);
+  FG.tickInterval=null; FG.swimInterval=null; FG.saveInterval=null;
 }
+
+// ── 일시정지 ON/OFF ───────────────────────────────────────────────────────────
+function fishTogglePause(){
+  if(FG.paused) fishResume(); else fishPause();
+}
+function fishPause(){
+  if(FG.paused) return;
+  FG.paused=true;
+  FG.pausedAt=Date.now();
+  fishStopLoops();
+  updatePauseBtn();
+  document.getElementById('f-status').textContent='⏸ 일시정지 — 진행이 멈췄습니다';
+}
+function fishResume(){
+  if(!FG.paused) return;
+  FG.paused=false;
+  // 일시정지 중 경과 시간 → 오프라인 보상 적용
+  if(FG.pausedAt){
+    const elapsed=(Date.now()-FG.pausedAt)/1000;
+    if(elapsed>5) fishCalcOffline(elapsed);
+    FG.pausedAt=null;
+  }
+  fishStartLoops();
+  fishRenderInfo();
+  document.getElementById('f-status').textContent='▶ 재개되었습니다';
+  setTimeout(()=>fishUpdateStatus(),2000);
+}
+function updatePauseBtn(){
+  const ico=document.getElementById('f-pause-ico');
+  const lbl=document.getElementById('f-pause-lbl');
+  if(!ico||!lbl) return;
+  if(FG.paused){ico.textContent='▶';lbl.textContent='재개';}
+  else{ico.textContent='⏸';lbl.textContent='일시정지';}
+}
+
+// ── Page Visibility API: 탭 숨김 시 자동 일시정지 ───────────────────────────
+document.addEventListener('visibilitychange',()=>{
+  const fishActive=document.getElementById('s-fish')?.classList.contains('on');
+  if(!fishActive) return;
+  if(document.hidden){
+    // 탭 숨김 → 자동 일시정지 (수동 일시정지와 구분)
+    if(!FG.paused){
+      FG._autoPaused=true;
+      fishPause();
+    }
+  } else {
+    // 탭 복귀 → 자동 재개 (수동 일시정지가 아닌 경우만)
+    if(FG.paused && FG._autoPaused){
+      FG._autoPaused=false;
+      fishResume();
+    }
+  }
+});
 
 // ── 오프라인 보상 계산 ────────────────────────────────────────────────────────
 function fishCalcOffline(seconds){
@@ -2107,6 +2175,7 @@ function fishCalcOffline(seconds){
 
 // ── 틱 (1초마다) ─────────────────────────────────────────────────────────────
 function fishTick(){
+  if(FG.paused) return;
   const s=fishStage();
   const now=Date.now();
   const elapsed=(now-FG.lastTick)/1000;
@@ -2417,15 +2486,25 @@ function fishDraw(){
 }
 
 // ── 저장 / 불러오기 ──────────────────────────────────────────────────────────
-function fishSave(){
+function fishSave(isDisconnect){
   const data={stage:FG.stage,hp:FG.hp,maxHp:FG.maxHp,fullness:FG.fullness,
     xp:FG.xp,money:FG.money,food:FG.food,autoLevel:FG.autoLevel,
     fishCount:FG.fishCount,tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,
+    stoppedByDisconnect: isDisconnect||false, // 연결 종료 마커
     lastSave:Date.now()};
   localStorage.setItem('fishGame_v1',JSON.stringify(data));
-  document.getElementById('f-save-status').textContent='저장 완료 '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  if(!isDisconnect){
+    document.getElementById('f-save-status').textContent='저장 완료 '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  }
 }
+
+// 브라우저/탭 닫힐 때 자동 저장
+window.addEventListener('beforeunload',()=>{
+  if(!FG.tickInterval && !FG.saveInterval) return; // 물고기 게임 미실행 시 무시
+  fishSave(FISH_STOP_ON_DISCONNECT); // true면 연결종료 마커 포함 저장
+});
+
 function fishLoad(){
   try{
     const raw=localStorage.getItem('fishGame_v1');
@@ -2433,12 +2512,14 @@ function fishLoad(){
     const d=JSON.parse(raw);
     FG.stage=d.stage||1; FG.hp=d.hp||50; FG.maxHp=d.maxHp||50;
     FG.fullness=d.fullness||80; FG.xp=d.xp||0;
-    FG.money=d.money||100; FG.food=d.food||5; FG.autoLevel=d.autoLevel||0;
+    FG.money=d.money??100; FG.food=d.food??5; FG.autoLevel=d.autoLevel||0;
     FG.fishCount=d.fishCount||1;
     FG.tankLevel=d.tankLevel||0; FG.tankMax=d.tankMax||1;
     FG.rodActive=d.rodActive||false; FG.rodTimer=d.rodTimer||0; FG.rodProb=d.rodProb||0;
-    // 오프라인 경과 처리
-    if(d.lastSave){
+    // 연결 종료로 정지된 경우: 오프라인 계산 없이 재개
+    if(d.stoppedByDisconnect && FISH_STOP_ON_DISCONNECT){
+      // 정지 마커 제거 후 그대로 재개 (오프라인 시간 미적용)
+    } else if(d.lastSave){
       const elapsed=(Date.now()-d.lastSave)/1000;
       if(elapsed>10) fishCalcOffline(elapsed);
     }
