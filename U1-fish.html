@@ -902,7 +902,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.52';
+const BUILD = 'v1.58';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -973,7 +973,7 @@ function connectSupabase(){
       const now=Date.now();
       const last=_presenceTs[p.name]||0;
       // 30초 이내 재접속은 채팅 알림 생략 (연결 불안정 스팸 방지)
-      if(now-last>30000) addChatSys(p.name+'님이 입장했습니다');
+      // 입장 메시지 제거 - 사이드바 접속자 목록으로 대체
       _presenceTs[p.name]=now;
     });
     onPresenceSync();
@@ -987,7 +987,7 @@ function connectSupabase(){
         const lastJoin=_presenceTs[oppName]||0;
         if(lastJoin>=leftAt) return; // 5초 안에 재접속 → 무시
         // 채팅 퇴장 알림만 표시 (탈주 감지는 heartbeat로만 처리)
-        addChatSys(oppName+'님이 퇴장했습니다');
+        // 퇴장 메시지 제거 - 사이드바 접속자 목록으로 대체
       },5000); // 5초 대기: 순간 끊김/재연결 구분
     });
     onPresenceSync();
