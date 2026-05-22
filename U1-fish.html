@@ -1018,10 +1018,13 @@ function applyFishData(d){
 
 async function saveFishDataToDB(){
   if(!currentUsername||!_sb) return;
-  const data={stage:FG.stage,hp:FG.hp,maxHp:FG.maxHp,fullness:FG.fullness,xp:FG.xp,
+  const data={
+    fishes:FG.fishes,
     money:FG.money,food:FG.food,autoLevel:FG.autoLevel,
-    fishCount:FG.fishCount,tankLevel:FG.tankLevel,tankMax:FG.tankMax,
-    rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,lastSave:Date.now()};
+    tankLevel:FG.tankLevel,tankMax:FG.tankMax,
+    rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,
+    lastSave:Date.now()
+  };
   const{error}=await _sb.from('fish_accounts').update({fish_data:data,updated_at:new Date().toISOString()}).eq('username',currentUsername).eq('server',ACTIVE_SERVER);
   if(error){
     u1Toast('⚠️ DB 저장 실패: '+error.message,'#C00000');
@@ -1317,15 +1320,12 @@ function fishTick(){
   if(FG.paused) return;
   const now=Date.now(); FG.lastTick=now;
   const alive=aliveFishes();
-  // 자동 먹이통
+  // 자동 먹이통 — 먹이 1개로 전체 급식 (물고기 수와 무관)
   if(FG.autoLevel>0&&FG.food>0){
     const rate=FG.autoLevel===1?30:15;
     if(Math.floor(now/1000)%rate===0){
-      alive.forEach(f=>{
-        if(FG.food<=0) return;
-        FG.food=Math.max(0,FG.food-1);
-        f.fullness=Math.min(100,f.fullness+15);
-      });
+      FG.food=Math.max(0,FG.food-1);
+      alive.forEach(f=>{ f.fullness=Math.min(100,f.fullness+15); });
     }
   }
   // 낚시대
