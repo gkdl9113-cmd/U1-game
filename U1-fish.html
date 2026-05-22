@@ -146,6 +146,55 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 .lspacer{background:#fff;height:10px}
 #s-fishworld{background:#F2F2F2}
 #s-battle{background:#1a1a2e}
+/* 관리자 페이지 리모델링 */
+#s-admin{background:#0F1724}
+.adm-topbar{background:#1F2D45;border-bottom:1px solid #2D4A6A;padding:10px 14px;display:flex;gap:10px;flex-shrink:0;overflow-x:auto}
+.adm-card{background:#1A2840;border:1px solid #2D4A6A;border-radius:8px;padding:10px 16px;min-width:90px;text-align:center;flex-shrink:0}
+.adm-card-label{font-size:10px;color:#7A9BBF;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.adm-card-val{font-size:22px;font-weight:900;color:#E2E8F0}
+.adm-card.green .adm-card-val{color:#4ADE80}
+.adm-card.yellow .adm-card-val{color:#FACC15}
+.adm-card.red .adm-card-val{color:#FB7185}
+.adm-card.blue .adm-card-val{color:#60A5FA}
+.adm-filter-bar{background:#152035;border-bottom:1px solid #2D4A6A;padding:7px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.adm-filter-bar input,.adm-filter-bar select{background:#1F2D45;border:1px solid #2D4A6A;color:#E2E8F0;padding:4px 8px;font-size:11px;border-radius:4px;font-family:inherit}
+.adm-filter-bar button{background:#2D4A6A;color:#E2E8F0;border:none;padding:4px 10px;font-size:11px;border-radius:4px;cursor:pointer;font-family:inherit;font-weight:700}
+.adm-filter-bar button:hover{background:#3D5A7A}
+.adm-user-grid{flex:1;overflow-y:auto;padding:10px}
+.adm-user-card{background:#1A2840;border:1px solid #2D4A6A;border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:border-color .15s}
+.adm-user-card:hover{border-color:#4A7AAA}
+.adm-user-card.is-online{border-left:3px solid #4ADE80}
+.adm-user-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;flex-shrink:0}
+.adm-user-info{flex:1;min-width:0}
+.adm-user-name{font-size:13px;font-weight:800;color:#E2E8F0;margin-bottom:2px}
+.adm-user-stats{font-size:10px;color:#7A9BBF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-user-fish{font-size:11px;color:#A0C4E8;margin-top:2px}
+.adm-badge{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:4px}
+.adm-badge.test{background:#1A5C35;color:#4ADE80}
+.adm-badge.u1{background:#7F6000;color:#FACC15}
+.adm-badge.admin{background:#7F0000;color:#FB7185}
+.adm-badge.online{background:#0F3A1A;color:#4ADE80}
+.adm-actions{display:flex;gap:5px;flex-shrink:0}
+.adm-act-btn{background:#2D4A6A;color:#E2E8F0;border:none;padding:5px 9px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.adm-act-btn:hover{background:#3D5A7A}
+.adm-act-btn.green{background:#1A5C35;color:#4ADE80}
+.adm-act-btn.green:hover{background:#2A7C45}
+.adm-act-btn.red{background:#7F0000;color:#FB7185}
+.adm-act-btn.red:hover{background:#9F1010}
+.adm-modal-dark{background:#1A2840;border:1px solid #2D4A6A;min-width:320px;max-width:400px;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.adm-modal-hdr{background:#0F1724;color:#E2E8F0;padding:10px 14px;font-size:12px;font-weight:800;display:flex;justify-content:space-between;align-items:center;border-radius:8px 8px 0 0}
+.adm-modal-body{padding:16px}
+.adm-form-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #2D4A6A;font-size:11px;color:#A0C4E8}
+.adm-form-row label{min-width:70px;font-weight:700}
+.adm-form-inp{background:#0F1724;border:1px solid #2D4A6A;color:#E2E8F0;padding:5px 8px;font-size:12px;border-radius:4px;font-family:inherit;width:100px}
+.adm-form-inp:focus{border-color:#4A7AAA;outline:none}
+.adm-form-select{background:#0F1724;border:1px solid #2D4A6A;color:#E2E8F0;padding:5px 8px;font-size:12px;border-radius:4px;font-family:inherit;flex:1}
+.adm-btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.adm-btn{padding:6px 16px;font-size:11px;font-weight:700;border:none;border-radius:4px;cursor:pointer;font-family:inherit}
+.adm-btn.primary{background:#217346;color:#fff}
+.adm-btn.secondary{background:#2D4A6A;color:#E2E8F0}
+.adm-btn.danger{background:#7F0000;color:#FB7185}
+
 .bt-hp-panel{position:absolute;top:6px;width:130px;background:rgba(0,0,0,0.65);border-radius:6px;padding:6px;z-index:10;backdrop-filter:blur(3px)}
 .bt-hp-panel.left{left:6px}
 .bt-hp-panel.right{right:6px}
@@ -651,66 +700,84 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 
 <!-- ══ 관리자 화면 ══ -->
 <div id="s-admin" class="scr">
-  <div class="xl-titlebar">
-    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">관리자_대시보드.xlsx - Microsoft Excel</span></div>
-    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="adminLogout()">✕</button></div>
-  </div>
-  <div class="xl-tabs"><button class="xl-tab on">유저관리</button><button class="xl-tab">서버관리</button><button class="xl-tab">접속현황</button></div>
-  <div class="xl-ribbon">
-    <button class="xl-rbtn" onclick="adminLoadUsers()"><span class="xl-rico">🔄</span><span class="xl-rlbl">새로고침</span></button>
-    <div class="xl-rsep"></div>
-    <button class="xl-rbtn" onclick="adminEnterGame()"><span class="xl-rico">🐟</span><span class="xl-rlbl">게임 입장</span></button>
-    <div class="xl-rsep"></div>
-    <button class="xl-rbtn" onclick="adminResetServer()" style="color:#C00000"><span class="xl-rico">🗑️</span><span class="xl-rlbl">서버초기화</span></button>
-    <div class="xl-rsep"></div>
-    <div style="display:flex;align-items:center;gap:6px;font-size:11px;padding:0 4px">
-      <span style="color:#595959">서버 필터:</span>
-      <select id="adm-server-filter" onchange="adminLoadUsers()" style="font-size:11px;border:1px solid #B4B4B4;padding:2px 4px;font-family:inherit">
-        <option value="ALL">전체</option>
-        <option value="TEST-1" selected>TEST-1</option>
-        <option value="U1">U1</option>
-      </select>
+  <!-- 상단 바 -->
+  <div style="background:#0F1724;border-bottom:1px solid #2D4A6A;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:900;color:#60A5FA">⚙️ ADMIN</span>
+      <span style="font-size:11px;color:#4ADE80;font-weight:700" id="adm-server-badge">● TEST-1</span>
     </div>
-    <div class="xl-rsep"></div>
-    <span style="font-size:11px;color:#595959;padding:0 4px">현재 접속: <strong id="adm-online-count" style="color:#217346">0</strong>명</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:11px;color:#7A9BBF">현재 접속: <strong id="adm-online-count" style="color:#4ADE80">0</strong>명</span>
+      <button onclick="adminEnterGame()" style="background:#1A5C35;color:#4ADE80;border:none;padding:4px 10px;font-size:11px;font-weight:700;border-radius:4px;cursor:pointer;font-family:inherit">🐟 게임</button>
+      <button onclick="adminLogout()" style="background:#7F0000;color:#FB7185;border:none;padding:4px 10px;font-size:11px;font-weight:700;border-radius:4px;cursor:pointer;font-family:inherit">로그아웃</button>
+    </div>
   </div>
-  <div class="xl-fbar">
-    <div class="xl-namebox">A1</div><div class="xl-fx">fx</div>
-    <div class="xl-ftext">=ADMIN.DASHBOARD(ACTIVE_SERVER,"<span id="adm-formula-server">TEST-1</span>")</div>
+  <!-- 통계 카드 -->
+  <div class="adm-topbar">
+    <div class="adm-card"><div class="adm-card-label">총 유저</div><div class="adm-card-val blue" id="adm-total-count">-</div></div>
+    <div class="adm-card"><div class="adm-card-label">TEST-1</div><div class="adm-card-val green" id="adm-test1-count">-</div></div>
+    <div class="adm-card"><div class="adm-card-label">U1</div><div class="adm-card-val yellow" id="adm-u1-count">-</div></div>
+    <div class="adm-card"><div class="adm-card-label">접속 중</div><div class="adm-card-val red" id="adm-online-count2">0</div></div>
+    <div style="flex:1"></div>
+    <button onclick="adminResetServer()" style="background:#3D0000;color:#FB7185;border:1px solid #7F0000;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🗑️ 서버 초기화</button>
   </div>
-  <!-- 통계 바 -->
-  <div style="display:flex;gap:8px;padding:8px 10px;background:#F2F2F2;border-bottom:1px solid #C8C8C8;flex-shrink:0;overflow-x:auto">
-    <div class="adm-stat-box">총 유저<br><span id="adm-total-count" style="font-size:18px">-</span>명</div>
-    <div class="adm-stat-box" style="background:#E2EFDA;border-color:#A9D18E;color:#375623">TEST-1<br><span id="adm-test1-count" style="font-size:18px">-</span>명</div>
-    <div class="adm-stat-box" style="background:#FFF2CC;border-color:#FFC000;color:#7F6000">U1<br><span id="adm-u1-count" style="font-size:18px">-</span>명</div>
-    <div class="adm-stat-box" style="background:#FCE4EC;border-color:#F48FB1;color:#880E4F">현재접속<br><span id="adm-online-count2" style="font-size:18px">0</span>명</div>
+  <!-- 필터 바 -->
+  <div class="adm-filter-bar">
+    <span style="color:#7A9BBF;font-size:11px;font-weight:700">서버:</span>
+    <select id="adm-server-filter" onchange="adminLoadUsers()">
+      <option value="ALL">전체</option>
+      <option value="TEST-1" selected>TEST-1</option>
+      <option value="U1">U1</option>
+    </select>
+    <button onclick="adminLoadUsers()">🔄 새로고침</button>
+    <span style="margin-left:auto;font-size:11px;color:#7A9BBF" id="adm-status">유저 목록을 불러오세요</span>
   </div>
-  <!-- 유저 테이블 -->
-  <div style="flex:1;overflow:auto;background:#fff">
-    <table class="adm-tbl">
-      <thead>
-        <tr>
-          <th style="width:30px">#</th>
-          <th>아이디</th>
-          <th>서버</th>
-          <th>🐟 물고기 현황</th>
-          <th>💰 보유금액</th>
-          <th>🍤 먹이/먹이통</th>
-          <th>마지막 저장</th>
-          <th style="width:60px">관리</th>
-        </tr>
-      </thead>
-      <tbody id="adm-user-tbody">
-        <tr><td colspan="9" style="text-align:center;color:#888;padding:20px">새로고침을 눌러 유저 목록을 불러오세요</td></tr>
-      </tbody>
-    </table>
+  <!-- 유저 카드 목록 -->
+  <div class="adm-user-grid" id="adm-user-grid">
+    <div style="text-align:center;color:#4A6A8A;padding:40px;font-size:13px">새로고침을 눌러 유저 목록을 불러오세요</div>
   </div>
-  <div class="xl-bottombar">
-    <div class="xl-stabs"><button class="xl-stab on">유저목록</button><button class="xl-stab-plus">＋</button></div>
-    <div class="xl-statusbar">
-      <span class="xl-sitem" id="adm-status">관리자 모드</span>
-      <span class="xl-sitem" style="color:#C00000;font-weight:700">⚠️ ADMIN</span>
-      <span class="xl-sitem">100%</span>
+</div>
+
+<!-- 유저 수정 모달 (다크) -->
+<div class="xl-dlg-ov" id="adm-edit-modal">
+  <div class="adm-modal-dark">
+    <div class="adm-modal-hdr">🛠️ 유저 수정 <button onclick="hideDlg('adm-edit-modal')" style="background:none;border:none;color:#7A9BBF;cursor:pointer;font-size:16px;padding:0">✕</button></div>
+    <div class="adm-modal-body">
+      <div id="adm-edit-title" style="font-size:12px;color:#A0C4E8;margin-bottom:12px;line-height:1.6"></div>
+      <select id="adm-edit-stage" style="display:none"></select>
+      <div class="adm-form-row"><label>💰 금액</label><input class="adm-form-inp" id="adm-edit-money" type="number" min="0"></div>
+      <div class="adm-form-row"><label>🍤 먹이</label><input class="adm-form-inp" id="adm-edit-food" type="number" min="0"></div>
+      <div class="adm-btn-row">
+        <button class="adm-btn secondary" onclick="hideDlg('adm-edit-modal')">취소</button>
+        <button class="adm-btn primary" onclick="adminSaveEdit()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 물고기 지급 모달 -->
+<div class="xl-dlg-ov" id="adm-give-modal">
+  <div class="adm-modal-dark">
+    <div class="adm-modal-hdr">🐟 물고기 지급 <button onclick="hideDlg('adm-give-modal')" style="background:none;border:none;color:#7A9BBF;cursor:pointer;font-size:16px;padding:0">✕</button></div>
+    <div class="adm-modal-body">
+      <div id="adm-give-title" style="font-size:12px;color:#A0C4E8;margin-bottom:12px"></div>
+      <div class="adm-form-row">
+        <label>🐠 어종</label>
+        <select class="adm-form-select" id="adm-give-type" onchange="adminGiveUpdateStages()">
+          <option value="goldfish">금붕어 계열</option>
+          <option value="guppy">구피 계열</option>
+          <option value="snakehead">가물치 계열</option>
+        </select>
+      </div>
+      <div class="adm-form-row">
+        <label>📊 단계</label>
+        <select class="adm-form-select" id="adm-give-stage"></select>
+      </div>
+      <div id="adm-give-preview" style="margin:10px 0;padding:8px;background:#0F1724;border-radius:4px;font-size:11px;color:#7A9BBF"></div>
+      <div class="adm-btn-row">
+        <button class="adm-btn secondary" onclick="hideDlg('adm-give-modal')">취소</button>
+        <button class="adm-btn green primary" onclick="adminConfirmGiveFish()" style="background:#1A5C35;color:#4ADE80">🐟 지급</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2587,8 +2654,65 @@ document.addEventListener('keydown',e=>{
 // ══════════════════════════════════════════════════════════
 let _admEditTarget=null; // {username, server, fish_data}
 
+
+let _admGiveTarget=null;
+
+function adminOpenGiveFish(username,server){
+  _admGiveTarget={username,server};
+  document.getElementById('adm-give-title').textContent=`${username} (${server}) 에게 지급`;
+  adminGiveUpdateStages();
+  document.getElementById('adm-give-modal').classList.add('on');
+}
+
+function adminGiveUpdateStages(){
+  const type=document.getElementById('adm-give-type').value;
+  const sp=F_SPECIES[type]||F_SPECIES.goldfish;
+  const sel=document.getElementById('adm-give-stage');
+  sel.innerHTML=sp.slice(1).map((s,i)=>
+    `<option value="${i+1}">${i+1}단계 - ${s.name} (${s.grade})</option>`
+  ).join('');
+  adminGiveUpdatePreview();
+}
+
+function adminGiveUpdatePreview(){
+  const type=document.getElementById('adm-give-type').value;
+  const stage=parseInt(document.getElementById('adm-give-stage').value)||1;
+  const s=(F_SPECIES[type]||F_SPECIES.goldfish)[stage];
+  if(!s) return;
+  const gd=F_GRADES[s.grade]||F_GRADES['일반'];
+  document.getElementById('adm-give-preview').innerHTML=
+    `<span style="padding:1px 5px;border-radius:3px;background:${gd.bg};color:${gd.fg};font-size:10px;font-weight:700">${s.grade}</span> `+
+    `<strong style="color:#E2E8F0">${s.name}</strong><br>`+
+    `<span style="color:#7A9BBF">HP ${s.hp} | ⚔️${s.atk} 🛡️${s.def} 💨${s.agi} 🍀${s.luk}</span>`;
+}
+
+async function adminConfirmGiveFish(){
+  if(!_admGiveTarget) return;
+  const type=document.getElementById('adm-give-type').value;
+  const stage=parseInt(document.getElementById('adm-give-stage').value)||1;
+  const s=(F_SPECIES[type]||F_SPECIES.goldfish)[stage];
+  if(!s){alert('물고기 정보를 찾을 수 없습니다');return;}
+  // DB에서 현재 데이터 로드
+  const{data,error}=await _sb.from('fish_accounts').select('fish_data')
+    .eq('username',_admGiveTarget.username).eq('server',_admGiveTarget.server).single();
+  if(error||!data){alert('데이터 로드 실패: '+(error?.message||'없음'));return;}
+  const fd=data.fish_data||{};
+  const fishes=fd.fishes||[];
+  const newFish={id:'adm_'+Date.now(),type,stage,
+    hp:s.hp,maxHp:s.hp,fullness:80,xp:0,isDead:false};
+  fishes.push(newFish);
+  const newData={...fd,fishes,lastSave:Date.now()};
+  const{error:e2}=await _sb.from('fish_accounts')
+    .update({fish_data:newData,updated_at:new Date().toISOString()})
+    .eq('username',_admGiveTarget.username).eq('server',_admGiveTarget.server);
+  if(e2){alert('저장 실패: '+e2.message);return;}
+  hideDlg('adm-give-modal');
+  document.getElementById('adm-status').textContent=
+    `✅ ${_admGiveTarget.username}에게 ${s.name} 지급 완료`;
+  adminLoadUsers();
+}
 function adminInit(){
-  document.getElementById('adm-formula-server').textContent=ACTIVE_SERVER;
+  document.getElementById('adm-server-badge').textContent='● '+ACTIVE_SERVER;
   adminLoadUsers();
   // 접속자 수 실시간 업데이트
   setInterval(()=>{
@@ -2617,9 +2741,10 @@ async function adminLoadUsers(){
 }
 
 function adminRenderTable(rows){
-  const tbody=document.getElementById('adm-user-tbody');
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#888;padding:20px">유저 없음</td></tr>';return;}
-  tbody.innerHTML=rows.map((r,i)=>{
+  const grid=document.getElementById('adm-user-grid');
+  if(!rows.length){grid.innerHTML='<div style="text-align:center;color:#4A6A8A;padding:40px">유저 없음</div>';return;}
+  const COLORS=['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];
+  grid.innerHTML=rows.map((r,i)=>{
     const fd=r.fish_data||{};
     const fishes=fd.fishes||[];
     const alive=fishes.filter(f=>!f.isDead);
@@ -2627,29 +2752,38 @@ function adminRenderTable(rows){
     const best=alive.sort((a,b)=>b.stage-a.stage)[0];
     const bestName=best?((F_SPECIES[best.type||'goldfish']?.[best.stage]?.name)||best.stage+'단계'):'없음';
     const bestGrade=best?(F_SPECIES[best.type||'goldfish']?.[best.stage]?.grade)||'일반':'없음';
+    const gd=F_GRADES[bestGrade]||F_GRADES['일반'];
     const money=(fd.money??0).toLocaleString();
     const food=fd.food??0;
     const feeders=fd.autoFeeders?.length||0;
     const lastSave=fd.lastSave?new Date(fd.lastSave).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'없음';
     const isAdmin=r.username===ADMIN_USERNAME;
-    const svrBadge=r.server==='TEST-1'
-      ?'<span style="background:#E2EFDA;color:#375623;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700">TEST-1</span>'
-      :'<span style="background:#FFF2CC;color:#7F6000;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700">U1</span>';
-    const gd=F_GRADES[bestGrade]||F_GRADES['일반'];
-    return `<tr class="${isAdmin?'admin-row':''}">
-      <td style="text-align:center;color:#888">${i+1}</td>
-      <td style="font-weight:700">${esc(r.username)}${isAdmin?' 👑':''}</td>
-      <td>${svrBadge}</td>
-      <td>
-        <div style="font-size:11px;font-weight:700">${bestName} <span style="font-size:9px;padding:1px 4px;border-radius:3px;background:${gd.bg};color:${gd.fg}">${bestGrade}</span></div>
-        <div style="font-size:10px;color:#888">생존 ${alive.length}마리 / 사망 ${dead}마리</div>
-      </td>
-      <td style="text-align:right;font-family:monospace">${money}원</td>
-      <td style="text-align:right">${food}개 / 먹이통${feeders}개</td>
-      <td style="color:#888;font-size:10px">${lastSave}</td>
-      <td style="text-align:center">${isAdmin?'<span style="font-size:10px;color:#888">관리자</span>'
-        :`<button class="adm-btn blue" onclick="adminOpenEdit('${r.username}','${r.server}')">수정</button>`}</td>
-    </tr>`;
+    const isOnline=lobbyPlayers.some(p=>p.name===r.username);
+    const avatarColor=COLORS[i%COLORS.length];
+    const svrClass=r.server==='TEST-1'?'test':'u1';
+    return `<div class="adm-user-card ${isOnline?'is-online':''}">
+      <div class="adm-user-avatar" style="background:${avatarColor}">${esc(r.username[0]||'?').toUpperCase()}</div>
+      <div class="adm-user-info">
+        <div class="adm-user-name">
+          ${esc(r.username)}
+          ${isAdmin?'<span class="adm-badge admin">👑 관리자</span>':''}
+          <span class="adm-badge ${svrClass}">${r.server}</span>
+          ${isOnline?'<span class="adm-badge online">● 접속 중</span>':''}
+        </div>
+        <div class="adm-user-stats">💰 ${money}원 &nbsp;🍤 먹이 ${food}개 &nbsp;먹이통 ${feeders}개</div>
+        <div class="adm-user-fish">
+          🐟 생존 ${alive.length}마리 / 사망 ${dead}마리 &nbsp;
+          ${best?`<span style="padding:1px 5px;border-radius:3px;background:${gd.bg};color:${gd.fg};font-size:9px;font-weight:700">${bestGrade}</span> ${bestName}`:'물고기 없음'}
+          &nbsp; <span style="color:#4A6A8A;font-size:9px">${lastSave}</span>
+        </div>
+      </div>
+      <div class="adm-actions">
+        ${isAdmin?'':`
+          <button class="adm-act-btn green" onclick="adminOpenGiveFish('${r.username}','${r.server}')">🐟 지급</button>
+          <button class="adm-act-btn" onclick="adminOpenEdit('${r.username}','${r.server}')">✏️ 수정</button>
+        `}
+      </div>
+    </div>`;
   }).join('');
 }
 
