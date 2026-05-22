@@ -754,7 +754,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.01';
+const BUILD = 'v1.23';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -879,22 +879,26 @@ function connectSupabase(){
   })
   .subscribe(async(status)=>{
     if(status==='SUBSCRIBED'){
+      const isFirstConnect=!_chConnectedOnce;
+      _chConnectedOnce=true;
       eStatus('● 온라인','#217346'); eOnline(true);
-      u1Toast('✅ U1 수족관 연결 완료!','#217346');
-      await _ch.track({userId:myId,name:myName,inGame:false,joinedAt:Date.now()});
-      // 같은 계정의 기존 세션에게 로그아웃 신호 전송
-      setTimeout(()=>sbSend('new_login',{name:myName,sessionId:myId}),500);
+      if(isFirstConnect) u1Toast('✅ U1 수족관 연결 완료!','#217346');
+      await _ch.track({userId:myId,name:myName,inGame:currentGame?true:false,joinedAt:Date.now()});
+      // 첫 연결 시에만 중복 로그인 체크 (재연결 시 자기 자신 킥 방지)
+      if(isFirstConnect) setTimeout(()=>sbSend('new_login',{name:myName,sessionId:myId}),800);
     } else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
-      eStatus('연결 오류 — 재시도 중…','#C00000'); eOnline(false);
+      eStatus('연결 끊김 — 재연결 중…','#C00000'); eOnline(false);
       setTimeout(reconnectChannel,3000);
     } else if(status==='CLOSED'){
       eOnline(false);
     }
   });
 }
+let _chConnectedOnce=false;
 
 function reconnectChannel(){
   if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
+  _chConnectedOnce=false; // 재연결은 새 세션으로 취급
   connectSupabase();
 }
 
@@ -1032,20 +1036,27 @@ function applyFishData(d){
   FG.lastAutoFeed=Date.now();
 }
 
+let _dbSaving=false; // 중복 저장 방지
 async function saveFishDataToDB(){
-  if(!currentUsername||!_sb) return;
+  if(!currentUsername||!_sb||_dbSaving) return;
+  _dbSaving=true;
+  // 내부 타이머값(_로 시작) 제거 후 저장
+  const cleanFishes=FG.fishes.map(f=>({
+    id:f.id,stage:f.stage,hp:f.hp,maxHp:f.maxHp,
+    fullness:f.fullness,xp:f.xp,isDead:f.isDead||false
+  }));
   const data={
-    fishes:FG.fishes,
+    fishes:cleanFishes,
     money:FG.money,food:FG.food,autoLevel:FG.autoLevel,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,
     lastSave:Date.now()
   };
-  const{error}=await _sb.from('fish_accounts').update({fish_data:data,updated_at:new Date().toISOString()}).eq('username',currentUsername).eq('server',ACTIVE_SERVER);
-  if(error){
-    u1Toast('⚠️ DB 저장 실패: '+error.message,'#C00000');
-    console.error('saveFishDataToDB error:',error);
-  }
+  try{
+    const{error}=await _sb.from('fish_accounts').update({fish_data:data,updated_at:new Date().toISOString()}).eq('username',currentUsername).eq('server',ACTIVE_SERVER);
+    if(error){u1Toast('⚠️ DB 저장 실패: '+error.message,'#C00000');console.error('saveFishDataToDB error:',error);}
+  }catch(e){console.error('saveFishDataToDB exception:',e);}
+  finally{_dbSaving=false;}
 }
 
 // ── 서버명 표시 & 자동 로그인 ────────────────────────────
@@ -1080,8 +1091,6 @@ function addChatMsg(msg){
       fw.appendChild(el);fw.scrollTop=fw.scrollHeight;
     }
   });
-  const fw=document.getElementById('fw-chat-msgs'); // ingame-msgs용 참조 유지
-  if(fw){}
   const ig=document.getElementById('ingame-msgs');
   if(ig){
     const el=document.createElement('div');
@@ -1653,7 +1662,8 @@ function fishDraw(){
 }
 
 function fishSave(isDisconnect){
-  const data={fishes:FG.fishes,
+  const cleanFishes=FG.fishes.map(f=>({id:f.id,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:f.isDead||false}));
+  const data={fishes:cleanFishes,
     money:FG.money,food:FG.food,autoLevel:FG.autoLevel,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,
