@@ -902,7 +902,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.66';
+const BUILD = 'v1.67';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -3262,26 +3262,35 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
 }
 
 // ── 실시간 전투 초기화 ─────────────────────────────────────
-function initRealtimeBattle(myFish,oppFish,events,imP1){
-  btEvents=events;btTick=0;btImP1=imP1;
+let btRng=null; // 결정론적 RNG
+
+function initRealtimeBattle(myFish,oppFish,seed,imP1){
+  btTick=0;btImP1=imP1;
+  btRng=seededRng(typeof seed==='number'?seed:Date.now()); // 시드 기반 RNG
   // 캔버스 초기화
   btCanvas=document.getElementById('battle-canvas');
   const par=btCanvas.parentElement;
   btCanvas.width=par.clientWidth;btCanvas.height=par.clientHeight;
   btCtx=btCanvas.getContext('2d');
-  const W=btCanvas.width,H=btCanvas.height;
 
-  // 물고기 생성 (내 팀 = 왼쪽 → 오른쪽, 상대 = 오른쪽 → 왼쪽)
-  const mkFish=(fd,i,total,side)=>({
-    ...fd, side,
-    x:side==='my'?0.1+Math.random()*0.05:0.85+Math.random()*0.05,
-    y:0.15+(i/(Math.max(1,total-1)))*0.7,
-    dx:(side==='my'?1:-1)*(0.003+fd.agi*0.00005),
-    dy:(Math.random()-0.5)*0.001,
-    curHp:fd.hp, isDead:false,
-    hitFlash:0, hitType:'',
-    floatTxt:null, // {txt,age,x,y,color}
-  });
+  // 물고기 생성 — 내 팀 왼쪽, 상대 오른쪽, 나선형 운동을 위한 각도 초기화
+  const mkFish=(fd,i,total,side)=>{
+    const isLeft=side==='my';
+    const baseX=isLeft?0.12:0.82;
+    const baseY=0.15+(total>1?i/(total-1)*0.7:0.35);
+    return{
+      ...fd, side,
+      x:baseX+btRng()*0.06,
+      y:baseY,
+      vx:0,vy:0,
+      angle:isLeft?0:Math.PI, // 초기 이동 방향 (라디안)
+      orbitDir:btRng()>0.5?1:-1, // 나선 방향
+      atkCd:Math.floor(btRng()*30), // 초기 쿨다운 분산
+      curHp:fd.hp, isDead:false,
+      hitFlash:0, hitType:'',
+      floatTxt:null,
+    };
+  };
   const myBt=myFish.map((f,i)=>mkFish(f,i,myFish.length,'my'));
   const oppBt=oppFish.map((f,i)=>mkFish(f,i,oppFish.length,'opp'));
   btFishes=[...myBt,...oppBt];
@@ -3338,17 +3347,19 @@ function btFrame(){
       nearest.hitFlash=crit?12:8; nearest.hitType=crit?'crit':'hit';
       nearest.floatTxt={txt:crit?`💥${fd}`:`-${fd}`,age:0,x:nearest.x,y:nearest.y-0.03,color:crit?'#E55':'#333'};
     }
-    // 이동
-    if(minD>collR*0.8){
-      f.x+=(nearest.x-f.x)/minD*spd;
-      f.y+=(nearest.y-f.y)/minD*spd;
-    } else {
-      const ang=Math.atan2(f.y-nearest.y,f.x-nearest.x);
-      f.x+=Math.cos(ang+0.15)*spd*0.4;
-      f.y+=Math.sin(ang+0.15)*spd*0.4;
-    }
-    f.x+=(f.vx||0); f.y+=(f.vy||0);
-    f.vx=(f.vx||0)*0.88; f.vy=(f.vy||0)*0.88;
+    // 나선형 이동: 적을 향하면서 360도 선회
+    const toEnemyAngle=Math.atan2(nearest.y-f.y,nearest.x-f.x);
+    // 현재 각도를 적 방향으로 서서히 회전
+    const angleDiff=((toEnemyAngle-f.angle+Math.PI*3)%(Math.PI*2))-Math.PI;
+    const turnRate=0.08+f.agi*0.001; // AGI 높을수록 빠른 방향전환
+    f.angle+=angleDiff*turnRate+f.orbitDir*0.04; // 나선 성분 추가
+    // 앞으로 이동
+    f.vx=(f.vx||0)*0.85+Math.cos(f.angle)*spd;
+    f.vy=(f.vy||0)*0.85+Math.sin(f.angle)*spd;
+    // 속도 제한
+    const vLen=Math.hypot(f.vx,f.vy);
+    if(vLen>spd*3){f.vx=f.vx/vLen*spd*3;f.vy=f.vy/vLen*spd*3;}
+    f.x+=f.vx; f.y+=f.vy;
     f.x=Math.max(0.04,Math.min(0.96,f.x));
     f.y=Math.max(0.04,Math.min(0.96,f.y));
     if(f.hitFlash>0) f.hitFlash--;
