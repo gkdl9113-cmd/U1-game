@@ -1034,6 +1034,7 @@ function connectSupabase(){
       _intentionalDisconnect=true;
       if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
       currentUsername=''; myName='';
+      sessionStorage.removeItem('u1_sess_uid');sessionStorage.removeItem('u1_sess_hash');
       const pwEl=document.getElementById('e-pw');if(pwEl)pwEl.value='';
       eStatus('다른 기기에서 접속되어 로그아웃되었습니다.','#C00000');
       show('s-entry');
@@ -1162,6 +1163,9 @@ async function doLogin(){
   myName=v.uid;
   localStorage.setItem('u1_name',v.uid);
   localStorage.setItem('u1_uid',v.uid);
+  // sessionStorage에 세션 저장 (새로고침 후 자동 로그인용)
+  sessionStorage.setItem('u1_sess_uid',v.uid);
+  sessionStorage.setItem('u1_sess_hash',hash);
   entryStatus('로그인 성공!','#217346');
   enterFishWorldWithData(data.fish_data);
 }
@@ -1257,15 +1261,40 @@ async function saveFishDataToDB(){
 
 // ── 서버명 표시 & 자동 로그인 ────────────────────────────
 (function(){
-  // 서버명 주입
   const snEl=document.getElementById('e-server-name');
   if(snEl) snEl.textContent=ACTIVE_SERVER;
-  // 저장된 계정 자동 채우기
+
+  // 새로고침 자동 로그인 (sessionStorage에 세션 있으면)
+  const sessUid=sessionStorage.getItem('u1_sess_uid');
+  const sessHash=sessionStorage.getItem('u1_sess_hash');
+  if(sessUid&&sessHash){
+    entryStatus('자동 로그인 중…','#595959');
+    if(!_sb) _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    _sb.from('fish_accounts').select('password_hash,fish_data')
+      .eq('username',sessUid).eq('server',ACTIVE_SERVER).single()
+      .then(({data,error})=>{
+        if(error||!data||data.password_hash!==sessHash){
+          // 세션 만료 or 서버 변경
+          sessionStorage.removeItem('u1_sess_uid');
+          sessionStorage.removeItem('u1_sess_hash');
+          entryStatus('세션이 만료되었습니다. 다시 로그인하세요.','#C00000');
+          const uid2=localStorage.getItem('u1_uid');
+          if(uid2) document.getElementById('e-userid').value=uid2;
+          return;
+        }
+        currentUsername=sessUid; myName=sessUid;
+        entryStatus('자동 로그인 완료!','#217346');
+        enterFishWorldWithData(data.fish_data);
+      });
+    return;
+  }
+
+  // 일반: 저장된 아이디 자동 채우기
   const uid=localStorage.getItem('u1_uid');
   if(uid){
     document.getElementById('e-userid').value=uid;
     document.getElementById('e-pw').focus();
-    entryStatus('저장된 계정: '+uid+' (서버: '+ACTIVE_SERVER+') · 비밀번호를 입력하세요','#595959');
+    entryStatus('저장된 계정: '+uid+' · 비밀번호를 입력하세요','#595959');
   }
 })();
 
@@ -1550,6 +1579,7 @@ function fishExitConfirm(){
   _intentionalDisconnect=true;
   if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
   currentUsername=''; myName='';
+  sessionStorage.removeItem('u1_sess_uid');sessionStorage.removeItem('u1_sess_hash');
   document.getElementById('e-pw').value='';
   eStatus('로그아웃되었습니다. 다시 로그인하세요.','#595959');
   show('s-entry');
@@ -2908,6 +2938,7 @@ function adminLogout(){
   _intentionalDisconnect=true;
   if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
   currentUsername=''; myName='';
+  sessionStorage.removeItem('u1_sess_uid');sessionStorage.removeItem('u1_sess_hash');
   document.getElementById('e-pw').value='';
   const admBtn=document.getElementById('adm-back-btn');
   if(admBtn) admBtn.style.display='none';
