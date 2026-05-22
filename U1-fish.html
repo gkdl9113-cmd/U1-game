@@ -980,14 +980,20 @@ function connectSupabase(){
   })
   .on('presence',{event:'leave'},({leftPresences})=>{
     leftPresences.forEach(p=>{
-      // 5초 딜레이 후 재접속 안 했으면 퇴장 표시
       const leftAt=Date.now();
+      const oppId=p.userId;
+      const oppName=p.name;
       setTimeout(()=>{
-        const lastJoin=_presenceTs[p.name]||0;
-        if(lastJoin<leftAt) addChatSys(p.name+'님이 퇴장했습니다');
-      },5000);
-      // 탈주 판정은 game_end 브로드캐스트만 사용 (presence leave 사용 안 함)
-      // → 화면 전환, reconnect 등에 의한 오탈주 방지
+        const lastJoin=_presenceTs[oppName]||0;
+        if(lastJoin>=leftAt) return; // 5초 안에 재접속 → 무시
+        // 채팅 퇴장 알림
+        addChatSys(oppName+'님이 퇴장했습니다');
+        // 게임 중이었으면 탈주 처리
+        if(currentGame&&currentGame.opponentId===oppId){
+          currentGame=null; stopOmokTimer(); bbOver=true;
+          showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
+        }
+      },5000); // 5초 대기: 순간 끊김/재연결 구분
     });
     onPresenceSync();
   })
