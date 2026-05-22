@@ -902,7 +902,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.61';
+const BUILD = 'v1.62';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1652,12 +1652,7 @@ function fishExitConfirm(){
   eStatus('로그아웃되었습니다. 다시 로그인하세요.','#595959');
   show('s-entry');
 }
-document.addEventListener('visibilitychange',()=>{
-  const active=document.getElementById('s-fishworld')?.classList.contains('on');
-  if(!active) return;
-  if(document.hidden){if(!FG.paused){FG._autoPaused=true;fishPause();}}
-  else{if(FG.paused&&FG._autoPaused){FG._autoPaused=false;fishResume();}}
-});
+// 탭 전환 자동 정지 제거 — 다른 탭 보는 동안에도 게임 계속 진행
 
 function fishCalcOfflineAutoFeed(seconds){
   if(!FG.autoFeeders.length||FG.food===0) return;
