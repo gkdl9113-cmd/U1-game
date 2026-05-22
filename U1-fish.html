@@ -1725,13 +1725,12 @@ const FISH_BASE_COST={
 function getFishSellPrice(f){
   const type=f.type||'goldfish';
   const stage=f.stage||1;
-  const baseCost=FISH_BASE_COST[type]||600;
-  // stage 1→현재 단계까지 진화에 쓴 비용 합계
+  const baseCost=FISH_BASE_COST[type]||55;
   const sp=F_SPECIES[type]||F_SPECIES.goldfish;
   let evoCostSum=0;
   for(let s=1;s<stage;s++) evoCostSum+=(sp[s]?.evoCost||0);
-  // 판매가 = (획득비용 + 진화비용) × 35%
-  return Math.max(5,Math.round((baseCost+evoCostSum)*0.35));
+  // 획득비용 35% (착취 방지) + 진화비용 60% (진화 가치 반영)
+  return Math.max(5,Math.round(baseCost*0.35+evoCostSum*0.60));
 }
 
 function sellFish(idx){
