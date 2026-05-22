@@ -902,7 +902,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.72';
+const BUILD = 'v1.73';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1032,18 +1032,7 @@ function connectSupabase(){
   })
   .on('broadcast',{event:'battle_deploy'},({payload})=>onBattleDeploy(payload))
   .on('broadcast',{event:'battle_actions'},({payload})=>onBattleActions(payload))
-  .on('broadcast',{event:'battle_pos'},({payload})=>{
-    // 상대방 물고기 위치 동기화 (내 opp side = 상대의 my side)
-    if(!battleState) return;
-    payload.positions.forEach(p=>{
-      const f=btFishes.find(fish=>fish.id===p.id&&fish.side==='opp');
-      if(f){
-        // 부드럽게 보간 (스냅 방지)
-        f.x=f.x*0.5+p.x*0.5; f.y=f.y*0.5+p.y*0.5;
-        f.vx=p.vx||0; f.vy=p.vy||0;
-      }
-    });
-  })
+  // battle_pos 위치동기화 제거 (로컬 물리와 충돌로 버벅임 원인)
   .on('broadcast',{event:'battle_hit'},({payload})=>{
     if(!battleState) return;
     // 상대방이 내 물고기(= 나의 'my' 사이드)에 데미지 적용
@@ -3349,10 +3338,6 @@ function btFrame(){
   const steps=Math.min(Math.max(1,Math.floor(elapsed/50)),5);
   for(let _s=0;_s<steps;_s++) btPhysicsStep();
   // 위치 브로드캐스트 (20틱마다)
-  if(btTick%20===0&&currentGame){
-    const myPos=btFishes.filter(f=>f.side==='my').map(f=>({id:f.id,x:f.x,y:f.y,vx:f.vx||0,vy:f.vy||0}));
-    sbSend('battle_pos',{fromId:myId,positions:myPos});
-  }
   const W=btCanvas.width,H=btCanvas.height;
   btDraw(W,H);
   // 종료 체크
@@ -3410,26 +3395,31 @@ function btPhysicsStep(){
       nearest.hitFlash=crit?12:8; nearest.hitType=crit?'crit':'hit';
       nearest.floatTxt={txt:crit?`💥${fd}`:`-${fd}`,age:0,x:nearest.x,y:nearest.y-0.03,color:crit?'#E55':'#333'};
     }
-    // ── 이동 ───────────────────────────────────────────────
+    // ── 이동 (부드러운 물리) ───────────────────────────────
     const toEnemyAngle=Math.atan2(nearest.y-f.y,nearest.x-f.x);
     if(f.phase==='orbit'){
-      // 선회: 적 주변 원형 공전
-      const orbitDist=0.22;
+      // 선회: 적 주변을 일정 거리 유지하며 공전
+      const orbitDist=0.25;
       const orbitAngle=toEnemyAngle+Math.PI/2*f.orbitDir;
       const distErr=minD-orbitDist;
-      f.vx=(f.vx||0)*0.82+Math.cos(toEnemyAngle)*distErr*0.05+Math.cos(orbitAngle)*spd*1.3;
-      f.vy=(f.vy||0)*0.82+Math.sin(toEnemyAngle)*distErr*0.05+Math.sin(orbitAngle)*spd*1.3;
+      // 거리 보정력 + 접선 방향 힘 (약하게)
+      f.vx=(f.vx||0)*0.88+Math.cos(toEnemyAngle)*distErr*0.03+Math.cos(orbitAngle)*spd*0.9;
+      f.vy=(f.vy||0)*0.88+Math.sin(toEnemyAngle)*distErr*0.03+Math.sin(orbitAngle)*spd*0.9;
     } else {
-      // 돌진: 적 향해 빠르게 직진
-      f.vx=(f.vx||0)*0.72+Math.cos(toEnemyAngle)*spd*3;
-      f.vy=(f.vy||0)*0.72+Math.sin(toEnemyAngle)*spd*3;
+      // 돌진: 적을 향해 직진 (가속도 부드럽게)
+      f.vx=(f.vx||0)*0.80+Math.cos(toEnemyAngle)*spd*1.8;
+      f.vy=(f.vy||0)*0.80+Math.sin(toEnemyAngle)*spd*1.8;
     }
+    // 속도 제한 (낮춰서 안정적)
     const vLen=Math.hypot(f.vx||0,f.vy||0);
-    const maxSpd=spd*(f.phase==='orbit'?2.2:4);
+    const maxSpd=spd*(f.phase==='orbit'?1.5:2.5);
     if(vLen>maxSpd){f.vx=(f.vx||0)/vLen*maxSpd;f.vy=(f.vy||0)/vLen*maxSpd;}
     f.x+=(f.vx||0); f.y+=(f.vy||0);
-    f.x=Math.max(0.04,Math.min(0.96,f.x));
-    f.y=Math.max(0.04,Math.min(0.96,f.y));
+    // 벽 바운스 (하드클램프 대신 반발)
+    if(f.x<0.06){f.x=0.06;f.vx=Math.abs(f.vx||0)*0.4;}
+    if(f.x>0.94){f.x=0.94;f.vx=-Math.abs(f.vx||0)*0.4;}
+    if(f.y<0.06){f.y=0.06;f.vy=Math.abs(f.vy||0)*0.4;}
+    if(f.y>0.94){f.y=0.94;f.vy=-Math.abs(f.vy||0)*0.4;}
     if(f.hitFlash>0) f.hitFlash--;
     if(f.floatTxt){f.floatTxt.age++;f.floatTxt.y-=0.003;}
     if(f.floatTxt&&f.floatTxt.age>22) f.floatTxt=null;
