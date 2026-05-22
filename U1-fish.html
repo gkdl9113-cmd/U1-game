@@ -385,28 +385,18 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <canvas id="f-canvas" style="display:block;width:100%;height:100%"></canvas>
     </div>
     <!-- 물고기 스탯 패널 (데스크탑 고정 / 모바일 숨김) -->
-    <div id="fw-stats-panel" style="width:130px;flex-shrink:0;background:#fff;overflow-y:auto;padding:8px 8px;font-size:11px;border-right:1px solid #D0D0D0">
-      <div style="font-weight:800;font-size:11px;margin-bottom:6px;color:#1F3864" id="f-fish-name">금붕어 치어</div>
-      <div style="font-size:10px;color:#888;margin-bottom:8px" id="f-fish-stage">1단계 · 금붕어</div>
-      <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:2px">❤️ 체력</div>
-      <div style="background:#F3F4F6;border-radius:3px;height:8px;margin-bottom:4px;overflow:hidden"><div id="f-hp-bar" style="height:100%;background:#EF4444;border-radius:3px;transition:width .5s"></div></div>
-      <div style="font-size:9px;color:#888;margin-bottom:7px" id="f-hp-txt">50/50</div>
-      <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:2px">🍤 포만감</div>
-      <div style="background:#F3F4F6;border-radius:3px;height:8px;margin-bottom:4px;overflow:hidden"><div id="f-full-bar" style="height:100%;background:#F59E0B;border-radius:3px;transition:width .5s"></div></div>
-      <div style="font-size:9px;color:#888;margin-bottom:7px" id="f-full-txt">80/100</div>
-      <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:2px">⭐ 경험치</div>
-      <div style="background:#F3F4F6;border-radius:3px;height:8px;margin-bottom:4px;overflow:hidden"><div id="f-xp-bar" style="height:100%;background:#4472C4;border-radius:3px;transition:width .5s"></div></div>
-      <div style="font-size:9px;color:#888;margin-bottom:8px" id="f-xp-txt">0/100</div>
-      <div style="background:#F8F9FF;border:1px solid #C7D2FE;border-radius:4px;padding:5px;font-size:9px;margin-bottom:6px">
-        <div style="display:flex;justify-content:space-between"><span>💰 수입</span><span id="f-income">2/30초</span></div>
-        <div style="display:flex;justify-content:space-between"><span>🐟 수조</span><span id="f-tank-info">1/1마리</span></div>
+    <!-- 물고기 스탯 패널 - 개별 물고기 목록 -->
+    <div id="fw-stats-panel" style="width:145px;flex-shrink:0;background:#fff;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid #D0D0D0">
+      <div id="f-fish-list" style="flex:1;overflow-y:auto;min-height:0"></div>
+      <div style="border-top:1px solid #E8E8E8;padding:6px 8px;font-size:10px;flex-shrink:0;background:#F8F9FF">
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+          <span style="color:#555">💰 전체수입</span><strong id="f-total-income">0원/30초</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+          <span style="color:#555">🐟 수조</span><strong id="f-tank-info">0/1마리</strong>
+        </div>
+        <div style="font-size:9px;color:#888;margin-top:3px" id="f-auto-status">자동먹이통: 없음</div>
       </div>
-      <div id="f-evo-info" style="background:#FFF9C4;border:1px solid #FFC000;border-radius:4px;padding:5px;font-size:9px">
-        <div style="font-weight:700;margin-bottom:3px">진화 조건</div>
-        <div id="f-evo-xp" style="color:#595959">⭐ 0/100</div>
-        <div id="f-evo-cost" style="color:#595959">💰 300원</div>
-      </div>
-      <div style="margin-top:6px;font-size:9px;color:#888" id="f-auto-status">자동먹이통: 없음</div>
     </div>
     <!-- 접속자+채팅 사이드바 -->
     <div class="fw-sidebar">
@@ -472,6 +462,29 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div id="f-evo-cost-m" style="color:#595959">💰 300원</div>
   </div>
   <div style="margin-top:8px;font-size:10px;color:#888" id="f-auto-status-m">자동먹이통: 없음</div>
+</div>
+
+<!-- 물고기 상세창 -->
+<div class="xl-dlg-ov" id="fish-detail-modal">
+  <div class="xl-dlg" style="min-width:260px">
+    <div class="xl-dlg-title" style="background:#1F3864">🐟 물고기 정보 <button class="xl-dlg-x" onclick="hideDlg('fish-detail-modal')">✕</button></div>
+    <div class="xl-dlg-body">
+      <div style="font-size:13px;font-weight:800;color:#1F3864;margin-bottom:2px" id="fd-title">🐟 #1 금붕어 치어</div>
+      <div style="font-size:10px;color:#888;margin-bottom:10px" id="fd-stage">1단계 · 금붕어</div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:11px;margin-bottom:8px">
+        <span style="color:#555">❤️ 체력</span><span id="fd-hp" style="font-weight:700">50/50</span>
+        <span style="color:#555">🍤 포만감</span><span id="fd-full" style="font-weight:700">80/100</span>
+        <span style="color:#555">⭐ 경험치</span><span id="fd-xp" style="font-weight:700">0/100</span>
+        <span style="color:#555">💰 수입</span><span id="fd-income" style="font-weight:700;color:#217346">2원/30초</span>
+      </div>
+      <div style="font-size:10px;color:#595959;background:#FFF9C4;border:1px solid #FFC000;border-radius:3px;padding:5px;margin-bottom:10px" id="fd-evo">진화 조건: ⭐0/100 | 💰300원</div>
+      <div class="xl-dlg-btns">
+        <button class="xl-dlg-btn" id="fd-feed-btn" onclick="feedFishOne(_fdIdx);hideDlg('fish-detail-modal')">🍤 먹이주기</button>
+        <button class="xl-dlg-btn ok" id="fd-evo-btn" onclick="evolveOneFish(FG.fishes[_fdIdx])">⬆️ 진화</button>
+        <button class="xl-dlg-btn" id="fd-buy-btn" style="display:none;background:#217346;color:#fff" onclick="buyDeadFish(_fdIdx)">🐟 구매(55원)</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- 미니게임 메뉴 (플레이어 선택) -->
@@ -972,11 +985,12 @@ function enterFishWorldWithData(dbData){
     adminInit();
     return;
   }
-  // 일반 유저 — 항상 DB 데이터 우선, 없으면 기본값 (localStorage 무시)
+  // 일반 유저 — 항상 DB 데이터 우선, 없으면 기본값
   if(dbData&&Object.keys(dbData).length>0){
     applyFishData(dbData);
   }
-  // DB 데이터 없으면 FG 기본값으로 시작 (fishLoad 호출 안 함 → U1-game 데이터 유입 방지)
+  // 물고기 없으면 초기 금붕어 치어 1마리 생성
+  if(!FG.fishes||FG.fishes.length===0) FG.fishes=[newFish(1)];
   show('s-fishworld');
   showMobileFloatBtns(true);
   setTimeout(()=>{
@@ -989,13 +1003,15 @@ function enterFishWorldWithData(dbData){
 
 function applyFishData(d){
   if(!d||Object.keys(d).length===0) return;
-  FG.stage=d.stage||1; FG.hp=d.hp||50; FG.maxHp=d.maxHp||50;
-  FG.fullness=d.fullness||80; FG.xp=d.xp||0;
-  FG.money=d.money??100; FG.food=d.food??5; FG.autoLevel=d.autoLevel||0;
-  FG.fishCount=d.fishCount||1; FG.tankLevel=d.tankLevel||0; FG.tankMax=d.tankMax||1;
-  FG.rodActive=d.rodActive||false; FG.rodTimer=d.rodTimer||0; FG.rodProb=d.rodProb||0;
-  FG.isDead=false;
-  // 오프라인 보상 계산 (DB lastSave 기준)
+  if(d.fishes&&Array.isArray(d.fishes)&&d.fishes.length>0){
+    FG.fishes=d.fishes;
+  } else if(d.stage){
+    FG.fishes=[{id:'legacy',stage:d.stage||1,hp:d.hp||50,maxHp:d.maxHp||50,fullness:d.fullness||80,xp:d.xp||0,isDead:false}];
+  }
+  if(!FG.fishes||FG.fishes.length===0) FG.fishes=[newFish(1)];
+  FG.money=d.money??100;FG.food=d.food??5;FG.autoLevel=d.autoLevel||0;
+  FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
+  FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;
   if(d.lastSave){const elapsed=(Date.now()-d.lastSave)/1000;if(elapsed>30)fishCalcOffline(elapsed);}
   FG.lastTick=Date.now();
 }
@@ -1205,17 +1221,22 @@ const LOTTERY_PRIZES=[
 ];
 
 const FG={
-  stage:1,hp:50,maxHp:50,fullness:80,xp:0,
+  fishes:[],           // [{id,stage,hp,maxHp,fullness,xp,isDead}]
   money:100,food:5,autoLevel:0,
-  fishCount:1,tankLevel:0,tankMax:1,
+  tankLevel:0,tankMax:1,
   rodActive:false,rodTimer:0,rodProb:0,
-  paused:false,pausedAt:null,isDead:false,
+  paused:false,pausedAt:null,
   lastTick:Date.now(),
   fishPos:null,
   tickInterval:null,swimInterval:null,saveInterval:null,
   cvs:null,ctx:null,
 };
-function fishStage(){return F_STAGES[FG.stage];}
+function fGet(i){return FG.fishes[i];}
+function fStage(f){return F_STAGES[f.stage]||F_STAGES[1];}
+function fishStage(){const f=FG.fishes.find(x=>!x.isDead);return f?fStage(f):F_STAGES[1];}
+function newFish(stage=1){const s=F_STAGES[stage];return{id:'f'+Date.now()+Math.random().toString(36).slice(2),stage,hp:s.hp,maxHp:s.hp,fullness:80,xp:0,isDead:false};}
+function aliveFishes(){return FG.fishes.filter(f=>!f.isDead);}
+function totalIncome(){return aliveFishes().reduce((a,f)=>(a+(STAGE_INCOME[f.stage]||2)),0);}
 
 function fishResizeCanvas(){
   if(!FG.cvs) return;
@@ -1274,33 +1295,47 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 function fishCalcOffline(seconds){
-  const s=fishStage();
   const ticks=Math.min(seconds,14400);
-  FG.fullness=Math.max(0,FG.fullness-Math.floor(ticks/s.foodRate));
-  if(FG.fullness===0) FG.hp=Math.max(1,FG.hp-Math.floor(ticks/5));
-  const income=Math.floor(ticks/30)*(STAGE_INCOME[FG.stage]||2)*FG.fishCount;
-  FG.money+=income;
-  const xpGain=Math.floor(ticks/10)*s.xpRate*0.5;
-  FG.xp+=xpGain;
-  if(income>0||xpGain>0){
-    document.getElementById('f-status').textContent=`오프라인 보상: +${income}원 +${Math.floor(xpGain)}XP`;
+  let totalOff=0;
+  FG.fishes.forEach(f=>{
+    if(f.isDead) return;
+    const s=fStage(f);
+    f.fullness=Math.max(0,f.fullness-Math.floor(ticks/s.foodRate));
+    if(f.fullness===0) f.hp=Math.max(1,f.hp-Math.floor(ticks/5));
+    const inc=Math.floor(ticks/30)*(STAGE_INCOME[f.stage]||2);
+    totalOff+=inc;
+    f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
+  });
+  FG.money+=totalOff;
+  if(totalOff>0){
+    document.getElementById('f-status').textContent=`오프라인 보상: +${totalOff}원`;
     setTimeout(()=>fishUpdateStatus(),3000);
   }
 }
 
 function fishTick(){
   if(FG.paused) return;
-  const s=fishStage(); const now=Date.now(); FG.lastTick=now;
+  const now=Date.now(); FG.lastTick=now;
+  const alive=aliveFishes();
+  // 자동 먹이통
   if(FG.autoLevel>0&&FG.food>0){
     const rate=FG.autoLevel===1?30:15;
-    if(Math.floor(now/1000)%rate===0){FG.food=Math.max(0,FG.food-1);FG.fullness=Math.min(100,FG.fullness+15);}
+    if(Math.floor(now/1000)%rate===0){
+      alive.forEach(f=>{
+        if(FG.food<=0) return;
+        FG.food=Math.max(0,FG.food-1);
+        f.fullness=Math.min(100,f.fullness+15);
+      });
+    }
   }
+  // 낚시대
   if(FG.rodActive){
     FG.rodTimer--;
     if(FG.rodTimer>0&&Math.floor(now/1000)%60===0){
-      if(Math.random()<FG.rodProb&&FG.fishCount<FG.tankMax){
-        FG.fishCount++;FG.fishPos=null;FG.rodActive=false;FG.rodTimer=0;FG.rodProb=0;
-        document.getElementById('f-status').textContent='🎣 낚았습니다! ('+FG.fishCount+'마리)';
+      if(Math.random()<FG.rodProb&&FG.fishes.length<FG.tankMax){
+        FG.fishes.push(newFish(1));FG.fishPos=null;
+        FG.rodActive=false;FG.rodTimer=0;FG.rodProb=0;
+        document.getElementById('f-status').textContent='🎣 낚았습니다! ('+FG.fishes.length+'마리)';
         setTimeout(()=>fishUpdateStatus(),3000);
       }
     }
@@ -1308,105 +1343,196 @@ function fishTick(){
       document.getElementById('f-status').textContent='🎣 낚시대가 부러졌습니다 (허탕)';
       setTimeout(()=>fishUpdateStatus(),3000);}
   }
-  const fr=Math.max(2,Math.floor(s.foodRate/Math.sqrt(FG.fishCount)));
-  if(Math.floor(now/1000)%fr===0) FG.fullness=Math.max(0,FG.fullness-1);
-  if(FG.fullness<20){if(Math.floor(now/1000)%5===0) FG.hp=Math.max(0,FG.hp-1);}
-  else if(FG.fullness>60&&FG.hp<FG.maxHp){if(Math.floor(now/1000)%10===0) FG.hp=Math.min(FG.maxHp,FG.hp+1);}
-  if(FG.hp<=0){fishDie();return;}
-  if(Math.floor(now/1000)%30===0) FG.money+=(STAGE_INCOME[FG.stage]||2)*FG.fishCount;
-  if(FG.fullness>30&&Math.floor(now/1000)%10===0){
-    FG.xp+=s.xpRate;
-    if(FG.xp>=fishStage().xpNeed&&FG.stage<5) fishCheckEvoReady();
-  }
+  // 물고기별 틱
+  let inc=0;
+  FG.fishes.forEach(f=>{
+    if(f.isDead) return;
+    const s=fStage(f);
+    if(Math.floor(now/1000)%Math.max(2,s.foodRate)===0) f.fullness=Math.max(0,f.fullness-1);
+    if(f.fullness<20){if(Math.floor(now/1000)%5===0) f.hp=Math.max(0,f.hp-1);}
+    else if(f.fullness>60&&f.hp<f.maxHp){if(Math.floor(now/1000)%10===0) f.hp=Math.min(f.maxHp,f.hp+1);}
+    if(f.hp<=0){fishDieOne(f);return;}
+    if(Math.floor(now/1000)%30===0) inc+=(STAGE_INCOME[f.stage]||2);
+    if(f.fullness>30&&Math.floor(now/1000)%10===0) f.xp+=s.xpRate;
+  });
+  FG.money+=inc;
   fishRenderInfo();
 }
 
-function fishDie(){
-  fishStopLoops(); FG.hp=0;FG.xp=0;FG.fullness=0;FG.isDead=true;
+function fishDieOne(f){
+  f.isDead=true;f.hp=0;f.xp=0;f.fullness=0;
   fishRenderInfo();
-  const canBuy=FG.money>=55;
-  const txt=canBuy
-    ?'물고기가 죽었습니다 😢\n\n금붕어 치어를 구매하시겠습니까? (55원)\n현재 보유: '+FG.money+'원'
-    :'물고기가 죽었습니다 😢\n\n돈이 부족합니다. (55원 필요)\n현재 보유: '+FG.money+'원';
-  // 다시하기 버튼 텍스트 변경
-  const restartBtn=document.querySelector('#result-notify .xl-notify-btn:first-child');
-  if(restartBtn) restartBtn.textContent=canBuy?'🐟 구매 (55원)':'돈 부족';
-  showResultNotify('💀',txt);
+  if(aliveFishes().length===0){
+    fishStopLoops();
+    const canBuy=FG.money>=55;
+    const btn=document.querySelector('#result-notify .xl-notify-btn:first-child');
+    if(btn) btn.textContent=canBuy?'🐟 구매 (55원)':'돈 부족';
+    showResultNotify('💀','모든 물고기가 죽었습니다 😢\n\n'+(canBuy?'금붕어 치어 구매 (55원)\n현재: '+FG.money+'원':'돈 부족 (55원 필요)\n현재: '+FG.money+'원'));
+  } else {
+    document.getElementById('f-status').textContent='💀 물고기 #'+(FG.fishes.indexOf(f)+1)+' 사망';
+    setTimeout(()=>fishUpdateStatus(),3000);
+  }
 }
 
 function buyNewFish(){
   if(FG.money<55){
-    document.getElementById('result-txt').textContent='돈이 부족합니다. (55원 필요)\n현재 보유: '+FG.money+'원';
-    const btn=document.querySelector('#result-notify .xl-notify-btn:first-child');
-    if(btn) btn.textContent='돈 부족';
+    document.getElementById('result-txt').textContent='돈이 부족합니다. (55원 필요)\n현재: '+FG.money+'원';
     return;
   }
-  FG.money-=55;FG.stage=1;FG.hp=50;FG.maxHp=50;FG.fullness=60;FG.xp=0;FG.isDead=false;
-  // 버튼 텍스트 원복
+  FG.money-=55;
+  const deadIdx=FG.fishes.findIndex(f=>f.isDead);
+  if(deadIdx>=0) FG.fishes[deadIdx]=newFish(1);
+  else FG.fishes.push(newFish(1));
+  FG.fishPos=null;
   const btn=document.querySelector('#result-notify .xl-notify-btn:first-child');
   if(btn) btn.textContent='다시 하기';
   closeResultNotify();
-  fishRenderInfo();fishStartLoops();
+  if(aliveFishes().length>0) fishStartLoops();
+  fishRenderInfo();fishQuickSave();
+}
+function buyDeadFish(idx){
+  if(FG.money<55){u1Toast('돈 부족 (55원 필요)','#C00000');return;}
+  FG.money-=55;
+  FG.fishes[idx]=newFish(1);
+  FG.fishPos=null;
+  hideDlg('fish-detail-modal');
+  if(!FG.tickInterval) fishStartLoops();
+  fishRenderInfo();fishQuickSave();
+  u1Toast('🐟 새 금붕어 치어 추가!','#217346');
 }
 
 function fishFeed(){
   if(FG.food<=0){document.getElementById('f-status').textContent='먹이가 없습니다! 상점에서 구매하세요.';return;}
-  FG.food--;FG.fullness=Math.min(100,FG.fullness+15);fishRenderInfo();
-  document.getElementById('f-status').textContent='냠냠 🍤 (+15)';
+  const alive=aliveFishes();
+  if(alive.length===0) return;
+  FG.food--;
+  alive.forEach(f=>f.fullness=Math.min(100,f.fullness+Math.ceil(15/alive.length)));
+  fishRenderInfo();
+  document.getElementById('f-status').textContent='냠냠 🍤 전체 (+'+Math.ceil(15/alive.length)+')';
   setTimeout(()=>fishUpdateStatus(),1500);
   fishQuickSave();
 }
+function feedFishOne(idx){
+  const f=FG.fishes[idx]; if(!f||f.isDead) return;
+  if(FG.food<=0){u1Toast('먹이가 없습니다!','#C00000');return;}
+  FG.food--;f.fullness=Math.min(100,f.fullness+15);
+  fishRenderInfo();fishQuickSave();
+  document.getElementById('f-status').textContent='🍤 #'+(idx+1)+' 먹이 (+15)';
+  setTimeout(()=>fishUpdateStatus(),1500);
+}
 function fishUpdateStatus(){
-  const s=fishStage();
-  document.getElementById('f-status').textContent=`${s.name} | ${FG.stage}/5단계 | ${STAGE_INCOME[FG.stage]||2}원/30초`;
+  const alive=aliveFishes();
+  if(alive.length===0){document.getElementById('f-status').textContent='물고기 없음';return;}
+  document.getElementById('f-status').textContent=`🐟 ${alive.length}마리 | 전체수입 ${totalIncome()}원/30초`;
 }
 function fishCheckEvoReady(){
-  const s=fishStage();const canEvo=FG.stage<5&&FG.xp>=s.xpNeed&&FG.money>=s.evoCost;
+  const canEvo=FG.fishes.some(f=>!f.isDead&&f.stage<5&&f.xp>=fStage(f).xpNeed&&FG.money>=fStage(f).evoCost);
   const btn=document.getElementById('f-evo-btn');
-  btn.style.opacity=canEvo?'1':'0.4';btn.style.outline=canEvo?'2px solid #217346':'none';
+  if(btn){btn.style.opacity=canEvo?'1':'0.4';btn.style.outline=canEvo?'2px solid #217346':'none';}
 }
 function fishEvolve(){
-  const s=fishStage();
-  if(FG.stage>=5){document.getElementById('f-status').textContent='이미 최고 단계!';return;}
-  if(FG.xp<s.xpNeed){document.getElementById('f-status').textContent=`XP 부족 (${Math.floor(FG.xp)}/${s.xpNeed})`;return;}
-  if(FG.money<s.evoCost){document.getElementById('f-status').textContent=`돈 부족 (${s.evoCost}원 필요)`;return;}
-  FG.money-=s.evoCost;FG.xp=0;FG.stage++;
-  const ns=fishStage();FG.maxHp=ns.hp;FG.hp=ns.hp;
-  document.getElementById('f-status').textContent=`🎉 진화! ${ns.name}`;
-  fishRenderInfo();
-  fishQuickSave();
+  // 진화 가능한 첫 번째 물고기 진화
+  const f=FG.fishes.find(f=>!f.isDead&&f.stage<5&&f.xp>=fStage(f).xpNeed&&FG.money>=fStage(f).evoCost);
+  if(!f){document.getElementById('f-status').textContent='진화 가능한 물고기 없음 (XP 또는 돈 부족)';return;}
+  evolveOneFish(f);
+}
+function evolveOneFish(f){
+  const s=fStage(f);
+  if(f.stage>=5){document.getElementById('f-status').textContent='이미 최고 단계!';return;}
+  if(f.xp<s.xpNeed){document.getElementById('f-status').textContent='XP 부족';return;}
+  if(FG.money<s.evoCost){document.getElementById('f-status').textContent='돈 부족';return;}
+  FG.money-=s.evoCost;f.xp=0;f.stage++;
+  const ns=fStage(f);f.maxHp=ns.hp;f.hp=ns.hp;
+  const idx=FG.fishes.indexOf(f);
+  document.getElementById('f-status').textContent=`🎉 #${idx+1} 진화! ${ns.name}`;
+  fishRenderInfo();fishQuickSave();
+  hideDlg('fish-detail-modal');
 }
 
 function fishRenderInfo(){
-  const s=fishStage();
-  document.getElementById('f-fish-name').textContent=s.name;
-  document.getElementById('f-fish-stage').textContent=`${FG.stage}단계 · ${s.species}`;
-  const hpPct=FG.hp/FG.maxHp*100;
-  document.getElementById('f-hp-bar').style.width=hpPct+'%';
-  document.getElementById('f-hp-bar').style.background=hpPct<30?'#EF4444':'#10B981';
-  document.getElementById('f-hp-txt').textContent=`${Math.ceil(FG.hp)}/${FG.maxHp}`;
-  document.getElementById('f-full-bar').style.width=FG.fullness+'%';
-  document.getElementById('f-full-bar').style.background=FG.fullness<20?'#EF4444':'#F59E0B';
-  document.getElementById('f-full-txt').textContent=`${Math.floor(FG.fullness)}/100`;
-  document.getElementById('f-xp-bar').style.width=Math.min(100,FG.xp/s.xpNeed*100)+'%';
-  document.getElementById('f-xp-txt').textContent=`${Math.floor(FG.xp)}/${s.xpNeed}`;
-  document.getElementById('f-income').textContent=(STAGE_INCOME[FG.stage]||2)+'원/30초';
-  document.getElementById('f-tank-info').textContent=`${FG.fishCount}/${FG.tankMax}마리`;
+  // 리본 - 돈/먹이
   document.getElementById('f-money').textContent=FG.money;
   document.getElementById('f-food-count').textContent=FG.food;
-  const nextS=FG.stage<5?F_STAGES[FG.stage+1]:null;
-  if(nextS){
-    document.getElementById('f-evo-xp').textContent=`⭐ ${Math.floor(FG.xp)}/${s.xpNeed}${FG.xp>=s.xpNeed?' ✓':''}`;
-    document.getElementById('f-evo-cost').textContent=`💰 ${s.evoCost}원${FG.money>=s.evoCost?' ✓':''}`;
-  } else {
-    document.getElementById('f-evo-info').innerHTML='<div style="font-weight:700;color:#217346">🏆 최고 단계!</div>';
+  // 수식창
+  const alive=aliveFishes();
+  const rep=alive[0];
+  if(rep){
+    const rs=fStage(rep);
+    document.getElementById('f-cell').textContent='B'+(FG.fishes.indexOf(rep)+4);
+    document.getElementById('f-formula').textContent=`=FISH("${rs.name}",${rep.stage},"HP",${Math.ceil(rep.hp)},"포만감",${Math.floor(rep.fullness)})`;
   }
-  const rodInfo=FG.rodActive?` | 🎣 ${Math.floor(FG.rodTimer/60)}분 남음`:'';
-  document.getElementById('f-auto-status').textContent=
-    (FG.autoLevel===0?'자동먹이통: 없음':FG.autoLevel===1?'자동먹이통 I':'자동먹이통 II')+rodInfo;
-  document.getElementById('f-cell').textContent=`B${FG.stage+3}`;
-  document.getElementById('f-formula').textContent=`=FISH("${s.name}",${FG.stage},"HP",${Math.ceil(FG.hp)},"포만감",${Math.floor(FG.fullness)})`;
+  // 스탯 패널 - 물고기 목록
+  const list=document.getElementById('f-fish-list');
+  if(list){
+    list.innerHTML=FG.fishes.map((f,i)=>{
+      const s=fStage(f);
+      const hpPct=f.isDead?0:f.hp/f.maxHp*100;
+      const xpPct=f.isDead?0:Math.min(100,f.xp/s.xpNeed*100);
+      const hpC=hpPct<30?'#EF4444':'#10B981';
+      const fuC=f.fullness<20?'#EF4444':'#F59E0B';
+      const bg=f.isDead?'#FFF0F0':'#fff';
+      const bdTop=i>0?'border-top:1px solid #E8E8E8;':'';
+      const canEvo=!f.isDead&&f.stage<5&&f.xp>=s.xpNeed&&FG.money>=s.evoCost;
+      return `<div style="padding:6px 8px;background:${bg};${bdTop}cursor:pointer" onclick="showFishDetail(${i})">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:10px;font-weight:800;color:${f.isDead?'#999':'#1F3864'}">${f.isDead?'💀':'🐟'} #${i+1} ${s.name}</span>
+          ${f.isDead?'':`<button onpointerdown="event.preventDefault()" onclick="event.stopPropagation();feedFishOne(${i})" style="background:#F59E0B;color:#fff;border:none;border-radius:3px;font-size:9px;padding:1px 5px;cursor:pointer;font-family:inherit">🍤</button>`}
+        </div>
+        ${f.isDead?'<div style="font-size:9px;color:#999;text-align:center">사망 (클릭하여 구매)</div>':`
+        <div style="font-size:9px;color:#888;display:flex;justify-content:space-between"><span>❤️</span><span>${Math.ceil(f.hp)}/${f.maxHp}</span></div>
+        <div style="background:#F3F4F6;border-radius:2px;height:5px;margin-bottom:3px;overflow:hidden"><div style="width:${hpPct}%;height:100%;background:${hpC};border-radius:2px"></div></div>
+        <div style="font-size:9px;color:#888;display:flex;justify-content:space-between"><span>🍤</span><span>${Math.floor(f.fullness)}/100</span></div>
+        <div style="background:#F3F4F6;border-radius:2px;height:5px;margin-bottom:3px;overflow:hidden"><div style="width:${f.fullness}%;height:100%;background:${fuC};border-radius:2px"></div></div>
+        <div style="font-size:9px;color:#888;display:flex;justify-content:space-between"><span>⭐</span><span>${Math.floor(f.xp)}/${s.xpNeed}</span></div>
+        <div style="background:#F3F4F6;border-radius:2px;height:5px;overflow:hidden"><div style="width:${xpPct}%;height:100%;background:#4472C4;border-radius:2px"></div></div>
+        ${canEvo?'<div style="font-size:9px;color:#217346;font-weight:700;margin-top:2px;text-align:center">⬆️ 진화 가능!</div>':''}
+        `}
+      </div>`;
+    }).join('');
+  }
+  // 하단 요약
+  const ti=document.getElementById('f-total-income');
+  if(ti) ti.textContent=totalIncome()+'원/30초';
+  const tk=document.getElementById('f-tank-info');
+  if(tk) tk.textContent=FG.fishes.length+'/'+FG.tankMax+'마리';
+  const au=document.getElementById('f-auto-status');
+  if(au){
+    const rod=FG.rodActive?` | 🎣 ${Math.floor(FG.rodTimer/60)}분 남음`:'';
+    au.textContent=(FG.autoLevel===0?'자동먹이통: 없음':FG.autoLevel===1?'자동먹이통 I':'자동먹이통 II')+rod;
+  }
   fishCheckEvoReady(); fishUpdateStatus(); fishRenderInfoMobile();
+}
+
+let _fdIdx=-1;
+function showFishDetail(idx){
+  const f=FG.fishes[idx]; if(!f) return;
+  _fdIdx=idx;
+  const s=fStage(f);
+  document.getElementById('fd-title').textContent=(f.isDead?'💀':'🐟')+' #'+(idx+1)+' '+s.name;
+  document.getElementById('fd-stage').textContent=f.stage+'단계 · '+s.species+(f.isDead?' (사망)':'');
+  document.getElementById('fd-hp').textContent=Math.ceil(f.hp)+'/'+f.maxHp;
+  document.getElementById('fd-full').textContent=Math.floor(f.fullness)+'/100';
+  document.getElementById('fd-xp').textContent=Math.floor(f.xp)+'/'+s.xpNeed;
+  document.getElementById('fd-income').textContent=(STAGE_INCOME[f.stage]||2)+'원/30초';
+  const evoEl=document.getElementById('fd-evo');
+  if(f.stage<5){
+    evoEl.innerHTML=`진화 조건: ⭐${Math.floor(f.xp)}/${s.xpNeed} | 💰${s.evoCost}원`;
+  } else {
+    evoEl.textContent='🏆 최고 단계';
+  }
+  const feedBtn=document.getElementById('fd-feed-btn');
+  const evoBtn=document.getElementById('fd-evo-btn');
+  const buyBtn=document.getElementById('fd-buy-btn');
+  if(f.isDead){
+    if(feedBtn) feedBtn.style.display='none';
+    if(evoBtn) evoBtn.style.display='none';
+    if(buyBtn){buyBtn.style.display='';buyBtn.textContent='🐟 새 물고기 (55원)';}
+  } else {
+    if(feedBtn) feedBtn.style.display='';
+    if(evoBtn){evoBtn.style.display='';evoBtn.style.opacity=(f.stage<5&&f.xp>=s.xpNeed&&FG.money>=s.evoCost)?'1':'0.5';}
+    if(buyBtn) buyBtn.style.display='none';
+  }
+  document.getElementById('fish-detail-modal').classList.add('on');
 }
 
 function fishDraw(){
@@ -1422,38 +1548,51 @@ function fishDraw(){
   for(let i=0;i<Math.min(COLS.length,Math.ceil(W/cw));i++) c.fillText(COLS[i],i*cw+cw/2,8);
   c.textAlign='right';
   for(let i=0;i<Math.ceil(H/ch);i++) c.fillText(i+1,16,i*ch+ch*0.72);
-  if(!FG.fishPos||FG.fishPos.length!==FG.fishCount){
-    FG.fishPos=Array.from({length:FG.fishCount},(_,i)=>({
-      x:0.15+(i%4)*0.2+(Math.random()-.5)*.05,y:0.2+Math.floor(i/4)*.35+(Math.random()-.5)*.05,
+  const totalF=FG.fishes.length;
+  if(!FG.fishPos||FG.fishPos.length!==totalF){
+    FG.fishPos=Array.from({length:totalF},(_,i)=>({
+      x:0.1+(i%4)*0.22+(Math.random()-.5)*.05,y:0.2+Math.floor(i/4)*.35+(Math.random()-.5)*.05,
       dx:(Math.random()>.5?1:-1)*.003,dy:(Math.random()-.5)*.002
     }));
   }
-  const size=Math.min(W,H)*(.05+FG.stage*.012);
   FG.fishPos.forEach((fp,idx)=>{
+    const fish=FG.fishes[idx];
+    if(!fish) return;
+    const size=Math.min(W,H)*(.05+(fish.isDead?1:fish.stage)*.012);
+    if(fish.isDead){
+      // 사망 물고기: 회색 + 💀
+      c.globalAlpha=0.3;
+      const ds=F_STAGES[1];
+      c.fillStyle='#999';c.beginPath();c.ellipse(fp.x*W,fp.y*H,size,size*.58,0,0,Math.PI*2);c.fill();
+      c.globalAlpha=1;
+      c.font=`${size*1.2}px serif`;c.textAlign='center';c.fillText('💀',fp.x*W,fp.y*H+size*.4);
+      return;
+    }
+    const fs=fStage(fish);
     fp.x+=fp.dx;fp.y+=fp.dy;
     if(fp.x<.08||fp.x>.92)fp.dx*=-1;if(fp.y<.1||fp.y>.9)fp.dy*=-1;
     if(Math.random()<.008)fp.dy=(Math.random()-.5)*.003;
     fp.dx=Math.max(-.006,Math.min(.006,fp.dx));
     const fx=fp.x*W,fy=fp.y*H,dir=fp.dx>=0?1:-1;
     c.fillStyle='rgba(0,0,0,0.06)';c.beginPath();c.ellipse(fx+2,fy+3,size,size*.45,0,0,Math.PI*2);c.fill();
-    c.fillStyle=s.fin;c.beginPath();c.moveTo(fx-dir*size*.8,fy);c.lineTo(fx-dir*size*1.4,fy-size*.5);c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
-    const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);g.addColorStop(0,s.fin);g.addColorStop(1,s.color);
+    c.fillStyle=fs.fin;c.beginPath();c.moveTo(fx-dir*size*.8,fy);c.lineTo(fx-dir*size*1.4,fy-size*.5);c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
+    const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);g.addColorStop(0,fs.fin);g.addColorStop(1,fs.color);
     c.fillStyle=g;c.beginPath();c.ellipse(fx,fy,size,size*.58,0,0,Math.PI*2);c.fill();
     c.strokeStyle='rgba(0,0,0,0.12)';c.lineWidth=.7;c.stroke();
     c.fillStyle='#fff';c.beginPath();c.arc(fx+dir*size*.5,fy-size*.1,size*.17,0,Math.PI*2);c.fill();
     c.fillStyle='#222';c.beginPath();c.arc(fx+dir*size*.56,fy-size*.1,size*.09,0,Math.PI*2);c.fill();
-    if(FG.fullness>80){c.fillStyle='rgba(255,255,150,0.15)';c.beginPath();c.arc(fx,fy,size*1.3,0,Math.PI*2);c.fill();}
-    if(FG.hp/FG.maxHp<.2&&idx===0){c.strokeStyle='rgba(220,0,0,0.55)';c.lineWidth=1.5;c.beginPath();c.arc(fx,fy,size*1.4+Math.sin(Date.now()/200)*2,0,Math.PI*2);c.stroke();}
-    if(FG.fullness<30&&Math.random()<.03){c.fillStyle='rgba(150,150,255,0.35)';c.beginPath();c.arc(fx+(Math.random()-.5)*size,fy-size*1.1,1.5,0,Math.PI*2);c.fill();}
+    if(fish.fullness>80){c.fillStyle='rgba(255,255,150,0.15)';c.beginPath();c.arc(fx,fy,size*1.3,0,Math.PI*2);c.fill();}
+    if(fish.hp/fish.maxHp<.2){c.strokeStyle='rgba(220,0,0,0.55)';c.lineWidth=1.5;c.beginPath();c.arc(fx,fy,size*1.4+Math.sin(Date.now()/200)*2,0,Math.PI*2);c.stroke();}
+    if(fish.fullness<30&&Math.random()<.03){c.fillStyle='rgba(150,150,255,0.35)';c.beginPath();c.arc(fx+(Math.random()-.5)*size,fy-size*1.1,1.5,0,Math.PI*2);c.fill();}
   });
   c.fillStyle='rgba(33,115,70,0.75)';c.font='bold 10px monospace';c.textAlign='right';
-  c.fillText(`🐟 ${FG.fishCount}/${FG.tankMax}마리`,W-6,H-6);
+  c.fillText(`🐟 ${aliveFishes().length}/${FG.tankMax}마리`,W-6,H-6);
 }
 
 function fishSave(isDisconnect){
-  const data={stage:FG.stage,hp:FG.hp,maxHp:FG.maxHp,fullness:FG.fullness,xp:FG.xp,
+  const data={fishes:FG.fishes,
     money:FG.money,food:FG.food,autoLevel:FG.autoLevel,
-    fishCount:FG.fishCount,tankLevel:FG.tankLevel,tankMax:FG.tankMax,
+    tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,
     stoppedByDisconnect:isDisconnect||false,lastSave:Date.now()};
   localStorage.setItem('u1aquarium_v1',JSON.stringify(data));
@@ -1467,7 +1606,7 @@ function fishSave(isDisconnect){
 
 // 10초 자동저장 (상태바에 표시)
 function fishAutoSave(){
-  if(FG.paused||FG.isDead) return;
+  if(FG.paused||aliveFishes().length===0) return;
   fishSave();
 }
 
@@ -1485,24 +1624,29 @@ function fishLoad(){
   try{
     const raw=localStorage.getItem('u1aquarium_v1'); if(!raw) return;
     const d=JSON.parse(raw);
-    FG.stage=d.stage||1;FG.hp=d.hp||50;FG.maxHp=d.maxHp||50;
-    FG.fullness=d.fullness||80;FG.xp=d.xp||0;FG.money=d.money??100;FG.food=d.food??5;
-    FG.autoLevel=d.autoLevel||0;FG.fishCount=d.fishCount||1;
+    // 구버전 호환 (fishes 배열 없으면 단일 물고기로 변환)
+    if(d.fishes&&Array.isArray(d.fishes)){
+      FG.fishes=d.fishes;
+    } else if(d.stage){
+      const s=F_STAGES[d.stage||1];
+      FG.fishes=[{id:'legacy',stage:d.stage||1,hp:d.hp||50,maxHp:d.maxHp||50,fullness:d.fullness||80,xp:d.xp||0,isDead:false}];
+    }
+    if(FG.fishes.length===0) FG.fishes=[newFish(1)];
+    FG.money=d.money??100;FG.food=d.food??5;FG.autoLevel=d.autoLevel||0;
     FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
     FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;
-    FG.isDead=false;
     if(!(d.stoppedByDisconnect&&FISH_STOP_ON_DISCONNECT)&&d.lastSave){
       const elapsed=(Date.now()-d.lastSave)/1000;
       if(elapsed>10) fishCalcOffline(elapsed);
     }
     FG.lastTick=Date.now();
-  }catch(e){}
+  }catch(e){FG.fishes=[newFish(1)];}
 }
 function fishReset(){
   if(!confirm('저장 데이터를 삭제하고 처음부터 시작할까요?')) return;
   localStorage.removeItem('u1aquarium_v1');
-  Object.assign(FG,{stage:1,hp:50,maxHp:50,fullness:80,xp:0,money:100,food:5,autoLevel:0,
-    fishCount:1,tankLevel:0,tankMax:1,rodActive:false,rodTimer:0,fishPos:null,isDead:false,lastTick:Date.now()});
+  Object.assign(FG,{fishes:[newFish(1)],money:100,food:5,autoLevel:0,
+    tankLevel:0,tankMax:1,rodActive:false,rodTimer:0,fishPos:null,lastTick:Date.now()});
   fishRenderInfo();
   document.getElementById('f-status').textContent='새 게임 시작!';
   document.getElementById('f-save-status').textContent='저장 안 됨';
@@ -1543,8 +1687,9 @@ function fishBuy(id){
   if(item.type==='lottery'){FG.money-=item.price;hideDlg('f-shop-modal');buyLottery();return;}
   if(item.type==='newfish'){
     if(!FG.isDead){document.getElementById('f-status').textContent='물고기가 살아있습니다!';return;}
-    if(FG.fishCount>=FG.tankMax){document.getElementById('f-status').textContent='수조가 꽉 찼습니다!';return;}
-    FG.money-=item.price;FG.stage=1;FG.hp=50;FG.maxHp=50;FG.fullness=60;FG.xp=0;FG.isDead=false;
+    if(FG.fishes.length>=FG.tankMax){document.getElementById('f-status').textContent='수조가 꽉 찼습니다!';return;}
+    FG.money-=item.price;
+    FG.fishes.push(newFish(1));FG.fishPos=null;
     fishRenderInfo();fishStartLoops();hideDlg('f-shop-modal');return;
   }
   FG.money-=item.price;
