@@ -986,14 +986,8 @@ function connectSupabase(){
       setTimeout(()=>{
         const lastJoin=_presenceTs[oppName]||0;
         if(lastJoin>=leftAt) return; // 5초 안에 재접속 → 무시
-        // 채팅 퇴장 알림
+        // 채팅 퇴장 알림만 표시 (탈주 감지는 heartbeat로만 처리)
         addChatSys(oppName+'님이 퇴장했습니다');
-        // 게임 중이었으면 탈주 처리 (게임 시작 30초 이내는 무시 - 화면전환 안정화)
-        if(currentGame&&currentGame.opponentId===oppId){
-          if(Date.now()-_gameStartTs<30000) return; // 30초 유예
-          currentGame=null; stopOmokTimer(); bbOver=true;
-          showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
-        }
       },5000); // 5초 대기: 순간 끊김/재연결 구분
     });
     onPresenceSync();
@@ -1031,6 +1025,12 @@ function connectSupabase(){
   })
   .on('broadcast',{event:'battle_deploy'},({payload})=>onBattleDeploy(payload))
   .on('broadcast',{event:'battle_actions'},({payload})=>onBattleActions(payload))
+  .on('broadcast',{event:'game_hb'},({payload})=>{
+    // 게임 heartbeat 수신 → 상대 연결 확인
+    if(currentGame&&payload.fromId===currentGame.opponentId){
+      _gameLastHb=Date.now();
+    }
+  })
   .on('broadcast',{event:'challenge_reject'},({payload})=>{
     if(payload.targetId!==myId) return;
     u1Toast(payload.fromName+'님이 거절했습니다','#C00000');
@@ -1447,16 +1447,42 @@ function rejectChallenge(){
 }
 
 const _presenceTs={}; // {username: 마지막 입장 시각} - 입장/퇴장 스팸 방지
-let _gameStartTs=0; // 게임 시작 타임스탬프
+let _gameStartTs=0;
+let _gameHbInterval=null; // heartbeat 인터벌
+let _gameLastHb=0;        // 상대방 마지막 heartbeat 수신 시각
+
+function startGameHeartbeat(){
+  _gameLastHb=Date.now();
+  clearInterval(_gameHbInterval);
+  _gameHbInterval=setInterval(()=>{
+    if(!currentGame){stopGameHeartbeat();return;}
+    // 핑 전송
+    sbSend('game_hb',{fromId:myId,targetId:currentGame.opponentId});
+    // 15초 응답 없으면 탈주 처리
+    if(Date.now()-_gameLastHb>15000){
+      stopGameHeartbeat();
+      if(currentGame){
+        currentGame=null; stopOmokTimer(); bbOver=true;
+        showResultNotify('🏃','상대방 연결이 끊겼습니다\n(15초 무응답)');
+      }
+    }
+  },5000);
+}
+
+function stopGameHeartbeat(){
+  clearInterval(_gameHbInterval);
+  _gameHbInterval=null;
+}
 
 function startOnlineGame(gameType){
-  _gameStartTs=Date.now(); // 게임 시작 시각 기록
+  _gameStartTs=Date.now();
+  startGameHeartbeat(); // presence 대신 heartbeat로 연결 감지
   if(gameType==='omok') startOmokOnline();
   else if(gameType==='baseball') startBBOnline();
 }
 
 function backToFishWorld(){
-  currentGame=null; showIngameChat(false);
+  currentGame=null; stopGameHeartbeat(); showIngameChat(false);
   show('s-fishworld');
   if(!FG.tickInterval) fishStartLoops();
 }
@@ -2529,7 +2555,7 @@ function omokEndGame(winner,resigned){
 function omokExit(){
   if(!oOver&&oBoard){if(!confirm('종료하시겠습니까?'))return;}
   showIngameChat(false);
-  if(oMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;}
+  if(oMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;stopGameHeartbeat();}
   show('s-fishworld');if(!FG.tickInterval)fishStartLoops();
 }
 function omokOnlineMove(data){
@@ -2557,7 +2583,7 @@ let bbDigits=4,bbDiff='easy',bbMode='ai',bbMySecret='',bbAISecret='',bbAICands=[
 function selBBDiff(d){bbDiff=d;document.getElementById('bb-easy').classList.toggle('on',d==='easy');document.getElementById('bb-hard').classList.toggle('on',d==='hard');}
 function bbExit(){
   showIngameChat(false);
-  if(bbMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;}
+  if(bbMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;stopGameHeartbeat();}
   show('s-fishworld');if(!FG.tickInterval)fishStartLoops();
 }
 function buildBBSecretInput(){
@@ -2686,7 +2712,7 @@ function closeResultNotify(){document.getElementById('result-notify').classList.
 function confirmResult(){
   closeResultNotify();
   if(oMode==='online'||bbMode==='online'||battleState){
-    sendGameMsg({type:'game_end',data:{}}); currentGame=null; showIngameChat(false);
+    sendGameMsg({type:'game_end',data:{}}); currentGame=null; stopGameHeartbeat(); showIngameChat(false);
     updateMyPresence(false); show('s-fishworld'); if(!FG.tickInterval)fishStartLoops();
     return;
   }
@@ -3520,7 +3546,7 @@ function battleExit(){
   clearInterval(btInterval);btInterval=null;
   if(battleState){
     sendGameMsg({type:'game_end',data:{}});
-    currentGame=null;battleState=null;
+    currentGame=null;battleState=null;stopGameHeartbeat();
   }
   showIngameChat(false);
   show('s-fishworld');
