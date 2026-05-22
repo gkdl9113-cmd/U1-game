@@ -1874,12 +1874,15 @@ async function adminSaveEdit(){
 async function adminResetServer(){
   const filter=document.getElementById('adm-server-filter').value;
   const target=filter==='ALL'?'전체 서버':filter+' 서버';
-  if(!confirm(`⚠️ ${target}의 모든 유저 데이터를 삭제합니다.\n관리자(${ADMIN_USERNAME}) 계정은 유지됩니다.\n\n정말 초기화하시겠습니까?`)) return;
-  let query=_sb.from('fish_accounts').delete().neq('username',ADMIN_USERNAME);
+  if(!confirm(`⚠️ ${target}의 모든 유저 물고기 데이터를 초기화합니다.\n계정(아이디/비밀번호)은 삭제되지 않습니다.\n관리자 계정 제외.\n\n정말 초기화하시겠습니까?`)) return;
+  // DELETE 대신 UPDATE로 fish_data만 비움 (계정 유지)
+  let query=_sb.from('fish_accounts')
+    .update({fish_data:{},updated_at:new Date().toISOString()})
+    .neq('username',ADMIN_USERNAME);
   if(filter!=='ALL') query=query.eq('server',filter);
   const{error}=await query;
   if(error){alert('초기화 실패: '+error.message);return;}
-  document.getElementById('adm-status').textContent=`${target} 초기화 완료`;
+  document.getElementById('adm-status').textContent=`${target} 데이터 초기화 완료 (계정 유지)`;
   adminLoadUsers();
 }
 
