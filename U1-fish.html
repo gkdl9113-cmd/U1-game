@@ -1219,11 +1219,11 @@ function toggleIngameChat(){
 let FISH_STOP_ON_DISCONNECT=true;
 
 const F_STAGES=[null,
-  {name:'금붕어 치어',species:'금붕어',  color:'#FF8C00',fin:'#FFD700',hp:50, atk:5,  def:2,  income:1, xpRate:1,  xpNeed:100, evoCost:300, foodRate:8},
-  {name:'금붕어',     species:'금붕어',  color:'#FF6B00',fin:'#FF0000',hp:120,atk:12, def:6,  income:3, xpRate:1.5,xpNeed:300, evoCost:800, foodRate:7},
-  {name:'비단잉어',   species:'비단잉어',color:'#FF4444',fin:'#FFFFFF',hp:280,atk:28, def:15, income:8, xpRate:2,  xpNeed:700, evoCost:2000,foodRate:6},
-  {name:'아로와나',   species:'아로와나',color:'#C0C0C0',fin:'#87CEEB',hp:600,atk:60, def:35, income:18,xpRate:3,  xpNeed:1500,evoCost:5000,foodRate:5},
-  {name:'황금 아로와나',species:'아로와나',color:'#FFD700',fin:'#FFA500',hp:1200,atk:120,def:70,income:45,xpRate:5,xpNeed:9999,evoCost:0, foodRate:4},
+  {name:'금붕어 치어',species:'금붕어',  color:'#FF8C00',fin:'#FFD700',hp:50, atk:5,  def:2,  income:1, xpRate:1,  xpNeed:100, evoCost:300, foodRate:20},
+  {name:'금붕어',     species:'금붕어',  color:'#FF6B00',fin:'#FF0000',hp:120,atk:12, def:6,  income:3, xpRate:1.5,xpNeed:300, evoCost:800, foodRate:18},
+  {name:'비단잉어',   species:'비단잉어',color:'#FF4444',fin:'#FFFFFF',hp:280,atk:28, def:15, income:8, xpRate:2,  xpNeed:700, evoCost:2000,foodRate:16},
+  {name:'아로와나',   species:'아로와나',color:'#C0C0C0',fin:'#87CEEB',hp:600,atk:60, def:35, income:18,xpRate:3,  xpNeed:1500,evoCost:5000,foodRate:14},
+  {name:'황금 아로와나',species:'아로와나',color:'#FFD700',fin:'#FFA500',hp:1200,atk:120,def:70,income:45,xpRate:5,xpNeed:9999,evoCost:0, foodRate:12},
 ];
 const STAGE_INCOME=[0,2,4,8,18,45];
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
@@ -1231,8 +1231,8 @@ const F_SHOP=[
   {id:'food10', name:'먹이 10개',     price:50,  desc:'포만감 +15씩',      type:'food',qty:10},
   {id:'food30', name:'먹이 30개',     price:130, desc:'소량 할인',          type:'food',qty:30},
   {id:'food100',name:'먹이 100개',    price:400, desc:'대량 할인',          type:'food',qty:100},
-  {id:'auto1',  name:'자동먹이통 I',  price:1200,desc:'30초마다 자동 급식', type:'auto',level:1},
-  {id:'auto2',  name:'자동먹이통 II', price:4000,desc:'15초마다 자동 급식', type:'auto',level:2},
+  {id:'auto1',  name:'자동먹이통 I',  price:600, desc:'30초마다 자동 급식', type:'auto',level:1},
+  {id:'auto2',  name:'자동먹이통 II', price:2000,desc:'15초마다 자동 급식', type:'auto',level:2},
   {id:'lottery',name:'🎰 행운 복권',  price:300, desc:'1~5등 또는 꽝',     type:'lottery'},
   {id:'rod1',   name:'하급 낚시대 Ⅰ',price:150, prob:0.005,desc:'1시간, 25%확률',type:'rod'},
   {id:'rod2',   name:'하급 낚시대 Ⅱ',price:400, prob:0.012,desc:'1시간, 50%확률',type:'rod'},
