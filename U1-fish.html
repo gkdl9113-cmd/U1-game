@@ -836,11 +836,28 @@ function connectSupabase(){
     if(payload.targetId!==myId) return;
     u1Toast(payload.fromName+'님이 거절했습니다','#C00000');
   })
+  .on('broadcast',{event:'new_login'},({payload})=>{
+    // 같은 이름으로 다른 세션이 접속 → 기존 세션(나) 자동 로그아웃
+    if(payload.name===myName && payload.sessionId!==myId){
+      fishSave();
+      u1Toast('⚠️ 다른 기기에서 접속하여 자동 로그아웃됩니다.','#C00000');
+      setTimeout(()=>{
+        fishStopLoops(); showMobileFloatBtns(false);
+        if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
+        currentUsername=''; myName='';
+        const pwEl=document.getElementById('e-pw');if(pwEl)pwEl.value='';
+        eStatus('다른 기기에서 접속되어 로그아웃되었습니다.','#C00000');
+        show('s-entry');
+      },2000);
+    }
+  })
   .subscribe(async(status)=>{
     if(status==='SUBSCRIBED'){
       eStatus('● 온라인','#217346'); eOnline(true);
       u1Toast('✅ U1 수족관 연결 완료!','#217346');
       await _ch.track({userId:myId,name:myName,inGame:false,joinedAt:Date.now()});
+      // 같은 계정의 기존 세션에게 로그아웃 신호 전송
+      setTimeout(()=>sbSend('new_login',{name:myName,sessionId:myId}),500);
     } else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
       eStatus('연결 오류 — 재시도 중…','#C00000'); eOnline(false);
       setTimeout(reconnectChannel,3000);
