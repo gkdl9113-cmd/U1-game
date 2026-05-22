@@ -145,6 +145,19 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 .lstatus{font-size:11px;padding:4px 16px;color:#595959;background:#fff}
 .lspacer{background:#fff;height:10px}
 #s-fishworld{background:#F2F2F2}
+#s-admin{background:#F2F2F2}
+.adm-tbl{border-collapse:collapse;width:100%;font-size:11px}
+.adm-tbl th{background:#1F3864;color:#fff;padding:5px 8px;font-size:11px;font-weight:700;text-align:left;position:sticky;top:0;z-index:2;white-space:nowrap}
+.adm-tbl td{border:1px solid #D0D0D0;padding:5px 8px;background:#fff;vertical-align:middle;white-space:nowrap}
+.adm-tbl tr:hover td{background:#EFF6FF}
+.adm-tbl tr.admin-row td{background:#FFF9C4}
+.adm-stat-box{background:#DEEAF1;border:1px solid #9DC3E6;border-radius:4px;padding:8px 14px;font-size:12px;font-weight:700;color:#1F497D;text-align:center;min-width:90px}
+.adm-btn{background:#217346;color:#fff;border:none;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit}
+.adm-btn:active{opacity:.8}
+.adm-btn.warn{background:#C00000}
+.adm-btn.blue{background:#1F3864}
+.adm-edit-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F0F0F0;font-size:11px}
+.adm-edit-inp{width:80px;border:1px solid #9DC3E6;padding:3px 6px;font-size:12px;font-family:inherit;text-align:right}
 @media(min-width:769px){
   body{max-width:100%;font-size:12px}
   .xl-dlg-ov,.xl-notify-ov{max-width:100%}
@@ -468,6 +481,97 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
+<!-- ══ 관리자 화면 ══ -->
+<div id="s-admin" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">관리자_대시보드.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="adminLogout()">✕</button></div>
+  </div>
+  <div class="xl-tabs"><button class="xl-tab on">유저관리</button><button class="xl-tab">서버관리</button><button class="xl-tab">접속현황</button></div>
+  <div class="xl-ribbon">
+    <button class="xl-rbtn" onclick="adminLoadUsers()"><span class="xl-rico">🔄</span><span class="xl-rlbl">새로고침</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn" onclick="adminResetServer()" style="color:#C00000"><span class="xl-rico">🗑️</span><span class="xl-rlbl">서버초기화</span></button>
+    <div class="xl-rsep"></div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:11px;padding:0 4px">
+      <span style="color:#595959">서버 필터:</span>
+      <select id="adm-server-filter" onchange="adminLoadUsers()" style="font-size:11px;border:1px solid #B4B4B4;padding:2px 4px;font-family:inherit">
+        <option value="ALL">전체</option>
+        <option value="TEST-1" selected>TEST-1</option>
+        <option value="U1">U1</option>
+      </select>
+    </div>
+    <div class="xl-rsep"></div>
+    <span style="font-size:11px;color:#595959;padding:0 4px">현재 접속: <strong id="adm-online-count" style="color:#217346">0</strong>명</span>
+  </div>
+  <div class="xl-fbar">
+    <div class="xl-namebox">A1</div><div class="xl-fx">fx</div>
+    <div class="xl-ftext">=ADMIN.DASHBOARD(ACTIVE_SERVER,"<span id="adm-formula-server">TEST-1</span>")</div>
+  </div>
+  <!-- 통계 바 -->
+  <div style="display:flex;gap:8px;padding:8px 10px;background:#F2F2F2;border-bottom:1px solid #C8C8C8;flex-shrink:0;overflow-x:auto">
+    <div class="adm-stat-box">총 유저<br><span id="adm-total-count" style="font-size:18px">-</span>명</div>
+    <div class="adm-stat-box" style="background:#E2EFDA;border-color:#A9D18E;color:#375623">TEST-1<br><span id="adm-test1-count" style="font-size:18px">-</span>명</div>
+    <div class="adm-stat-box" style="background:#FFF2CC;border-color:#FFC000;color:#7F6000">U1<br><span id="adm-u1-count" style="font-size:18px">-</span>명</div>
+    <div class="adm-stat-box" style="background:#FCE4EC;border-color:#F48FB1;color:#880E4F">현재접속<br><span id="adm-online-count2" style="font-size:18px">0</span>명</div>
+  </div>
+  <!-- 유저 테이블 -->
+  <div style="flex:1;overflow:auto;background:#fff">
+    <table class="adm-tbl">
+      <thead>
+        <tr>
+          <th style="width:30px">#</th>
+          <th>아이디</th>
+          <th>서버</th>
+          <th>🐟 단계</th>
+          <th>💰 보유금액</th>
+          <th>🍤 먹이</th>
+          <th>❤️ HP</th>
+          <th>마지막 저장</th>
+          <th style="width:60px">관리</th>
+        </tr>
+      </thead>
+      <tbody id="adm-user-tbody">
+        <tr><td colspan="9" style="text-align:center;color:#888;padding:20px">새로고침을 눌러 유저 목록을 불러오세요</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="xl-bottombar">
+    <div class="xl-stabs"><button class="xl-stab on">유저목록</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-statusbar">
+      <span class="xl-sitem" id="adm-status">관리자 모드</span>
+      <span class="xl-sitem" style="color:#C00000;font-weight:700">⚠️ ADMIN</span>
+      <span class="xl-sitem">100%</span>
+    </div>
+  </div>
+</div>
+
+<!-- 유저 데이터 수정 모달 -->
+<div class="xl-dlg-ov" id="adm-edit-modal">
+  <div class="xl-dlg" style="min-width:300px">
+    <div class="xl-dlg-title" style="background:#1F3864">🛠️ 유저 데이터 수정 <button class="xl-dlg-x" onclick="hideDlg('adm-edit-modal')">✕</button></div>
+    <div class="xl-dlg-body">
+      <div style="font-size:12px;font-weight:700;color:#1F3864;margin-bottom:10px" id="adm-edit-title">유저: </div>
+      <div class="adm-edit-row"><span style="min-width:70px">🐟 단계</span>
+        <select id="adm-edit-stage" style="border:1px solid #9DC3E6;padding:3px 6px;font-size:12px;font-family:inherit">
+          <option value="1">1단계 - 금붕어 치어</option>
+          <option value="2">2단계 - 금붕어</option>
+          <option value="3">3단계 - 비단잉어</option>
+          <option value="4">4단계 - 아로와나</option>
+          <option value="5">5단계 - 황금 아로와나</option>
+        </select>
+      </div>
+      <div class="adm-edit-row"><span style="min-width:70px">💰 금액</span><input class="adm-edit-inp" id="adm-edit-money" type="number" min="0"></div>
+      <div class="adm-edit-row"><span style="min-width:70px">🍤 먹이</span><input class="adm-edit-inp" id="adm-edit-food" type="number" min="0"></div>
+      <div class="adm-edit-row"><span style="min-width:70px">❤️ HP</span><input class="adm-edit-inp" id="adm-edit-hp" type="number" min="0"></div>
+      <div class="xl-dlg-btns" style="margin-top:12px">
+        <button class="xl-dlg-btn" onclick="hideDlg('adm-edit-modal')">취소</button>
+        <button class="xl-dlg-btn ok" onclick="adminSaveEdit()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 상사 크리 보스키 오버레이 -->
 <div id="boss-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#fff;overflow:auto;font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:clamp(10px,1.4vw,14px);color:#000">
   <div style="background:#217346;color:#fff;padding:3px 10px;font-size:11px;display:flex;justify-content:space-between;flex-shrink:0">
@@ -561,8 +665,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // ══════════════════════════════════════════════════════════
 const BUILD = 'v1.01';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
-const ACTIVE_SERVER = 'TEST-1';
-const CHANNEL_NAME  = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
+const ACTIVE_SERVER  = 'TEST-1';
+const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
+const ADMIN_USERNAME = 'admin'; // ← 관리자 아이디 (변경 가능)
 
 // ── 플레이어 ID (세션마다 새로 생성) ─────────────────────
 const myId = (typeof crypto!=='undefined'&&crypto.randomUUID)
@@ -768,11 +873,19 @@ async function doRegister(){
 }
 
 function enterFishWorldWithData(dbData){
-  // DB 데이터가 있으면 적용, 없으면 로컬스토리지 사용
-  if(dbData && Object.keys(dbData).length>0){
+  // 관리자 계정이면 관리자 화면으로
+  if(currentUsername===ADMIN_USERNAME){
+    if(!_sb) _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    show('s-admin');
+    connectSupabase();
+    adminInit();
+    return;
+  }
+  // 일반 유저
+  if(dbData&&Object.keys(dbData).length>0){
     applyFishData(dbData);
   } else {
-    fishLoad(); // 로컬스토리지에서 불러오기
+    fishLoad();
   }
   show('s-fishworld');
   setTimeout(()=>{
@@ -1646,6 +1759,126 @@ document.addEventListener('keydown',e=>{
   const el=document.getElementById('e-name');
   if(el&&saved) el.value=saved;
 })();
+
+// ══════════════════════════════════════════════════════════
+// 관리자
+// ══════════════════════════════════════════════════════════
+let _admEditTarget=null; // {username, server, fish_data}
+
+function adminInit(){
+  document.getElementById('adm-formula-server').textContent=ACTIVE_SERVER;
+  adminLoadUsers();
+  // 접속자 수 실시간 업데이트
+  setInterval(()=>{
+    const cnt=lobbyPlayers.length;
+    document.getElementById('adm-online-count').textContent=cnt;
+    document.getElementById('adm-online-count2').textContent=cnt;
+  },2000);
+}
+
+async function adminLoadUsers(){
+  document.getElementById('adm-status').textContent='불러오는 중…';
+  const filter=document.getElementById('adm-server-filter').value;
+  let query=_sb.from('fish_accounts').select('username,server,fish_data,updated_at').order('updated_at',{ascending:false});
+  if(filter!=='ALL') query=query.eq('server',filter);
+  const{data,error}=await query;
+  if(error){document.getElementById('adm-status').textContent='오류: '+error.message;return;}
+  // 통계 계산
+  const total=data.length;
+  const test1=data.filter(r=>r.server==='TEST-1').length;
+  const u1=data.filter(r=>r.server==='U1').length;
+  document.getElementById('adm-total-count').textContent=total;
+  document.getElementById('adm-test1-count').textContent=test1;
+  document.getElementById('adm-u1-count').textContent=u1;
+  document.getElementById('adm-status').textContent=`총 ${total}명 (필터: ${filter})`;
+  adminRenderTable(data);
+}
+
+function adminRenderTable(rows){
+  const STAGES=['','금붕어 치어','금붕어','비단잉어','아로와나','황금 아로와나'];
+  const tbody=document.getElementById('adm-user-tbody');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#888;padding:20px">유저 없음</td></tr>';return;}
+  tbody.innerHTML=rows.map((r,i)=>{
+    const fd=r.fish_data||{};
+    const stage=fd.stage||1;
+    const money=(fd.money??0).toLocaleString();
+    const food=fd.food??0;
+    const hp=fd.hp??0;
+    const lastSave=fd.lastSave?new Date(fd.lastSave).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'없음';
+    const isAdmin=r.username===ADMIN_USERNAME;
+    const svrBadge=r.server==='TEST-1'
+      ?'<span style="background:#E2EFDA;color:#375623;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700">TEST-1</span>'
+      :'<span style="background:#FFF2CC;color:#7F6000;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700">U1</span>';
+    return `<tr class="${isAdmin?'admin-row':''}">
+      <td style="text-align:center;color:#888">${i+1}</td>
+      <td style="font-weight:700">${esc(r.username)}${isAdmin?' 👑':''}</td>
+      <td>${svrBadge}</td>
+      <td>${stage}단계 · ${STAGES[stage]||''}</td>
+      <td style="text-align:right;font-family:monospace">${money}원</td>
+      <td style="text-align:right">${food}개</td>
+      <td style="text-align:right">${Math.ceil(hp||0)}</td>
+      <td style="color:#888;font-size:10px">${lastSave}</td>
+      <td style="text-align:center">${isAdmin?'<span style="font-size:10px;color:#888">관리자</span>'
+        :`<button class="adm-btn blue" onclick="adminOpenEdit('${r.username}','${r.server}')">수정</button>`}</td>
+    </tr>`;
+  }).join('');
+}
+
+function adminOpenEdit(username,server){
+  const tbody=document.getElementById('adm-user-tbody');
+  const rows=Array.from(tbody.querySelectorAll('tr'));
+  // 해당 유저 데이터 찾기 (이미 로드된 데이터에서)
+  _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).single()
+    .then(({data})=>{
+      if(!data) return;
+      _admEditTarget={username,server,fish_data:data.fish_data||{}};
+      const fd=data.fish_data||{};
+      document.getElementById('adm-edit-title').textContent=`유저: ${username} (${server})`;
+      document.getElementById('adm-edit-stage').value=fd.stage||1;
+      document.getElementById('adm-edit-money').value=fd.money||0;
+      document.getElementById('adm-edit-food').value=fd.food||0;
+      document.getElementById('adm-edit-hp').value=Math.ceil(fd.hp||0);
+      document.getElementById('adm-edit-modal').classList.add('on');
+    });
+}
+
+async function adminSaveEdit(){
+  if(!_admEditTarget) return;
+  const{username,server,fish_data}=_admEditTarget;
+  const stage=parseInt(document.getElementById('adm-edit-stage').value);
+  const money=parseInt(document.getElementById('adm-edit-money').value)||0;
+  const food=parseInt(document.getElementById('adm-edit-food').value)||0;
+  const hp=parseInt(document.getElementById('adm-edit-hp').value)||0;
+  const STAGES=[null,{hp:50},{hp:120},{hp:280},{hp:600},{hp:1200}];
+  const maxHp=STAGES[stage]?.hp||50;
+  const newData={...fish_data,stage,money,food,hp:Math.min(hp,maxHp),maxHp,lastSave:Date.now()};
+  const{error}=await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',username).eq('server',server);
+  if(error){alert('저장 실패: '+error.message);return;}
+  hideDlg('adm-edit-modal');
+  document.getElementById('adm-status').textContent=`${username} 데이터 수정 완료`;
+  adminLoadUsers();
+}
+
+async function adminResetServer(){
+  const filter=document.getElementById('adm-server-filter').value;
+  const target=filter==='ALL'?'전체 서버':filter+' 서버';
+  if(!confirm(`⚠️ ${target}의 모든 유저 데이터를 삭제합니다.\n관리자(${ADMIN_USERNAME}) 계정은 유지됩니다.\n\n정말 초기화하시겠습니까?`)) return;
+  let query=_sb.from('fish_accounts').delete().neq('username',ADMIN_USERNAME);
+  if(filter!=='ALL') query=query.eq('server',filter);
+  const{error}=await query;
+  if(error){alert('초기화 실패: '+error.message);return;}
+  document.getElementById('adm-status').textContent=`${target} 초기화 완료`;
+  adminLoadUsers();
+}
+
+function adminLogout(){
+  if(!confirm('관리자 로그아웃 하시겠습니까?')) return;
+  if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
+  currentUsername=''; myName='';
+  document.getElementById('e-pw').value='';
+  eStatus('로그아웃되었습니다.','#595959');
+  show('s-entry');
+}
 
 function checkForUpdate(){
   if(location.protocol==='file:') return;
