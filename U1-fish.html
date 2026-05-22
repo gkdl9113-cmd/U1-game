@@ -1717,9 +1717,9 @@ function fishEvolve(){
 }
 // 낚시대 기대 획득 비용 (어종별 stage 1 기준)
 const FISH_BASE_COST={
-  goldfish:600,   // 하급 Ⅰ (150원), 일반 100%, 26%/시간 → 평균 ~600원
-  guppy:600,      // 동일
-  snakehead:8000, // 하급 Ⅱ+ (400원), 희귀 10%, 52%/시간 → 평균 ~7700원
+  goldfish:55,    // 직접 구매가 기준 (55원) → 판매가 < 55원 보장
+  guppy:300,      // 낚시 전용 (일반, Rod I 기준 일부 반영)
+  snakehead:3000, // 낚시 전용 (희귀, 높은 기대 비용 반영)
 };
 
 function getFishSellPrice(f){
@@ -1751,7 +1751,16 @@ function sellFish(idx){
   hideDlg('fish-detail-modal');
   fishRenderInfo(); fishQuickSave();
   u1Toast(`💰 ${s.name} 판매 완료! +${price.toLocaleString()}원`,'#217346');
-  document.getElementById('f-status').textContent=`${s.name} 판매 (${price.toLocaleString()}원)`;
+  // 수조가 비었으면 구매 팝업
+  if(FG.fishes.length===0||aliveFishes().length===0){
+    fishStopLoops();
+    const canBuy=FG.money>=55;
+    const btn=document.querySelector('#result-notify .xl-notify-btn:first-child');
+    if(btn) btn.textContent=canBuy?'🐟 구매 (55원)':'돈 부족';
+    showResultNotify('🐟','수조가 비었습니다!\n\n'+(canBuy?'금붕어 치어를 구매하시겠습니까? (55원)\n현재: '+FG.money+'원':'돈이 부족합니다 (55원 필요)\n현재: '+FG.money+'원'));
+  } else {
+    document.getElementById('f-status').textContent=`${s.name} 판매 (${price.toLocaleString()}원)`;
+  }
 }
 
 function evolveOneFish(f){
