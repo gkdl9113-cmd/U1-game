@@ -684,11 +684,13 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 <!-- 업데이트 알림 -->
 <div class="xl-notify-ov" id="update-notify" style="z-index:2000">
   <div class="xl-notify">
-    <div class="xl-notify-title">Microsoft Excel — 업데이트 알림</div>
-    <div class="xl-notify-body"><div class="xl-notify-ico">🔄</div><div class="xl-notify-txt">새 버전이 있습니다. 새로고침하여 업데이트하시겠습니까?</div></div>
+    <div class="xl-notify-title">🔄 U1 수족관 — 업데이트 알림</div>
+    <div class="xl-notify-body"><div class="xl-notify-ico">🆕</div>
+      <div class="xl-notify-txt">새 버전이 업데이트 됐습니다.<br>지금 새로고침하시겠습니까?<br><span style="font-size:10px;color:#888">(나중에 누르면 다음 체크 시 다시 알림)</span></div>
+    </div>
     <div class="xl-notify-btns">
       <button class="xl-notify-btn" onclick="document.getElementById('update-notify').classList.remove('on')">나중에</button>
-      <button class="xl-notify-btn ok" onclick="location.reload(true)">새로고침</button>
+      <button class="xl-notify-btn ok" onclick="location.reload(true)">지금 새로고침</button>
     </div>
   </div>
 </div>
@@ -2126,8 +2128,13 @@ function checkForUpdate(){
       if(m&&m[1]!==BUILD) document.getElementById('update-notify').classList.add('on');
     }).catch(()=>{});
 }
-setTimeout(checkForUpdate,60000);
-setInterval(checkForUpdate,300000);
+// 15초 후 첫 체크, 이후 2분마다 반복
+setTimeout(checkForUpdate,15000);
+setInterval(checkForUpdate,120000);
+// 탭으로 다시 돌아올 때도 체크
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden) checkForUpdate();
+});
 </script>
 </body>
 </html>
