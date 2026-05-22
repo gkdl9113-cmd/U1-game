@@ -1031,7 +1031,10 @@ function applyFishData(d){
   FG.money=d.money??100;FG.food=d.food??5;FG.autoLevel=d.autoLevel||0;
   FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
   FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;
-  if(d.lastSave){const elapsed=(Date.now()-d.lastSave)/1000;if(elapsed>30)fishCalcOffline(elapsed);}
+  if(d.lastSave){
+    const elapsed=(Date.now()-d.lastSave)/1000;
+    if(elapsed>10&&elapsed<86400*30) fishCalcOfflineAutoFeed(elapsed); // 자동먹이통만 적용
+  }
   FG.lastTick=Date.now();
 }
 
@@ -1315,6 +1318,28 @@ document.addEventListener('visibilitychange',()=>{
   if(document.hidden){if(!FG.paused){FG._autoPaused=true;fishPause();}}
   else{if(FG.paused&&FG._autoPaused){FG._autoPaused=false;fishResume();}}
 });
+
+function fishCalcOfflineAutoFeed(seconds){
+  if(FG.autoLevel===0||FG.food===0) return;
+  const rate=FG.autoLevel===1?30:15;
+  const elapsed=Math.min(seconds,86400); // 최대 24시간
+  const maxActivations=Math.floor(elapsed/rate);
+  if(maxActivations<=0) return;
+  const alive=FG.fishes.filter(f=>!f.isDead);
+  if(alive.length===0) return;
+  // 먹이 초과 방지: 보유 먹이 ÷ 마리수 = 최대 발동 횟수
+  const activations=Math.min(maxActivations,Math.floor(FG.food/Math.max(1,alive.length)));
+  if(activations<=0) return;
+  const foodUsed=activations*alive.length;
+  FG.food=Math.max(0,FG.food-foodUsed);
+  alive.forEach(f=>{f.fullness=Math.min(100,f.fullness+activations*15);});
+  // 상태 메시지 (초기화 후 표시)
+  setTimeout(()=>{
+    const el=document.getElementById('f-status');
+    if(el) el.textContent=`오프라인 자동급식 ${activations}회 (먹이 ${foodUsed}개 소모)`;
+    setTimeout(()=>fishUpdateStatus(),3000);
+  },100);
+}
 
 function fishCalcOffline(seconds){
   const ticks=Math.min(seconds,14400);
@@ -1674,9 +1699,9 @@ function fishLoad(){
     FG.money=d.money??100;FG.food=d.food??5;FG.autoLevel=d.autoLevel||0;
     FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
     FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;
-    if(!(d.stoppedByDisconnect&&FISH_STOP_ON_DISCONNECT)&&d.lastSave){
+    if(d.lastSave){
       const elapsed=(Date.now()-d.lastSave)/1000;
-      if(elapsed>10) fishCalcOffline(elapsed);
+      if(elapsed>10&&elapsed<86400*30) fishCalcOfflineAutoFeed(elapsed);
     }
     FG.lastTick=Date.now();
   }catch(e){FG.fishes=[newFish(1)];}
