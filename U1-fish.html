@@ -145,33 +145,19 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 .lstatus{font-size:11px;padding:4px 16px;color:#595959;background:#fff}
 .lspacer{background:#fff;height:10px}
 #s-fishworld{background:#F2F2F2}
-#s-battle{background:#F2F2F2}
-.battle-arena{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
-.battle-field{flex:1;display:flex;overflow:hidden;min-height:0}
-.battle-side{flex:1;display:flex;flex-direction:column;padding:6px;overflow-y:auto;background:#fff;min-height:0}
-.battle-side.my{border-right:2px solid #1F3864}
-.battle-side-hdr{font-size:11px;font-weight:800;padding:4px 6px;margin-bottom:4px;border-radius:3px;text-align:center}
-.battle-side-hdr.my{background:#DEEAF1;color:#1F3864}
-.battle-side-hdr.opp{background:#FCE4D6;color:#C00000}
-.battle-fish-card{border:2px solid #D0D0D0;border-radius:4px;padding:6px;margin-bottom:5px;transition:border-color .3s,background .3s}
-.battle-fish-card.attacking{border-color:#FFC000;background:#FFFDE7}
-.battle-fish-card.dead{opacity:0.35;border-style:dashed}
-.battle-fish-card.hit{border-color:#C00000;background:#FFF0F0}
-.battle-fish-name{font-size:10px;font-weight:800;color:#1F3864;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.battle-hp-wrap{background:#F3F4F6;border-radius:2px;height:8px;overflow:hidden;margin-bottom:2px}
-.battle-hp-fill{height:100%;border-radius:2px;transition:width .4s}
-.battle-hp-txt{font-size:9px;color:#888}
-.battle-stats{font-size:9px;color:#888;margin-top:2px}
-.battle-log{height:110px;overflow-y:auto;padding:6px 10px;font-size:11px;background:#F8F8F8;border-top:2px solid #1F3864;flex-shrink:0}
-.battle-log-entry{padding:2px 0;border-bottom:1px solid #F0F0F0;line-height:1.5}
-.battle-log-round{color:#1F3864;font-weight:800;background:#DEEAF1;padding:1px 5px;border-radius:2px;margin:3px 0;display:inline-block}
-.battle-log-crit{color:#C00000;font-weight:700}
-.battle-vs-banner{position:absolute;left:50%;transform:translateX(-50%);top:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:900;color:#C00000;pointer-events:none;opacity:0;transition:opacity .5s}
-.battle-vs-banner.show{opacity:1}
-.fs-card{display:flex;align-items:center;gap:8px;padding:8px;border:2px solid #D0D0D0;border-radius:4px;cursor:pointer;margin-bottom:5px;transition:border-color .1s,background .1s}
-.fs-card.sel{border-color:#217346;background:#E2EFDA}
-.fs-card.dead{opacity:0.4;cursor:not-allowed}
-.fs-card:not(.dead):hover{background:#EFF6FF}
+#s-battle{background:#1a1a2e}
+.bt-hp-panel{position:absolute;top:6px;width:130px;background:rgba(0,0,0,0.65);border-radius:6px;padding:6px;z-index:10;backdrop-filter:blur(3px)}
+.bt-hp-panel.left{left:6px}
+.bt-hp-panel.right{right:6px}
+.bt-fish-row{margin-bottom:5px}
+.bt-fish-lbl{font-size:9px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+.bt-fish-hp{background:rgba(255,255,255,0.15);border-radius:2px;height:6px;overflow:hidden}
+.bt-fish-hp-fill{height:100%;border-radius:2px;transition:width .2s}
+.bt-fish-hp-txt{font-size:8px;color:rgba(255,255,255,0.7);text-align:right}
+.bt-fish-row.dead .bt-fish-lbl{color:#888;text-decoration:line-through}
+.bt-panel-hdr{font-size:10px;font-weight:900;margin-bottom:5px;text-align:center}
+.bt-panel-hdr.my{color:#4FC3F7}
+.bt-panel-hdr.opp{color:#EF9A9A}
 
 #s-admin{background:#F2F2F2}
 .adm-tbl{border-collapse:collapse;width:100%;font-size:11px}
@@ -528,55 +514,45 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 </div>
 
 
-<!-- ══ 수족관 대결 화면 ══ -->
+<!-- ══ 수족관 실시간 대결 ══ -->
 <div id="s-battle" class="scr">
-  <div class="xl-titlebar">
-    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">수족관_대결.xlsx - Microsoft Excel</span></div>
+  <div class="xl-titlebar" style="background:#0d1b4b">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title" id="battle-formula">수족관_대결.xlsx - 실시간 대결</span></div>
     <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="battleExit()">✕</button></div>
   </div>
-  <div class="xl-tabs"><button class="xl-tab on">대결</button><button class="xl-tab">결과</button></div>
-  <div class="xl-fbar">
-    <div class="xl-namebox">B2</div><div class="xl-fx">fx</div>
-    <div class="xl-ftext" id="battle-formula">=BATTLE.ARENA()</div>
-  </div>
-  <div class="battle-arena">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:#1F3864;color:#fff;font-size:11px;font-weight:700;flex-shrink:0">
-      <span id="bt-my-label">나</span>
-      <span style="font-size:14px;font-weight:900;color:#FFC000">⚔️ 대결 ⚔️</span>
-      <span id="bt-opp-label">상대</span>
+  <!-- 배틀 필드 (캔버스 + HP 오버레이) -->
+  <div style="flex:1;position:relative;overflow:hidden;background:#0a1628">
+    <canvas id="battle-canvas" style="width:100%;height:100%;display:block"></canvas>
+    <!-- 상대 HP 패널 (좌상단) -->
+    <div class="bt-hp-panel left" id="bt-opp-panel">
+      <div class="bt-panel-hdr opp" id="bt-opp-name">상대</div>
+      <div id="bt-opp-hp-list"></div>
     </div>
-    <div class="battle-field" style="position:relative">
-      <div class="battle-side my" id="bt-my-side">
-        <div class="battle-side-hdr my" id="bt-my-hdr">나</div>
-        <div id="bt-my-fish"></div>
-      </div>
-      <div class="battle-side" id="bt-opp-side" style="border-left:2px solid #C00000">
-        <div class="battle-side-hdr opp" id="bt-opp-hdr">상대</div>
-        <div id="bt-opp-fish"></div>
-      </div>
+    <!-- 나 HP 패널 (우상단) -->
+    <div class="bt-hp-panel right" id="bt-my-panel">
+      <div class="bt-panel-hdr my" id="bt-my-name">나</div>
+      <div id="bt-my-hp-list"></div>
     </div>
-    <div class="battle-log" id="battle-log"></div>
-  </div>
-  <div class="xl-bottombar">
-    <div class="xl-stabs"><button class="xl-stab on">대결장</button><button class="xl-stab-plus">＋</button></div>
-    <div class="xl-statusbar"><span class="xl-sitem" id="battle-status">대기 중</span><span class="xl-sitem">100%</span></div>
-  </div>
-</div>
-
-<!-- 물고기 선택 모달 -->
-<div class="xl-dlg-ov" id="fish-select-modal">
-  <div class="xl-dlg" style="min-width:300px;max-width:360px">
-    <div class="xl-dlg-title" style="background:#1F3864">⚔️ 출전 물고기 선택 (최대 3마리)
-      <span id="fish-select-countdown" style="font-size:13px;font-weight:900;color:#FFC000;margin-left:8px">30초</span>
-    </div>
-    <div class="xl-dlg-body" style="padding:10px">
-      <div style="font-size:11px;color:#595959;margin-bottom:8px">출전할 물고기를 선택하세요. 시간이 지나면 자동 선택됩니다.</div>
-      <div id="fish-select-list" style="max-height:260px;overflow-y:auto"></div>
-      <div style="font-size:10px;color:#888;margin:6px 0" id="fish-select-count">0마리 선택됨</div>
-      <div class="xl-dlg-btns">
-        <button class="xl-dlg-btn ok" onclick="confirmFishSelect()">출전!</button>
+    <!-- 중앙 VS 배너 (시작 시 잠깐) -->
+    <div id="bt-vs-banner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:20;opacity:0;transition:opacity .4s">
+      <div style="text-align:center;color:#fff">
+        <div style="font-size:36px;font-weight:900;color:#FFC000;text-shadow:0 0 20px #FFC000">⚔️ VS ⚔️</div>
+        <div id="bt-vs-txt" style="font-size:16px;font-weight:700;margin-top:6px"></div>
       </div>
     </div>
+    <!-- 결과 배너 -->
+    <div id="bt-result-banner" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;z-index:25;background:rgba(0,0,0,0.7)">
+      <div style="text-align:center;color:#fff;padding:30px">
+        <div id="bt-result-ico" style="font-size:52px;margin-bottom:8px">🏆</div>
+        <div id="bt-result-txt" style="font-size:22px;font-weight:900;margin-bottom:16px"></div>
+        <div id="bt-result-detail" style="font-size:13px;color:#ccc;margin-bottom:20px"></div>
+        <button onclick="battleExit()" style="background:#217346;color:#fff;border:none;padding:10px 28px;border-radius:6px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit">수족관으로 돌아가기</button>
+      </div>
+    </div>
+  </div>
+  <div class="xl-bottombar" style="background:#0d1b4b;border-top:1px solid #1F3864">
+    <div class="xl-stabs"><button class="xl-stab on" style="background:#1F3864;color:#fff;border-color:#4472C4">실시간 대결</button></div>
+    <div class="xl-statusbar" style="color:#aaa"><span class="xl-sitem" id="battle-status">대기 중</span></div>
   </div>
 </div>
 
@@ -2550,15 +2526,18 @@ function fwUpdateSidebarMobile(){
 
 
 // ══════════════════════════════════════════════════════════
-// ⚔️ 수족관 대결
+// ⚔️ 수족관 실시간 대결
 // ══════════════════════════════════════════════════════════
-let battleState=null; // {phase,myFish,oppFish,isChallenger}
-let _battleMySelected=[];
-let _battleDeployTimer=null;
-let _battleAnimTimer=null;
-let _battleOppFishReceived=null;
+let btFishes=[];         // 전투 중 모든 물고기 [{...stats, x,y,dx,dy,hp,isDead,hitFlash,...}]
+let btEvents=[];         // 사전 계산된 공격 이벤트
+let btTick=0;
+let btInterval=null;
+let btCanvas=null,btCtx=null;
+let btImP1=false;        // 내가 도전자(p1)인지
+let btMyFishData=[];     // 브로드캐스트용 내 물고기 데이터
+let btOppReceived=null;  // 상대 물고기 데이터 (수신 후 저장)
 
-// 시드 기반 RNG (mulberry32)
+// 시드 RNG
 function seededRng(seed){
   return function(){
     seed|=0;seed=seed+0x6D2B79F5|0;
@@ -2569,272 +2548,370 @@ function seededRng(seed){
 }
 
 function startBattleGame(){
-  showIngameChat(true);
-  battleState={phase:'select',myFish:[],oppFish:null,isChallenger:(currentGame.myColor===1)};
-  _battleMySelected=[];
-  _battleOppFishReceived=null;
+  showIngameChat(false);
+  battleState={phase:'fighting'};
+  btImP1=(currentGame.myColor===1);
+  btOppReceived=null;
+  btFishes=[];btEvents=[];btTick=0;
   show('s-battle');
-  document.getElementById('bt-my-label').textContent=myName;
-  document.getElementById('bt-opp-label').textContent=currentGame.opponentName;
-  document.getElementById('bt-my-hdr').textContent=myName;
-  document.getElementById('bt-opp-hdr').textContent=currentGame.opponentName;
-  document.getElementById('battle-formula').textContent=`=BATTLE.ARENA("${myName} vs ${currentGame.opponentName}")`;
-  renderBattleWaiting();
-  openFishSelectModal();
-}
-
-function renderBattleWaiting(){
-  document.getElementById('bt-my-fish').innerHTML=
-    '<div style="text-align:center;color:#888;font-size:11px;padding:20px">물고기 선택 중…</div>';
-  document.getElementById('bt-opp-fish').innerHTML=
-    '<div style="text-align:center;color:#888;font-size:11px;padding:20px">상대 선택 중…</div>';
-  document.getElementById('battle-log').innerHTML='';
-}
-
-function openFishSelectModal(){
-  const alive=FG.fishes.filter(f=>!f.isDead);
-  const list=document.getElementById('fish-select-list');
-  list.innerHTML=FG.fishes.map((f,i)=>{
+  document.getElementById('bt-my-name').textContent=myName;
+  document.getElementById('bt-opp-name').textContent=currentGame.opponentName;
+  document.getElementById('battle-formula').textContent=`수족관_대결.xlsx — ${myName} ⚔️ ${currentGame.opponentName}`;
+  document.getElementById('battle-status').textContent='물고기 준비 중…';
+  // 내 물고기 데이터 준비 후 즉시 전송
+  btMyFishData=FG.fishes.filter(f=>!f.isDead).map(f=>{
     const s=fStage(f);
-    const gd=F_GRADES[s.grade]||F_GRADES['일반'];
-    const sel=_battleMySelected.includes(i);
-    const dead=f.isDead;
-    return `<div class="fs-card ${sel?'sel':''} ${dead?'dead':''}" onclick="${dead?'':'btToggleFish('+i+')'}">
-      <div style="width:28px;height:28px;background:${s.color};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;border:2px solid ${gd.bg}">🐟</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-          #${i+1} ${s.name}
-          <span style="font-size:8px;padding:1px 3px;border-radius:2px;background:${gd.bg};color:${gd.fg}">${s.grade}</span>
-          ${dead?'<span style="font-size:9px;color:#C00000">(사망)</span>':''}
-        </div>
-        <div style="font-size:10px;color:#888">HP ${Math.ceil(f.hp)}/${f.maxHp} | ⚔️${s.atk} 🛡️${s.def} 💨${s.agi} 🍀${s.luk}</div>
-      </div>
-      ${sel?'<span style="color:#217346;font-size:18px;font-weight:900;flex-shrink:0">✓</span>':''}
-    </div>`;
-  }).join('');
-  document.getElementById('fish-select-count').textContent=_battleMySelected.length+'마리 선택됨 (최대 3마리)';
-  document.getElementById('fish-select-modal').classList.add('on');
-  // 30초 카운트다운
-  let secs=30;
-  clearInterval(_battleDeployTimer);
-  const cdEl=document.getElementById('fish-select-countdown');
-  cdEl.textContent=secs+'초';
-  _battleDeployTimer=setInterval(()=>{
-    secs--;
-    cdEl.textContent=secs+'초';
-    cdEl.style.color=secs<=10?'#C00000':'#FFC000';
-    if(secs<=0){
-      clearInterval(_battleDeployTimer);
-      if(_battleMySelected.length===0){
-        const first=FG.fishes.findIndex(f=>!f.isDead);
-        if(first>=0) _battleMySelected=[first];
-      }
-      hideDlg('fish-select-modal');
-      submitBattleReady();
-    }
-  },1000);
-}
-
-function btToggleFish(idx){
-  const pos=_battleMySelected.indexOf(idx);
-  if(pos>=0) _battleMySelected.splice(pos,1);
-  else if(_battleMySelected.length<3) _battleMySelected.push(idx);
-  openFishSelectModal();
-}
-
-function confirmFishSelect(){
-  if(_battleMySelected.length===0){u1Toast('물고기를 1~3마리 선택하세요','#C00000');return;}
-  clearInterval(_battleDeployTimer);
-  hideDlg('fish-select-modal');
-  submitBattleReady();
-}
-
-function buildFishData(idx){
-  const f=FG.fishes[idx]; const s=fStage(f);
-  return{name:s.name,grade:s.grade,type:f.type||'goldfish',stage:f.stage,
-    hp:f.hp,maxHp:f.maxHp,curHp:f.hp, // curHp: 전투용 (실제 HP 안 변경)
-    atk:s.atk,def:s.def,agi:s.agi,luk:s.luk,color:s.color,fin:s.fin};
-}
-
-function submitBattleReady(){
-  const fishData=_battleMySelected.map(buildFishData);
-  battleState.myFish=fishData;
-  battleState.phase='waiting';
-  document.getElementById('battle-status').textContent='상대방 선택 대기 중…';
-  sbSend('battle_deploy',{targetId:currentGame.opponentId,fromId:myId,fish:fishData});
-  // 상대가 이미 보냈으면 바로 시작
-  if(_battleOppFishReceived){
-    onBothReady(fishData,_battleOppFishReceived);
+    return{origIdx:FG.fishes.indexOf(f),name:s.name,grade:s.grade,type:f.type||'goldfish',
+      stage:f.stage,hp:f.hp,maxHp:f.maxHp,atk:s.atk,def:s.def,agi:s.agi,luk:s.luk,
+      color:s.color,fin:s.fin,species:s.species};
+  });
+  if(!btMyFishData.length){
+    u1Toast('살아있는 물고기가 없습니다!','#C00000');
+    battleExit();return;
   }
+  sbSend('battle_deploy',{targetId:currentGame.opponentId,fromId:myId,fish:btMyFishData});
+  if(btOppReceived) onBothBattleReady(btMyFishData,btOppReceived);
 }
 
 function onBattleDeploy(payload){
-  if(!battleState||payload.fromId!==currentGame.opponentId) return;
-  _battleOppFishReceived=payload.fish;
-  if(battleState.phase==='waiting'&&battleState.myFish.length>0){
-    onBothReady(battleState.myFish,payload.fish);
-  }
+  if(!battleState||payload.fromId!==currentGame?.opponentId) return;
+  btOppReceived=payload.fish;
+  if(btMyFishData.length>0) onBothBattleReady(btMyFishData,btOppReceived);
 }
 
-function onBothReady(myFish,oppFish){
-  battleState.oppFish=oppFish;
-  battleState.phase='fighting';
-  if(battleState.isChallenger){
-    // 도전자가 계산 후 브로드캐스트
+function onBothBattleReady(myFish,oppFish){
+  if(btImP1){
     const seed=Date.now();
-    const actions=calcBattle(myFish,oppFish,seededRng(seed));
+    const rng=seededRng(seed);
+    const events=calcBattleEvents(myFish,oppFish,rng);
     sbSend('battle_actions',{targetId:currentGame.opponentId,fromId:myId,
-      seed,actions,myFish,oppFish});
-    playBattleAnimation(actions,myFish,oppFish,true);
-  } else {
-    document.getElementById('battle-status').textContent='전투 계산 중…';
+      seed,events,myFish,oppFish});
+    initRealtimeBattle(myFish,oppFish,events,true);
   }
+  // p2는 battle_actions 수신 대기
 }
 
 function onBattleActions(payload){
-  if(!battleState||payload.fromId!==currentGame.opponentId) return;
-  // 수락자: 받은 데이터로 애니메이션 (oppFish=내 시점에서 상대=p1)
-  const myFish=payload.oppFish; // 도전자 기준에서 oppFish = 나의 물고기
-  const oppFish=payload.myFish; // 도전자 myFish = 상대
-  playBattleAnimation(payload.actions,myFish,oppFish,false);
+  if(!battleState||payload.fromId!==currentGame?.opponentId) return;
+  // p2 관점: payload.myFish = 도전자(상대), payload.oppFish = 나
+  initRealtimeBattle(payload.oppFish,payload.myFish,payload.events,false);
 }
 
-// 전투 계산 (순수 함수)
-function calcBattle(p1Fish,p2Fish,rng){
-  const p1=[...p1Fish.map(f=>({...f,curHp:f.hp}))];
-  const p2=[...p2Fish.map(f=>({...f,curHp:f.hp}))];
-  const actions=[];
-  for(let round=1;round<=30;round++){
-    const a1=p1.filter(f=>f.curHp>0);
-    const a2=p2.filter(f=>f.curHp>0);
-    if(!a1.length||!a2.length) break;
-    actions.push({type:'round',round});
-    // 이번 라운드 전체 공격 (AGI 순으로)
-    const combatants=[
-      ...a1.map(f=>({...f,side:1})),
-      ...a2.map(f=>({...f,side:2}))
-    ].sort((a,b)=>b.agi-a.agi);
-    for(const att of combatants){
-      const attIdx=att.side===1?p1.indexOf(p1.find(f=>f.name===att.name&&f.curHp>0)):
-                                  p2.indexOf(p2.find(f=>f.name===att.name&&f.curHp>0));
-      if(att.side===1&&p1[attIdx]?.curHp<=0) continue;
-      if(att.side===2&&p2[attIdx]?.curHp<=0) continue;
-      const targets=att.side===1?p2.filter(f=>f.curHp>0):p1.filter(f=>f.curHp>0);
-      if(!targets.length) break;
-      const tgt=targets[0];
-      const tgtArr=att.side===1?p2:p1;
-      const tgtIdx=tgtArr.indexOf(tgt);
-      const crit=rng()<att.luk/200;
-      const base=Math.max(1,Math.floor(att.atk*0.7-tgt.def*0.3+rng()*att.atk*0.2-att.atk*0.1));
-      const dmg=crit?base*2:base;
-      tgt.curHp=Math.max(0,tgt.curHp-dmg);
-      actions.push({type:'attack',attSide:att.side,attIdx,tgtSide:3-att.side,tgtIdx,dmg,crit,
-        tgtHpAfter:tgt.curHp,tgtMaxHp:tgt.maxHp,attName:att.name,tgtName:tgt.name});
-    }
-    if(!p1.filter(f=>f.curHp>0).length||!p2.filter(f=>f.curHp>0).length) break;
+// ── 공격 이벤트 사전 계산 (순수 함수) ───────────────────────
+function calcBattleEvents(p1Fish,p2Fish,rng){
+  const events=[];
+  const p1=p1Fish.map(f=>({...f,curHp:f.hp,atkCd:Math.floor(rng()*60)}));
+  const p2=p2Fish.map(f=>({...f,curHp:f.hp,atkCd:Math.floor(rng()*60)}));
+  const MAX=7200; // 최대 6분 (50ms * 7200 = 360초)
+  for(let t=0;t<MAX;t++){
+    const a1=p1.some(f=>f.curHp>0);
+    const a2=p2.some(f=>f.curHp>0);
+    if(!a1||!a2) break;
+    // p1 공격 체크
+    p1.forEach((f,i)=>{
+      if(f.curHp<=0) return;
+      if(f.atkCd>0){f.atkCd--;return;}
+      const targets=p2.filter(t=>t.curHp>0);
+      if(!targets.length) return;
+      const tgt=targets[Math.floor(rng()*targets.length)];
+      const ti=p2.indexOf(tgt);
+      const dodge=rng()<tgt.agi/800;
+      if(dodge){events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(20,120-f.agi*2);return;}
+      const crit=rng()<f.luk/200;
+      const dmg=Math.max(1,Math.floor(f.atk*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
+      const fd=crit?dmg*2:dmg;
+      tgt.curHp=Math.max(0,tgt.curHp-fd);
+      events.push({t,side:1,ai:i,ti,dmg:fd,crit,dodge:false,hpAfter:tgt.curHp});
+      f.atkCd=Math.max(20,120-f.agi*2); // AGI 높을수록 빠른 공격
+    });
+    // p2 공격 체크
+    p2.forEach((f,i)=>{
+      if(f.curHp<=0) return;
+      if(f.atkCd>0){f.atkCd--;return;}
+      const targets=p1.filter(t=>t.curHp>0);
+      if(!targets.length) return;
+      const tgt=targets[Math.floor(rng()*targets.length)];
+      const ti=p1.indexOf(tgt);
+      const dodge=rng()<tgt.agi/800;
+      if(dodge){events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(20,120-f.agi*2);return;}
+      const crit=rng()<f.luk/200;
+      const dmg=Math.max(1,Math.floor(f.atk*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
+      const fd=crit?dmg*2:dmg;
+      tgt.curHp=Math.max(0,tgt.curHp-fd);
+      events.push({t,side:2,ai:i,ti,dmg:fd,crit,dodge:false,hpAfter:tgt.curHp});
+      f.atkCd=Math.max(20,120-f.agi*2);
+    });
   }
-  return actions;
+  return events;
 }
 
-// 배틀 애니메이션
-function playBattleAnimation(actions,myFish,oppFish,imP1){
-  battleState.phase='animating';
-  const my=myFish.map(f=>({...f,curHp:f.hp}));
-  const opp=oppFish.map(f=>({...f,curHp:f.hp}));
-  renderBattleCards(my,opp);
-  const log=document.getElementById('battle-log');log.innerHTML='';
-  document.getElementById('battle-status').textContent='⚔️ 전투 중…';
-  let idx=0;
-  _battleAnimTimer=setInterval(()=>{
-    if(idx>=actions.length){
-      clearInterval(_battleAnimTimer);
-      finishBattle(my,opp,imP1);
-      return;
-    }
-    const a=actions[idx];idx++;
-    if(a.type==='round'){
-      const entry=document.createElement('div');
-      entry.className='battle-log-entry';
-      entry.innerHTML=`<span class="battle-log-round">— Round ${a.round} —</span>`;
-      log.appendChild(entry);log.scrollTop=log.scrollHeight;
-      return;
-    }
-    // 어떤 배열이 "나"인지 결정
-    const myArr=imP1?my:opp;
-    const oppArr=imP1?opp:my;
-    const myId2=imP1?1:2;
-    const attIsMe=a.attSide===myId2;
-    const attArr=a.attSide===1?my:opp;
-    const tgtArr=a.tgtSide===1?my:opp;
-    if(tgtArr[a.tgtIdx]) tgtArr[a.tgtIdx].curHp=a.tgtHpAfter;
-    renderBattleCards(my,opp);
-    // 로그
-    const entry=document.createElement('div');
-    entry.className='battle-log-entry'+(a.crit?' battle-log-crit':'');
-    const arrow=attIsMe?'→':'←';
-    const dmgTxt=`<strong>-${a.dmg}</strong>${a.crit?' 💥크리!':''}`;
-    entry.innerHTML=`${attIsMe?'✅':'❌'} ${a.attName} ${arrow} ${a.tgtName}: ${dmgTxt} (HP ${a.tgtHpAfter}/${a.tgtMaxHp})`;
-    log.appendChild(entry);log.scrollTop=log.scrollHeight;
-  },500);
+// ── 실시간 전투 초기화 ─────────────────────────────────────
+function initRealtimeBattle(myFish,oppFish,events,imP1){
+  btEvents=events;btTick=0;btImP1=imP1;
+  // 캔버스 초기화
+  btCanvas=document.getElementById('battle-canvas');
+  const par=btCanvas.parentElement;
+  btCanvas.width=par.clientWidth;btCanvas.height=par.clientHeight;
+  btCtx=btCanvas.getContext('2d');
+  const W=btCanvas.width,H=btCanvas.height;
+
+  // 물고기 생성 (내 팀 = 왼쪽 → 오른쪽, 상대 = 오른쪽 → 왼쪽)
+  const mkFish=(fd,i,total,side)=>({
+    ...fd, side,
+    x:side==='my'?0.1+Math.random()*0.05:0.85+Math.random()*0.05,
+    y:0.15+(i/(Math.max(1,total-1)))*0.7,
+    dx:(side==='my'?1:-1)*(0.003+fd.agi*0.00005),
+    dy:(Math.random()-0.5)*0.001,
+    curHp:fd.hp, isDead:false,
+    hitFlash:0, hitType:'',
+    floatTxt:null, // {txt,age,x,y,color}
+  });
+  const myBt=myFish.map((f,i)=>mkFish(f,i,myFish.length,'my'));
+  const oppBt=oppFish.map((f,i)=>mkFish(f,i,oppFish.length,'opp'));
+  btFishes=[...myBt,...oppBt];
+
+  // VS 배너 표시
+  const vsBanner=document.getElementById('bt-vs-banner');
+  document.getElementById('bt-vs-txt').textContent=`${myName} vs ${currentGame.opponentName}`;
+  vsBanner.style.opacity='1';
+  setTimeout(()=>{vsBanner.style.opacity='0';},2000);
+
+  // HP 패널 초기화
+  renderBtHpPanels();
+  document.getElementById('battle-status').textContent='⚔️ 실시간 대결!';
+
+  // 결과 배너 숨기기
+  document.getElementById('bt-result-banner').style.display='none';
+
+  // 50ms 인터벌 시작
+  clearInterval(btInterval);
+  btInterval=setInterval(btFrame,50);
 }
 
-function renderBattleCards(my,opp){
+// ── 매 프레임 ─────────────────────────────────────────────
+function btFrame(){
+  btTick++;
+  const W=btCanvas.width,H=btCanvas.height;
+  const myFishes=btFishes.filter(f=>f.side==='my');
+  const oppFishes=btFishes.filter(f=>f.side==='opp');
+
+  // 이벤트 처리
+  btEvents.filter(e=>e.t===btTick).forEach(e=>{
+    const attSide=e.side===1?'my':'opp';
+    const tgtSide=e.side===1?'opp':'my';
+    const attArr=btFishes.filter(f=>f.side===attSide);
+    const tgtArr=btFishes.filter(f=>f.side===tgtSide);
+    const tgt=tgtArr[e.ti];
+    if(!tgt) return;
+    if(e.dodge){
+      tgt.hitFlash=8;tgt.hitType='dodge';
+      tgt.floatTxt={txt:'MISS',age:0,x:tgt.x,y:tgt.y,color:'#87CEEB'};
+      // 회피: AGI 높을수록 빠르게 옆으로 이동
+      tgt.dy=(Math.random()-0.5)*0.008*(1+tgt.agi/50);
+      return;
+    }
+    tgt.curHp=e.hpAfter;
+    tgt.hitFlash=e.crit?12:8;
+    tgt.hitType=e.crit?'crit':'hit';
+    tgt.floatTxt={txt:e.crit?`💥${e.dmg}`:`-${e.dmg}`,age:0,x:tgt.x,y:tgt.y,
+      color:e.crit?'#FF6B35':'#EF4444'};
+    if(tgt.curHp<=0){
+      tgt.isDead=true;tgt.dx=0;tgt.dy=0;
+    }
+    // 공격자 방향 업데이트
+    const att=attArr[e.ai];
+    if(att&&!att.isDead){
+      att.lastAttackTick=btTick;
+    }
+  });
+
+  // 물고기 이동
+  btFishes.forEach(f=>{
+    if(f.isDead) return;
+    const enemies=btFishes.filter(e=>e.side!==f.side&&!e.isDead);
+    if(!enemies.length) return;
+    // 가장 가까운 적을 향해 이동
+    let nearest=enemies[0];
+    let minDist=Infinity;
+    enemies.forEach(e=>{
+      const d=Math.hypot(e.x-f.x,e.y-f.y);
+      if(d<minDist){minDist=d;nearest=e;}
+    });
+    const speed=0.003+f.agi*0.00004;
+    if(minDist>0.12){
+      f.x+=(nearest.x-f.x)/minDist*speed;
+      f.y+=(nearest.y-f.y)/minDist*speed;
+    } else {
+      // 근접 → 원형 선회
+      f.dy+=(Math.random()-0.5)*0.0008;
+      f.dy=Math.max(-0.005,Math.min(0.005,f.dy));
+      f.y+=f.dy;
+    }
+    f.x=Math.max(0.03,Math.min(0.97,f.x));
+    f.y=Math.max(0.03,Math.min(0.97,f.y));
+    if(f.hitFlash>0) f.hitFlash--;
+    if(f.floatTxt){f.floatTxt.age++;f.floatTxt.y-=0.004;}
+    if(f.floatTxt?.age>20) f.floatTxt=null;
+  });
+
+  // HP 패널 업데이트
+  if(btTick%10===0) renderBtHpPanels();
+
+  // 그리기
+  btDraw(W,H);
+
+  // 종료 체크
+  const myAlive=btFishes.filter(f=>f.side==='my'&&!f.isDead).length;
+  const oppAlive=btFishes.filter(f=>f.side==='opp'&&!f.isDead).length;
+  if(myAlive===0||oppAlive===0){
+    clearInterval(btInterval);
+    btDraw(W,H);
+    setTimeout(()=>btShowResult(myAlive,oppAlive),800);
+  }
+}
+
+// ── 캔버스 그리기 ─────────────────────────────────────────
+function btDraw(W,H){
+  const c=btCtx;
+  // 배경
+  c.fillStyle='#0a1628';c.fillRect(0,0,W,H);
+  // 격자 (연하게)
+  c.strokeStyle='rgba(30,60,120,0.4)';c.lineWidth=0.5;
+  const cw=W/14,ch=H/9;
+  for(let x=0;x<=W;x+=cw){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
+  for(let y=0;y<=H;y+=ch){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
+  // 중앙선 (팀 경계)
+  c.strokeStyle='rgba(255,200,0,0.15)';c.lineWidth=1.5;c.setLineDash([8,6]);
+  c.beginPath();c.moveTo(W/2,0);c.lineTo(W/2,H);c.stroke();c.setLineDash([]);
+
+  btFishes.forEach((f,idx)=>{
+    const fx=f.x*W,fy=f.y*H;
+    const s=fStage({type:f.type||'goldfish',stage:f.stage});
+    const speciesMult=(f.type==='snakehead')?1.4:1;
+    const size=Math.min(W,H)*(.04+f.stage*.010)*speciesMult;
+    const hpRatio=f.curHp/f.maxHp;
+
+    if(f.isDead){
+      c.globalAlpha=0.25;
+      c.font=`${size*1.5}px serif`;c.textAlign='center';
+      c.fillText('💀',fx,fy+size*.4);
+      c.globalAlpha=1;return;
+    }
+
+    // 히트 이펙트
+    if(f.hitType==='crit'&&f.hitFlash>0){
+      c.strokeStyle=`rgba(255,107,53,${f.hitFlash/12})`;
+      c.lineWidth=3;c.beginPath();c.arc(fx,fy,size*1.6,0,Math.PI*2);c.stroke();
+    } else if(f.hitType==='hit'&&f.hitFlash>0){
+      c.strokeStyle=`rgba(239,68,68,${f.hitFlash/8})`;
+      c.lineWidth=2;c.beginPath();c.arc(fx,fy,size*1.4,0,Math.PI*2);c.stroke();
+    }
+
+    const dir=f.dx>=0?1:-1;
+    // 그림자
+    c.globalAlpha=0.15;c.fillStyle='#000';
+    c.beginPath();c.ellipse(fx+2,fy+3,size,size*.45,0,0,Math.PI*2);c.fill();
+    c.globalAlpha=1;
+    // 꼬리
+    c.fillStyle=s.fin;
+    c.beginPath();c.moveTo(fx-dir*size*.8,fy);c.lineTo(fx-dir*size*1.4,fy-size*.5);c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
+    // 몸통
+    const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);
+    g.addColorStop(0,s.fin);g.addColorStop(1,s.color);
+    c.fillStyle=g;
+    c.beginPath();c.ellipse(fx,fy,size,size*.58,0,0,Math.PI*2);c.fill();
+    // 팀 테두리 (내=파랑, 상대=빨강)
+    c.strokeStyle=f.side==='my'?'rgba(79,195,247,0.6)':'rgba(239,154,154,0.6)';
+    c.lineWidth=1.2;c.stroke();
+    // 눈
+    c.fillStyle='#fff';c.beginPath();c.arc(fx+dir*size*.5,fy-size*.1,size*.17,0,Math.PI*2);c.fill();
+    c.fillStyle='#111';c.beginPath();c.arc(fx+dir*size*.56,fy-size*.1,size*.09,0,Math.PI*2);c.fill();
+    // HP바 (물고기 위)
+    const bw=size*2.5,bh=4;
+    const bx=fx-bw/2,by=fy-size*1.3;
+    c.fillStyle='rgba(0,0,0,0.5)';c.fillRect(bx,by,bw,bh);
+    c.fillStyle=hpRatio>0.6?'#4ade80':hpRatio>0.3?'#facc15':'#ef4444';
+    c.fillRect(bx,by,bw*hpRatio,bh);
+    // 이름 레이블
+    c.font=`bold ${Math.max(7,size*.5)}px 'Malgun Gothic',sans-serif`;
+    c.textAlign='center';
+    c.fillStyle=f.side==='my'?'rgba(180,220,255,0.9)':'rgba(255,180,180,0.9)';
+    c.fillText(f.name,fx,fy-size*1.5);
+
+    // 플로팅 데미지 텍스트
+    if(f.floatTxt){
+      c.font=`bold ${size*.7+2}px monospace`;
+      c.fillStyle=f.floatTxt.color;
+      c.globalAlpha=Math.max(0,1-f.floatTxt.age/20);
+      c.fillText(f.floatTxt.txt,f.floatTxt.x*W,f.floatTxt.y*H);
+      c.globalAlpha=1;
+    }
+    // 포만감 낮으면 거품
+    if(Math.random()<0.02&&f.side==='my'){
+      c.fillStyle='rgba(150,200,255,0.3)';
+      c.beginPath();c.arc(fx+(Math.random()-.5)*size,fy-size*1.1,1.5,0,Math.PI*2);c.fill();
+    }
+  });
+}
+
+// ── HP 패널 렌더 ──────────────────────────────────────────
+function renderBtHpPanels(){
   const render=(arr,elId)=>{
-    document.getElementById(elId).innerHTML=arr.map((f,i)=>{
-      const hpPct=f.curHp/f.maxHp*100;
-      const hpC=hpPct<30?'#EF4444':'hpPct<60?'#F59E0B':'#10B981'';
+    const el=document.getElementById(elId); if(!el) return;
+    el.innerHTML=arr.map(f=>{
+      const pct=f.curHp/f.maxHp*100;
+      const bc=pct>60?'#4ade80':pct>30?'#facc15':'#ef4444';
       const gd=F_GRADES[f.grade]||F_GRADES['일반'];
-      return `<div class="battle-fish-card ${f.curHp<=0?'dead':''}">
-        <div class="battle-fish-name">#${i+1} ${f.name}
-          <span style="font-size:8px;padding:1px 3px;background:${gd.bg};color:${gd.fg};border-radius:2px">${f.grade}</span>
+      return `<div class="bt-fish-row ${f.isDead?'dead':''}">
+        <div class="bt-fish-lbl">${f.isDead?'💀':''} ${f.name}
+          <span style="font-size:7px;padding:0 2px;background:${gd.bg};color:${gd.fg};border-radius:2px">${f.grade}</span>
         </div>
-        <div class="battle-hp-wrap">
-          <div class="battle-hp-fill" style="width:${hpPct}%;background:${hpPct<30?'#EF4444':hpPct<60?'#F59E0B':'#10B981'}"></div>
-        </div>
-        <div class="battle-hp-txt">${Math.ceil(f.curHp)}/${f.maxHp}</div>
-        <div class="battle-stats">⚔️${f.atk} 🛡️${f.def} 💨${f.agi} 🍀${f.luk}</div>
+        <div class="bt-fish-hp"><div class="bt-fish-hp-fill" style="width:${pct}%;background:${bc}"></div></div>
+        <div class="bt-fish-hp-txt">${Math.ceil(f.curHp)}/${f.maxHp}</div>
       </div>`;
     }).join('');
   };
-  render(my,'bt-my-fish');
-  render(opp,'bt-opp-fish');
+  render(btFishes.filter(f=>f.side==='my'),'bt-my-hp-list');
+  render(btFishes.filter(f=>f.side==='opp'),'bt-opp-hp-list');
 }
 
-function finishBattle(my,opp,imP1){
-  const myAlive=my.filter(f=>f.curHp>0).length;
-  const oppAlive=opp.filter(f=>f.curHp>0).length;
-  const myHpSum=my.reduce((a,f)=>a+f.curHp,0);
-  const oppHpSum=opp.reduce((a,f)=>a+f.curHp,0);
-  let win;
-  if(myAlive>oppAlive) win=true;
-  else if(oppAlive>myAlive) win=false;
-  else win=myHpSum>=oppHpSum;
-
+// ── 결과 처리 ─────────────────────────────────────────────
+function btShowResult(myAlive,oppAlive){
+  const win=myAlive>0;
+  // 실제 HP 반영 (원래 FG.fishes에 적용)
+  btFishes.filter(f=>f.side==='my').forEach(f=>{
+    if(f.origIdx!=null&&FG.fishes[f.origIdx]){
+      FG.fishes[f.origIdx].hp=f.curHp;
+      if(f.isDead) FG.fishes[f.origIdx].isDead=true;
+    }
+  });
+  fishRenderInfo(); // 스탯 패널 갱신
+  // 화면 표시
+  const banner=document.getElementById('bt-result-banner');
+  document.getElementById('bt-result-ico').textContent=win?'🏆':'😢';
+  document.getElementById('bt-result-txt').textContent=win?'승리!':'패배...';
+  const myDead=btFishes.filter(f=>f.side==='my'&&f.isDead).length;
+  const oppDead=btFishes.filter(f=>f.side==='opp'&&f.isDead).length;
+  document.getElementById('bt-result-detail').textContent=
+    `${win?'적 전멸!':'우리 전멸...'}
+내 생존: ${myAlive}마리 | 상대 생존: ${oppAlive}마리`;
+  banner.style.display='flex';
   document.getElementById('battle-status').textContent=win?'🏆 승리!':'😢 패배';
-  const opp_label=document.getElementById('bt-opp-label').textContent;
-  showResultNotify(win?'🏆':'😢',win?`${currentGame.opponentName}을(를) 물리쳤습니다!
-
-내 생존: ${myAlive}/${my.length}마리
-상대 생존: ${oppAlive}/${opp.length}마리`:`${currentGame.opponentName}에게 패배했습니다...
-
-내 생존: ${myAlive}/${my.length}마리
-상대 생존: ${oppAlive}/${opp.length}마리`);
-  const btn=document.getElementById('result-confirm-btn');
-  if(btn) btn.textContent='대결장으로';
+  sendGameMsg({type:'game_end',data:{}});
 }
 
 function battleExit(){
-  clearInterval(_battleDeployTimer);
-  clearInterval(_battleAnimTimer);
-  if(battleState?.phase==='fighting'||battleState?.phase==='animating'){
+  clearInterval(btInterval);btInterval=null;
+  if(battleState){
     sendGameMsg({type:'game_end',data:{}});
+    currentGame=null;battleState=null;
   }
-  currentGame=null;battleState=null;
   showIngameChat(false);
   show('s-fishworld');
   if(!FG.tickInterval) fishStartLoops();
   updateMyPresence(false);
 }
+
 
 function checkForUpdate(){
   if(location.protocol==='file:') return;
