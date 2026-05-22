@@ -691,10 +691,9 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
           <th style="width:30px">#</th>
           <th>아이디</th>
           <th>서버</th>
-          <th>🐟 단계</th>
+          <th>🐟 물고기 현황</th>
           <th>💰 보유금액</th>
-          <th>🍤 먹이</th>
-          <th>❤️ HP</th>
+          <th>🍤 먹이/먹이통</th>
           <th>마지막 저장</th>
           <th style="width:60px">관리</th>
         </tr>
@@ -720,18 +719,16 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-dlg-title" style="background:#1F3864">🛠️ 유저 데이터 수정 <button class="xl-dlg-x" onclick="hideDlg('adm-edit-modal')">✕</button></div>
     <div class="xl-dlg-body">
       <div style="font-size:12px;font-weight:700;color:#1F3864;margin-bottom:10px" id="adm-edit-title">유저: </div>
-      <div class="adm-edit-row"><span style="min-width:70px">🐟 단계</span>
-        <select id="adm-edit-stage" style="border:1px solid #9DC3E6;padding:3px 6px;font-size:12px;font-family:inherit">
-          <option value="1">1단계 - 금붕어 치어</option>
-          <option value="2">2단계 - 금붕어</option>
-          <option value="3">3단계 - 비단잉어</option>
-          <option value="4">4단계 - 아로와나</option>
-          <option value="5">5단계 - 황금 아로와나</option>
+      <div class="adm-edit-row"><span style="min-width:70px" style="color:#888;font-size:10px">📊 최고단계</span>
+        <select id="adm-edit-stage" style="border:1px solid #9DC3E6;padding:3px 6px;font-size:12px;font-family:inherit;color:#888" disabled>
+          <option value="1">1단계</option><option value="2">2단계</option><option value="3">3단계</option>
+          <option value="4">4단계</option><option value="5">5단계</option>
         </select>
+        <span style="font-size:10px;color:#888;margin-left:4px">(참고용)</span>
       </div>
       <div class="adm-edit-row"><span style="min-width:70px">💰 금액</span><input class="adm-edit-inp" id="adm-edit-money" type="number" min="0"></div>
       <div class="adm-edit-row"><span style="min-width:70px">🍤 먹이</span><input class="adm-edit-inp" id="adm-edit-food" type="number" min="0"></div>
-      <div class="adm-edit-row"><span style="min-width:70px">❤️ HP</span><input class="adm-edit-inp" id="adm-edit-hp" type="number" min="0"></div>
+      <!-- HP 수정 제거: fishes 배열 직접 수정 불필요 -->
       <div class="xl-dlg-btns" style="margin-top:12px">
         <button class="xl-dlg-btn" onclick="hideDlg('adm-edit-modal')">취소</button>
         <button class="xl-dlg-btn ok" onclick="adminSaveEdit()">저장</button>
@@ -1344,12 +1341,21 @@ const F_SPECIES={
     {name:'흑룡 가물치',  species:'가물치',  grade:'영웅',color:'#0F2A0F',fin:'#2A5A2A',hp:1800,atk:220,def:140,agi:140,luk:60, xpRate:5,  xpNeed:2000,evoCost:25000,foodRate:16},
     {name:'심연의 가물치',species:'가물치',  grade:'전설',color:'#050F05',fin:'#1A4A1A',hp:3500,atk:450,def:280,agi:250,luk:100,xpRate:7,  xpNeed:9999,evoCost:0,   foodRate:14},
   ],
+  // 구피: 작고 민첩하며 운이 좋은 물고기 (AGI/LUK 특화)
+  guppy:[null,
+    {name:'구피 치어',  species:'구피',  grade:'일반',color:'#FF69B4',fin:'#FFB6C1',hp:30,  atk:3,  def:1,  agi:8,  luk:10, xpRate:1,  xpNeed:80,  evoCost:200, foodRate:18},
+    {name:'구피',       species:'구피',  grade:'일반',color:'#FF6347',fin:'#FFD700',hp:70,  atk:7,  def:3,  agi:15, luk:15, xpRate:1.5,xpNeed:200, evoCost:500, foodRate:16},
+    {name:'팬시 구피',  species:'구피',  grade:'일반',color:'#9B59B6',fin:'#DDA0DD',hp:150, atk:15, def:8,  agi:28, luk:22, xpRate:2,  xpNeed:450, evoCost:1200,foodRate:14},
+    {name:'황금 구피',  species:'구피',  grade:'일반',color:'#DAA520',fin:'#FFD700',hp:300, atk:30, def:18, agi:50, luk:35, xpRate:3,  xpNeed:900, evoCost:3000,foodRate:12},
+    {name:'드래곤 구피',species:'구피',  grade:'중급',color:'#8B0000',fin:'#FF4500',hp:600, atk:65, def:40, agi:90, luk:55, xpRate:4,  xpNeed:9999,evoCost:0,   foodRate:10},
+  ],
 };
 // 하위 호환용 (기존 코드 fStage 사용 위치 유지)
 const F_STAGES=F_SPECIES.goldfish;
 const STAGE_INCOME={
   goldfish:[0,2,4,8,18,45],
   snakehead:[0,15,35,80,180,400],
+  guppy:[0,2,4,10,22,55],
 };
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
 const F_SHOP=[
@@ -1359,17 +1365,17 @@ const F_SHOP=[
   // 자동먹이통: 상점에서 동적으로 구매 (fishOpenShop 참조)
   {id:'lottery',name:'🎰 행운 복권',  price:300, desc:'1~5등 또는 꽝',     type:'lottery'},
   {id:'rod1',name:'하급 낚시대 Ⅰ',price:150, prob:0.005,type:'rod',
-   species:[{type:'goldfish',w:100}],
-   desc:'1시간 26% | 금붕어 100%'},
+   species:[{type:'goldfish',w:70},{type:'guppy',w:30}],
+   desc:'1시간 26% | 금붕어 70% / 구피 30%'},
   {id:'rod2',name:'하급 낚시대 Ⅱ',price:400, prob:0.012,type:'rod',
-   species:[{type:'goldfish',w:85},{type:'snakehead',w:15}],
-   desc:'1시간 52% | 금붕어 85% / 가물치 15%'},
+   species:[{type:'goldfish',w:50},{type:'guppy',w:35},{type:'snakehead',w:15}],
+   desc:'1시간 52% | 금붕어 50% / 구피 35% / 가물치 15%'},
   {id:'rod3',name:'하급 낚시대 Ⅲ',price:1000,prob:0.030,type:'rod',
-   species:[{type:'goldfish',w:65},{type:'snakehead',w:35}],
-   desc:'1시간 84% | 금붕어 65% / 가물치 35%'},
+   species:[{type:'goldfish',w:35},{type:'guppy',w:30},{type:'snakehead',w:35}],
+   desc:'1시간 84% | 금붕어 35% / 구피 30% / 가물치 35%'},
   {id:'rod4',name:'하급 낚시대 Ⅳ',price:3000,prob:0.080,type:'rod',
-   species:[{type:'goldfish',w:45},{type:'snakehead',w:55}],
-   desc:'1시간 99% | 금붕어 45% / 가물치 55%'},
+   species:[{type:'goldfish',w:20},{type:'guppy',w:25},{type:'snakehead',w:55}],
+   desc:'1시간 99% | 금붕어 20% / 구피 25% / 가물치 55%'},
 ];
 const LOTTERY_PRIZES=[
   {grade:'1등',amount:1000,prob:0.005,bg:'#FFD700',fg:'#7F4F00'},
@@ -2551,28 +2557,35 @@ async function adminLoadUsers(){
 }
 
 function adminRenderTable(rows){
-  const STAGES=['','금붕어 치어','금붕어','비단잉어','아로와나','황금 아로와나'];
   const tbody=document.getElementById('adm-user-tbody');
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#888;padding:20px">유저 없음</td></tr>';return;}
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#888;padding:20px">유저 없음</td></tr>';return;}
   tbody.innerHTML=rows.map((r,i)=>{
     const fd=r.fish_data||{};
-    const stage=fd.stage||1;
+    const fishes=fd.fishes||[];
+    const alive=fishes.filter(f=>!f.isDead);
+    const dead=fishes.filter(f=>f.isDead).length;
+    const best=alive.sort((a,b)=>b.stage-a.stage)[0];
+    const bestName=best?((F_SPECIES[best.type||'goldfish']?.[best.stage]?.name)||best.stage+'단계'):'없음';
+    const bestGrade=best?(F_SPECIES[best.type||'goldfish']?.[best.stage]?.grade)||'일반':'없음';
     const money=(fd.money??0).toLocaleString();
     const food=fd.food??0;
-    const hp=fd.hp??0;
+    const feeders=fd.autoFeeders?.length||0;
     const lastSave=fd.lastSave?new Date(fd.lastSave).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'없음';
     const isAdmin=r.username===ADMIN_USERNAME;
     const svrBadge=r.server==='TEST-1'
       ?'<span style="background:#E2EFDA;color:#375623;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700">TEST-1</span>'
       :'<span style="background:#FFF2CC;color:#7F6000;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700">U1</span>';
+    const gd=F_GRADES[bestGrade]||F_GRADES['일반'];
     return `<tr class="${isAdmin?'admin-row':''}">
       <td style="text-align:center;color:#888">${i+1}</td>
       <td style="font-weight:700">${esc(r.username)}${isAdmin?' 👑':''}</td>
       <td>${svrBadge}</td>
-      <td>${stage}단계 · ${STAGES[stage]||''}</td>
+      <td>
+        <div style="font-size:11px;font-weight:700">${bestName} <span style="font-size:9px;padding:1px 4px;border-radius:3px;background:${gd.bg};color:${gd.fg}">${bestGrade}</span></div>
+        <div style="font-size:10px;color:#888">생존 ${alive.length}마리 / 사망 ${dead}마리</div>
+      </td>
       <td style="text-align:right;font-family:monospace">${money}원</td>
-      <td style="text-align:right">${food}개</td>
-      <td style="text-align:right">${Math.ceil(hp||0)}</td>
+      <td style="text-align:right">${food}개 / 먹이통${feeders}개</td>
       <td style="color:#888;font-size:10px">${lastSave}</td>
       <td style="text-align:center">${isAdmin?'<span style="font-size:10px;color:#888">관리자</span>'
         :`<button class="adm-btn blue" onclick="adminOpenEdit('${r.username}','${r.server}')">수정</button>`}</td>
@@ -2581,19 +2594,24 @@ function adminRenderTable(rows){
 }
 
 function adminOpenEdit(username,server){
-  const tbody=document.getElementById('adm-user-tbody');
-  const rows=Array.from(tbody.querySelectorAll('tr'));
-  // 해당 유저 데이터 찾기 (이미 로드된 데이터에서)
   _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).single()
     .then(({data})=>{
       if(!data) return;
       _admEditTarget={username,server,fish_data:data.fish_data||{}};
       const fd=data.fish_data||{};
+      const fishes=fd.fishes||[];
+      const alive=fishes.filter(f=>!f.isDead);
       document.getElementById('adm-edit-title').textContent=`유저: ${username} (${server})`;
-      document.getElementById('adm-edit-stage').value=fd.stage||1;
+      // stage 선택 → 최고 단계 물고기 기준 표시 (참고용)
+      const best=alive.sort((a,b)=>b.stage-a.stage)[0];
+      document.getElementById('adm-edit-stage').value=best?.stage||1;
       document.getElementById('adm-edit-money').value=fd.money||0;
       document.getElementById('adm-edit-food').value=fd.food||0;
-      document.getElementById('adm-edit-hp').value=Math.ceil(fd.hp||0);
+      document.getElementById('adm-edit-hp').value=alive.length>0?Math.ceil(alive[0].hp||0):0;
+      // 물고기 현황 표시
+      const fishInfo=document.getElementById('adm-edit-title');
+      fishInfo.innerHTML=`유저: <strong>${username}</strong> (${server})<br>
+        <span style="font-size:10px;color:#888">생존 ${alive.length}마리 / 전체 ${fishes.length}마리 | 💰${(fd.money||0).toLocaleString()}원 🍤${fd.food||0}개</span>`;
       document.getElementById('adm-edit-modal').classList.add('on');
     });
 }
@@ -2601,13 +2619,10 @@ function adminOpenEdit(username,server){
 async function adminSaveEdit(){
   if(!_admEditTarget) return;
   const{username,server,fish_data}=_admEditTarget;
-  const stage=parseInt(document.getElementById('adm-edit-stage').value);
   const money=parseInt(document.getElementById('adm-edit-money').value)||0;
   const food=parseInt(document.getElementById('adm-edit-food').value)||0;
-  const hp=parseInt(document.getElementById('adm-edit-hp').value)||0;
-  const STAGES=[null,{hp:50},{hp:120},{hp:280},{hp:600},{hp:1200}];
-  const maxHp=STAGES[stage]?.hp||50;
-  const newData={...fish_data,stage,money,food,hp:Math.min(hp,maxHp),maxHp,lastSave:Date.now()};
+  // fishes 배열은 유지, money/food만 수정
+  const newData={...fish_data,money,food,lastSave:Date.now()};
   const{error}=await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',username).eq('server',server);
   if(error){alert('저장 실패: '+error.message);return;}
   hideDlg('adm-edit-modal');
