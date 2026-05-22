@@ -469,6 +469,8 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
           <div style="font-weight:700;color:#DC2626;margin-bottom:4px">⚔️ 전투 스탯</div>
           <div style="display:flex;justify-content:space-between"><span>공격</span><strong id="fd-atk">5</strong></div>
           <div style="display:flex;justify-content:space-between"><span>방어</span><strong id="fd-def">2</strong></div>
+          <div style="display:flex;justify-content:space-between"><span>민첩</span><strong id="fd-agi">3</strong></div>
+          <div style="display:flex;justify-content:space-between"><span>행운</span><strong id="fd-luk">5</strong></div>
         </div>
         <div style="background:#F0FFF4;border:1px solid #86EFAC;border-radius:4px;padding:6px;font-size:11px">
           <div style="font-weight:700;color:#16A34A;margin-bottom:4px">📊 상태</div>
@@ -1245,11 +1247,11 @@ const F_GRADES={
   '전설':{label:'전설',bg:'#FFF3CD',fg:'#8B6914'},
 };
 const F_STAGES=[null,
-  {name:'금붕어 치어',species:'금붕어',  grade:'일반',color:'#FF8C00',fin:'#FFD700',hp:50, atk:5,  def:2,  income:1, xpRate:1,  xpNeed:100, evoCost:300, foodRate:20},
-  {name:'금붕어',     species:'금붕어',  grade:'일반',color:'#FF6B00',fin:'#FF0000',hp:120,atk:12, def:6,  income:3, xpRate:1.5,xpNeed:300, evoCost:800, foodRate:18},
-  {name:'비단잉어',   species:'비단잉어',grade:'중급',color:'#FF4444',fin:'#FFFFFF',hp:280,atk:28, def:15, income:8, xpRate:2,  xpNeed:700, evoCost:2000,foodRate:16},
-  {name:'아로와나',   species:'아로와나',grade:'중급',color:'#C0C0C0',fin:'#87CEEB',hp:600,atk:60, def:35, income:18,xpRate:3,  xpNeed:1500,evoCost:5000,foodRate:14},
-  {name:'황금 아로와나',species:'아로와나',grade:'고급',color:'#FFD700',fin:'#FFA500',hp:1200,atk:120,def:70,income:45,xpRate:5,xpNeed:9999,evoCost:0, foodRate:12},
+  {name:'금붕어 치어',species:'금붕어',  grade:'일반',color:'#FF8C00',fin:'#FFD700',hp:50, atk:5,  def:2,  agi:3,  luk:5,  income:1, xpRate:1,  xpNeed:100, evoCost:300, foodRate:20},
+  {name:'금붕어',     species:'금붕어',  grade:'일반',color:'#FF6B00',fin:'#FF0000',hp:120,atk:12, def:6,  agi:7,  luk:8,  income:3, xpRate:1.5,xpNeed:300, evoCost:800, foodRate:18},
+  {name:'비단잉어',   species:'비단잉어',grade:'중급',color:'#FF4444',fin:'#FFFFFF',hp:280,atk:28, def:15, agi:15, luk:12, income:8, xpRate:2,  xpNeed:700, evoCost:2000,foodRate:16},
+  {name:'아로와나',   species:'아로와나',grade:'중급',color:'#C0C0C0',fin:'#87CEEB',hp:600,atk:60, def:35, agi:30, luk:20, income:18,xpRate:3,  xpNeed:1500,evoCost:5000,foodRate:14},
+  {name:'황금 아로와나',species:'아로와나',grade:'고급',color:'#FFD700',fin:'#FFA500',hp:1200,atk:120,def:70,agi:55, luk:40, income:45,xpRate:5,xpNeed:9999,evoCost:0, foodRate:12},
 ];
 const STAGE_INCOME=[0,2,4,8,18,45];
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
@@ -1581,7 +1583,7 @@ function fishRenderInfo(){
         <div style="font-size:9px;color:#888;display:flex;justify-content:space-between"><span>⭐</span><span>${Math.floor(f.xp)}/${s.xpNeed}</span></div>
         <div style="background:#F3F4F6;border-radius:2px;height:5px;overflow:hidden"><div style="width:${xpPct}%;height:100%;background:#4472C4;border-radius:2px"></div></div>
         <div style="display:flex;justify-content:space-around;margin-top:3px;font-size:9px;color:#888">
-          <span>⚔️${s.atk||0}</span><span>🛡️${s.def||0}</span>
+          <span>⚔️${s.atk||0}</span><span>🛡️${s.def||0}</span><span>💨${s.agi||0}</span><span>🍀${s.luk||0}</span>
         </div>
         ${canEvo?'<div style="font-size:9px;color:#217346;font-weight:700;margin-top:2px;text-align:center">⬆️ 진화 가능!</div>':''}
         `}
@@ -1617,6 +1619,8 @@ function showFishDetail(idx){
   document.getElementById('fd-income').textContent=(STAGE_INCOME[f.stage]||2)+'원/30초';
   document.getElementById('fd-atk').textContent=s.atk||0;
   document.getElementById('fd-def').textContent=s.def||0;
+  document.getElementById('fd-agi').textContent=s.agi||0;
+  document.getElementById('fd-luk').textContent=s.luk||0;
   const evoEl=document.getElementById('fd-evo');
   if(f.stage<5){
     evoEl.innerHTML=`진화 조건: ⭐${Math.floor(f.xp)}/${s.xpNeed} | 💰${s.evoCost}원`;
