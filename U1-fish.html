@@ -1227,7 +1227,7 @@ function fishStartLoops(){
   fishStopLoops(); FG.paused=false;
   FG.tickInterval=setInterval(fishTick,1000);
   FG.swimInterval=setInterval(fishDraw,50);
-  FG.saveInterval=setInterval(()=>fishSave(),30000);
+  FG.saveInterval=setInterval(()=>fishAutoSave(),10000);
 }
 function fishStopLoops(){
   clearInterval(FG.tickInterval);clearInterval(FG.swimInterval);clearInterval(FG.saveInterval);
@@ -1354,6 +1354,7 @@ function fishFeed(){
   FG.food--;FG.fullness=Math.min(100,FG.fullness+15);fishRenderInfo();
   document.getElementById('f-status').textContent='냠냠 🍤 (+15)';
   setTimeout(()=>fishUpdateStatus(),1500);
+  fishQuickSave();
 }
 function fishUpdateStatus(){
   const s=fishStage();
@@ -1373,6 +1374,7 @@ function fishEvolve(){
   const ns=fishStage();FG.maxHp=ns.hp;FG.hp=ns.hp;
   document.getElementById('f-status').textContent=`🎉 진화! ${ns.name}`;
   fishRenderInfo();
+  fishQuickSave();
 }
 
 function fishRenderInfo(){
@@ -1456,9 +1458,22 @@ function fishSave(isDisconnect){
     stoppedByDisconnect:isDisconnect||false,lastSave:Date.now()};
   localStorage.setItem('u1aquarium_v1',JSON.stringify(data));
   if(!isDisconnect){
-    saveFishDataToDB(); // DB에도 저장
-    document.getElementById('f-save-status').textContent='저장 '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    saveFishDataToDB();
+    const t=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const el=document.getElementById('f-save-status');
+    if(el) el.textContent='자동저장 '+t;
   }
+}
+
+// 10초 자동저장 (상태바에 표시)
+function fishAutoSave(){
+  if(FG.paused||FG.isDead) return;
+  fishSave();
+}
+
+// 즉시 저장 (중요 액션 후 호출)
+function fishQuickSave(){
+  fishSave();
 }
 window.addEventListener('beforeunload',()=>{
   // Presence 즉시 해제 (접속자 목록에서 빠짐)
@@ -1521,7 +1536,7 @@ function fishBuyTank(level){
   const price=F_TANK_PRICES[level];
   if(FG.money<price||FG.tankLevel>=level) return;
   FG.money-=price;FG.tankLevel=level;FG.tankMax=level+1;
-  fishRenderInfo();fishOpenShop();
+  fishRenderInfo();fishOpenShop();fishQuickSave();
 }
 function fishBuy(id){
   const item=F_SHOP.find(i=>i.id===id); if(!item||FG.money<item.price) return;
@@ -1541,7 +1556,7 @@ function fishBuy(id){
     document.getElementById('f-status').textContent=`🎣 ${item.name} 투입! 1시간 낚시 시작…`;
     setTimeout(()=>fishUpdateStatus(),3000);
   }
-  fishRenderInfo();fishOpenShop();
+  fishRenderInfo();fishOpenShop();fishQuickSave();
 }
 
 // ── 복권 ─────────────────────────────────────────────────
