@@ -1165,7 +1165,6 @@ const F_STAGES=[null,
 const STAGE_INCOME=[0,2,4,8,18,45];
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
 const F_SHOP=[
-  {id:'newfish',name:'금붕어 치어 구매',price:55,  desc:'새 물고기 1마리',   type:'newfish'},
   {id:'food10', name:'먹이 10개',     price:50,  desc:'포만감 +15씩',      type:'food',qty:10},
   {id:'food30', name:'먹이 30개',     price:130, desc:'소량 할인',          type:'food',qty:30},
   {id:'food100',name:'먹이 100개',    price:400, desc:'대량 할인',          type:'food',qty:100},
@@ -1306,7 +1305,29 @@ function fishTick(){
 function fishDie(){
   fishStopLoops(); FG.hp=0;FG.xp=0;FG.fullness=0;FG.isDead=true;
   fishRenderInfo();
-  showResultNotify('💀','물고기가 죽었습니다 😢\n먹이를 주지 않아 체력이 다했습니다.');
+  const canBuy=FG.money>=55;
+  const txt=canBuy
+    ?'물고기가 죽었습니다 😢\n\n금붕어 치어를 구매하시겠습니까? (55원)\n현재 보유: '+FG.money+'원'
+    :'물고기가 죽었습니다 😢\n\n돈이 부족합니다. (55원 필요)\n현재 보유: '+FG.money+'원';
+  // 다시하기 버튼 텍스트 변경
+  const restartBtn=document.querySelector('#result-notify .xl-notify-btn:first-child');
+  if(restartBtn) restartBtn.textContent=canBuy?'🐟 구매 (55원)':'돈 부족';
+  showResultNotify('💀',txt);
+}
+
+function buyNewFish(){
+  if(FG.money<55){
+    document.getElementById('result-txt').textContent='돈이 부족합니다. (55원 필요)\n현재 보유: '+FG.money+'원';
+    const btn=document.querySelector('#result-notify .xl-notify-btn:first-child');
+    if(btn) btn.textContent='돈 부족';
+    return;
+  }
+  FG.money-=55;FG.stage=1;FG.hp=50;FG.maxHp=50;FG.fullness=60;FG.xp=0;FG.isDead=false;
+  // 버튼 텍스트 원복
+  const btn=document.querySelector('#result-notify .xl-notify-btn:first-child');
+  if(btn) btn.textContent='다시 하기';
+  closeResultNotify();
+  fishRenderInfo();fishStartLoops();
 }
 
 function fishFeed(){
@@ -1817,9 +1838,7 @@ function restartFromResult(){
   } else if(scrId==='s-bb-game'){
     if(bbMode==='online')startBBOnline();else startBBGame();
   } else if(scrId==='s-fishworld'&&FG.isDead){
-    if(FG.money<55){document.getElementById('result-txt').textContent='돈 부족! (금붕어 치어 55원)\n현재: '+FG.money+'원';return;}
-    FG.money-=55;FG.stage=1;FG.hp=50;FG.maxHp=50;FG.fullness=60;FG.xp=0;FG.isDead=false;
-    fishRenderInfo();fishStartLoops();
+    buyNewFish();
   }
 }
 
