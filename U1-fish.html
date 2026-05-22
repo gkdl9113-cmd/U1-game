@@ -1320,12 +1320,15 @@ function fishTick(){
   if(FG.paused) return;
   const now=Date.now(); FG.lastTick=now;
   const alive=aliveFishes();
-  // 자동 먹이통 — 먹이 1개로 전체 급식 (물고기 수와 무관)
+  // 자동 먹이통 — 물고기마다 먹이 1개씩 소모, 각각 +15
   if(FG.autoLevel>0&&FG.food>0){
     const rate=FG.autoLevel===1?30:15;
     if(Math.floor(now/1000)%rate===0){
-      FG.food=Math.max(0,FG.food-1);
-      alive.forEach(f=>{ f.fullness=Math.min(100,f.fullness+15); });
+      alive.forEach(f=>{
+        if(FG.food<=0) return;
+        FG.food--;
+        f.fullness=Math.min(100,f.fullness+15);
+      });
     }
   }
   // 낚시대
@@ -1405,10 +1408,11 @@ function fishFeed(){
   if(FG.food<=0){document.getElementById('f-status').textContent='먹이가 없습니다! 상점에서 구매하세요.';return;}
   const alive=aliveFishes();
   if(alive.length===0) return;
-  FG.food--;
-  alive.forEach(f=>f.fullness=Math.min(100,f.fullness+Math.ceil(15/alive.length)));
+  // 마리 수만큼 먹이 소모, 각각 +15
+  const canFeed=Math.min(alive.length,FG.food);
+  for(let i=0;i<canFeed;i++){FG.food--;alive[i].fullness=Math.min(100,alive[i].fullness+15);}
   fishRenderInfo();
-  document.getElementById('f-status').textContent='냠냠 🍤 전체 (+'+Math.ceil(15/alive.length)+')';
+  document.getElementById('f-status').textContent=`🍤 ${canFeed}마리 급식 (먹이 ${canFeed}개 사용)`;
   setTimeout(()=>fishUpdateStatus(),1500);
   fishQuickSave();
 }
