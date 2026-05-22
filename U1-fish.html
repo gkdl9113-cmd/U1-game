@@ -504,11 +504,13 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       </div>
       <!-- 진화 조건 -->
       <div style="font-size:10px;color:#595959;background:#FFF9C4;border:1px solid #FFC000;border-radius:3px;padding:5px;margin-bottom:6px" id="fd-evo">진화 조건: ⭐0/100 | 💰300원</div>
+      <div style="font-size:10px;color:#C05000;background:#FFF0E8;border:1px solid #F4B8A0;border-radius:3px;padding:4px 5px;margin-bottom:8px" id="fd-sell-info" style="display:none"></div>
       <div style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid #F0F0F0;margin-bottom:8px" id="fd-feeder-row"></div>
       <div class="xl-dlg-btns">
         <button class="xl-dlg-btn" id="fd-feed-btn" onclick="feedFishOne(_fdIdx);hideDlg('fish-detail-modal')">🍤 먹이주기</button>
         <button class="xl-dlg-btn ok" id="fd-evo-btn" onclick="evolveOneFish(FG.fishes[_fdIdx])">⬆️ 진화</button>
         <button class="xl-dlg-btn" id="fd-buy-btn" style="display:none;background:#217346;color:#fff" onclick="buyDeadFish(_fdIdx)">🐟 구매(55원)</button>
+        <button class="xl-dlg-btn" id="fd-sell-btn" onclick="sellFish(_fdIdx)" style="display:none;background:#C05000;color:#fff;border-color:#A04000">💰 판매</button>
       </div>
     </div>
   </div>
@@ -1713,6 +1715,45 @@ function fishEvolve(){
   if(!f){document.getElementById('f-status').textContent='진화 가능한 물고기 없음 (XP 또는 돈 부족)';return;}
   evolveOneFish(f);
 }
+// 낚시대 기대 획득 비용 (어종별 stage 1 기준)
+const FISH_BASE_COST={
+  goldfish:600,   // 하급 Ⅰ (150원), 일반 100%, 26%/시간 → 평균 ~600원
+  guppy:600,      // 동일
+  snakehead:8000, // 하급 Ⅱ+ (400원), 희귀 10%, 52%/시간 → 평균 ~7700원
+};
+
+function getFishSellPrice(f){
+  const type=f.type||'goldfish';
+  const stage=f.stage||1;
+  const baseCost=FISH_BASE_COST[type]||600;
+  // stage 1→현재 단계까지 진화에 쓴 비용 합계
+  const sp=F_SPECIES[type]||F_SPECIES.goldfish;
+  let evoCostSum=0;
+  for(let s=1;s<stage;s++) evoCostSum+=(sp[s]?.evoCost||0);
+  // 판매가 = (획득비용 + 진화비용) × 35%
+  return Math.max(5,Math.round((baseCost+evoCostSum)*0.35));
+}
+
+function sellFish(idx){
+  const f=FG.fishes[idx]; if(!f) return;
+  if(f.isDead){u1Toast('사망한 물고기는 판매 불가','#C00000');return;}
+  const price=getFishSellPrice(f);
+  const s=fStage(f);
+  if(!confirm(`${s.name} (#${idx+1})을(를)\n${price.toLocaleString()}원에 판매하시겠습니까?\n\n(주의: 지금까지의 진화 투자의 35%만 반환됩니다)`)) return;
+  FG.money+=price;
+  FG.fishes.splice(idx,1);
+  FG.fishPos=null;
+  // 먹이통 배정 해제 (삭제된 물고기 참조 정리)
+  FG.autoFeeders.forEach(fd=>{
+    if(fd.targetIdx===idx) fd.targetIdx=null;
+    else if(fd.targetIdx>idx) fd.targetIdx--;
+  });
+  hideDlg('fish-detail-modal');
+  fishRenderInfo(); fishQuickSave();
+  u1Toast(`💰 ${s.name} 판매 완료! +${price.toLocaleString()}원`,'#217346');
+  document.getElementById('f-status').textContent=`${s.name} 판매 (${price.toLocaleString()}원)`;
+}
+
 function evolveOneFish(f){
   const s=fStage(f);
   if(f.stage>=5){document.getElementById('f-status').textContent='이미 최고 단계!';return;}
@@ -1822,14 +1863,28 @@ function showFishDetail(idx){
   const feedBtn=document.getElementById('fd-feed-btn');
   const evoBtn=document.getElementById('fd-evo-btn');
   const buyBtn=document.getElementById('fd-buy-btn');
+  const sellBtn=document.getElementById('fd-sell-btn');
+  const sellInfo=document.getElementById('fd-sell-info');
   if(f.isDead){
     if(feedBtn) feedBtn.style.display='none';
     if(evoBtn) evoBtn.style.display='none';
     if(buyBtn){buyBtn.style.display='';buyBtn.textContent='🐟 새 물고기 (55원)';}
+    if(sellBtn) sellBtn.style.display='none';
+    if(sellInfo) sellInfo.style.display='none';
   } else {
     if(feedBtn) feedBtn.style.display='';
     if(evoBtn){evoBtn.style.display='';evoBtn.style.opacity=(f.stage<5&&f.xp>=s.xpNeed&&FG.money>=s.evoCost)?'1':'0.5';}
     if(buyBtn) buyBtn.style.display='none';
+    // 판매 버튼 + 가격 표시
+    const sp=getFishSellPrice(f);
+    if(sellBtn){sellBtn.style.display='';sellBtn.textContent=`💰 판매 (${sp.toLocaleString()}원)`;}
+    if(sellInfo){
+      sellInfo.style.display='';
+      const baseCost=FISH_BASE_COST[f.type||'goldfish']||600;
+      const spp=F_SPECIES[f.type||'goldfish']||F_SPECIES.goldfish;
+      let evo=0; for(let ss=1;ss<f.stage;ss++) evo+=(spp[ss]?.evoCost||0);
+      sellInfo.textContent=`판매가 ${sp.toLocaleString()}원 = (획득비용 ${baseCost}원 + 진화비용 ${evo}원) × 35%`;
+    }
   }
   document.getElementById('fish-detail-modal').classList.add('on');
 }
@@ -2589,23 +2644,22 @@ function adminRenderTable(rows){
 
 function adminOpenEdit(username,server){
   _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).single()
-    .then(({data})=>{
-      if(!data) return;
+    .then(({data,error})=>{
+      if(error||!data){alert('데이터 로드 실패: '+(error?.message||'없음'));return;}
       _admEditTarget={username,server,fish_data:data.fish_data||{}};
       const fd=data.fish_data||{};
       const fishes=fd.fishes||[];
       const alive=fishes.filter(f=>!f.isDead);
-      document.getElementById('adm-edit-title').textContent=`유저: ${username} (${server})`;
-      // stage 선택 → 최고 단계 물고기 기준 표시 (참고용)
       const best=alive.sort((a,b)=>b.stage-a.stage)[0];
-      document.getElementById('adm-edit-stage').value=best?.stage||1;
+      // 참고용 단계 표시
+      const stageEl=document.getElementById('adm-edit-stage');
+      if(stageEl) stageEl.value=best?.stage||1;
       document.getElementById('adm-edit-money').value=fd.money||0;
       document.getElementById('adm-edit-food').value=fd.food||0;
-      document.getElementById('adm-edit-hp').value=alive.length>0?Math.ceil(alive[0].hp||0):0;
-      // 물고기 현황 표시
-      const fishInfo=document.getElementById('adm-edit-title');
-      fishInfo.innerHTML=`유저: <strong>${username}</strong> (${server})<br>
-        <span style="font-size:10px;color:#888">생존 ${alive.length}마리 / 전체 ${fishes.length}마리 | 💰${(fd.money||0).toLocaleString()}원 🍤${fd.food||0}개</span>`;
+      // 물고기 현황
+      document.getElementById('adm-edit-title').innerHTML=
+        `유저: <strong>${esc(username)}</strong> (${server})<br>
+        <span style="font-size:10px;color:#888">생존 ${alive.length}마리 / 전체 ${fishes.length}마리 | 💰${(fd.money||0).toLocaleString()}원 🍤${fd.food||0}개 먹이통${fd.autoFeeders?.length||0}개</span>`;
       document.getElementById('adm-edit-modal').classList.add('on');
     });
 }
