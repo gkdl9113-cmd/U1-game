@@ -538,7 +538,8 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div id="lottery-result" style="display:none;text-align:center;font-size:13px;font-weight:800;padding:10px;border-radius:4px;margin-bottom:8px"></div>
       <div style="display:flex;gap:6px">
         <button class="xl-dlg-btn" style="flex:1" onclick="lotteryRevealAll()">전체 긁기</button>
-        <button class="xl-dlg-btn ok" style="flex:1" onclick="hideDlg('lottery-modal')">닫기</button>
+        <button class="xl-dlg-btn ok" style="flex:1" id="lottery-buy-btn" onclick="lotteryBuyAgain()" style="display:none">🎰 추가구매 (300원)</button>
+        <button class="xl-dlg-btn" style="flex:1" onclick="hideDlg('lottery-modal')">닫기</button>
       </div>
     </div>
   </div>
@@ -1743,6 +1744,7 @@ function buyLottery(){
     el.onclick=()=>lotteryReveal(i,el,d);grid.appendChild(el);
   });
   document.getElementById('lottery-result').style.display='none';
+  const bb=document.getElementById('lottery-buy-btn');if(bb)bb.style.display='none';
   document.getElementById('lottery-modal').classList.add('on');
   fishRenderInfo();
 }
@@ -1770,6 +1772,21 @@ function lotteryResult(){
     el.style.cssText='display:block;text-align:center;font-size:13px;font-weight:800;padding:10px;border-radius:4px;margin-bottom:8px;background:#F2F2F2;color:#888;border:1px solid #C8C8C8';
     el.textContent='😢 꽝... 기부 감사요!';
   }
+  // 결과 후 추가구매 버튼 표시
+  const buyBtn=document.getElementById('lottery-buy-btn');
+  if(buyBtn){
+    const canBuy=FG.money>=300;
+    buyBtn.style.display='';
+    buyBtn.textContent='🎰 추가구매 (300원)';
+    buyBtn.disabled=!canBuy;
+    buyBtn.style.opacity=canBuy?'1':'0.5';
+  }
+}
+
+function lotteryBuyAgain(){
+  if(FG.money<300){u1Toast('300원이 부족합니다','#C00000');return;}
+  document.getElementById('lottery-buy-btn').style.display='none';
+  buyLottery();
 }
 
 // ══════════════════════════════════════════════════════════
