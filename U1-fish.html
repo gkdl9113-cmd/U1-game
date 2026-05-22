@@ -439,29 +439,21 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 </div>
 
 <!-- 모바일 물고기 정보 패널 (좌측 슬라이드) -->
-<div class="fw-mobile-stats-panel" id="fw-mobile-stats-panel">
-  <button class="fw-mob-close" style="text-align:left;background:#217346;margin-bottom:8px" onclick="toggleMobileStats()">✕ 닫기</button>
-  <div style="font-weight:800;font-size:13px;margin-bottom:4px;color:#1F3864" id="f-fish-name-m">금붕어 치어</div>
-  <div style="font-size:10px;color:#888;margin-bottom:10px" id="f-fish-stage-m">1단계</div>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:2px">❤️ 체력</div>
-  <div style="background:#F3F4F6;border-radius:3px;height:10px;margin-bottom:3px;overflow:hidden"><div id="f-hp-bar-m" style="height:100%;background:#EF4444;border-radius:3px;transition:width .5s"></div></div>
-  <div style="font-size:10px;color:#888;margin-bottom:8px" id="f-hp-txt-m">50/50</div>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:2px">🍤 포만감</div>
-  <div style="background:#F3F4F6;border-radius:3px;height:10px;margin-bottom:3px;overflow:hidden"><div id="f-full-bar-m" style="height:100%;background:#F59E0B;border-radius:3px;transition:width .5s"></div></div>
-  <div style="font-size:10px;color:#888;margin-bottom:8px" id="f-full-txt-m">80/100</div>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:2px">⭐ 경험치</div>
-  <div style="background:#F3F4F6;border-radius:3px;height:10px;margin-bottom:3px;overflow:hidden"><div id="f-xp-bar-m" style="height:100%;background:#4472C4;border-radius:3px;transition:width .5s"></div></div>
-  <div style="font-size:10px;color:#888;margin-bottom:10px" id="f-xp-txt-m">0/100</div>
-  <div style="background:#F8F9FF;border:1px solid #C7D2FE;border-radius:4px;padding:8px;font-size:11px;margin-bottom:8px">
-    <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>💰 수입</span><span id="f-income-m">2/30초</span></div>
-    <div style="display:flex;justify-content:space-between"><span>🐟 수조</span><span id="f-tank-info-m">1/1마리</span></div>
+<div class="fw-mobile-stats-panel" id="fw-mobile-stats-panel" style="padding:0">
+  <div style="background:#1F3864;color:#fff;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+    <span style="font-size:12px;font-weight:700">📊 물고기 현황</span>
+    <button onclick="toggleMobileStats()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:14px;padding:0">✕</button>
   </div>
-  <div id="f-evo-info-m" style="background:#FFF9C4;border:1px solid #FFC000;border-radius:4px;padding:8px;font-size:11px">
-    <div style="font-weight:700;margin-bottom:4px">진화 조건</div>
-    <div id="f-evo-xp-m" style="color:#595959">⭐ 0/100</div>
-    <div id="f-evo-cost-m" style="color:#595959">💰 300원</div>
+  <div id="f-fish-list-m" style="flex:1;overflow-y:auto"></div>
+  <div style="border-top:1px solid #E8E8E8;padding:8px 10px;font-size:10px;background:#F8F9FF;flex-shrink:0">
+    <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+      <span>💰 전체수입</span><strong id="f-total-income-m">0원/30초</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+      <span>🐟 수조</span><strong id="f-tank-info-m">0/1마리</strong>
+    </div>
+    <div style="font-size:9px;color:#888" id="f-auto-status-m">자동먹이통: 없음</div>
   </div>
-  <div style="margin-top:8px;font-size:10px;color:#888" id="f-auto-status-m">자동먹이통: 없음</div>
 </div>
 
 <!-- 물고기 상세창 -->
@@ -1033,9 +1025,11 @@ function applyFishData(d){
   FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;
   if(d.lastSave){
     const elapsed=(Date.now()-d.lastSave)/1000;
-    if(elapsed>10&&elapsed<86400*30) fishCalcOfflineAutoFeed(elapsed); // 자동먹이통만 적용
+    if(elapsed>10&&elapsed<86400*30) fishCalcOfflineAutoFeed(elapsed);
   }
+  FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._incAcc=0;f._xpAcc=0;});
   FG.lastTick=Date.now();
+  FG.lastAutoFeed=Date.now();
 }
 
 async function saveFishDataToDB(){
@@ -1708,7 +1702,10 @@ function fishLoad(){
       const elapsed=(Date.now()-d.lastSave)/1000;
       if(elapsed>10&&elapsed<86400*30) fishCalcOfflineAutoFeed(elapsed);
     }
+    // 틱 누적값 리셋 (저장된 내부 타이머값 제거)
+    FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._incAcc=0;f._xpAcc=0;});
     FG.lastTick=Date.now();
+    FG.lastAutoFeed=Date.now(); // 로그인 직후 즉시 발동 방지
   }catch(e){FG.fishes=[newFish(1)];}
 }
 function fishReset(){
@@ -1736,7 +1733,7 @@ function fishOpenShop(){
   if(FG.tankLevel<9){
     const nl=FG.tankLevel+1,price=F_TANK_PRICES[nl],canBuy=FG.money>=price;
     div.innerHTML+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0">
-      <div><div style="font-size:12px;font-weight:700">수조 확장 Lv.${nl}</div><div style="font-size:10px;color:#888">최대 ${nl+1}마리 (현재 ${FG.fishCount}/${FG.tankMax})</div></div>
+      <div><div style="font-size:12px;font-weight:700">수조 확장 Lv.${nl}</div><div style="font-size:10px;color:#888">최대 ${nl+1}마리 (현재 ${FG.fishes.length}/${FG.tankMax})</div></div>
       <button onclick="fishBuyTank(${nl})" ${canBuy?'':'disabled'}
         style="background:${canBuy?'#217346':'#E8E8E8'};color:${canBuy?'#fff':'#999'};border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:${canBuy?'pointer':'default'};font-family:inherit;white-space:nowrap">
         ${price.toLocaleString()}원</button></div>`;
@@ -2321,32 +2318,47 @@ function fwSendChatMobile(){
   sbSend('chat',msg); addChatMsg(msg);
 }
 
-// 모바일 스탯 패널 업데이트 (fishRenderInfo에서 같이 호출)
+// 모바일 스탯 패널 — 물고기 목록 (데스크탑과 동일 구조)
 function fishRenderInfoMobile(){
-  const s=fishStage();
-  const setT=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  const setW=(id,v)=>{const el=document.getElementById(id);if(el)el.style.width=v;};
-  const setB=(id,c)=>{const el=document.getElementById(id);if(el)el.style.background=c;};
-  setT('f-fish-name-m',s.name);
-  setT('f-fish-stage-m',`${FG.stage}단계 · ${s.species}`);
-  const hpPct=FG.hp/FG.maxHp*100;
-  setW('f-hp-bar-m',hpPct+'%'); setB('f-hp-bar-m',hpPct<30?'#EF4444':'#10B981');
-  setT('f-hp-txt-m',`${Math.ceil(FG.hp)}/${FG.maxHp}`);
-  setW('f-full-bar-m',FG.fullness+'%'); setB('f-full-bar-m',FG.fullness<20?'#EF4444':'#F59E0B');
-  setT('f-full-txt-m',`${Math.floor(FG.fullness)}/100`);
-  setW('f-xp-bar-m',Math.min(100,FG.xp/s.xpNeed*100)+'%');
-  setT('f-xp-txt-m',`${Math.floor(FG.xp)}/${s.xpNeed}`);
-  setT('f-income-m',(STAGE_INCOME[FG.stage]||2)+'원/30초');
-  setT('f-tank-info-m',`${FG.fishCount}/${FG.tankMax}마리`);
-  const nextS=FG.stage<5?F_STAGES[FG.stage+1]:null;
-  if(nextS){
-    setT('f-evo-xp-m',`⭐ ${Math.floor(FG.xp)}/${s.xpNeed}${FG.xp>=s.xpNeed?' ✓':''}`);
-    setT('f-evo-cost-m',`💰 ${s.evoCost}원${FG.money>=s.evoCost?' ✓':''}`);
-  } else {
-    const el=document.getElementById('f-evo-info-m');
-    if(el) el.innerHTML='<div style="font-weight:700;color:#217346">🏆 최고 단계!</div>';
-  }
-  setT('f-auto-status-m',(FG.autoLevel===0?'자동먹이통: 없음':FG.autoLevel===1?'자동먹이통 I':'자동먹이통 II'));
+  const list=document.getElementById('f-fish-list-m');
+  if(!list) return;
+  list.innerHTML=FG.fishes.map((f,i)=>{
+    const s=fStage(f);
+    const hpPct=f.isDead?0:f.hp/f.maxHp*100;
+    const xpPct=f.isDead?0:Math.min(100,f.xp/s.xpNeed*100);
+    const hpC=hpPct<30?'#EF4444':'#10B981';
+    const fuC=f.fullness<20?'#EF4444':'#F59E0B';
+    const bg=f.isDead?'#FFF0F0':'#fff';
+    const bdTop=i>0?'border-top:1px solid #E8E8E8;':'';
+    const canEvo=!f.isDead&&f.stage<5&&f.xp>=s.xpNeed&&FG.money>=s.evoCost;
+    return `<div style="padding:8px 10px;background:${bg};${bdTop}cursor:pointer" onclick="showFishDetail(${i});toggleMobileStats()">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <span style="font-size:11px;font-weight:800;color:${f.isDead?'#999':'#1F3864'}">${f.isDead?'💀':'🐟'} #${i+1} ${s.name}</span>
+        ${f.isDead?'':`<button onpointerdown="event.preventDefault()" onclick="event.stopPropagation();feedFishOne(${i})" style="background:#F59E0B;color:#fff;border:none;border-radius:3px;font-size:10px;padding:2px 7px;cursor:pointer;font-family:inherit">🍤</button>`}
+      </div>
+      ${f.isDead?'<div style="font-size:10px;color:#999;text-align:center">사망 — 클릭하여 구매</div>':`
+      <div style="font-size:10px;color:#888;display:flex;justify-content:space-between;margin-bottom:1px"><span>❤️ HP</span><span>${Math.ceil(f.hp)}/${f.maxHp}</span></div>
+      <div style="background:#F3F4F6;border-radius:3px;height:6px;margin-bottom:4px;overflow:hidden"><div style="width:${hpPct}%;height:100%;background:${hpC};border-radius:3px"></div></div>
+      <div style="font-size:10px;color:#888;display:flex;justify-content:space-between;margin-bottom:1px"><span>🍤 포만감</span><span>${Math.floor(f.fullness)}/100</span></div>
+      <div style="background:#F3F4F6;border-radius:3px;height:6px;margin-bottom:4px;overflow:hidden"><div style="width:${f.fullness}%;height:100%;background:${fuC};border-radius:3px"></div></div>
+      <div style="font-size:10px;color:#888;display:flex;justify-content:space-between;margin-bottom:1px"><span>⭐ XP</span><span>${Math.floor(f.xp)}/${s.xpNeed}</span></div>
+      <div style="background:#F3F4F6;border-radius:3px;height:6px;overflow:hidden"><div style="width:${xpPct}%;height:100%;background:#4472C4;border-radius:3px"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:#888">
+        <span>⚔️${s.atk||0} 🛡️${s.def||0}</span>
+        <span style="color:#217346;font-weight:700">💰${STAGE_INCOME[f.stage]||2}/30초</span>
+      </div>
+      ${canEvo?'<div style="font-size:10px;color:#217346;font-weight:700;margin-top:3px;text-align:center">⬆️ 진화 가능!</div>':''}
+      `}
+    </div>`;
+  }).join('');
+  // 하단 요약
+  const au=document.getElementById('f-auto-status-m');
+  if(au){const rod=FG.rodActive?` | 🎣 ${Math.floor(FG.rodTimer/60)}분 남음`:'';
+    au.textContent=(FG.autoLevel===0?'자동먹이통: 없음':FG.autoLevel===1?'자동먹이통 I':'자동먹이통 II')+rod;}
+  const ti=document.getElementById('f-total-income-m');
+  if(ti) ti.textContent=totalIncome()+'원/30초';
+  const tk=document.getElementById('f-tank-info-m');
+  if(tk) tk.textContent=FG.fishes.length+'/'+FG.tankMax+'마리';
 }
 
 // 모바일 사이드바 플레이어 목록도 업데이트
