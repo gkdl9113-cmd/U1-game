@@ -1699,7 +1699,7 @@ function fishBuyTank(level){
 }
 function fishBuy(id){
   const item=F_SHOP.find(i=>i.id===id); if(!item||FG.money<item.price) return;
-  if(item.type==='lottery'){FG.money-=item.price;hideDlg('f-shop-modal');buyLottery();return;}
+  if(item.type==='lottery'){hideDlg('f-shop-modal');buyLottery();return;}
   if(item.type==='newfish'){
     if(aliveFishes().length>0){document.getElementById('f-status').textContent='살아있는 물고기가 있습니다!';return;}
     if(FG.fishes.length>=FG.tankMax){document.getElementById('f-status').textContent='수조가 꽉 찼습니다!';return;}
