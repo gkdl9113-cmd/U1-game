@@ -976,6 +976,8 @@ function connectSupabase(){
     leftPresences.forEach(p=>{
       addChatSys(p.name+'님이 퇴장했습니다');
       if(currentGame&&currentGame.opponentId===p.userId){
+        // 게임 시작 직후 8초는 화면 전환 중 presence 깜빡임 → 탈주 처리 안 함
+        if(Date.now()-(_gameStartTime||0)<8000) return;
         currentGame=null; stopOmokTimer(); bbOver=true;
         showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
       }
@@ -1429,7 +1431,10 @@ function rejectChallenge(){
   document.getElementById('challenged-notify').classList.remove('on');
 }
 
+let _gameStartTime=0; // 게임 시작 타임스탬프 (presence 깜빡임 방지용)
+
 function startOnlineGame(gameType){
+  _gameStartTime=Date.now();
   if(gameType==='omok') startOmokOnline();
   else if(gameType==='baseball') startBBOnline();
 }
