@@ -1209,6 +1209,18 @@ function enterFishWorldWithData(dbData){
     FG.cvs=document.getElementById('f-canvas');
     if(FG.cvs){FG.ctx=FG.cvs.getContext('2d');fishResizeCanvas();window.addEventListener('resize',fishResizeCanvas);}
     fishStartLoops(); fishRenderInfo();
+    // 로드 후 모든 물고기 사망 상태이면 구매 팝업 표시
+    setTimeout(()=>{
+      if(aliveFishes().length===0&&FG.fishes.length>0){
+        fishStopLoops();
+        const canBuy=FG.money>=55;
+        const btn=document.querySelector('#result-notify .xl-notify-btn:first-child');
+        if(btn) btn.textContent=canBuy?'🐟 구매 (55원)':'돈 부족';
+        const cbtn=document.getElementById('result-confirm-btn');
+        if(cbtn) cbtn.textContent=canBuy?'🐟 구매 (55원)':'닫기';
+        showResultNotify('💀','모든 물고기가 죽었습니다 😢\n\n'+(canBuy?'금붕어 치어를 구매하시겠습니까? (55원)\n현재: '+FG.money+'원':'돈 부족 (55원 필요)\n현재: '+FG.money+'원'));
+      }
+    },300);
   },80);
   connectSupabase();
 }
@@ -2920,6 +2932,18 @@ async function adminEnterGame(){
     FG.cvs=document.getElementById('f-canvas');
     if(FG.cvs){FG.ctx=FG.cvs.getContext('2d');fishResizeCanvas();window.addEventListener('resize',fishResizeCanvas);}
     fishStartLoops(); fishRenderInfo();
+    // 로드 후 모든 물고기 사망 상태이면 구매 팝업 표시
+    setTimeout(()=>{
+      if(aliveFishes().length===0&&FG.fishes.length>0){
+        fishStopLoops();
+        const canBuy=FG.money>=55;
+        const btn=document.querySelector('#result-notify .xl-notify-btn:first-child');
+        if(btn) btn.textContent=canBuy?'🐟 구매 (55원)':'돈 부족';
+        const cbtn=document.getElementById('result-confirm-btn');
+        if(cbtn) cbtn.textContent=canBuy?'🐟 구매 (55원)':'닫기';
+        showResultNotify('💀','모든 물고기가 죽었습니다 😢\n\n'+(canBuy?'금붕어 치어를 구매하시겠습니까? (55원)\n현재: '+FG.money+'원':'돈 부족 (55원 필요)\n현재: '+FG.money+'원'));
+      }
+    },300);
   },80);
 }
 
