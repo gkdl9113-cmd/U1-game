@@ -980,18 +980,14 @@ function connectSupabase(){
   })
   .on('presence',{event:'leave'},({leftPresences})=>{
     leftPresences.forEach(p=>{
-      // 5초 딜레이 후 재접속 안 했으면 퇴장 표시 (즉시 재연결 스팸 방지)
+      // 5초 딜레이 후 재접속 안 했으면 퇴장 표시
       const leftAt=Date.now();
       setTimeout(()=>{
         const lastJoin=_presenceTs[p.name]||0;
         if(lastJoin<leftAt) addChatSys(p.name+'님이 퇴장했습니다');
       },5000);
-      if(currentGame&&currentGame.opponentId===p.userId){
-        // 게임 시작 직후 15초는 화면 전환 중 presence 깜빡임 → 탈주 처리 안 함
-        if(Date.now()-(_gameStartTime||0)<15000) return;
-        currentGame=null; stopOmokTimer(); bbOver=true;
-        showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
-      }
+      // 탈주 판정은 game_end 브로드캐스트만 사용 (presence leave 사용 안 함)
+      // → 화면 전환, reconnect 등에 의한 오탈주 방지
     });
     onPresenceSync();
   })
@@ -1012,7 +1008,7 @@ function connectSupabase(){
     document.getElementById('challenged-notify').classList.remove('on');
     startOnlineGame(payload.game);
     // updateMyPresence는 게임 시작 후 presence 깜빡임 방지를 위해 지연
-    setTimeout(()=>updateMyPresence(true),5000);
+    // updateMyPresence 제거 - presence re-track이 leave 이벤트 유발해서 오탈주 원인이됨
   })
   .on('broadcast',{event:'game_move'},({payload})=>{
     if(payload.targetId!==myId) return;
@@ -1443,11 +1439,9 @@ function rejectChallenge(){
   document.getElementById('challenged-notify').classList.remove('on');
 }
 
-let _gameStartTime=0; // 게임 시작 타임스탬프 (presence 깜빡임 방지용)
 const _presenceTs={}; // {username: 마지막 입장 시각} - 입장/퇴장 스팸 방지
 
 function startOnlineGame(gameType){
-  _gameStartTime=Date.now();
   if(gameType==='omok') startOmokOnline();
   else if(gameType==='baseball') startBBOnline();
 }
@@ -1456,7 +1450,6 @@ function backToFishWorld(){
   currentGame=null; showIngameChat(false);
   show('s-fishworld');
   if(!FG.tickInterval) fishStartLoops();
-  updateMyPresence(false);
 }
 
 // ── 인게임 채팅 ──────────────────────────────────────────
@@ -2527,7 +2520,7 @@ function omokEndGame(winner,resigned){
 function omokExit(){
   if(!oOver&&oBoard){if(!confirm('종료하시겠습니까?'))return;}
   showIngameChat(false);
-  if(oMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;updateMyPresence(false);}
+  if(oMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;}
   show('s-fishworld');if(!FG.tickInterval)fishStartLoops();
 }
 function omokOnlineMove(data){
@@ -2555,7 +2548,7 @@ let bbDigits=4,bbDiff='easy',bbMode='ai',bbMySecret='',bbAISecret='',bbAICands=[
 function selBBDiff(d){bbDiff=d;document.getElementById('bb-easy').classList.toggle('on',d==='easy');document.getElementById('bb-hard').classList.toggle('on',d==='hard');}
 function bbExit(){
   showIngameChat(false);
-  if(bbMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;updateMyPresence(false);}
+  if(bbMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;}
   show('s-fishworld');if(!FG.tickInterval)fishStartLoops();
 }
 function buildBBSecretInput(){
@@ -3523,7 +3516,6 @@ function battleExit(){
   showIngameChat(false);
   show('s-fishworld');
   if(!FG.tickInterval) fishStartLoops();
-  updateMyPresence(false);
 }
 
 
