@@ -988,8 +988,9 @@ function connectSupabase(){
         if(lastJoin>=leftAt) return; // 5초 안에 재접속 → 무시
         // 채팅 퇴장 알림
         addChatSys(oppName+'님이 퇴장했습니다');
-        // 게임 중이었으면 탈주 처리
+        // 게임 중이었으면 탈주 처리 (게임 시작 30초 이내는 무시 - 화면전환 안정화)
         if(currentGame&&currentGame.opponentId===oppId){
+          if(Date.now()-_gameStartTs<30000) return; // 30초 유예
           currentGame=null; stopOmokTimer(); bbOver=true;
           showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
         }
@@ -1446,8 +1447,10 @@ function rejectChallenge(){
 }
 
 const _presenceTs={}; // {username: 마지막 입장 시각} - 입장/퇴장 스팸 방지
+let _gameStartTs=0; // 게임 시작 타임스탬프
 
 function startOnlineGame(gameType){
+  _gameStartTs=Date.now(); // 게임 시작 시각 기록
   if(gameType==='omok') startOmokOnline();
   else if(gameType==='baseball') startBBOnline();
 }
