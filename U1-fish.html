@@ -426,7 +426,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     </div>
   </div>
   <div class="xl-bottombar">
-    <div class="xl-stabs"><button class="xl-stab on">수조1</button><button class="xl-stab">상점</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-stabs"><button class="xl-stab on">수조1</button><button class="xl-stab" onclick="fishOpenFeeders()">🍤 먹이통</button><button class="xl-stab" onclick="fishOpenShop()">상점</button><button class="xl-stab-plus">＋</button></div>
     <div class="xl-statusbar"><span class="xl-sitem" id="f-status">준비</span><span class="xl-sitem" id="f-save-status">저장 안 됨</span><span class="xl-sitem">100%</span></div>
   </div>
 </div>
@@ -554,6 +554,24 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   <div class="xl-bottombar" style="background:#0d1b4b;border-top:1px solid #1F3864">
     <div class="xl-stabs"><button class="xl-stab on" style="background:#1F3864;color:#fff;border-color:#4472C4">실시간 대결</button></div>
     <div class="xl-statusbar" style="color:#aaa"><span class="xl-sitem" id="battle-status">대기 중</span></div>
+  </div>
+</div>
+
+
+<!-- ══ 자동먹이통 관리 모달 ══ -->
+<div class="xl-dlg-ov" id="feeder-mgr-modal" style="align-items:flex-end;padding-bottom:26px">
+  <div style="background:#F2F2F2;border:1px solid #888;width:100%;max-width:480px;max-height:75vh;display:flex;flex-direction:column;box-shadow:0 -4px 20px rgba(0,0,0,.3)">
+    <div class="xl-dlg-title" style="background:#1F3864;padding:7px 12px">
+      🍤 자동먹이통 관리
+      <button class="xl-dlg-x" onclick="hideDlg('feeder-mgr-modal')">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:10px" id="feeder-mgr-list"></div>
+    <div style="padding:8px 12px;border-top:1px solid #C8C8C8;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <span style="font-size:11px;color:#595959">먹이통 <strong id="feeder-count-txt">0</strong>개 운영 중</span>
+      <button id="feeder-buy-btn" onclick="fishBuyAutoFeeder()" style="background:#217346;color:#fff;border:none;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;border-radius:3px;font-family:inherit">
+        + 구매
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1441,29 +1459,32 @@ document.addEventListener('visibilitychange',()=>{
 
 function fishCalcOfflineAutoFeed(seconds){
   if(!FG.autoFeeders.length||FG.food===0) return;
+  // 오프라인 중 포만감 감소 시뮬레이션 후 임계값 기반 급식
+  // 단순화: 30초마다 한 번씩 임계값 체크
   const elapsed=Math.min(seconds,86400);
-  const activations=Math.floor(elapsed/30); // 30초마다 1회
-  if(activations<=0) return;
-  const alive=FG.fishes.filter(f=>!f.isDead);
-  if(!alive.length) return;
+  const checks=Math.floor(elapsed/30);
+  if(checks<=0) return;
   let totalFed=0;
-  for(let a=0;a<activations;a++){
+  for(let c=0;c<checks;c++){
+    if(FG.food<=0) break;
     FG.autoFeeders.forEach(feeder=>{
       if(FG.food<=0) return;
       let tgt=null;
-      if(feeder.targetIdx!=null&&FG.fishes[feeder.targetIdx]&&!FG.fishes[feeder.targetIdx].isDead){
-        tgt=FG.fishes[feeder.targetIdx];
-      } else if(alive.length){
-        tgt=alive[Math.floor(Math.random()*alive.length)];
+      const thr=feeder.threshold||30;
+      if(feeder.targetIdx!=null){
+        const f=FG.fishes[feeder.targetIdx];
+        if(f&&!f.isDead&&f.fullness<thr) tgt=f;
+      } else {
+        const cands=FG.fishes.filter(f=>!f.isDead&&f.fullness<thr);
+        if(cands.length) tgt=cands.reduce((a,b)=>a.fullness<b.fullness?a:b);
       }
       if(tgt){FG.food--;tgt.fullness=Math.min(100,tgt.fullness+15);totalFed++;}
     });
-    if(FG.food<=0) break;
   }
   if(totalFed>0){
     setTimeout(()=>{
       const el=document.getElementById('f-status');
-      if(el) el.textContent=`오프라인 자동급식 ${totalFed}회 (먹이 ${totalFed}개 소모)`;
+      if(el) el.textContent=`오프라인 자동급식 ${totalFed}회`;
       setTimeout(()=>fishUpdateStatus(),3000);
     },100);
   }
@@ -1546,18 +1567,18 @@ function fishTick(){
   const _prevTick=FG.lastTick; FG.lastTick=now;
   const elapsed=Math.min((now-_prevTick)/1000,5); // 먼저 선언 (낚시대/자동먹이통 공통 사용)
   const alive=aliveFishes();
-  // 자동 먹이통 — 개별 먹이통, 30초마다 배정된 물고기(없으면 랜덤) 1마리 급식
+  // 자동 먹이통 — 포만감 임계값 기반: fullness < threshold 이면 급식
   if(FG.autoFeeders.length>0&&FG.food>0){
     FG.autoFeeders.forEach(feeder=>{
-      feeder.acc=(feeder.acc||0)+elapsed;
-      if(feeder.acc<30||FG.food<=0) return;
-      feeder.acc=0;
+      if(FG.food<=0) return;
       let tgt=null;
-      if(feeder.targetIdx!=null&&FG.fishes[feeder.targetIdx]&&!FG.fishes[feeder.targetIdx].isDead){
-        tgt=FG.fishes[feeder.targetIdx];
+      if(feeder.targetIdx!=null){
+        const f=FG.fishes[feeder.targetIdx];
+        if(f&&!f.isDead&&f.fullness<(feeder.threshold||30)) tgt=f;
       } else {
-        const al=aliveFishes();
-        if(al.length) tgt=al[Math.floor(Math.random()*al.length)];
+        // 랜덤: 임계값 미만인 물고기 중 포만감 가장 낮은 것
+        const cands=aliveFishes().filter(f=>f.fullness<(feeder.threshold||30));
+        if(cands.length) tgt=cands.reduce((a,b)=>a.fullness<b.fullness?a:b);
       }
       if(tgt){FG.food--;tgt.fullness=Math.min(100,tgt.fullness+15);}
     });
@@ -1987,12 +2008,98 @@ function fishOpenShop(){
   }
   document.getElementById('f-shop-modal').classList.add('on');
 }
+function fishOpenFeeders(){
+  renderFeederMgr();
+  document.getElementById('feeder-mgr-modal').classList.add('on');
+}
+
+function renderFeederMgr(){
+  const list=document.getElementById('feeder-mgr-list');
+  const countTxt=document.getElementById('feeder-count-txt');
+  if(countTxt) countTxt.textContent=FG.autoFeeders.length;
+  // 구매 버튼 가격 업데이트
+  const buyBtn=document.getElementById('feeder-buy-btn');
+  if(buyBtn){
+    const nextPrice=600*(FG.autoFeeders.length+1);
+    const canBuy=FG.money>=nextPrice&&FG.autoFeeders.length<FG.tankMax;
+    buyBtn.textContent=canBuy?`+ 구매 (${nextPrice.toLocaleString()}원)`:`+ 구매 (${nextPrice.toLocaleString()}원)`;
+    buyBtn.disabled=!canBuy;
+    buyBtn.style.opacity=canBuy?'1':'0.5';
+    buyBtn.style.cursor=canBuy?'pointer':'default';
+  }
+  if(!FG.autoFeeders.length){
+    list.innerHTML='<div style="text-align:center;color:#888;font-size:12px;padding:20px">구매한 먹이통이 없습니다.<br>아래 버튼에서 구매하세요.</div>';
+    return;
+  }
+  list.innerHTML=FG.autoFeeders.map((feeder,fi)=>{
+    const thr=feeder.threshold||30;
+    const tgt=feeder.targetIdx!=null?FG.fishes[feeder.targetIdx]:null;
+    const tgtName=tgt?`#${feeder.targetIdx+1} ${fStage(tgt).name}`:'랜덤';
+    const tgtFull=tgt?Math.floor(tgt.fullness):'-';
+    const isActive=tgt&&!tgt.isDead&&tgt.fullness<thr;
+    // 물고기 선택 옵션
+    const opts=['<option value="-1">🔀 랜덤</option>',
+      ...FG.fishes.map((f,i)=>{
+        const s=fStage(f);
+        return `<option value="${i}" ${feeder.targetIdx===i?'selected':''}>${f.isDead?'💀':''} #${i+1} ${s.name}</option>`;
+      })
+    ].join('');
+    return `<div style="background:#fff;border:1px solid #D0D0D0;border-radius:4px;padding:10px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:800;color:#1F3864">🍤 먹이통 ${fi+1}번</span>
+        <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;background:${isActive?'#D1FAE5':'#F3F4F6'};color:${isActive?'#059669':'#888'}">
+          ${isActive?'💧 급식 중':'✅ 대기'}
+        </span>
+      </div>
+      <div style="display:grid;grid-template-columns:70px 1fr;gap:6px 10px;align-items:center;font-size:11px">
+        <span style="color:#555;font-weight:700">대상 물고기</span>
+        <select onchange="feederSetTarget(${fi},this.value)" style="border:1px solid #9DC3E6;padding:3px 6px;font-size:11px;font-family:inherit;border-radius:2px">
+          ${opts}
+        </select>
+        <span style="color:#555;font-weight:700">급식 조건</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="color:#888">포만감 &lt;</span>
+          <input type="number" min="1" max="99" value="${thr}"
+            onchange="feederSetThreshold(${fi},this.value)"
+            style="width:48px;border:1px solid #9DC3E6;padding:3px 5px;font-size:12px;font-weight:700;text-align:center;font-family:inherit;border-radius:2px">
+          <span style="color:#888">% 일 때</span>
+        </div>
+        <span style="color:#555;font-weight:700">현재 포만감</span>
+        <span style="font-weight:700;color:${tgtFull!=='-'&&tgtFull<thr?'#EF4444':'#217346'}">${tgtFull}%</span>
+      </div>
+      <div style="margin-top:8px;text-align:right">
+        <button onclick="feederRemove(${fi})" style="background:none;border:1px solid #C8C8C8;color:#888;padding:2px 8px;font-size:10px;cursor:pointer;border-radius:2px;font-family:inherit">🗑️ 제거</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function feederSetTarget(fi,val){
+  if(!FG.autoFeeders[fi]) return;
+  FG.autoFeeders[fi].targetIdx=val==='-1'?null:parseInt(val);
+  fishQuickSave();renderFeederMgr();
+}
+
+function feederSetThreshold(fi,val){
+  if(!FG.autoFeeders[fi]) return;
+  const v=Math.max(1,Math.min(99,parseInt(val)||30));
+  FG.autoFeeders[fi].threshold=v;
+  fishQuickSave();renderFeederMgr();
+}
+
+function feederRemove(fi){
+  FG.autoFeeders.splice(fi,1);
+  fishRenderInfo();fishQuickSave();renderFeederMgr();
+}
+
 function fishBuyAutoFeeder(){
   const price=600*(FG.autoFeeders.length+1);
   if(FG.money<price||FG.autoFeeders.length>=FG.tankMax) return;
   FG.money-=price;
-  FG.autoFeeders.push({targetIdx:null,acc:0});
-  fishRenderInfo();fishOpenShop();fishQuickSave();
+  FG.autoFeeders.push({targetIdx:null,threshold:30});
+  fishRenderInfo();fishQuickSave();
+  if(document.getElementById("feeder-mgr-modal").classList.contains("on")) renderFeederMgr();
+  else fishOpenFeeders();
 }
 
 function fishAssignFeeder(fishIdx){
