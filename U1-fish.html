@@ -902,7 +902,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.74';
+const BUILD = 'v1.75';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -2101,6 +2101,60 @@ function showFishDetail(idx){
   document.getElementById('fish-detail-modal').classList.add('on');
 }
 
+// ── 어종별 물고기 그리기 헬퍼 ─────────────────────────────
+function drawFishShape(c,fx,fy,size,dir,s,type){
+  c.fillStyle='rgba(0,0,0,0.06)';
+  c.beginPath();c.ellipse(fx+2,fy+3,size,size*.42,0,0,Math.PI*2);c.fill();
+  c.fillStyle=s.fin;
+  if(type==='guppy'){
+    // 구피: 부채 모양 큰 꼬리
+    c.beginPath();
+    c.moveTo(fx-dir*size*.7,fy);
+    c.lineTo(fx-dir*size*1.7,fy-size*.75);
+    c.lineTo(fx-dir*size*1.35,fy);
+    c.lineTo(fx-dir*size*1.7,fy+size*.75);
+    c.closePath();c.fill();
+  } else if(type==='snakehead'){
+    // 가물치: 작은 삼각 꼬리
+    c.beginPath();
+    c.moveTo(fx-dir*size*.9,fy);
+    c.lineTo(fx-dir*size*1.25,fy-size*.3);
+    c.lineTo(fx-dir*size*1.25,fy+size*.3);
+    c.fill();
+  } else {
+    // 금붕어 기본 꼬리
+    c.beginPath();c.moveTo(fx-dir*size*.8,fy);
+    c.lineTo(fx-dir*size*1.4,fy-size*.5);
+    c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
+  }
+  // 몸통
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:size;
+  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:size*.58;
+  const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);
+  g.addColorStop(0,s.fin);g.addColorStop(1,s.color);
+  c.fillStyle=g;c.beginPath();c.ellipse(fx,fy,bodyRx,bodyRy,0,0,Math.PI*2);c.fill();
+  c.strokeStyle='rgba(0,0,0,0.12)';c.lineWidth=.7;c.stroke();
+  // 구피 등지느러미
+  if(type==='guppy'){
+    c.fillStyle=s.fin+'aa';
+    c.beginPath();c.moveTo(fx,fy-bodyRy);
+    c.lineTo(fx+dir*size*.35,fy-bodyRy*1.5);
+    c.lineTo(fx-dir*size*.25,fy-bodyRy);
+    c.fill();
+  }
+  // 가물치 옆 무늬
+  if(type==='snakehead'){
+    c.strokeStyle='rgba(0,0,0,0.2)';c.lineWidth=1.5;
+    for(let i=-1;i<=1;i++){
+      c.beginPath();c.moveTo(fx+dir*size*.1*i,fy-bodyRy*.5);
+      c.lineTo(fx+dir*size*.1*i,fy+bodyRy*.5);c.stroke();
+    }
+  }
+  // 눈
+  c.fillStyle='#fff';c.beginPath();c.arc(fx+dir*bodyRx*.48,fy-bodyRy*.15,size*.17,0,Math.PI*2);c.fill();
+  c.fillStyle='#111';c.beginPath();c.arc(fx+dir*bodyRx*.54,fy-bodyRy*.15,size*.09,0,Math.PI*2);c.fill();
+}
+
 function fishDraw(){
   const c=FG.ctx,cvs=FG.cvs; if(!c||!cvs) return;
   const W=cvs.width,H=cvs.height;
@@ -2144,13 +2198,7 @@ function fishDraw(){
     if(Math.random()<.008)fp.dy=(Math.random()-.5)*.003;
     fp.dx=Math.max(-.006,Math.min(.006,fp.dx));
     const fx=fp.x*W,fy=fp.y*H,dir=fp.dx>=0?1:-1;
-    c.fillStyle='rgba(0,0,0,0.06)';c.beginPath();c.ellipse(fx+2,fy+3,size,size*.45,0,0,Math.PI*2);c.fill();
-    c.fillStyle=fs.fin;c.beginPath();c.moveTo(fx-dir*size*.8,fy);c.lineTo(fx-dir*size*1.4,fy-size*.5);c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
-    const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);g.addColorStop(0,fs.fin);g.addColorStop(1,fs.color);
-    c.fillStyle=g;c.beginPath();c.ellipse(fx,fy,size,size*.58,0,0,Math.PI*2);c.fill();
-    c.strokeStyle='rgba(0,0,0,0.12)';c.lineWidth=.7;c.stroke();
-    c.fillStyle='#fff';c.beginPath();c.arc(fx+dir*size*.5,fy-size*.1,size*.17,0,Math.PI*2);c.fill();
-    c.fillStyle='#222';c.beginPath();c.arc(fx+dir*size*.56,fy-size*.1,size*.09,0,Math.PI*2);c.fill();
+    drawFishShape(c,fx,fy,size,dir,fs,fish.type||'goldfish');
     if(fish.fullness>80){c.fillStyle='rgba(255,255,150,0.15)';c.beginPath();c.arc(fx,fy,size*1.3,0,Math.PI*2);c.fill();}
     if(fish.hp/fish.maxHp<.2){c.strokeStyle='rgba(220,0,0,0.55)';c.lineWidth=1.5;c.beginPath();c.arc(fx,fy,size*1.4+Math.sin(Date.now()/200)*2,0,Math.PI*2);c.stroke();}
     if(fish.fullness<30&&Math.random()<.03){c.fillStyle='rgba(150,150,255,0.35)';c.beginPath();c.arc(fx+(Math.random()-.5)*size,fy-size*1.1,1.5,0,Math.PI*2);c.fill();}
@@ -2166,7 +2214,7 @@ function fishDraw(){
 }
 
 function fishSave(isDisconnect){
-  const cleanFishes=FG.fishes.map(f=>({id:f.id,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:f.isDead||false}));
+  const cleanFishes=FG.fishes.map(f=>({id:f.id,type:f.type||'goldfish',stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:f.isDead||false}));
   const data={fishes:cleanFishes,
     money:FG.money,food:FG.food,autoFeeders:FG.autoFeeders,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
@@ -3472,21 +3520,10 @@ function btDraw(W,H){
     }
 
     const dir=(f.vx||0)>=0?1:-1; // 이동 방향으로 얼굴
-    // 그림자
-    c.globalAlpha=0.15;c.fillStyle='#000';
-    c.beginPath();c.ellipse(fx+2,fy+3,size,size*.45,0,0,Math.PI*2);c.fill();
-    c.globalAlpha=1;
-    // 꼬리
-    c.fillStyle=s.fin;
-    c.beginPath();c.moveTo(fx-dir*size*.8,fy);c.lineTo(fx-dir*size*1.4,fy-size*.5);c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
-    // 몸통
-    const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);
-    g.addColorStop(0,s.fin);g.addColorStop(1,s.color);
-    c.fillStyle=g;
-    c.beginPath();c.ellipse(fx,fy,size,size*.58,0,0,Math.PI*2);c.fill();
+    drawFishShape(c,fx,fy,size,dir,s,f.type||'goldfish');
     // 팀 테두리 (내=파랑, 상대=빨강)
     c.strokeStyle=f.side==='my'?'rgba(31,73,125,0.7)':'rgba(192,0,0,0.7)';
-    c.lineWidth=1.2;c.stroke();
+    c.lineWidth=1.5;c.stroke();
     // 눈
     c.fillStyle='#fff';c.beginPath();c.arc(fx+dir*size*.5,fy-size*.1,size*.17,0,Math.PI*2);c.fill();
     c.fillStyle='#111';c.beginPath();c.arc(fx+dir*size*.56,fy-size*.1,size*.09,0,Math.PI*2);c.fill();
@@ -3496,17 +3533,23 @@ function btDraw(W,H){
     c.fillStyle='rgba(0,0,0,0.5)';c.fillRect(bx,by,bw,bh);
     c.fillStyle=hpRatio>0.6?'#4ade80':hpRatio>0.3?'#facc15':'#ef4444';
     c.fillRect(bx,by,bw*hpRatio,bh);
-    // 플레이어 이름 + 물고기 이름
+    // 라벨: 배경박스 + 플레이어이름/물고기이름
     const playerName=f.side==='my'?myName:(currentGame?.opponentName||'상대');
-    c.textAlign='center';
-    // 플레이어 이름 (작게, 더 위)
-    c.font=`bold ${Math.max(8,size*.55)}px 'Malgun Gothic',sans-serif`;
-    c.fillStyle=f.side==='my'?'#1F3864':'#8B0000';
-    c.fillText(playerName,fx,fy-size*2.1);
-    // 물고기 이름 (플레이어 이름 아래)
-    c.font=`bold ${Math.max(7,size*.5)}px 'Malgun Gothic',sans-serif`;
-    c.fillStyle=f.side==='my'?'#1F497D':'#C00000';
-    c.fillText(f.name,fx,fy-size*1.6);
+    const labelBg=f.side==='my'?'rgba(31,73,125,0.75)':'rgba(192,0,0,0.75)';
+    const labelY=fy-size*1.7;
+    c.font=`bold ${Math.max(9,size*.6)}px 'Malgun Gothic',sans-serif`;
+    const pw=c.measureText(playerName).width;
+    const fw=c.measureText(f.name).width;
+    const boxW=Math.max(pw,fw)+10;
+    // 배경박스
+    c.fillStyle=labelBg;
+    c.fillRect(fx-boxW/2,labelY-size*.55-2,boxW,size*.55*2.2+4);
+    // 텍스트
+    c.fillStyle='#fff';c.textAlign='center';
+    c.font=`bold ${Math.max(8,size*.52)}px 'Malgun Gothic',sans-serif`;
+    c.fillText(playerName,fx,labelY);
+    c.font=`${Math.max(7,size*.44)}px 'Malgun Gothic',sans-serif`;
+    c.fillText(f.name,fx,labelY+size*.52);
 
     // 플로팅 데미지 텍스트
     if(f.floatTxt){
