@@ -1686,7 +1686,7 @@ function fishBuy(id){
   const item=F_SHOP.find(i=>i.id===id); if(!item||FG.money<item.price) return;
   if(item.type==='lottery'){FG.money-=item.price;hideDlg('f-shop-modal');buyLottery();return;}
   if(item.type==='newfish'){
-    if(!FG.isDead){document.getElementById('f-status').textContent='물고기가 살아있습니다!';return;}
+    if(aliveFishes().length>0){document.getElementById('f-status').textContent='살아있는 물고기가 있습니다!';return;}
     if(FG.fishes.length>=FG.tankMax){document.getElementById('f-status').textContent='수조가 꽉 찼습니다!';return;}
     FG.money-=item.price;
     FG.fishes.push(newFish(1));FG.fishPos=null;
@@ -2016,7 +2016,7 @@ function restartFromResult(){
     }
   } else if(scrId==='s-bb-game'){
     if(bbMode==='online')startBBOnline();else startBBGame();
-  } else if(scrId==='s-fishworld'&&FG.isDead){
+  } else if(scrId==='s-fishworld'&&aliveFishes().length===0){
     buyNewFish();
   }
 }
