@@ -987,8 +987,8 @@ function connectSupabase(){
         if(lastJoin<leftAt) addChatSys(p.name+'님이 퇴장했습니다');
       },5000);
       if(currentGame&&currentGame.opponentId===p.userId){
-        // 게임 시작 직후 8초는 화면 전환 중 presence 깜빡임 → 탈주 처리 안 함
-        if(Date.now()-(_gameStartTime||0)<8000) return;
+        // 게임 시작 직후 15초는 화면 전환 중 presence 깜빡임 → 탈주 처리 안 함
+        if(Date.now()-(_gameStartTime||0)<15000) return;
         currentGame=null; stopOmokTimer(); bbOver=true;
         showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
       }
@@ -1010,8 +1010,9 @@ function connectSupabase(){
       opponentId:payload.fromId,opponentName:payload.fromName,digits:payload.digits||4};
     bbDigits=payload.digits||4;
     document.getElementById('challenged-notify').classList.remove('on');
-    updateMyPresence(true);
     startOnlineGame(payload.game);
+    // updateMyPresence는 게임 시작 후 presence 깜빡임 방지를 위해 지연
+    setTimeout(()=>updateMyPresence(true),5000);
   })
   .on('broadcast',{event:'game_move'},({payload})=>{
     if(payload.targetId!==myId) return;
@@ -1431,8 +1432,8 @@ function acceptChallenge(){
   bbDigits=digits||4;
   document.getElementById('challenged-notify').classList.remove('on');
   pendingChallenge=null;
-  updateMyPresence(true);
   startOnlineGame(game);
+  setTimeout(()=>updateMyPresence(true),5000);
 }
 
 function rejectChallenge(){
