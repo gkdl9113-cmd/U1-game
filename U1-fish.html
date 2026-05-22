@@ -1614,17 +1614,12 @@ function fishCalcOfflineAutoFeed(seconds){
   for(let c=0;c<checks;c++){
     if(FG.food<=0) break;
     FG.autoFeeders.forEach(feeder=>{
-      if(FG.food<=0) return;
-      let tgt=null;
+      if(FG.food<=0||feeder.targetIdx===null) return; // 미배정 건너뜀
       const thr=feeder.threshold||30;
-      if(feeder.targetIdx!=null){
-        const f=FG.fishes[feeder.targetIdx];
-        if(f&&!f.isDead&&f.fullness<thr) tgt=f;
-      } else {
-        const cands=FG.fishes.filter(f=>!f.isDead&&f.fullness<thr);
-        if(cands.length) tgt=cands.reduce((a,b)=>a.fullness<b.fullness?a:b);
+      const f=FG.fishes[feeder.targetIdx];
+      if(f&&!f.isDead&&f.fullness<thr){
+        FG.food--;f.fullness=Math.min(100,f.fullness+15);totalFed++;
       }
-      if(tgt){FG.food--;tgt.fullness=Math.min(100,tgt.fullness+15);totalFed++;}
     });
   }
   if(totalFed>0){
@@ -1710,20 +1705,14 @@ function fishTick(){
   const _prevTick=FG.lastTick; FG.lastTick=now;
   const elapsed=Math.min((now-_prevTick)/1000,5); // 먼저 선언 (낚시대/자동먹이통 공통 사용)
   const alive=aliveFishes();
-  // 자동 먹이통 — 포만감 임계값 기반: fullness < threshold 이면 급식
+  // 자동 먹이통 — 배정된 물고기만 급식 (미배정 건너뜀)
   if(FG.autoFeeders.length>0&&FG.food>0){
     FG.autoFeeders.forEach(feeder=>{
-      if(FG.food<=0) return;
-      let tgt=null;
-      if(feeder.targetIdx!=null){
-        const f=FG.fishes[feeder.targetIdx];
-        if(f&&!f.isDead&&f.fullness<(feeder.threshold||30)) tgt=f;
-      } else {
-        // 랜덤: 임계값 미만인 물고기 중 포만감 가장 낮은 것
-        const cands=aliveFishes().filter(f=>f.fullness<(feeder.threshold||30));
-        if(cands.length) tgt=cands.reduce((a,b)=>a.fullness<b.fullness?a:b);
+      if(FG.food<=0||feeder.targetIdx===null) return; // 미배정 작동 안 함
+      const f=FG.fishes[feeder.targetIdx];
+      if(f&&!f.isDead&&f.fullness<(feeder.threshold||30)){
+        FG.food--;f.fullness=Math.min(100,f.fullness+15);
       }
-      if(tgt){FG.food--;tgt.fullness=Math.min(100,tgt.fullness+15);}
     });
   }
   // 낚시대 — elapsed 기반 (1분마다 확률 체크)
@@ -2248,7 +2237,9 @@ function renderFeederMgr(){
     const tgtFull=tgt?Math.floor(tgt.fullness):'-';
     const isActive=tgt&&!tgt.isDead&&tgt.fullness<thr;
     // 물고기 선택 옵션
-    const opts=['<option value="-1">🔀 랜덤</option>',
+    // 랜덤 제거 — 반드시 특정 물고기 배정
+    const noAssign=feeder.targetIdx===null?'selected':'';
+    const opts=[`<option value="-1" ${noAssign} disabled style="color:#aaa">-- 물고기 선택 필수 --</option>`,
       ...FG.fishes.map((f,i)=>{
         const s=fStage(f);
         return `<option value="${i}" ${feeder.targetIdx===i?'selected':''}>${f.isDead?'💀':''} #${i+1} ${s.name}</option>`;
@@ -2306,7 +2297,10 @@ function fishBuyAutoFeeder(){
   const price=600*(FG.autoFeeders.length+1);
   if(FG.money<price||FG.autoFeeders.length>=FG.tankMax) return;
   FG.money-=price;
-  FG.autoFeeders.push({targetIdx:null,threshold:30});
+  // 아직 배정 안 된 살아있는 물고기에 자동 배정
+  const usedIdx=FG.autoFeeders.map(f=>f.targetIdx);
+  const defaultIdx=FG.fishes.findIndex((f,i)=>!f.isDead&&!usedIdx.includes(i));
+  FG.autoFeeders.push({targetIdx:defaultIdx>=0?defaultIdx:null,threshold:30});
   fishRenderInfo();fishQuickSave();
   if(document.getElementById("feeder-mgr-modal").classList.contains("on")) renderFeederMgr();
   else fishOpenFeeders();
