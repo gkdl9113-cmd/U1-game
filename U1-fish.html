@@ -3148,6 +3148,7 @@ function startBattleGame(){
   showIngameChat(false);
   battleState={phase:'fighting'};
   btImP1=(currentGame.myColor===1);
+  u1Toast(`[1]배틀시작 p${currentGame.myColor} vs ${currentGame.opponentName}`,'#1F3864');
   btOppReceived=null;
   btFishes=[];btEvents=[];btTick=0;
   show('s-battle');
@@ -3167,16 +3168,20 @@ function startBattleGame(){
     battleExit();return;
   }
   sbSend('battle_deploy',{targetId:currentGame.opponentId,fromId:myId,fish:btMyFishData});
+  u1Toast(`[2]deploy전송 fish:${btMyFishData.length}마리`,'#217346');
   if(btOppReceived) onBothBattleReady(btMyFishData,btOppReceived);
 }
 
 function onBattleDeploy(payload){
-  if(!battleState||payload.fromId!==currentGame?.opponentId) return;
+  if(!battleState){u1Toast('[3]deploy무시:battleState없음','#C00000');return;}
+  if(payload.fromId!==currentGame?.opponentId){u1Toast(`[3]deploy무시:id불일치 from:${payload.fromId?.slice(-4)} opp:${currentGame?.opponentId?.slice(-4)}`,'#C00000');return;}
   btOppReceived=payload.fish;
+  u1Toast(`[3]deploy수신 상대fish:${btOppReceived.length} 내fish:${btMyFishData.length}`,'#217346');
   if(btMyFishData.length>0) onBothBattleReady(btMyFishData,btOppReceived);
 }
 
 function onBothBattleReady(myFish,oppFish){
+  u1Toast(`[4]양쪽준비 p1여부:${btImP1}`,'#1F3864');
   if(btImP1){
     const seed=Date.now();
     const rng=seededRng(seed);
@@ -3189,7 +3194,9 @@ function onBothBattleReady(myFish,oppFish){
 }
 
 function onBattleActions(payload){
-  if(!battleState||payload.fromId!==currentGame?.opponentId) return;
+  if(!battleState){u1Toast('[5]actions무시:battleState없음','#C00000');return;}
+  if(payload.fromId!==currentGame?.opponentId){u1Toast('[5]actions무시:id불일치','#C00000');return;}
+  u1Toast(`[5]actions수신 events:${payload.events?.length}`,'#217346');
   // p2 관점: payload.myFish = 도전자(상대), payload.oppFish = 나
   initRealtimeBattle(payload.oppFish,payload.myFish,payload.events,false);
 }
