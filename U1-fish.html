@@ -1235,12 +1235,21 @@ function toggleIngameChat(){
 // ══════════════════════════════════════════════════════════
 let FISH_STOP_ON_DISCONNECT=true;
 
+// 등급: 일반 / 중급 / 고급 / 희귀 / 영웅 / 전설
+const F_GRADES={
+  '일반':{label:'일반',bg:'#E8E8E8',fg:'#555'},
+  '중급':{label:'중급',bg:'#D4EDDA',fg:'#1A5C35'},
+  '고급':{label:'고급',bg:'#CCE5FF',fg:'#0047AB'},
+  '희귀':{label:'희귀',bg:'#E8D5F5',fg:'#6A0DAD'},
+  '영웅':{label:'영웅',bg:'#FFE5CC',fg:'#C05000'},
+  '전설':{label:'전설',bg:'#FFF3CD',fg:'#8B6914'},
+};
 const F_STAGES=[null,
-  {name:'금붕어 치어',species:'금붕어',  color:'#FF8C00',fin:'#FFD700',hp:50, atk:5,  def:2,  income:1, xpRate:1,  xpNeed:100, evoCost:300, foodRate:20},
-  {name:'금붕어',     species:'금붕어',  color:'#FF6B00',fin:'#FF0000',hp:120,atk:12, def:6,  income:3, xpRate:1.5,xpNeed:300, evoCost:800, foodRate:18},
-  {name:'비단잉어',   species:'비단잉어',color:'#FF4444',fin:'#FFFFFF',hp:280,atk:28, def:15, income:8, xpRate:2,  xpNeed:700, evoCost:2000,foodRate:16},
-  {name:'아로와나',   species:'아로와나',color:'#C0C0C0',fin:'#87CEEB',hp:600,atk:60, def:35, income:18,xpRate:3,  xpNeed:1500,evoCost:5000,foodRate:14},
-  {name:'황금 아로와나',species:'아로와나',color:'#FFD700',fin:'#FFA500',hp:1200,atk:120,def:70,income:45,xpRate:5,xpNeed:9999,evoCost:0, foodRate:12},
+  {name:'금붕어 치어',species:'금붕어',  grade:'일반',color:'#FF8C00',fin:'#FFD700',hp:50, atk:5,  def:2,  income:1, xpRate:1,  xpNeed:100, evoCost:300, foodRate:20},
+  {name:'금붕어',     species:'금붕어',  grade:'일반',color:'#FF6B00',fin:'#FF0000',hp:120,atk:12, def:6,  income:3, xpRate:1.5,xpNeed:300, evoCost:800, foodRate:18},
+  {name:'비단잉어',   species:'비단잉어',grade:'중급',color:'#FF4444',fin:'#FFFFFF',hp:280,atk:28, def:15, income:8, xpRate:2,  xpNeed:700, evoCost:2000,foodRate:16},
+  {name:'아로와나',   species:'아로와나',grade:'중급',color:'#C0C0C0',fin:'#87CEEB',hp:600,atk:60, def:35, income:18,xpRate:3,  xpNeed:1500,evoCost:5000,foodRate:14},
+  {name:'황금 아로와나',species:'아로와나',grade:'고급',color:'#FFD700',fin:'#FFA500',hp:1200,atk:120,def:70,income:45,xpRate:5,xpNeed:9999,evoCost:0, foodRate:12},
 ];
 const STAGE_INCOME=[0,2,4,8,18,45];
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
@@ -1561,6 +1570,7 @@ function fishRenderInfo(){
       return `<div style="padding:6px 8px;background:${bg};${bdTop}cursor:pointer" onclick="showFishDetail(${i})">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <span style="font-size:10px;font-weight:800;color:${f.isDead?'#999':'#1F3864'}">${f.isDead?'💀':'🐟'} #${i+1} ${s.name}</span>
+          ${s.grade?`<span style="font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;background:${(F_GRADES[s.grade]||F_GRADES['일반']).bg};color:${(F_GRADES[s.grade]||F_GRADES['일반']).fg}">${s.grade}</span>`:''}
           ${f.isDead?'':`<button onpointerdown="event.preventDefault()" onclick="event.stopPropagation();feedFishOne(${i})" style="background:#F59E0B;color:#fff;border:none;border-radius:3px;font-size:9px;padding:1px 5px;cursor:pointer;font-family:inherit">🍤</button>`}
         </div>
         ${f.isDead?'<div style="font-size:9px;color:#999;text-align:center">사망 (클릭하여 구매)</div>':`
@@ -1597,7 +1607,10 @@ function showFishDetail(idx){
   _fdIdx=idx;
   const s=fStage(f);
   document.getElementById('fd-title').textContent=(f.isDead?'💀':'🐟')+' #'+(idx+1)+' '+s.name;
-  document.getElementById('fd-stage').textContent=f.stage+'단계 · '+s.species+(f.isDead?' (사망)':'');
+  const gd=F_GRADES[s.grade]||F_GRADES['일반'];
+  document.getElementById('fd-stage').innerHTML=
+    `${f.stage}단계 · ${s.species}${f.isDead?' (사망)':''} `+
+    `<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:${gd.bg};color:${gd.fg}">${s.grade||'일반'}</span>`;
   document.getElementById('fd-hp').textContent=Math.ceil(f.hp)+'/'+f.maxHp;
   document.getElementById('fd-full').textContent=Math.floor(f.fullness)+'/100';
   document.getElementById('fd-xp').textContent=Math.floor(f.xp)+'/'+s.xpNeed;
