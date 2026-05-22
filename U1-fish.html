@@ -435,6 +435,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <button class="xl-rbtn" onclick="showMiniGameMenu()"><span class="xl-rico">⚔️</span><span class="xl-rlbl">미니게임</span></button>
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishSave()"><span class="xl-rico">💾</span><span class="xl-rlbl">저장</span></button>
+    <button class="xl-rbtn" onclick="reloadFishDataFromDB()" title="DB에서 최신 데이터 불러오기"><span class="xl-rico">🔄</span><span class="xl-rlbl">동기화</span></button>
     <button id="adm-back-btn" class="xl-rbtn" onclick="backToAdmin()" style="display:none;color:#1F3864"><span class="xl-rico">⚙️</span><span class="xl-rlbl">관리자</span></button>
   </div>
   <div class="xl-fbar">
@@ -1014,6 +1015,11 @@ function connectSupabase(){
     if(payload.targetId!==myId) return;
     u1Toast(payload.fromName+'님이 거절했습니다','#C00000');
   })
+  .on('broadcast',{event:'data_reload'},({payload})=>{
+    if(payload.targetName!==myName) return;
+    // 관리자가 데이터 변경 → DB에서 최신 데이터 로드
+    reloadFishDataFromDB(payload.fishName);
+  })
   .on('broadcast',{event:'new_login'},({payload})=>{
     if(payload.name!==myName||payload.sessionId===myId) return;
     // joinedAt 비교: 상대가 더 최근에 접속했으면 내가 나감 (구버전 호환: joinedAt 없으면 항상 나감)
@@ -1059,6 +1065,27 @@ function connectSupabase(){
   });
 }
 let _chConnectedOnce=false;
+
+async function reloadFishDataFromDB(fishName){
+  if(!_sb||!currentUsername) return;
+  const{data}=await _sb.from('fish_accounts').select('fish_data')
+    .eq('username',currentUsername).eq('server',ACTIVE_SERVER).single();
+  if(!data?.fish_data) return;
+  const wasAllDead=aliveFishes().length===0;
+  applyFishData(data.fish_data);
+  // 게임 루프 재시작 (죽어있었거나 멈춰있었으면)
+  if(!FG.tickInterval&&aliveFishes().length>0){
+    fishStartLoops();
+  }
+  fishRenderInfo();
+  const msg=fishName?`🐟 관리자가 ${fishName}을(를) 지급했습니다!`:'🔄 데이터가 동기화되었습니다';
+  u1Toast(msg,'#217346');
+  if(wasAllDead&&aliveFishes().length>0){
+    // 팝업이 열려있으면 닫기
+    document.getElementById('result-notify').classList.remove('on');
+    document.getElementById('f-status').textContent=`${fishName||'물고기'}가 수조에 들어왔습니다!`;
+  }
+}
 
 function reconnectChannel(){
   if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
@@ -2718,6 +2745,8 @@ async function adminConfirmGiveFish(){
   hideDlg('adm-give-modal');
   document.getElementById('adm-status').textContent=
     `✅ ${_admGiveTarget.username}에게 ${s.name} 지급 완료`;
+  // 대상 플레이어가 접속 중이면 실시간 동기화 신호 전송
+  sbSend('data_reload',{targetName:_admGiveTarget.username,fishName:s.name,fromAdmin:ADMIN_USERNAME});
   adminLoadUsers();
 }
 function adminInit(){
