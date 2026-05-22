@@ -925,6 +925,13 @@ function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remov
 function hideDlg(id){document.getElementById(id)?.classList.remove('on');}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+// 타이틀바에 버전 표시
+document.querySelectorAll('.xl-tb-title').forEach(el=>{
+  if(el.textContent.includes('수족관_관리대장')){
+    el.textContent=el.textContent.replace(' - Microsoft Excel',` [${BUILD}] - Microsoft Excel`);
+  }
+});
+
 function eStatus(msg,color){
   const el=document.getElementById('e-status');
   const bar=document.getElementById('e-status-bar');
