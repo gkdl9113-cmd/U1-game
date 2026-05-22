@@ -1,0 +1,1935 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>수족관_관리대장_2026.xlsx - Microsoft Excel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI',sans-serif;background:#F2F2F2;color:#1F1F1F;height:100dvh;overflow:hidden;max-width:480px;margin:0 auto;display:flex;flex-direction:column;font-size:13px;user-select:none}
+.scr{display:none;flex-direction:column;height:100%;overflow:hidden}
+.scr.on{display:flex}
+.xl-titlebar{background:#217346;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 8px;height:30px;flex-shrink:0}
+.xl-tb-l{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.xl-logo{background:#fff;color:#217346;font-weight:900;font-size:13px;padding:1px 4px;border-radius:2px;flex-shrink:0}
+.xl-tb-title{font-size:11px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xl-wc{display:flex}
+.xl-wbtn{background:none;border:none;color:#fff;padding:4px 11px;font-size:11px;cursor:pointer;line-height:1}
+.xl-wbtn:hover{background:rgba(255,255,255,.18)}
+.xl-wbtn.xbtn:hover{background:#E81123}
+.xl-tabs{background:#217346;display:flex;padding:0 4px;flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+.xl-tabs::-webkit-scrollbar{display:none}
+.xl-tab{background:none;border:none;color:rgba(255,255,255,.8);padding:6px 10px;font-size:12px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;font-family:inherit;flex-shrink:0}
+.xl-tab.on{background:#F2F2F2;color:#217346;font-weight:700;border-bottom-color:#F2F2F2}
+.xl-ribbon{background:#F2F2F2;border-bottom:1px solid #C8C8C8;padding:4px 8px;display:flex;align-items:center;gap:4px;flex-shrink:0;min-height:48px;overflow-x:auto;scrollbar-width:none}
+.xl-ribbon::-webkit-scrollbar{display:none}
+.xl-rsep{width:1px;height:30px;background:#C8C8C8;margin:0 3px;flex-shrink:0}
+.xl-rbtn{background:none;border:none;padding:4px 7px;cursor:pointer;border-radius:2px;color:#333;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+.xl-rbtn:hover{background:#E0E0E0}
+.xl-rbtn:active{background:#C8C8C8}
+.xl-rico{font-size:17px;line-height:1.3}
+.xl-rlbl{font-size:9.5px;color:#555;white-space:nowrap}
+.xl-rsel{font-size:11px;border:1px solid #B4B4B4;border-radius:2px;padding:3px 5px;background:#fff;color:#333;cursor:pointer;height:24px;font-family:inherit;flex-shrink:0;max-width:72px}
+.xl-fbar{display:flex;align-items:center;background:#fff;border-bottom:1px solid #C8C8C8;height:26px;flex-shrink:0}
+.xl-namebox{width:62px;border-right:1px solid #C8C8C8;padding:0 6px;font-size:12px;color:#333;display:flex;align-items:center;height:100%;flex-shrink:0;font-family:'Consolas',monospace}
+.xl-fx{padding:0 7px;font-size:12px;color:#217346;font-style:italic;border-right:1px solid #E0E0E0;height:100%;display:flex;align-items:center;flex-shrink:0;font-weight:700}
+.xl-ftext{flex:1;padding:0 6px;font-size:11.5px;color:#333;overflow:hidden;white-space:nowrap;font-family:'Consolas',monospace;opacity:.85}
+.xl-bottombar{background:#F2F2F2;border-top:1px solid #C8C8C8;display:flex;align-items:center;height:26px;flex-shrink:0}
+.xl-stabs{display:flex;flex:1;overflow-x:auto;align-items:flex-end;height:100%;scrollbar-width:none}
+.xl-stabs::-webkit-scrollbar{display:none}
+.xl-stab{background:#fff;border:1px solid #C8C8C8;border-bottom:none;padding:2px 11px;font-size:10px;cursor:pointer;white-space:nowrap;color:#333;font-family:inherit;margin-right:2px;height:100%}
+.xl-stab:not(.on){background:#E0E0E0;color:#888}
+.xl-stab-plus{background:none;border:none;padding:2px 8px;font-size:13px;cursor:pointer;color:#888}
+.xl-statusbar{padding:0 8px;font-size:10px;color:#444;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.xl-sitem{white-space:nowrap}
+.xl-dlg-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:800;display:none;align-items:center;justify-content:center;max-width:480px;margin:0 auto}
+.xl-dlg-ov.on{display:flex}
+.xl-dlg{background:#F2F2F2;border:1px solid #888;min-width:290px;max-width:340px;box-shadow:5px 5px 14px rgba(0,0,0,.3)}
+.xl-dlg-title{background:#000080;color:#fff;padding:5px 10px;font-size:11px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.xl-dlg-x{background:none;border:none;color:#fff;cursor:pointer;font-size:14px;padding:0 2px;line-height:1}
+.xl-dlg-body{padding:14px}
+.xl-dlg-lbl{font-size:11px;font-weight:700;color:#333;margin-bottom:4px}
+.xl-dlg-inp{width:100%;padding:6px 8px;border:2px solid #7F9DB9;font-size:14px;background:#fff;color:#333;outline:none;font-family:inherit;margin-bottom:10px}
+.xl-dlg-inp:focus{border-color:#217346}
+.xl-dlg-btns{display:flex;gap:6px;justify-content:flex-end;margin-top:4px}
+.xl-dlg-btn{padding:4px 16px;font-size:11px;border:1px solid #7F9DB9;background:#E8E8E8;cursor:pointer;font-family:inherit;color:#333}
+.xl-dlg-btn.ok{background:#217346;color:#fff;border-color:#1A5C35}
+.xl-dlg-btn:active{opacity:.8}
+.xl-dlg-sep{border:none;border-top:1px solid #C8C8C8;margin:10px 0}
+.xl-notify-ov{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:900;display:none;align-items:center;justify-content:center;max-width:480px;margin:0 auto}
+.xl-notify-ov.on{display:flex}
+.xl-notify{background:#F2F2F2;border:1px solid #888;width:280px;box-shadow:4px 4px 12px rgba(0,0,0,.3)}
+.xl-notify-title{background:#000080;color:#fff;padding:4px 8px;font-size:11px;font-weight:700;display:flex;justify-content:space-between}
+.xl-notify-body{padding:12px;display:flex;gap:10px;align-items:flex-start}
+.xl-notify-ico{font-size:24px;flex-shrink:0;margin-top:2px}
+.xl-notify-txt{font-size:12px;line-height:1.6;color:#333;white-space:pre-line}
+.xl-notify-btns{display:flex;justify-content:center;gap:6px;padding:8px 12px 12px}
+.xl-notify-btn{padding:4px 18px;font-size:11px;border:1px solid #7F9DB9;background:#E8E8E8;cursor:pointer;font-family:inherit;min-width:60px;color:#333}
+.xl-notify-btn.ok{background:#217346;color:#fff;border-color:#1A5C35}
+.game-sel-btns{display:flex;gap:8px;margin-top:10px}
+.game-sel-btn{flex:1;padding:8px 6px;border:1px solid #7F9DB9;background:#DEEAF1;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;color:#1F497D;text-align:center}
+.game-sel-btn:hover{background:#B8D3EC}
+.xtbl{border-collapse:collapse;font-size:11px}
+.xtbl th,.xtbl td{border:1px solid #D0D0D0;text-align:center;vertical-align:middle;padding:0}
+.xcol-hdr{background:#F2F2F2;color:#555;font-weight:500;font-size:10px;height:18px;min-width:26px;width:26px;position:sticky;top:0;z-index:2}
+.xrow-hdr{background:#F2F2F2;color:#555;font-weight:500;font-size:10px;width:20px;min-width:20px;position:sticky;left:0;z-index:1;cursor:default}
+.xcorner{background:#F2F2F2;position:sticky;top:0;left:0;z-index:3;width:20px;min-width:20px}
+.xcell{background:#fff;cursor:pointer;height:26px;min-width:30px;width:30px;border:1px solid #D0D0D0}
+.xcell:hover{background:#EFF6FF}
+.xcell.b1{background:#17375E}
+.xcell.b2{background:#C55A11}
+.xcell.lb{box-shadow:inset 0 0 0 2px #4BACC6}
+.xcell.lw{box-shadow:inset 0 0 0 2px #FFC000}
+.xcell.win{background:#FFFF00!important}
+.bb-setup-tbl{border-collapse:collapse;min-width:100%}
+.bb-opt-hdr{background:#DEEAF1;border:1px solid #9DC3E6;padding:5px 10px;font-size:11px;font-weight:700;color:#1F497D}
+.bb-opt-cell{background:#fff;border:1px solid #D0D0D0;padding:6px 10px}
+.bb-chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.bb-chip{padding:5px 14px;border:1.5px solid #B4B4B4;background:#E8E8E8;color:#333;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit}
+.bb-chip.on{background:#217346;color:#fff;border-color:#1A5C35}
+.bb-start-cell{background:#217346;color:#fff;font-size:13px;font-weight:800;text-align:center;cursor:pointer;padding:12px;border:none}
+.bb-start-cell:active{background:#1A5C35}
+.bb-game-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.bb-panels{flex:1;display:flex;overflow:hidden}
+.bb-panel{flex:1;border-right:1px solid #D0D0D0;display:flex;flex-direction:column;overflow:hidden}
+.bb-panel:last-child{border-right:none}
+.bb-panel-hdr{background:#E0E0E0;border-bottom:1px solid #C8C8C8;padding:3px 8px;font-size:10px;font-weight:700;color:#444;flex-shrink:0}
+.bb-hist{flex:1;overflow-y:auto;padding:4px;display:flex;flex-direction:column;gap:3px}
+.bb-hist-row{display:flex;justify-content:space-between;background:#F8F8F8;border:1px solid #E0E0E0;padding:3px 7px;font-size:11px}
+.bb-hist-num{font-family:monospace;font-weight:700;letter-spacing:2px}
+.bb-hist-res{font-size:10px;font-weight:700}
+.bb-hist-res .s{color:#375623}
+.bb-hist-res .b{color:#7F6000}
+.bb-input-bar{padding:8px 10px 6px;background:#E8EFF8;border-top:3px solid #4472C4;flex-shrink:0}
+.bb-inp-label{font-size:10px;font-weight:700;color:#1F497D;margin-bottom:5px}
+.bb-inp-row{display:flex;gap:5px;align-items:center}
+.bb-digit{width:40px;height:38px;border:2px solid #7F9DB9;background:#fff;color:#1F1F1F;font-size:18px;font-weight:800;text-align:center;outline:none;font-family:monospace}
+.bb-digit:focus{border-color:#217346}
+.bb-submit{padding:0 14px;height:38px;background:#217346;color:#fff;border:none;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
+.fw-sidebar{width:160px;flex-shrink:0;background:#fff;border-left:1px solid #C8C8C8;display:flex;flex-direction:column;overflow:hidden}
+.fw-sidebar-hdr{background:#1F3864;color:#fff;padding:5px 10px;font-size:11px;font-weight:700;flex-shrink:0;display:flex;justify-content:space-between}
+.fw-players{flex:1;overflow-y:auto;padding:4px 0;min-height:0}
+.fw-player-row{display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid #F3F4F6;font-size:11px}
+.fw-player-avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0}
+.fw-player-name{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fw-challenge-btn{background:#1F3864;border:none;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;cursor:pointer;flex-shrink:0;font-family:inherit}
+.fw-chat-hdr{background:#217346;color:#fff;padding:4px 8px;font-size:10px;font-weight:700;flex-shrink:0}
+.fw-chat-msgs{height:120px;overflow-y:auto;padding:4px 6px;display:flex;flex-direction:column;gap:3px;background:#FAFAFA;flex-shrink:0}
+.fw-chat-msg{font-size:10px;line-height:1.4}
+.fw-chat-msg-name{font-weight:700;color:#217346}
+.fw-chat-msg-name.me{color:#1F3864}
+.fw-chat-sys{font-size:9px;color:#9CA3AF;text-align:center;font-style:italic}
+.fw-chat-inp-row{display:flex;border-top:1px solid #C8C8C8;flex-shrink:0}
+.fw-chat-inp{flex:1;border:none;outline:none;padding:4px 6px;font-size:10px;font-family:inherit;background:#fff}
+.fw-chat-send{background:#217346;border:none;color:#fff;padding:4px 7px;font-size:12px;cursor:pointer}
+#s-entry{background:#F2F2F2}
+.login-sheet{flex:1;overflow:auto;background:#fff;background-image:linear-gradient(rgba(208,208,208,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(208,208,208,.55) 1px,transparent 1px);background-size:80px 24px;background-position:28px 0;-webkit-overflow-scrolling:touch}
+.login-tbl{border-collapse:collapse;min-width:100%}
+.login-tbl td{border:1px solid #D0D0D0;padding:0;height:24px}
+.lhcol{background:#F2F2F2;color:#555;font-size:10px;text-align:center;width:28px;min-width:28px;position:sticky;left:0;z-index:1}
+.lhrow{background:#F2F2F2;color:#555;font-size:10px;text-align:center;position:sticky;top:0;z-index:2}
+.lcorner{background:#F2F2F2;position:sticky;top:0;left:0;z-index:3;width:28px;min-width:28px}
+.ltitle{background:#217346;color:#fff;font-size:15px;font-weight:800;padding:10px 16px;height:40px;letter-spacing:.5px}
+.lsub{font-size:10px;color:#888;padding:3px 16px;background:#fff}
+.llabel{background:#F2F2F2;color:#444;font-size:11px;font-weight:700;padding:0 10px;text-align:right;vertical-align:middle}
+.linput-cell{background:#fff;padding:2px 4px;vertical-align:middle}
+.linput-cell input{width:100%;border:none;outline:none;font-size:13px;font-family:inherit;padding:3px 6px;background:transparent;color:#1F1F1F}
+.linput-cell input:focus{background:#EFF6FF}
+.lbtn-cell{cursor:pointer;font-size:12px;font-weight:700;text-align:center;vertical-align:middle;height:36px;transition:background .1s}
+.lbtn-login{background:#217346;color:#fff;border:1px solid #1A5C35}
+.lbtn-login:hover{background:#1A5C35}
+.lbtn-reg{background:#DEEAF1;color:#1F497D;border:1px solid #9DC3E6}
+.lbtn-reg:hover{background:#B8D3EC}
+.lstatus{font-size:11px;padding:4px 16px;color:#595959;background:#fff}
+.lspacer{background:#fff;height:10px}
+#s-fishworld{background:#F2F2F2}
+#s-admin{background:#F2F2F2}
+.adm-tbl{border-collapse:collapse;width:100%;font-size:11px}
+.adm-tbl th{background:#1F3864;color:#fff;padding:5px 8px;font-size:11px;font-weight:700;text-align:left;position:sticky;top:0;z-index:2;white-space:nowrap}
+.adm-tbl td{border:1px solid #D0D0D0;padding:5px 8px;background:#fff;vertical-align:middle;white-space:nowrap}
+.adm-tbl tr:hover td{background:#EFF6FF}
+.adm-tbl tr.admin-row td{background:#FFF9C4}
+.adm-stat-box{background:#DEEAF1;border:1px solid #9DC3E6;border-radius:4px;padding:8px 14px;font-size:12px;font-weight:700;color:#1F497D;text-align:center;min-width:90px}
+.adm-btn{background:#217346;color:#fff;border:none;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit}
+.adm-btn:active{opacity:.8}
+.adm-btn.warn{background:#C00000}
+.adm-btn.blue{background:#1F3864}
+.adm-edit-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F0F0F0;font-size:11px}
+.adm-edit-inp{width:80px;border:1px solid #9DC3E6;padding:3px 6px;font-size:12px;font-family:inherit;text-align:right}
+@media(min-width:769px){
+  body{max-width:100%;font-size:12px}
+  .xl-dlg-ov,.xl-notify-ov{max-width:100%}
+  .xl-titlebar{height:36px}
+  .xl-tab{padding:7px 14px;font-size:12px}
+  .xl-ribbon{min-height:56px;padding:4px 12px;gap:5px}
+  .xl-rico{font-size:18px}
+  .fw-sidebar{width:220px}
+  .fw-chat-msgs{height:150px}
+  .xcell{width:36px;min-width:36px;height:30px}
+  .xcol-hdr{width:36px;min-width:36px;height:22px;font-size:11px}
+  .xrow-hdr{width:28px;min-width:28px;font-size:11px}
+  .xcorner{width:28px;min-width:28px}
+  .bb-digit{width:54px;height:48px;font-size:22px}
+  .bb-submit{height:48px;padding:0 20px;font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ 입장 화면 (엑셀 스타일) ══ -->
+<div id="s-entry" class="scr on">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">수족관_관리대장_2026.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn">✕</button></div>
+  </div>
+  <div class="xl-tabs">
+    <button class="xl-tab on">홈</button><button class="xl-tab">삽입</button><button class="xl-tab">데이터</button><button class="xl-tab">검토</button>
+  </div>
+  <div class="xl-ribbon">
+    <button class="xl-rbtn"><span class="xl-rico">📋</span><span class="xl-rlbl">붙여넣기</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn"><span class="xl-rico">🐟</span><span class="xl-rlbl">U1 수족관</span></button>
+    <div class="xl-rsep"></div>
+    <span style="font-size:10px;color:#595959;padding:0 6px">서버: <strong id="e-server-name">TEST-1</strong></span>
+    <div class="xl-rsep"></div>
+    <span style="font-size:10px;color:#595959;padding:0 6px" id="e-online">● 확인 중…</span>
+  </div>
+  <div class="xl-fbar">
+    <div class="xl-namebox">B4</div><div class="xl-fx">fx</div>
+    <div class="xl-ftext">=LOGIN.FORM("U1_수족관","아이디","비밀번호")</div>
+  </div>
+  <div class="login-sheet">
+    <table class="login-tbl">
+      <thead>
+        <tr>
+          <td class="lcorner"></td>
+          <td class="lhrow" style="width:80px">A</td>
+          <td class="lhrow" style="width:180px">B</td>
+          <td class="lhrow" style="width:180px">C</td>
+          <td class="lhrow" style="min-width:60px">D</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="lhcol">1</td><td colspan="4" class="lspacer"></td></tr>
+        <tr><td class="lhcol">2</td><td colspan="4" class="ltitle">🐟 U1 수족관 — 로그인</td></tr>
+        <tr><td class="lhcol">3</td><td colspan="4" class="lsub">아이디/비밀번호로 로그인하면 모바일·PC에서 데이터가 공유됩니다</td></tr>
+        <tr><td class="lhcol">4</td><td colspan="4" class="lspacer"></td></tr>
+        <tr>
+          <td class="lhcol">5</td>
+          <td class="llabel">아이디</td>
+          <td class="linput-cell" colspan="2"><input id="e-userid" type="text" placeholder="영문+숫자 4~16자" maxlength="16"
+            onkeydown="if(event.key==='Enter')document.getElementById('e-pw').focus()"></td>
+          <td style="background:#fff"></td>
+        </tr>
+        <tr>
+          <td class="lhcol">6</td>
+          <td class="llabel">비밀번호</td>
+          <td class="linput-cell" colspan="2"><input id="e-pw" type="password" placeholder="4~20자" maxlength="20"
+            onkeydown="if(event.key==='Enter')doLogin()"></td>
+          <td style="background:#fff"></td>
+        </tr>
+        <tr><td class="lhcol">7</td><td colspan="4" class="lspacer"></td></tr>
+        <tr>
+          <td class="lhcol">8</td>
+          <td class="llabel" style="background:#fff"></td>
+          <td class="lbtn-cell lbtn-login" onclick="doLogin()">▶ 로그인</td>
+          <td class="lbtn-cell lbtn-reg" onclick="doRegister()">＋ 회원가입</td>
+          <td style="background:#fff"></td>
+        </tr>
+        <tr><td class="lhcol">9</td><td colspan="4" class="lspacer"></td></tr>
+        <tr><td class="lhcol">10</td><td colspan="4" class="lstatus" id="e-status">아이디와 비밀번호를 입력하세요</td></tr>
+        <tr><td class="lhcol">11</td><td colspan="4" style="background:#FFF9C4;border:1px solid #D0D0D0;font-size:10px;color:#7F6000;padding:4px 16px">
+          💡 처음 이용 시 '회원가입'으로 계정을 만드세요. 같은 계정으로 어디서든 접속하면 데이터가 공유됩니다.
+        </td></tr>
+        <tr><td class="lhcol">12</td><td colspan="4" class="lspacer"></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="xl-bottombar">
+    <div class="xl-stabs"><button class="xl-stab on">로그인</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-statusbar"><span class="xl-sitem" id="e-status-bar">준비</span><span class="xl-sitem">100%</span></div>
+  </div>
+</div>
+
+<!-- ══ 오목 ══ -->
+<div id="s-omok" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">4분기_업무현황_최종수정본.xlsx</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="omokExit()">✕</button></div>
+  </div>
+  <div class="xl-tabs">
+    <button class="xl-tab" onclick="omokExit()">◀ 파일</button>
+    <button class="xl-tab on">홈</button><button class="xl-tab">삽입</button><button class="xl-tab">수식</button><button class="xl-tab">데이터</button>
+  </div>
+  <div class="xl-ribbon">
+    <button class="xl-rbtn" onclick="omokNewGame()"><span class="xl-rico">📋</span><span class="xl-rlbl">붙여넣기</span></button>
+    <div class="xl-rsep"></div>
+    <select class="xl-rsel" id="omok-diff" onchange="omokNewGame()"><option value="easy">초급</option><option value="mid" selected>중급</option><option value="hard">상급</option><option value="expert">유단자</option></select>
+    <button class="xl-rbtn" id="omok-color-btn" onclick="omokToggleColor()"><span class="xl-rico" id="omok-color-ico">B</span><span class="xl-rlbl" id="omok-color-lbl">흑</span></button>
+    <select class="xl-rsel" id="omok-time" onchange="omokNewGame()"><option value="0">무제한</option><option value="10">10초</option><option value="30">30초</option><option value="60">60초</option></select>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn"><span class="xl-rico">Σ</span><span class="xl-rlbl">자동합계</span></button>
+  </div>
+  <div class="xl-fbar"><div class="xl-namebox" id="omok-nb">H8</div><div class="xl-fx">fx</div><div class="xl-ftext" id="omok-ft">=IFERROR(VLOOKUP(H8,업무현황!$A:$Z,3,0),"")</div></div>
+  <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#fff;background-image:linear-gradient(rgba(208,208,208,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(208,208,208,.55) 1px,transparent 1px);background-size:64px 22px;background-position:22px 0">
+    <table class="xtbl" id="omok-tbl"></table>
+  </div>
+  <div class="xl-bottombar">
+    <div class="xl-stabs"><button class="xl-stab on">분기실적</button><button class="xl-stab">인원현황</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-statusbar"><span class="xl-sitem" id="omok-st">준비</span><span class="xl-sitem" id="omok-timer" style="color:#C00000;font-weight:700"></span><span class="xl-sitem">100%</span></div>
+  </div>
+</div>
+
+<!-- ══ 숫자야구 설정 ══ -->
+<div id="s-bb-setup" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">데이터검증_도구.xlsx</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="bbExit()">✕</button></div>
+  </div>
+  <div class="xl-tabs"><button class="xl-tab" onclick="bbExit()">◀ 파일</button><button class="xl-tab on">홈</button><button class="xl-tab">데이터</button></div>
+  <div class="xl-ribbon"><button class="xl-rbtn"><span class="xl-rico">📋</span><span class="xl-rlbl">붙여넣기</span></button><div class="xl-rsep"></div><button class="xl-rbtn"><span class="xl-rico">🔍</span><span class="xl-rlbl">찾기</span></button></div>
+  <div class="xl-fbar"><div class="xl-namebox">B3</div><div class="xl-fx">fx</div><div class="xl-ftext">=RAND()*9+1</div></div>
+  <div style="flex:1;overflow:auto;background:#fff;background-image:linear-gradient(rgba(208,208,208,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(208,208,208,.55) 1px,transparent 1px);background-size:64px 22px;background-position:22px 0">
+    <table class="bb-setup-tbl">
+      <tbody>
+        <tr><td colspan="2" class="bb-opt-hdr" style="font-size:13px;background:#217346;color:#fff;height:36px">데이터 유효성 검사 설정</td></tr>
+        <tr><td class="bb-opt-hdr">자릿수</td><td class="bb-opt-cell" style="font-size:12px;font-weight:700;color:#217346">4자리 고정</td></tr>
+        <tr><td class="bb-opt-hdr">나의 비밀번호</td>
+            <td class="bb-opt-cell">
+              <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+                <div id="bb-secret-inp" style="display:flex;gap:3px"></div>
+                <button onclick="bbShuffleSecret()" style="background:#E8E8E8;border:1px solid #B4B4B4;padding:4px 8px;font-size:11px;cursor:pointer;border-radius:2px;font-family:inherit">🔀 랜덤</button>
+              </div>
+              <div style="font-size:10px;color:#888;margin-top:4px">중복 없이 입력 · 첫 자리 0 불가</div>
+            </td></tr>
+        <tr><td class="bb-opt-hdr">난이도 (AI)</td><td class="bb-opt-cell"><div class="bb-chip-row"><button class="bb-chip on" id="bb-easy" onclick="selBBDiff('easy')">초급</button><button class="bb-chip" id="bb-hard" onclick="selBBDiff('hard')">고수</button></div></td></tr>
+        <tr><td colspan="2" style="height:8px;border:1px solid #D0D0D0;background:#fff"></td></tr>
+        <tr><td colspan="2" class="bb-start-cell" onclick="startBBGame()">▶ 검사 실행</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="xl-bottombar"><div class="xl-stabs"><button class="xl-stab on">설정</button><button class="xl-stab-plus">＋</button></div><div class="xl-statusbar"><span class="xl-sitem">준비</span><span class="xl-sitem">100%</span></div></div>
+</div>
+
+<!-- ══ 숫자야구 게임 ══ -->
+<div id="s-bb-game" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">데이터검증_도구.xlsx</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="bbExit()">✕</button></div>
+  </div>
+  <div class="xl-tabs"><button class="xl-tab" onclick="bbExit()">◀ 파일</button><button class="xl-tab on">데이터</button><button class="xl-tab">수식</button></div>
+  <div class="xl-fbar"><div class="xl-namebox" id="bb-nb">A1</div><div class="xl-fx">fx</div><div class="xl-ftext" id="bb-ft">=검증결과</div></div>
+  <div class="bb-game-wrap">
+    <div class="bb-panels">
+      <div class="bb-panel"><div class="bb-panel-hdr">내 입력 기록</div><div class="bb-hist" id="bb-my-hist"></div></div>
+      <div class="bb-panel" id="bb-ai-panel"><div class="bb-panel-hdr" id="bb-ai-panel-hdr">AI 입력 기록</div><div class="bb-hist" id="bb-ai-hist"></div></div>
+    </div>
+    <div class="bb-input-bar">
+      <div class="bb-inp-label" id="bb-inp-label">▶ 지금 입력 (추측)</div>
+      <div class="bb-inp-row"><div id="bb-inp"></div><button class="bb-submit" onclick="bbSubmit()">입력</button></div>
+      <div class="bb-status" id="bb-st">숫자를 입력하세요</div>
+    </div>
+  </div>
+  <div class="xl-bottombar"><div class="xl-stabs"><button class="xl-stab on">검증결과</button><button class="xl-stab-plus">＋</button></div><div class="xl-statusbar"><span class="xl-sitem" id="bb-status-bar">진행 중</span><span class="xl-sitem">100%</span></div></div>
+</div>
+
+<!-- ══ 물고기 월드 (메인) ══ -->
+<div id="s-fishworld" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">수족관_관리대장_2026.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="fishExitConfirm()">✕</button></div>
+  </div>
+  <div class="xl-tabs">
+    <button class="xl-tab on">홈</button><button class="xl-tab">삽입</button><button class="xl-tab">데이터</button>
+  </div>
+  <div class="xl-ribbon" style="flex-wrap:wrap;min-height:44px">
+    <button class="xl-rbtn" id="f-feed-btn" onclick="fishFeed()"><span class="xl-rico">🍤</span><span class="xl-rlbl">먹이주기</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn" onclick="fishOpenShop()"><span class="xl-rico">🛒</span><span class="xl-rlbl">상점</span></button>
+    <button class="xl-rbtn" id="f-evo-btn" onclick="fishEvolve()" style="opacity:.4"><span class="xl-rico">⬆️</span><span class="xl-rlbl">진화</span></button>
+    <div class="xl-rsep"></div>
+    <span style="font-size:10px;color:#595959;padding:0 6px">💰 <strong id="f-money">100</strong>원</span>
+    <span style="font-size:10px;color:#595959;padding:0 4px">🍤 <strong id="f-food-count">5</strong>개</span>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn" onclick="showMiniGameMenu()"><span class="xl-rico">⚔️</span><span class="xl-rlbl">미니게임</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn" onclick="fishSave()"><span class="xl-rico">💾</span><span class="xl-rlbl">저장</span></button>
+    <button class="xl-rbtn" onclick="fishReset()" style="color:#C00000"><span class="xl-rico">🗑️</span><span class="xl-rlbl">초기화</span></button>
+    <button id="adm-back-btn" class="xl-rbtn" onclick="backToAdmin()" style="display:none;color:#1F3864"><span class="xl-rico">⚙️</span><span class="xl-rlbl">관리자</span></button>
+  </div>
+  <div class="xl-fbar">
+    <div class="xl-namebox" id="f-cell">B4</div><div class="xl-fx">fx</div>
+    <div class="xl-ftext" id="f-formula">=FISH("금붕어치어",1,"HP",50,"포만감",80)</div>
+  </div>
+  <!-- 메인 body: 캔버스 + 스탯 + 사이드바 가로 배열 -->
+  <div style="flex:1;display:flex;overflow:hidden;min-height:0">
+    <!-- 수조 캔버스 -->
+    <div style="flex:1;overflow:hidden;position:relative;background:#fff;border-right:1px solid #D0D0D0">
+      <canvas id="f-canvas" style="display:block;width:100%;height:100%"></canvas>
+    </div>
+    <!-- 물고기 스탯 패널 -->
+    <div style="width:130px;flex-shrink:0;background:#fff;overflow-y:auto;padding:8px 8px;font-size:11px;border-right:1px solid #D0D0D0">
+      <div style="font-weight:800;font-size:11px;margin-bottom:6px;color:#1F3864" id="f-fish-name">금붕어 치어</div>
+      <div style="font-size:10px;color:#888;margin-bottom:8px" id="f-fish-stage">1단계 · 금붕어</div>
+      <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:2px">❤️ 체력</div>
+      <div style="background:#F3F4F6;border-radius:3px;height:8px;margin-bottom:4px;overflow:hidden"><div id="f-hp-bar" style="height:100%;background:#EF4444;border-radius:3px;transition:width .5s"></div></div>
+      <div style="font-size:9px;color:#888;margin-bottom:7px" id="f-hp-txt">50/50</div>
+      <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:2px">🍤 포만감</div>
+      <div style="background:#F3F4F6;border-radius:3px;height:8px;margin-bottom:4px;overflow:hidden"><div id="f-full-bar" style="height:100%;background:#F59E0B;border-radius:3px;transition:width .5s"></div></div>
+      <div style="font-size:9px;color:#888;margin-bottom:7px" id="f-full-txt">80/100</div>
+      <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:2px">⭐ 경험치</div>
+      <div style="background:#F3F4F6;border-radius:3px;height:8px;margin-bottom:4px;overflow:hidden"><div id="f-xp-bar" style="height:100%;background:#4472C4;border-radius:3px;transition:width .5s"></div></div>
+      <div style="font-size:9px;color:#888;margin-bottom:8px" id="f-xp-txt">0/100</div>
+      <div style="background:#F8F9FF;border:1px solid #C7D2FE;border-radius:4px;padding:5px;font-size:9px;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between"><span>💰 수입</span><span id="f-income">2/30초</span></div>
+        <div style="display:flex;justify-content:space-between"><span>🐟 수조</span><span id="f-tank-info">1/1마리</span></div>
+      </div>
+      <div id="f-evo-info" style="background:#FFF9C4;border:1px solid #FFC000;border-radius:4px;padding:5px;font-size:9px">
+        <div style="font-weight:700;margin-bottom:3px">진화 조건</div>
+        <div id="f-evo-xp" style="color:#595959">⭐ 0/100</div>
+        <div id="f-evo-cost" style="color:#595959">💰 300원</div>
+      </div>
+      <div style="margin-top:6px;font-size:9px;color:#888" id="f-auto-status">자동먹이통: 없음</div>
+    </div>
+    <!-- 접속자+채팅 사이드바 -->
+    <div class="fw-sidebar">
+      <div class="fw-sidebar-hdr"><span>접속자</span><span id="fw-count">0명</span></div>
+      <div class="fw-players" id="fw-players"></div>
+      <div class="fw-chat-hdr">💬 채팅</div>
+      <div class="fw-chat-msgs" id="fw-chat-msgs"></div>
+      <div class="fw-chat-inp-row">
+        <input class="fw-chat-inp" id="fw-chat-inp" type="text" placeholder="메시지…" maxlength="60"
+          onkeydown="if(event.key==='Enter')fwSendChat()">
+        <button class="fw-chat-send" onclick="fwSendChat()">→</button>
+      </div>
+    </div>
+  </div>
+  <div class="xl-bottombar">
+    <div class="xl-stabs"><button class="xl-stab on">수조1</button><button class="xl-stab">상점</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-statusbar"><span class="xl-sitem" id="f-status">준비</span><span class="xl-sitem" id="f-save-status">저장 안 됨</span><span class="xl-sitem">100%</span></div>
+  </div>
+</div>
+
+<!-- 미니게임 메뉴 (플레이어 선택) -->
+<div class="xl-dlg-ov" id="minigame-modal">
+  <div class="xl-dlg" style="min-width:260px">
+    <div class="xl-dlg-title">⚔️ 미니게임 도전 <button class="xl-dlg-x" onclick="hideDlg('minigame-modal')">✕</button></div>
+    <div class="xl-dlg-body">
+      <div class="xl-dlg-lbl" style="margin-bottom:8px">도전할 플레이어 선택</div>
+      <div id="mg-player-list" style="margin-bottom:10px"></div>
+      <div class="xl-dlg-btns"><button class="xl-dlg-btn ok" onclick="hideDlg('minigame-modal')">닫기</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- 도전 신청 다이얼로그 -->
+<div class="xl-dlg-ov" id="challenge-dlg">
+  <div class="xl-dlg" style="min-width:240px">
+    <div class="xl-dlg-title">⚔️ 게임 선택 <button class="xl-dlg-x" onclick="hideDlg('challenge-dlg')">✕</button></div>
+    <div class="xl-dlg-body">
+      <div class="xl-dlg-lbl" id="challenge-target-name">상대: </div>
+      <hr class="xl-dlg-sep">
+      <div class="game-sel-btns">
+        <button class="game-sel-btn" onclick="sendChallenge('omok')">⬛ 오목</button>
+        <button class="game-sel-btn" onclick="sendChallenge('baseball')">🔢 숫자야구</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 도전 수신 알림 -->
+<div class="xl-notify-ov" id="challenged-notify">
+  <div class="xl-notify">
+    <div class="xl-notify-title">Microsoft Excel — 게임 신청</div>
+    <div class="xl-notify-body"><div class="xl-notify-ico">⚔️</div><div class="xl-notify-txt" id="challenged-txt">도전 알림</div></div>
+    <div class="xl-notify-btns">
+      <button class="xl-notify-btn" onclick="rejectChallenge()">거절</button>
+      <button class="xl-notify-btn ok" onclick="acceptChallenge()">수락</button>
+    </div>
+  </div>
+</div>
+
+<!-- 복권 -->
+<div class="xl-dlg-ov" id="lottery-modal">
+  <div class="xl-dlg" style="min-width:310px">
+    <div class="xl-dlg-title" style="background:#1F3864">🎰 행운복권발행시스템.xlsx <button class="xl-dlg-x" onclick="hideDlg('lottery-modal')">✕</button></div>
+    <div class="xl-dlg-body" style="padding:14px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#888;margin-bottom:10px">
+        <span id="lottery-no">복권번호: ------</span><span>구입가: 300원</span>
+      </div>
+      <div id="lottery-cells" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px"></div>
+      <div id="lottery-result" style="display:none;text-align:center;font-size:13px;font-weight:800;padding:10px;border-radius:4px;margin-bottom:8px"></div>
+      <div style="display:flex;gap:6px">
+        <button class="xl-dlg-btn" style="flex:1" onclick="lotteryRevealAll()">전체 긁기</button>
+        <button class="xl-dlg-btn ok" style="flex:1" onclick="hideDlg('lottery-modal')">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 물고기 상점 -->
+<div class="xl-dlg-ov" id="f-shop-modal">
+  <div class="xl-dlg" style="min-width:280px">
+    <div class="xl-dlg-title">🛒 수족관 용품 상점 <button class="xl-dlg-x" onclick="hideDlg('f-shop-modal')">✕</button></div>
+    <div class="xl-dlg-body">
+      <div id="f-shop-items"></div>
+      <div class="xl-dlg-btns" style="margin-top:8px">
+        <button class="xl-dlg-btn ok" onclick="hideDlg('f-shop-modal')">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 관리자 화면 ══ -->
+<div id="s-admin" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">관리자_대시보드.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="adminLogout()">✕</button></div>
+  </div>
+  <div class="xl-tabs"><button class="xl-tab on">유저관리</button><button class="xl-tab">서버관리</button><button class="xl-tab">접속현황</button></div>
+  <div class="xl-ribbon">
+    <button class="xl-rbtn" onclick="adminLoadUsers()"><span class="xl-rico">🔄</span><span class="xl-rlbl">새로고침</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn" onclick="adminEnterGame()"><span class="xl-rico">🐟</span><span class="xl-rlbl">게임 입장</span></button>
+    <div class="xl-rsep"></div>
+    <button class="xl-rbtn" onclick="adminResetServer()" style="color:#C00000"><span class="xl-rico">🗑️</span><span class="xl-rlbl">서버초기화</span></button>
+    <div class="xl-rsep"></div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:11px;padding:0 4px">
+      <span style="color:#595959">서버 필터:</span>
+      <select id="adm-server-filter" onchange="adminLoadUsers()" style="font-size:11px;border:1px solid #B4B4B4;padding:2px 4px;font-family:inherit">
+        <option value="ALL">전체</option>
+        <option value="TEST-1" selected>TEST-1</option>
+        <option value="U1">U1</option>
+      </select>
+    </div>
+    <div class="xl-rsep"></div>
+    <span style="font-size:11px;color:#595959;padding:0 4px">현재 접속: <strong id="adm-online-count" style="color:#217346">0</strong>명</span>
+  </div>
+  <div class="xl-fbar">
+    <div class="xl-namebox">A1</div><div class="xl-fx">fx</div>
+    <div class="xl-ftext">=ADMIN.DASHBOARD(ACTIVE_SERVER,"<span id="adm-formula-server">TEST-1</span>")</div>
+  </div>
+  <!-- 통계 바 -->
+  <div style="display:flex;gap:8px;padding:8px 10px;background:#F2F2F2;border-bottom:1px solid #C8C8C8;flex-shrink:0;overflow-x:auto">
+    <div class="adm-stat-box">총 유저<br><span id="adm-total-count" style="font-size:18px">-</span>명</div>
+    <div class="adm-stat-box" style="background:#E2EFDA;border-color:#A9D18E;color:#375623">TEST-1<br><span id="adm-test1-count" style="font-size:18px">-</span>명</div>
+    <div class="adm-stat-box" style="background:#FFF2CC;border-color:#FFC000;color:#7F6000">U1<br><span id="adm-u1-count" style="font-size:18px">-</span>명</div>
+    <div class="adm-stat-box" style="background:#FCE4EC;border-color:#F48FB1;color:#880E4F">현재접속<br><span id="adm-online-count2" style="font-size:18px">0</span>명</div>
+  </div>
+  <!-- 유저 테이블 -->
+  <div style="flex:1;overflow:auto;background:#fff">
+    <table class="adm-tbl">
+      <thead>
+        <tr>
+          <th style="width:30px">#</th>
+          <th>아이디</th>
+          <th>서버</th>
+          <th>🐟 단계</th>
+          <th>💰 보유금액</th>
+          <th>🍤 먹이</th>
+          <th>❤️ HP</th>
+          <th>마지막 저장</th>
+          <th style="width:60px">관리</th>
+        </tr>
+      </thead>
+      <tbody id="adm-user-tbody">
+        <tr><td colspan="9" style="text-align:center;color:#888;padding:20px">새로고침을 눌러 유저 목록을 불러오세요</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="xl-bottombar">
+    <div class="xl-stabs"><button class="xl-stab on">유저목록</button><button class="xl-stab-plus">＋</button></div>
+    <div class="xl-statusbar">
+      <span class="xl-sitem" id="adm-status">관리자 모드</span>
+      <span class="xl-sitem" style="color:#C00000;font-weight:700">⚠️ ADMIN</span>
+      <span class="xl-sitem">100%</span>
+    </div>
+  </div>
+</div>
+
+<!-- 유저 데이터 수정 모달 -->
+<div class="xl-dlg-ov" id="adm-edit-modal">
+  <div class="xl-dlg" style="min-width:300px">
+    <div class="xl-dlg-title" style="background:#1F3864">🛠️ 유저 데이터 수정 <button class="xl-dlg-x" onclick="hideDlg('adm-edit-modal')">✕</button></div>
+    <div class="xl-dlg-body">
+      <div style="font-size:12px;font-weight:700;color:#1F3864;margin-bottom:10px" id="adm-edit-title">유저: </div>
+      <div class="adm-edit-row"><span style="min-width:70px">🐟 단계</span>
+        <select id="adm-edit-stage" style="border:1px solid #9DC3E6;padding:3px 6px;font-size:12px;font-family:inherit">
+          <option value="1">1단계 - 금붕어 치어</option>
+          <option value="2">2단계 - 금붕어</option>
+          <option value="3">3단계 - 비단잉어</option>
+          <option value="4">4단계 - 아로와나</option>
+          <option value="5">5단계 - 황금 아로와나</option>
+        </select>
+      </div>
+      <div class="adm-edit-row"><span style="min-width:70px">💰 금액</span><input class="adm-edit-inp" id="adm-edit-money" type="number" min="0"></div>
+      <div class="adm-edit-row"><span style="min-width:70px">🍤 먹이</span><input class="adm-edit-inp" id="adm-edit-food" type="number" min="0"></div>
+      <div class="adm-edit-row"><span style="min-width:70px">❤️ HP</span><input class="adm-edit-inp" id="adm-edit-hp" type="number" min="0"></div>
+      <div class="xl-dlg-btns" style="margin-top:12px">
+        <button class="xl-dlg-btn" onclick="hideDlg('adm-edit-modal')">취소</button>
+        <button class="xl-dlg-btn ok" onclick="adminSaveEdit()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 상사 크리 보스키 오버레이 -->
+<div id="boss-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#fff;overflow:auto;font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:clamp(10px,1.4vw,14px);color:#000">
+  <div style="background:#217346;color:#fff;padding:3px 10px;font-size:11px;display:flex;justify-content:space-between;flex-shrink:0">
+    <span>YWHRV-1500_Part_List_Rev.3.xlsx - Microsoft Excel</span><span>─ □ ✕</span>
+  </div>
+  <div style="background:#217346;display:flex;padding:0 4px;flex-shrink:0">
+    <span style="background:#F2F2F2;color:#217346;padding:5px 12px;font-size:11px;font-weight:700">홈</span>
+    <span style="color:rgba(255,255,255,.8);padding:5px 12px;font-size:11px">파일</span>
+    <span style="color:rgba(255,255,255,.8);padding:5px 12px;font-size:11px">삽입</span>
+    <span style="color:rgba(255,255,255,.8);padding:5px 12px;font-size:11px">데이터</span>
+  </div>
+  <div style="background:#F2F2F2;border-bottom:1px solid #C8C8C8;padding:3px 8px;display:flex;align-items:center;gap:4px;min-height:38px;flex-shrink:0">
+    <span style="padding:2px 7px;background:#E8E8E8;border:1px solid #C8C8C8;font-size:10px">📋 붙여넣기</span>
+    <span style="width:1px;height:26px;background:#C8C8C8;margin:0 3px"></span>
+    <span style="font-size:10px;color:#C00000;font-weight:700">※ P키를 누르면 이전 화면으로 돌아갑니다</span>
+  </div>
+  <div style="display:flex;align-items:center;background:#fff;border-bottom:1px solid #C8C8C8;height:22px;padding:0 5px;gap:4px;flex-shrink:0">
+    <span style="width:52px;border-right:1px solid #C8C8C8;font-size:11px;font-family:monospace;padding-right:4px">A1</span>
+    <span style="color:#217346;font-style:italic;font-weight:700;border-right:1px solid #E0E0E0;padding:0 5px">fx</span>
+    <span style="font-size:11px;font-family:monospace;color:#333">[ Part List ]</span>
+  </div>
+  <div style="overflow:auto;padding:4px 0 40px">
+    <table style="border-collapse:collapse;width:100%;table-layout:fixed">
+      <tr style="background:#F2F2F2"><td style="width:3%;border:1px solid #D0D0D0;text-align:center"></td><td style="width:5%;border:1px solid #D0D0D0;text-align:center">A</td><td style="width:9%;border:1px solid #D0D0D0;text-align:center">B</td><td style="width:24%;border:1px solid #D0D0D0;text-align:center">C</td><td style="width:17%;border:1px solid #D0D0D0;text-align:center">D</td><td style="width:6%;border:1px solid #D0D0D0;text-align:center">E</td><td style="width:18%;border:1px solid #D0D0D0;text-align:center">F</td><td style="width:18%;border:1px solid #D0D0D0;text-align:center">G</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">1</td><td colspan="7" style="border:2px solid #000;text-align:center;font-weight:700;font-size:13px;padding:0.6%;letter-spacing:.2em">[ Part List ]</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">2</td><td colspan="2" style="border:1px solid #000;padding:0.3% 0.8%;font-weight:700;text-align:center">작 성 일 자</td><td style="border:1px solid #000;padding:0.3% 0.8%;text-align:center">2026-05-22</td><td style="border:1px solid #D0D0D0"></td><td colspan="2" style="border:1px solid #000;padding:0.3% 0.8%;font-weight:700;text-align:center">품목 / 모델명 / 규격</td><td style="border:1px solid #000;padding:0.3% 0.8%;text-align:center;font-weight:700">YWHRV-1500 (유효폭)</td></tr>
+      <tr style="background:#D9D9D9;font-weight:700;text-align:center"><td style="background:#F2F2F2;border:1px solid #D0D0D0">4</td><td style="border:2px solid #000;padding:0.5% 0.6%">번호</td><td style="border:2px solid #000;padding:0.5% 0.6%">분류</td><td style="border:2px solid #000;padding:0.5% 0.6%">품명</td><td style="border:2px solid #000;padding:0.5% 0.6%">규격</td><td style="border:2px solid #000;padding:0.5% 0.6%">수량</td><td style="border:2px solid #000;padding:0.5% 0.6%">재체</td><td style="border:2px solid #000;padding:0.5% 0.6%">비고</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">5</td><td style="border:1px solid #000;text-align:center">1</td><td rowspan="8" style="border:1px solid #000;text-align:center;vertical-align:middle;writing-mode:vertical-rl;font-weight:700">판금밀</td><td style="border:1px solid #000;padding:0.4% 0.8%">Top/Bottom Cover L/R</td><td style="border:1px solid #000;text-align:center">602*1304*10</td><td style="border:1px solid #000;text-align:center">4</td><td style="border:1px solid #000;text-align:center">알루미늄</td><td style="border:1px solid #000"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">6</td><td style="border:1px solid #000;text-align:center">2</td><td style="border:1px solid #000;padding:0.4% 0.8%">Door</td><td style="border:1px solid #000;text-align:center">600*520*10</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;text-align:center">알루미늄</td><td style="border:1px solid #000;padding:0.4% 0.8%">1500*1220/7매</td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">7</td><td style="border:1px solid #000;text-align:center">3</td><td style="border:1px solid #000;padding:0.4% 0.8%">Side R</td><td style="border:1px solid #000;text-align:center">518*1298*20</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;text-align:center">알루미늄</td><td style="border:1px solid #000"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">8</td><td style="border:1px solid #000;text-align:center">4</td><td style="border:1px solid #000;padding:0.4% 0.8%">Side L</td><td style="border:1px solid #000;text-align:center">518*1298*20</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;text-align:center">알루미늄</td><td style="border:1px solid #000"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">9</td><td style="border:1px solid #000;text-align:center">5</td><td style="border:1px solid #000;padding:0.4% 0.8%">Front Cover</td><td style="border:1px solid #000;text-align:center">1200*518*20</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;text-align:center">알루미늄</td><td style="border:1px solid #000"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">10</td><td style="border:1px solid #000;text-align:center">6</td><td style="border:1px solid #000;padding:0.4% 0.8%">Rear Cover</td><td style="border:1px solid #000;text-align:center">1200*518*20</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;text-align:center">알루미늄</td><td style="border:1px solid #000"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">11</td><td style="border:1px solid #000;text-align:center">7</td><td style="border:1px solid #000;padding:0.4% 0.8%">Hanger</td><td style="border:1px solid #000;text-align:center">80*50*50</td><td style="border:1px solid #000;text-align:center">8</td><td style="border:1px solid #000;text-align:center">알루미늄</td><td style="border:1px solid #000"></td></tr>
+      <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center">12</td><td style="border:1px solid #000;text-align:center">8</td><td style="border:1px solid #000;padding:0.4% 0.8%">Control Case</td><td style="border:1px solid #000;text-align:center">200*125*60</td><td style="border:1px solid #000;text-align:center">1</td><td style="border:1px solid #000;text-align:center">알루미늄</td><td style="border:1px solid #000"></td></tr>
+    </table>
+  </div>
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#F2F2F2;border-top:1px solid #C8C8C8;padding:2px 8px;font-size:10px;color:#444;display:flex;gap:12px;align-items:center">
+    <span style="background:#fff;border:1px solid #C8C8C8;border-bottom:none;padding:1px 10px">YWHRV-1500</span>
+    <span style="color:#888;padding:1px 10px">Rev.이력</span>
+    <span style="margin-left:auto;color:#C00000;font-weight:700">P 키 → 이전 화면</span>
+  </div>
+</div>
+
+<!-- 업데이트 알림 -->
+<div class="xl-notify-ov" id="update-notify" style="z-index:2000">
+  <div class="xl-notify">
+    <div class="xl-notify-title">Microsoft Excel — 업데이트 알림</div>
+    <div class="xl-notify-body"><div class="xl-notify-ico">🔄</div><div class="xl-notify-txt">새 버전이 있습니다. 새로고침하여 업데이트하시겠습니까?</div></div>
+    <div class="xl-notify-btns">
+      <button class="xl-notify-btn" onclick="document.getElementById('update-notify').classList.remove('on')">나중에</button>
+      <button class="xl-notify-btn ok" onclick="location.reload(true)">새로고침</button>
+    </div>
+  </div>
+</div>
+
+<!-- 게임 결과 알림 -->
+<div class="xl-notify-ov" id="result-notify">
+  <div class="xl-notify">
+    <div class="xl-notify-title">Microsoft Excel <span onclick="closeResultNotify()" style="cursor:pointer;margin-left:auto">✕</span></div>
+    <div class="xl-notify-body"><div class="xl-notify-ico" id="result-ico">ℹ️</div><div class="xl-notify-txt" id="result-txt"></div></div>
+    <div class="xl-notify-btns">
+      <button class="xl-notify-btn" onclick="restartFromResult()">다시 하기</button>
+      <button class="xl-notify-btn ok" id="result-confirm-btn" onclick="confirmResult()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 인게임 채팅 플로팅 패널 -->
+<div id="ingame-chat-panel" style="display:none;position:fixed;bottom:26px;right:0;width:175px;background:#fff;border:1px solid #C8C8C8;border-bottom:none;border-right:none;z-index:600;flex-direction:column;box-shadow:-3px -3px 10px rgba(0,0,0,.15)">
+  <div style="background:#217346;color:#fff;padding:3px 8px;font-size:11px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+    <span>💬 채팅</span>
+    <button onclick="toggleIngameChat()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:14px;line-height:1;padding:0">✕</button>
+  </div>
+  <div id="ingame-msgs" style="height:160px;overflow-y:auto;padding:5px;font-size:11px;background:#FAFAFA"></div>
+  <div style="display:flex;border-top:1px solid #C8C8C8;flex-shrink:0">
+    <input id="ingame-inp" type="text" placeholder="메시지…" maxlength="50" style="flex:1;border:none;outline:none;padding:4px 6px;font-size:11px;font-family:inherit;background:#fff"
+      onkeydown="if(event.key==='Enter')sendIngameChat()">
+    <button onclick="sendIngameChat()" style="background:#217346;border:none;color:#fff;padding:4px 7px;font-size:12px;cursor:pointer;flex-shrink:0">→</button>
+  </div>
+</div>
+<button id="ingame-chat-btn" onclick="toggleIngameChat()" style="display:none;position:fixed;bottom:30px;right:4px;background:#217346;color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;z-index:599;box-shadow:0 2px 6px rgba(0,0,0,.3)">💬</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ══════════════════════════════════════════════════════════
+// ▼ Supabase 설정 — 아래 두 값을 본인 프로젝트로 변경하세요
+// ══════════════════════════════════════════════════════════
+const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
+// ══════════════════════════════════════════════════════════
+const BUILD = 'v1.01';
+// ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
+const ACTIVE_SERVER  = 'TEST-1';
+const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
+const ADMIN_USERNAME = 'admin'; // ← 관리자 아이디 (변경 가능)
+
+// ── 플레이어 ID (세션마다 새로 생성) ─────────────────────
+const myId = (typeof crypto!=='undefined'&&crypto.randomUUID)
+  ? crypto.randomUUID()
+  : Math.random().toString(36).slice(2)+Date.now().toString(36);
+
+let myName = '';
+let _sb = null, _ch = null;
+let lobbyPlayers  = [];
+let currentGame   = null;   // {type, myColor, opponentId, opponentName, digits}
+let pendingChallenge = null;
+let challengeTarget  = null;
+
+// ── UI 헬퍼 ────────────────────────────────────────────────
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id)?.classList.add('on');}
+function hideDlg(id){document.getElementById(id)?.classList.remove('on');}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function eStatus(msg,color){
+  const el=document.getElementById('e-status');
+  const bar=document.getElementById('e-status-bar');
+  if(el){el.textContent=msg;el.style.color=color||'#595959';}
+  if(bar) bar.textContent=msg;
+}
+function eOnline(online){
+  const el=document.getElementById('e-online');
+  if(el){el.textContent=online?'● 서버 온라인':'● 서버 오프라인';el.style.color=online?'#217346':'#9E9E9E';}
+}
+
+let _toastTimer;
+function u1Toast(msg,color){
+  let el=document.getElementById('u1-toast');
+  if(!el){
+    el=document.createElement('div');el.id='u1-toast';
+    el.style.cssText='position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#1F3864;color:#fff;padding:8px 18px;border-radius:6px;font-size:12px;font-weight:700;z-index:9998;max-width:320px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.3);pointer-events:none;transition:opacity .3s';
+    document.body.appendChild(el);
+  }
+  el.textContent=msg;
+  el.style.background=color==='#C00000'?'#C00000':color==='#217346'?'#217346':'#1F3864';
+  el.style.opacity='1';
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>{el.style.opacity='0';},3000);
+}
+
+// ── Supabase 연결 ─────────────────────────────────────────
+function connectSupabase(){
+  if(!SUPABASE_URL||SUPABASE_URL.includes('YOUR_')){
+    eStatus('⚠️ Supabase URL/KEY를 코드 상단에 입력하세요','#C00000');
+    return;
+  }
+  _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  _ch=_sb.channel(CHANNEL_NAME,{
+    config:{broadcast:{self:false},presence:{key:currentUsername}}  // username = key → 같은 아이디는 1명만 표시
+  })
+  .on('presence',{event:'sync'},onPresenceSync)
+  .on('presence',{event:'join'},({newPresences})=>{
+    // 새로 들어온 사람 중 본인 제외하고 입장 알림
+    newPresences.forEach(p=>{ if(p.name!==myName) addChatSys(p.name+'님이 입장했습니다'); });
+    onPresenceSync();
+  })
+  .on('presence',{event:'leave'},({leftPresences})=>{
+    leftPresences.forEach(p=>{
+      addChatSys(p.name+'님이 퇴장했습니다');
+      if(currentGame&&currentGame.opponentId===p.userId){
+        currentGame=null; stopOmokTimer(); bbOver=true;
+        showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
+      }
+    });
+    onPresenceSync();
+  })
+  .on('broadcast',{event:'chat'},({payload})=>addChatMsg(payload))
+  .on('broadcast',{event:'challenge'},({payload})=>{
+    if(payload.targetId!==myId) return;
+    pendingChallenge=payload;
+    document.getElementById('challenged-txt').textContent=
+      `${payload.fromName}님이 ${payload.game==='omok'?'오목':'숫자야구'} 대전을 신청했습니다.`;
+    document.getElementById('challenged-notify').classList.add('on');
+  })
+  .on('broadcast',{event:'game_start'},({payload})=>{
+    if(payload.targetId!==myId) return;
+    currentGame={type:payload.game,myColor:payload.youAre,
+      opponentId:payload.fromId,opponentName:payload.fromName,digits:payload.digits||4};
+    bbDigits=payload.digits||4;
+    document.getElementById('challenged-notify').classList.remove('on');
+    updateMyPresence(true);
+    startOnlineGame(payload.game);
+  })
+  .on('broadcast',{event:'game_move'},({payload})=>{
+    if(payload.targetId!==myId) return;
+    if(currentGame?.type==='omok') omokOnlineMove(payload.data);
+    else if(currentGame?.type==='baseball') bbOnlineMove(payload.data);
+  })
+  .on('broadcast',{event:'game_end'},({payload})=>{
+    if(payload.targetId!==myId) return;
+    if(currentGame){
+      currentGame=null; stopOmokTimer(); bbOver=true;
+      showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
+    }
+  })
+  .on('broadcast',{event:'challenge_reject'},({payload})=>{
+    if(payload.targetId!==myId) return;
+    u1Toast(payload.fromName+'님이 거절했습니다','#C00000');
+  })
+  .subscribe(async(status)=>{
+    if(status==='SUBSCRIBED'){
+      eStatus('● 온라인','#217346'); eOnline(true);
+      u1Toast('✅ U1 수족관 연결 완료!','#217346');
+      await _ch.track({userId:myId,name:myName,inGame:false,joinedAt:Date.now()});
+    } else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
+      eStatus('연결 오류 — 재시도 중…','#C00000'); eOnline(false);
+      setTimeout(reconnectChannel,3000);
+    } else if(status==='CLOSED'){
+      eOnline(false);
+    }
+  });
+}
+
+function reconnectChannel(){
+  if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
+  connectSupabase();
+}
+
+function onPresenceSync(){
+  if(!_ch) return;
+  const state=_ch.presenceState();
+  // key=username이므로 username당 최신 presence 1개만 사용 (다중 탭 중복 방지)
+  lobbyPlayers=Object.entries(state).map(([username,presences])=>{
+    const p=presences[presences.length-1];
+    return{id:p.userId||username, name:username, inGame:p.inGame||false};
+  });
+  fwUpdateSidebar();
+}
+
+async function updateMyPresence(inGame){
+  if(!_ch) return;
+  try{await _ch.track({userId:myId,name:myName,inGame,joinedAt:Date.now()});}catch(e){}
+}
+
+function sbSend(event,payload){
+  if(!_ch) return;
+  _ch.send({type:'broadcast',event,payload});
+}
+
+function sendGameMsg(data){
+  if(!currentGame) return;
+  sbSend('game_move',{targetId:currentGame.opponentId,fromId:myId,data});
+}
+
+// ══ 계정 시스템 ════════════════════════════════════════════
+let currentUsername = '';
+
+async function hashPassword(pw){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('u1_salt_v1:'+pw));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function entryStatus(msg,color){
+  const el=document.getElementById('e-status');
+  const bar=document.getElementById('e-status-bar');
+  if(el){el.textContent=msg;el.style.color=color||'#595959';}
+  if(bar) bar.textContent=msg;
+}
+
+function validateInput(){
+  const uid=(document.getElementById('e-userid').value||'').trim();
+  const pw=(document.getElementById('e-pw').value||'');
+  if(!uid||uid.length<2){entryStatus('아이디를 2자 이상 입력하세요','#C00000');document.getElementById('e-userid').focus();return null;}
+  if(!pw||pw.length<4){entryStatus('비밀번호를 4자 이상 입력하세요','#C00000');document.getElementById('e-pw').focus();return null;}
+  return{uid,pw};
+}
+
+async function doLogin(){
+  const v=validateInput(); if(!v) return;
+  entryStatus('로그인 중…','#595959');
+  if(!_sb){
+    // Supabase 아직 초기화 안됨 → 먼저 연결
+    _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  }
+  const hash=await hashPassword(v.pw);
+  const{data,error}=await _sb.from('fish_accounts').select('password_hash,fish_data').eq('username',v.uid).eq('server',ACTIVE_SERVER).single();
+  if(error||!data){entryStatus('아이디를 찾을 수 없습니다. 회원가입을 먼저 하세요.','#C00000');return;}
+  if(data.password_hash!==hash){entryStatus('비밀번호가 틀렸습니다','#C00000');document.getElementById('e-pw').value='';document.getElementById('e-pw').focus();return;}
+  currentUsername=v.uid;
+  myName=v.uid;
+  localStorage.setItem('u1_name',v.uid);
+  localStorage.setItem('u1_uid',v.uid);
+  entryStatus('로그인 성공!','#217346');
+  enterFishWorldWithData(data.fish_data);
+}
+
+async function doRegister(){
+  const v=validateInput(); if(!v) return;
+  if(!/^[a-zA-Z0-9가-힣_]{2,16}$/.test(v.uid)){entryStatus('아이디: 2~16자 (한글·영문·숫자·_ 사용가능)','#C00000');return;}
+  entryStatus('회원가입 중…','#595959');
+  if(!_sb) _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  const hash=await hashPassword(v.pw);
+  const{error}=await _sb.from('fish_accounts').insert({username:v.uid,server:ACTIVE_SERVER,password_hash:hash,fish_data:{},updated_at:new Date().toISOString()});
+  if(error){
+    if(error.code==='23505') entryStatus('이미 사용 중인 아이디입니다','#C00000');
+    else entryStatus('오류: '+error.message,'#C00000');
+    return;
+  }
+  currentUsername=v.uid; myName=v.uid;
+  localStorage.setItem('u1_name',v.uid); localStorage.setItem('u1_uid',v.uid);
+  entryStatus('가입 완료! 입장합니다…','#217346');
+  enterFishWorldWithData(null);
+}
+
+function enterFishWorldWithData(dbData){
+  // 관리자 계정이면 관리자 화면으로
+  if(currentUsername===ADMIN_USERNAME){
+    if(!_sb) _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    show('s-admin');
+    connectSupabase();
+    adminInit();
+    return;
+  }
+  // 일반 유저
+  if(dbData&&Object.keys(dbData).length>0){
+    applyFishData(dbData);
+  } else {
+    fishLoad();
+  }
+  show('s-fishworld');
+  setTimeout(()=>{
+    FG.cvs=document.getElementById('f-canvas');
+    if(FG.cvs){FG.ctx=FG.cvs.getContext('2d');fishResizeCanvas();window.addEventListener('resize',fishResizeCanvas);}
+    fishStartLoops(); fishRenderInfo();
+  },80);
+  connectSupabase();
+}
+
+function applyFishData(d){
+  if(!d||Object.keys(d).length===0) return;
+  FG.stage=d.stage||1; FG.hp=d.hp||50; FG.maxHp=d.maxHp||50;
+  FG.fullness=d.fullness||80; FG.xp=d.xp||0;
+  FG.money=d.money??100; FG.food=d.food??5; FG.autoLevel=d.autoLevel||0;
+  FG.fishCount=d.fishCount||1; FG.tankLevel=d.tankLevel||0; FG.tankMax=d.tankMax||1;
+  FG.rodActive=d.rodActive||false; FG.rodTimer=d.rodTimer||0; FG.rodProb=d.rodProb||0;
+  FG.isDead=false;
+  // 오프라인 보상 계산 (DB lastSave 기준)
+  if(d.lastSave){const elapsed=(Date.now()-d.lastSave)/1000;if(elapsed>30)fishCalcOffline(elapsed);}
+  FG.lastTick=Date.now();
+}
+
+async function saveFishDataToDB(){
+  if(!currentUsername||!_sb) return;
+  const data={stage:FG.stage,hp:FG.hp,maxHp:FG.maxHp,fullness:FG.fullness,xp:FG.xp,
+    money:FG.money,food:FG.food,autoLevel:FG.autoLevel,
+    fishCount:FG.fishCount,tankLevel:FG.tankLevel,tankMax:FG.tankMax,
+    rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,lastSave:Date.now()};
+  const{error}=await _sb.from('fish_accounts').update({fish_data:data,updated_at:new Date().toISOString()}).eq('username',currentUsername).eq('server',ACTIVE_SERVER);
+  if(error){
+    u1Toast('⚠️ DB 저장 실패: '+error.message,'#C00000');
+    console.error('saveFishDataToDB error:',error);
+  }
+}
+
+// ── 서버명 표시 & 자동 로그인 ────────────────────────────
+(function(){
+  // 서버명 주입
+  const snEl=document.getElementById('e-server-name');
+  if(snEl) snEl.textContent=ACTIVE_SERVER;
+  // 저장된 계정 자동 채우기
+  const uid=localStorage.getItem('u1_uid');
+  if(uid){
+    document.getElementById('e-userid').value=uid;
+    document.getElementById('e-pw').focus();
+    entryStatus('저장된 계정: '+uid+' (서버: '+ACTIVE_SERVER+') · 비밀번호를 입력하세요','#595959');
+  }
+})();
+
+// ── 입장 (기존 호환용) ────────────────────────────────────
+function enterFishWorld(){
+  // 직접 호출 시 doLogin()으로 리다이렉트
+  doLogin();
+}
+
+// ── 채팅 ────────────────────────────────────────────────
+function addChatMsg(msg){
+  const isMe=msg.fromId===myId;
+  const fw=document.getElementById('fw-chat-msgs');
+  if(fw){
+    const el=document.createElement('div');el.className='fw-chat-msg';
+    el.innerHTML=`<span class="fw-chat-msg-name ${isMe?'me':''}">${esc(msg.fromName||'?')}</span> ${esc(msg.text)}`;
+    fw.appendChild(el);fw.scrollTop=fw.scrollHeight;
+  }
+  const ig=document.getElementById('ingame-msgs');
+  if(ig){
+    const el=document.createElement('div');
+    el.style.cssText='margin-bottom:4px;font-size:11px;line-height:1.4';
+    el.innerHTML=`<span style="font-weight:700;color:${isMe?'#1F497D':'#217346'}">${esc(msg.fromName)}</span><br><span style="color:#333">${esc(msg.text)}</span>`;
+    ig.appendChild(el);ig.scrollTop=ig.scrollHeight;
+  }
+}
+function addChatSys(text){
+  const fw=document.getElementById('fw-chat-msgs');
+  if(fw){const el=document.createElement('div');el.className='fw-chat-sys';el.textContent=text;fw.appendChild(el);fw.scrollTop=fw.scrollHeight;}
+  const ig=document.getElementById('ingame-msgs');
+  if(ig){const el=document.createElement('div');el.style.cssText='font-size:9px;color:#999;text-align:center;margin:2px 0;font-style:italic';el.textContent=text;ig.appendChild(el);ig.scrollTop=ig.scrollHeight;}
+}
+
+function fwSendChat(){
+  const inp=document.getElementById('fw-chat-inp');
+  const text=(inp.value||'').trim(); if(!text) return; inp.value='';
+  const msg={fromId:myId,fromName:myName,text};
+  sbSend('chat',msg); addChatMsg(msg);
+}
+function sendIngameChat(){
+  const inp=document.getElementById('ingame-inp');
+  const text=(inp.value||'').trim(); if(!text) return; inp.value='';
+  const msg={fromId:myId,fromName:myName,text};
+  sbSend('chat',msg); addChatMsg(msg);
+}
+
+// ── 사이드바 플레이어 목록 ──────────────────────────────
+const FWCOLORS=['#4F46E5','#DC2626','#059669','#D97706','#7C3AED','#DB2777','#0891B2','#65A30D'];
+function fwUpdateSidebar(){
+  const countEl=document.getElementById('fw-count');
+  if(countEl) countEl.textContent=lobbyPlayers.length+'명';
+  const list=document.getElementById('fw-players');
+  if(!list) return;
+  list.innerHTML=lobbyPlayers.map((p,i)=>{
+    const isMe=p.name===myName;
+    const btn=(!isMe&&!p.inGame)
+      ?`<button class="fw-challenge-btn" onclick="fwChallenge('${p.id}','${p.name.replace(/'/g,"\\'")}')">도전</button>`:'';
+    return `<div class="fw-player-row">
+      <div class="fw-player-avatar" style="background:${FWCOLORS[i%FWCOLORS.length]}">${esc((p.name||'?')[0])}</div>
+      <span class="fw-player-name">${esc(p.name)}${isMe?'<span style="color:#4F46E5;font-size:9px">(나)</span>':''}</span>
+      ${btn}
+    </div>`;
+  }).join('');
+}
+
+function fwChallenge(targetId,targetName){
+  challengeTarget={id:targetId,name:targetName};
+  document.getElementById('challenge-target-name').textContent='상대: '+targetName;
+  document.getElementById('challenge-dlg').classList.add('on');
+}
+
+function showMiniGameMenu(){
+  const others=lobbyPlayers.filter(p=>p.id!==myId&&!p.inGame);
+  const list=document.getElementById('mg-player-list');
+  if(!others.length){
+    list.innerHTML='<div style="font-size:11px;color:#888;text-align:center;padding:10px">도전 가능한 플레이어가 없습니다</div>';
+  } else {
+    list.innerHTML=others.map(p=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F0F0">
+        <span style="font-size:12px;font-weight:700">${esc(p.name)}</span>
+        <div style="display:flex;gap:6px">
+          <button onclick="fwChallenge('${p.id}','${p.name.replace(/'/g,"\\'")}');hideDlg('minigame-modal')"
+            style="background:#217346;color:#fff;border:none;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">도전</button>
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('minigame-modal').classList.add('on');
+}
+
+// ── 도전 시스템 ──────────────────────────────────────────
+function sendChallenge(game){
+  hideDlg('challenge-dlg');
+  if(!challengeTarget) return;
+  sbSend('challenge',{targetId:challengeTarget.id,fromId:myId,fromName:myName,game,digits:4});
+  u1Toast(challengeTarget.name+'님에게 도전 신청 전송!','#1F3864');
+}
+
+function acceptChallenge(){
+  if(!pendingChallenge) return;
+  const{fromId,fromName,game,digits}=pendingChallenge;
+  // 도전자(fromId)는 myColor=1(흑/선공), 수락자(나)는 myColor=2
+  sbSend('game_start',{targetId:fromId,fromId:myId,fromName:myName,game,youAre:1,digits:digits||4});
+  currentGame={type:game,myColor:2,opponentId:fromId,opponentName:fromName,digits:digits||4};
+  bbDigits=digits||4;
+  document.getElementById('challenged-notify').classList.remove('on');
+  pendingChallenge=null;
+  updateMyPresence(true);
+  startOnlineGame(game);
+}
+
+function rejectChallenge(){
+  if(!pendingChallenge) return;
+  sbSend('challenge_reject',{targetId:pendingChallenge.fromId,fromId:myId,fromName:myName});
+  pendingChallenge=null;
+  document.getElementById('challenged-notify').classList.remove('on');
+}
+
+function startOnlineGame(gameType){
+  if(gameType==='omok') startOmokOnline();
+  else if(gameType==='baseball') startBBOnline();
+}
+
+function backToFishWorld(){
+  currentGame=null; showIngameChat(false);
+  show('s-fishworld');
+  if(!FG.tickInterval) fishStartLoops();
+  updateMyPresence(false);
+}
+
+// ── 인게임 채팅 ──────────────────────────────────────────
+function showIngameChat(v){
+  document.getElementById('ingame-chat-btn').style.display=v?'flex':'none';
+  if(!v) document.getElementById('ingame-chat-panel').style.display='none';
+}
+function toggleIngameChat(){
+  const p=document.getElementById('ingame-chat-panel');
+  p.style.display=p.style.display==='flex'?'none':'flex';
+}
+
+// ══════════════════════════════════════════════════════════
+// 🐟 물고기 키우기
+// ══════════════════════════════════════════════════════════
+let FISH_STOP_ON_DISCONNECT=true;
+
+const F_STAGES=[null,
+  {name:'금붕어 치어',species:'금붕어',  color:'#FF8C00',fin:'#FFD700',hp:50, atk:5,  def:2,  income:1, xpRate:1,  xpNeed:100, evoCost:300, foodRate:8},
+  {name:'금붕어',     species:'금붕어',  color:'#FF6B00',fin:'#FF0000',hp:120,atk:12, def:6,  income:3, xpRate:1.5,xpNeed:300, evoCost:800, foodRate:7},
+  {name:'비단잉어',   species:'비단잉어',color:'#FF4444',fin:'#FFFFFF',hp:280,atk:28, def:15, income:8, xpRate:2,  xpNeed:700, evoCost:2000,foodRate:6},
+  {name:'아로와나',   species:'아로와나',color:'#C0C0C0',fin:'#87CEEB',hp:600,atk:60, def:35, income:18,xpRate:3,  xpNeed:1500,evoCost:5000,foodRate:5},
+  {name:'황금 아로와나',species:'아로와나',color:'#FFD700',fin:'#FFA500',hp:1200,atk:120,def:70,income:45,xpRate:5,xpNeed:9999,evoCost:0, foodRate:4},
+];
+const STAGE_INCOME=[0,2,4,8,18,45];
+const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
+const F_SHOP=[
+  {id:'newfish',name:'금붕어 치어 구매',price:55,  desc:'새 물고기 1마리',   type:'newfish'},
+  {id:'food10', name:'먹이 10개',     price:50,  desc:'포만감 +15씩',      type:'food',qty:10},
+  {id:'food30', name:'먹이 30개',     price:130, desc:'소량 할인',          type:'food',qty:30},
+  {id:'food100',name:'먹이 100개',    price:400, desc:'대량 할인',          type:'food',qty:100},
+  {id:'auto1',  name:'자동먹이통 I',  price:1200,desc:'30초마다 자동 급식', type:'auto',level:1},
+  {id:'auto2',  name:'자동먹이통 II', price:4000,desc:'15초마다 자동 급식', type:'auto',level:2},
+  {id:'lottery',name:'🎰 행운 복권',  price:300, desc:'1~5등 또는 꽝',     type:'lottery'},
+  {id:'rod1',   name:'하급 낚시대 Ⅰ',price:150, prob:0.005,desc:'1시간, 25%확률',type:'rod'},
+  {id:'rod2',   name:'하급 낚시대 Ⅱ',price:400, prob:0.012,desc:'1시간, 50%확률',type:'rod'},
+  {id:'rod3',   name:'하급 낚시대 Ⅲ',price:1000,prob:0.030,desc:'1시간, 85%확률',type:'rod'},
+  {id:'rod4',   name:'하급 낚시대 Ⅳ',price:3000,prob:0.080,desc:'1시간, ~100%',  type:'rod'},
+];
+const LOTTERY_PRIZES=[
+  {grade:'1등',amount:1000,prob:0.005,bg:'#FFD700',fg:'#7F4F00'},
+  {grade:'2등',amount:700, prob:0.025,bg:'#C0C0C0',fg:'#333'},
+  {grade:'3등',amount:500, prob:0.05, bg:'#CD7F32',fg:'#fff'},
+  {grade:'4등',amount:350, prob:0.15, bg:'#4472C4',fg:'#fff'},
+  {grade:'5등',amount:300, prob:0.25, bg:'#217346',fg:'#fff'},
+  {grade:'꽝', amount:0,   prob:0.52, bg:'#9E9E9E',fg:'#fff'},
+];
+
+const FG={
+  stage:1,hp:50,maxHp:50,fullness:80,xp:0,
+  money:100,food:5,autoLevel:0,
+  fishCount:1,tankLevel:0,tankMax:1,
+  rodActive:false,rodTimer:0,rodProb:0,
+  paused:false,pausedAt:null,isDead:false,
+  lastTick:Date.now(),
+  fishPos:null,
+  tickInterval:null,swimInterval:null,saveInterval:null,
+  cvs:null,ctx:null,
+};
+function fishStage(){return F_STAGES[FG.stage];}
+
+function fishResizeCanvas(){
+  if(!FG.cvs) return;
+  const a=FG.cvs.parentElement;
+  FG.cvs.width=a.clientWidth; FG.cvs.height=a.clientHeight;
+}
+
+function fishStartLoops(){
+  fishStopLoops(); FG.paused=false;
+  FG.tickInterval=setInterval(fishTick,1000);
+  FG.swimInterval=setInterval(fishDraw,50);
+  FG.saveInterval=setInterval(()=>fishSave(),30000);
+}
+function fishStopLoops(){
+  clearInterval(FG.tickInterval);clearInterval(FG.swimInterval);clearInterval(FG.saveInterval);
+  FG.tickInterval=null;FG.swimInterval=null;FG.saveInterval=null;
+}
+function fishPause(){
+  if(FG.paused) return; FG.paused=true; FG.pausedAt=Date.now(); fishStopLoops();
+  document.getElementById('f-status').textContent='⏸ 일시정지';
+}
+function fishResume(){
+  if(!FG.paused) return; FG.paused=false;
+  if(FG.pausedAt){const el=(Date.now()-FG.pausedAt)/1000;if(el>5)fishCalcOffline(el);FG.pausedAt=null;}
+  fishStartLoops(); fishRenderInfo();
+  document.getElementById('f-status').textContent='▶ 재개';
+  setTimeout(()=>fishUpdateStatus(),2000);
+}
+function fishExitConfirm(){
+  if(!confirm('로그아웃하시겠습니까?\n(물고기는 자동 저장됩니다)')) return;
+  fishSave();
+  fishStopLoops();
+  window.removeEventListener('resize',fishResizeCanvas);
+  if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
+  currentUsername=''; myName='';
+  document.getElementById('e-pw').value='';
+  eStatus('로그아웃되었습니다. 다시 로그인하세요.','#595959');
+  show('s-entry');
+}
+document.addEventListener('visibilitychange',()=>{
+  const active=document.getElementById('s-fishworld')?.classList.contains('on');
+  if(!active) return;
+  if(document.hidden){if(!FG.paused){FG._autoPaused=true;fishPause();}}
+  else{if(FG.paused&&FG._autoPaused){FG._autoPaused=false;fishResume();}}
+});
+
+function fishCalcOffline(seconds){
+  const s=fishStage();
+  const ticks=Math.min(seconds,14400);
+  FG.fullness=Math.max(0,FG.fullness-Math.floor(ticks/s.foodRate));
+  if(FG.fullness===0) FG.hp=Math.max(1,FG.hp-Math.floor(ticks/5));
+  const income=Math.floor(ticks/30)*(STAGE_INCOME[FG.stage]||2)*FG.fishCount;
+  FG.money+=income;
+  const xpGain=Math.floor(ticks/10)*s.xpRate*0.5;
+  FG.xp+=xpGain;
+  if(income>0||xpGain>0){
+    document.getElementById('f-status').textContent=`오프라인 보상: +${income}원 +${Math.floor(xpGain)}XP`;
+    setTimeout(()=>fishUpdateStatus(),3000);
+  }
+}
+
+function fishTick(){
+  if(FG.paused) return;
+  const s=fishStage(); const now=Date.now(); FG.lastTick=now;
+  if(FG.autoLevel>0&&FG.food>0){
+    const rate=FG.autoLevel===1?30:15;
+    if(Math.floor(now/1000)%rate===0){FG.food=Math.max(0,FG.food-1);FG.fullness=Math.min(100,FG.fullness+15);}
+  }
+  if(FG.rodActive){
+    FG.rodTimer--;
+    if(FG.rodTimer>0&&Math.floor(now/1000)%60===0){
+      if(Math.random()<FG.rodProb&&FG.fishCount<FG.tankMax){
+        FG.fishCount++;FG.fishPos=null;FG.rodActive=false;FG.rodTimer=0;FG.rodProb=0;
+        document.getElementById('f-status').textContent='🎣 낚았습니다! ('+FG.fishCount+'마리)';
+        setTimeout(()=>fishUpdateStatus(),3000);
+      }
+    }
+    if(FG.rodTimer<=0){FG.rodActive=false;FG.rodTimer=0;FG.rodProb=0;
+      document.getElementById('f-status').textContent='🎣 낚시대가 부러졌습니다 (허탕)';
+      setTimeout(()=>fishUpdateStatus(),3000);}
+  }
+  const fr=Math.max(2,Math.floor(s.foodRate/Math.sqrt(FG.fishCount)));
+  if(Math.floor(now/1000)%fr===0) FG.fullness=Math.max(0,FG.fullness-1);
+  if(FG.fullness<20){if(Math.floor(now/1000)%5===0) FG.hp=Math.max(0,FG.hp-1);}
+  else if(FG.fullness>60&&FG.hp<FG.maxHp){if(Math.floor(now/1000)%10===0) FG.hp=Math.min(FG.maxHp,FG.hp+1);}
+  if(FG.hp<=0){fishDie();return;}
+  if(Math.floor(now/1000)%30===0) FG.money+=(STAGE_INCOME[FG.stage]||2)*FG.fishCount;
+  if(FG.fullness>30&&Math.floor(now/1000)%10===0){
+    FG.xp+=s.xpRate;
+    if(FG.xp>=fishStage().xpNeed&&FG.stage<5) fishCheckEvoReady();
+  }
+  fishRenderInfo();
+}
+
+function fishDie(){
+  fishStopLoops(); FG.hp=0;FG.xp=0;FG.fullness=0;FG.isDead=true;
+  fishRenderInfo();
+  showResultNotify('💀','물고기가 죽었습니다 😢\n먹이를 주지 않아 체력이 다했습니다.');
+}
+
+function fishFeed(){
+  if(FG.food<=0){document.getElementById('f-status').textContent='먹이가 없습니다! 상점에서 구매하세요.';return;}
+  FG.food--;FG.fullness=Math.min(100,FG.fullness+15);fishRenderInfo();
+  document.getElementById('f-status').textContent='냠냠 🍤 (+15)';
+  setTimeout(()=>fishUpdateStatus(),1500);
+}
+function fishUpdateStatus(){
+  const s=fishStage();
+  document.getElementById('f-status').textContent=`${s.name} | ${FG.stage}/5단계 | ${STAGE_INCOME[FG.stage]||2}원/30초`;
+}
+function fishCheckEvoReady(){
+  const s=fishStage();const canEvo=FG.stage<5&&FG.xp>=s.xpNeed&&FG.money>=s.evoCost;
+  const btn=document.getElementById('f-evo-btn');
+  btn.style.opacity=canEvo?'1':'0.4';btn.style.outline=canEvo?'2px solid #217346':'none';
+}
+function fishEvolve(){
+  const s=fishStage();
+  if(FG.stage>=5){document.getElementById('f-status').textContent='이미 최고 단계!';return;}
+  if(FG.xp<s.xpNeed){document.getElementById('f-status').textContent=`XP 부족 (${Math.floor(FG.xp)}/${s.xpNeed})`;return;}
+  if(FG.money<s.evoCost){document.getElementById('f-status').textContent=`돈 부족 (${s.evoCost}원 필요)`;return;}
+  FG.money-=s.evoCost;FG.xp=0;FG.stage++;
+  const ns=fishStage();FG.maxHp=ns.hp;FG.hp=ns.hp;
+  document.getElementById('f-status').textContent=`🎉 진화! ${ns.name}`;
+  fishRenderInfo();
+}
+
+function fishRenderInfo(){
+  const s=fishStage();
+  document.getElementById('f-fish-name').textContent=s.name;
+  document.getElementById('f-fish-stage').textContent=`${FG.stage}단계 · ${s.species}`;
+  const hpPct=FG.hp/FG.maxHp*100;
+  document.getElementById('f-hp-bar').style.width=hpPct+'%';
+  document.getElementById('f-hp-bar').style.background=hpPct<30?'#EF4444':'#10B981';
+  document.getElementById('f-hp-txt').textContent=`${Math.ceil(FG.hp)}/${FG.maxHp}`;
+  document.getElementById('f-full-bar').style.width=FG.fullness+'%';
+  document.getElementById('f-full-bar').style.background=FG.fullness<20?'#EF4444':'#F59E0B';
+  document.getElementById('f-full-txt').textContent=`${Math.floor(FG.fullness)}/100`;
+  document.getElementById('f-xp-bar').style.width=Math.min(100,FG.xp/s.xpNeed*100)+'%';
+  document.getElementById('f-xp-txt').textContent=`${Math.floor(FG.xp)}/${s.xpNeed}`;
+  document.getElementById('f-income').textContent=(STAGE_INCOME[FG.stage]||2)+'원/30초';
+  document.getElementById('f-tank-info').textContent=`${FG.fishCount}/${FG.tankMax}마리`;
+  document.getElementById('f-money').textContent=FG.money;
+  document.getElementById('f-food-count').textContent=FG.food;
+  const nextS=FG.stage<5?F_STAGES[FG.stage+1]:null;
+  if(nextS){
+    document.getElementById('f-evo-xp').textContent=`⭐ ${Math.floor(FG.xp)}/${s.xpNeed}${FG.xp>=s.xpNeed?' ✓':''}`;
+    document.getElementById('f-evo-cost').textContent=`💰 ${s.evoCost}원${FG.money>=s.evoCost?' ✓':''}`;
+  } else {
+    document.getElementById('f-evo-info').innerHTML='<div style="font-weight:700;color:#217346">🏆 최고 단계!</div>';
+  }
+  const rodInfo=FG.rodActive?` | 🎣 ${Math.floor(FG.rodTimer/60)}분 남음`:'';
+  document.getElementById('f-auto-status').textContent=
+    (FG.autoLevel===0?'자동먹이통: 없음':FG.autoLevel===1?'자동먹이통 I':'자동먹이통 II')+rodInfo;
+  document.getElementById('f-cell').textContent=`B${FG.stage+3}`;
+  document.getElementById('f-formula').textContent=`=FISH("${s.name}",${FG.stage},"HP",${Math.ceil(FG.hp)},"포만감",${Math.floor(FG.fullness)})`;
+  fishCheckEvoReady(); fishUpdateStatus();
+}
+
+function fishDraw(){
+  const c=FG.ctx,cvs=FG.cvs; if(!c||!cvs) return;
+  const W=cvs.width,H=cvs.height; const s=fishStage();
+  c.fillStyle='#FFFFFF'; c.fillRect(0,0,W,H);
+  c.strokeStyle='#D0D0D0';c.lineWidth=0.5;
+  const cw=Math.max(24,W/14),ch=Math.max(18,H/9);
+  for(let x=0;x<=W;x+=cw){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
+  for(let y=0;y<=H;y+=ch){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
+  const COLS=['A','B','C','D','E','F','G','H','I','J','K','L'];
+  c.fillStyle='#9E9E9E';c.font='7px monospace';c.textAlign='center';
+  for(let i=0;i<Math.min(COLS.length,Math.ceil(W/cw));i++) c.fillText(COLS[i],i*cw+cw/2,8);
+  c.textAlign='right';
+  for(let i=0;i<Math.ceil(H/ch);i++) c.fillText(i+1,16,i*ch+ch*0.72);
+  if(!FG.fishPos||FG.fishPos.length!==FG.fishCount){
+    FG.fishPos=Array.from({length:FG.fishCount},(_,i)=>({
+      x:0.15+(i%4)*0.2+(Math.random()-.5)*.05,y:0.2+Math.floor(i/4)*.35+(Math.random()-.5)*.05,
+      dx:(Math.random()>.5?1:-1)*.003,dy:(Math.random()-.5)*.002
+    }));
+  }
+  const size=Math.min(W,H)*(.05+FG.stage*.012);
+  FG.fishPos.forEach((fp,idx)=>{
+    fp.x+=fp.dx;fp.y+=fp.dy;
+    if(fp.x<.08||fp.x>.92)fp.dx*=-1;if(fp.y<.1||fp.y>.9)fp.dy*=-1;
+    if(Math.random()<.008)fp.dy=(Math.random()-.5)*.003;
+    fp.dx=Math.max(-.006,Math.min(.006,fp.dx));
+    const fx=fp.x*W,fy=fp.y*H,dir=fp.dx>=0?1:-1;
+    c.fillStyle='rgba(0,0,0,0.06)';c.beginPath();c.ellipse(fx+2,fy+3,size,size*.45,0,0,Math.PI*2);c.fill();
+    c.fillStyle=s.fin;c.beginPath();c.moveTo(fx-dir*size*.8,fy);c.lineTo(fx-dir*size*1.4,fy-size*.5);c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
+    const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);g.addColorStop(0,s.fin);g.addColorStop(1,s.color);
+    c.fillStyle=g;c.beginPath();c.ellipse(fx,fy,size,size*.58,0,0,Math.PI*2);c.fill();
+    c.strokeStyle='rgba(0,0,0,0.12)';c.lineWidth=.7;c.stroke();
+    c.fillStyle='#fff';c.beginPath();c.arc(fx+dir*size*.5,fy-size*.1,size*.17,0,Math.PI*2);c.fill();
+    c.fillStyle='#222';c.beginPath();c.arc(fx+dir*size*.56,fy-size*.1,size*.09,0,Math.PI*2);c.fill();
+    if(FG.fullness>80){c.fillStyle='rgba(255,255,150,0.15)';c.beginPath();c.arc(fx,fy,size*1.3,0,Math.PI*2);c.fill();}
+    if(FG.hp/FG.maxHp<.2&&idx===0){c.strokeStyle='rgba(220,0,0,0.55)';c.lineWidth=1.5;c.beginPath();c.arc(fx,fy,size*1.4+Math.sin(Date.now()/200)*2,0,Math.PI*2);c.stroke();}
+    if(FG.fullness<30&&Math.random()<.03){c.fillStyle='rgba(150,150,255,0.35)';c.beginPath();c.arc(fx+(Math.random()-.5)*size,fy-size*1.1,1.5,0,Math.PI*2);c.fill();}
+  });
+  c.fillStyle='rgba(33,115,70,0.75)';c.font='bold 10px monospace';c.textAlign='right';
+  c.fillText(`🐟 ${FG.fishCount}/${FG.tankMax}마리`,W-6,H-6);
+}
+
+function fishSave(isDisconnect){
+  const data={stage:FG.stage,hp:FG.hp,maxHp:FG.maxHp,fullness:FG.fullness,xp:FG.xp,
+    money:FG.money,food:FG.food,autoLevel:FG.autoLevel,
+    fishCount:FG.fishCount,tankLevel:FG.tankLevel,tankMax:FG.tankMax,
+    rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,
+    stoppedByDisconnect:isDisconnect||false,lastSave:Date.now()};
+  localStorage.setItem('fishGame_v1',JSON.stringify(data));
+  if(!isDisconnect){
+    saveFishDataToDB(); // DB에도 저장
+    document.getElementById('f-save-status').textContent='저장 '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  }
+}
+window.addEventListener('beforeunload',()=>{
+  // Presence 즉시 해제 (접속자 목록에서 빠짐)
+  if(_ch){try{_ch.untrack();}catch(e){}}
+  if(!FG.tickInterval&&!FG.saveInterval) return;
+  fishSave(FISH_STOP_ON_DISCONNECT);
+});
+function fishLoad(){
+  try{
+    const raw=localStorage.getItem('fishGame_v1'); if(!raw) return;
+    const d=JSON.parse(raw);
+    FG.stage=d.stage||1;FG.hp=d.hp||50;FG.maxHp=d.maxHp||50;
+    FG.fullness=d.fullness||80;FG.xp=d.xp||0;FG.money=d.money??100;FG.food=d.food??5;
+    FG.autoLevel=d.autoLevel||0;FG.fishCount=d.fishCount||1;
+    FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
+    FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;
+    FG.isDead=false;
+    if(!(d.stoppedByDisconnect&&FISH_STOP_ON_DISCONNECT)&&d.lastSave){
+      const elapsed=(Date.now()-d.lastSave)/1000;
+      if(elapsed>10) fishCalcOffline(elapsed);
+    }
+    FG.lastTick=Date.now();
+  }catch(e){}
+}
+function fishReset(){
+  if(!confirm('저장 데이터를 삭제하고 처음부터 시작할까요?')) return;
+  localStorage.removeItem('fishGame_v1');
+  Object.assign(FG,{stage:1,hp:50,maxHp:50,fullness:80,xp:0,money:100,food:5,autoLevel:0,
+    fishCount:1,tankLevel:0,tankMax:1,rodActive:false,rodTimer:0,fishPos:null,isDead:false,lastTick:Date.now()});
+  fishRenderInfo();
+  document.getElementById('f-status').textContent='새 게임 시작!';
+  document.getElementById('f-save-status').textContent='저장 안 됨';
+}
+
+function fishOpenShop(){
+  const div=document.getElementById('f-shop-items');
+  div.innerHTML=F_SHOP.map(item=>{
+    const isOwned=(item.type==='auto'&&FG.autoLevel>=item.level)||(item.type==='rod'&&FG.rodActive);
+    const owned=isOwned?`<span style="color:#217346;font-weight:700">${item.type==='rod'?' ⏳낚시중':' ✓보유'}</span>`:'';
+    const disabled=isOwned||FG.money<item.price;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F0F0F0">
+      <div><div style="font-size:12px;font-weight:700">${item.name}${owned}</div><div style="font-size:10px;color:#888">${item.desc}</div></div>
+      <button onclick="fishBuy('${item.id}')" ${disabled?'disabled':''}
+        style="background:${disabled?'#E8E8E8':'#217346'};color:${disabled?'#999':'#fff'};border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:${disabled?'default':'pointer'};font-family:inherit;white-space:nowrap">
+        ${item.price}원</button></div>`;
+  }).join('');
+  if(FG.tankLevel<9){
+    const nl=FG.tankLevel+1,price=F_TANK_PRICES[nl],canBuy=FG.money>=price;
+    div.innerHTML+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0">
+      <div><div style="font-size:12px;font-weight:700">수조 확장 Lv.${nl}</div><div style="font-size:10px;color:#888">최대 ${nl+1}마리 (현재 ${FG.fishCount}/${FG.tankMax})</div></div>
+      <button onclick="fishBuyTank(${nl})" ${canBuy?'':'disabled'}
+        style="background:${canBuy?'#217346':'#E8E8E8'};color:${canBuy?'#fff':'#999'};border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:${canBuy?'pointer':'default'};font-family:inherit;white-space:nowrap">
+        ${price.toLocaleString()}원</button></div>`;
+  } else {
+    div.innerHTML+=`<div style="padding:8px 0;font-size:11px;color:#217346;font-weight:700;text-align:center">🏆 최대 수조 달성!</div>`;
+  }
+  document.getElementById('f-shop-modal').classList.add('on');
+}
+function fishBuyTank(level){
+  const price=F_TANK_PRICES[level];
+  if(FG.money<price||FG.tankLevel>=level) return;
+  FG.money-=price;FG.tankLevel=level;FG.tankMax=level+1;
+  fishRenderInfo();fishOpenShop();
+}
+function fishBuy(id){
+  const item=F_SHOP.find(i=>i.id===id); if(!item||FG.money<item.price) return;
+  if(item.type==='lottery'){FG.money-=item.price;hideDlg('f-shop-modal');buyLottery();return;}
+  if(item.type==='newfish'){
+    if(!FG.isDead){document.getElementById('f-status').textContent='물고기가 살아있습니다!';return;}
+    if(FG.fishCount>=FG.tankMax){document.getElementById('f-status').textContent='수조가 꽉 찼습니다!';return;}
+    FG.money-=item.price;FG.stage=1;FG.hp=50;FG.maxHp=50;FG.fullness=60;FG.xp=0;FG.isDead=false;
+    fishRenderInfo();fishStartLoops();hideDlg('f-shop-modal');return;
+  }
+  FG.money-=item.price;
+  if(item.type==='food') FG.food+=item.qty;
+  if(item.type==='auto') FG.autoLevel=Math.max(FG.autoLevel,item.level);
+  if(item.type==='rod'){
+    if(FG.rodActive){FG.money+=item.price;document.getElementById('f-status').textContent='이미 낚시 중!';return;}
+    FG.rodActive=true;FG.rodTimer=3600;FG.rodProb=item.prob;
+    document.getElementById('f-status').textContent=`🎣 ${item.name} 투입! 1시간 낚시 시작…`;
+    setTimeout(()=>fishUpdateStatus(),3000);
+  }
+  fishRenderInfo();fishOpenShop();
+}
+
+// ── 복권 ─────────────────────────────────────────────────
+let ltPrize=null,ltCells=[],ltRevealed=0;
+function buyLottery(){
+  if(FG.money<300){document.getElementById('f-status').textContent='복권 300원 필요!';return;}
+  FG.money-=300;
+  let r=Math.random(),cum=0;
+  for(const p of LOTTERY_PRIZES){cum+=p.prob;if(r<cum){ltPrize=p;break;}}
+  if(!ltPrize)ltPrize=LOTTERY_PRIZES[LOTTERY_PRIZES.length-1];
+  const no=String(Math.floor(Math.random()*9e5+1e5));
+  document.getElementById('lottery-no').textContent='복권번호: '+no;
+  const decoys=LOTTERY_PRIZES.filter(p=>p!==ltPrize);
+  const data=[];
+  for(let i=0;i<3;i++) data.push({prize:ltPrize,real:true});
+  for(let i=0;i<6;i++) data.push({prize:decoys[i%decoys.length],real:false});
+  for(let i=data.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[data[i],data[j]]=[data[j],data[i]];}
+  ltCells=data;ltRevealed=0;
+  const grid=document.getElementById('lottery-cells');grid.innerHTML='';
+  data.forEach((d,i)=>{
+    const el=document.createElement('div');
+    el.style.cssText='background:#B0B0B0;border:2px solid #888;border-radius:4px;height:58px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;font-weight:700;color:#fff;text-align:center;user-select:none;transition:background .2s';
+    el.innerHTML='🔒<br><span style="font-size:9px">긁어주세요</span>';
+    el.onclick=()=>lotteryReveal(i,el,d);grid.appendChild(el);
+  });
+  document.getElementById('lottery-result').style.display='none';
+  document.getElementById('lottery-modal').classList.add('on');
+  fishRenderInfo();
+}
+function lotteryReveal(idx,el,d){
+  if(ltCells[idx].done)return;
+  ltCells[idx].done=true;ltRevealed++;
+  el.style.background=d.prize.bg;el.style.color=d.prize.fg;el.style.cursor='default';
+  el.style.border=d.real?'2px solid #FFD700':'2px solid transparent';
+  el.innerHTML=d.prize.amount>0
+    ?`<div>${d.prize.grade}<br><strong>${d.prize.amount.toLocaleString()}원</strong></div>`
+    :`<div>꽝<br><span style="font-size:9px">기부 감사요</span></div>`;
+  if(ltRevealed>=9)lotteryResult();
+}
+function lotteryRevealAll(){
+  const els=document.getElementById('lottery-cells').children;
+  ltCells.forEach((d,i)=>{if(!d.done)lotteryReveal(i,els[i],d);});
+}
+function lotteryResult(){
+  const el=document.getElementById('lottery-result');el.style.display='block';
+  if(ltPrize.amount>0){
+    FG.money+=ltPrize.amount;
+    el.style.cssText=`display:block;text-align:center;font-size:14px;font-weight:800;padding:10px;border-radius:4px;margin-bottom:8px;background:${ltPrize.bg};color:${ltPrize.fg}`;
+    el.textContent=`🎉 ${ltPrize.grade} 당첨! +${ltPrize.amount.toLocaleString()}원`;fishRenderInfo();
+  } else {
+    el.style.cssText='display:block;text-align:center;font-size:13px;font-weight:800;padding:10px;border-radius:4px;margin-bottom:8px;background:#F2F2F2;color:#888;border:1px solid #C8C8C8';
+    el.textContent='😢 꽝... 기부 감사요!';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// 오목
+// ══════════════════════════════════════════════════════════
+const N=15,OCOLS=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'],ODIRS=[[0,1],[1,0],[1,1],[1,-1]];
+let oBoard,oTurn,oOver,oMode,oMyColor,oAiColor,oDiff,oTimeLimit,oTimerLeft,oTimerInterval,oLastMove,oWinCells,oMyPick=1;
+let lastOmokLoserColor=null;
+
+function startOmokOnline(){oMode='online';oMyColor=currentGame.myColor;oAiColor=3-oMyColor;show('s-omok');buildOmokTable();omokNewGame();showIngameChat(true);}
+
+function buildOmokTable(){
+  const tbl=document.getElementById('omok-tbl'); if(tbl.querySelector('thead'))return;
+  let h=`<thead><tr><th class="xcorner"></th>`;
+  OCOLS.forEach(c=>h+=`<th class="xcol-hdr">${c}</th>`);
+  h+=`</tr></thead><tbody>`;
+  for(let r=0;r<N;r++){h+=`<tr><th class="xrow-hdr">${r+1}</th>`;for(let c=0;c<N;c++)h+=`<td class="xcell" id="ox${r}_${c}" onclick="omokCell(${r},${c})"></td>`;h+=`</tr>`;}
+  tbl.innerHTML=h+'</tbody>';
+}
+function omokNewGame(){
+  stopOmokTimer();oBoard=Array.from({length:N},()=>new Int8Array(N));
+  oTurn=1;oOver=false;oLastMove=null;oWinCells=null;
+  if(oMode!=='online'){oDiff=document.getElementById('omok-diff').value;oTimeLimit=parseInt(document.getElementById('omok-time').value);oMyColor=oMyPick;oAiColor=3-oMyPick;}
+  else{oDiff='mid';oTimeLimit=0;}
+  renderOmok();omokStartTurn();
+}
+function omokToggleColor(){oMyPick=3-oMyPick;document.getElementById('omok-color-ico').textContent=oMyPick===1?'B':'W';document.getElementById('omok-color-lbl').textContent=oMyPick===1?'흑':'백';omokNewGame();}
+function renderOmok(){
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+    const el=document.getElementById(`ox${r}_${c}`);const v=oBoard[r][c];
+    let cl='xcell';if(v===1)cl+=' b1';if(v===2)cl+=' b2';
+    if(oLastMove&&oLastMove[0]===r&&oLastMove[1]===c)cl+=v===1?' lb':' lw';
+    if(oWinCells&&oWinCells.some(([wr,wc])=>wr===r&&wc===c))cl+=' win';el.className=cl;
+  }
+  if(oLastMove){const[r,c]=oLastMove;document.getElementById('omok-nb').textContent=OCOLS[c]+(r+1);}
+  const oppName=oMode==='online'?(currentGame?.opponentName||'상대'):'AI';
+  const myTurn=oMode==='online'?oTurn===oMyColor:oTurn!==oAiColor;
+  const turnTxt=oOver?'게임 종료':(myTurn?'⚡ 내 차례':`⏳ ${oppName} 차례`);
+  const ftEl=document.getElementById('omok-ft');
+  ftEl.textContent=`vs ${oppName}  |  ${turnTxt}`;
+  ftEl.style.fontWeight=myTurn&&!oOver?'800':'400';
+  ftEl.style.color=myTurn&&!oOver?'#217346':'#595959';
+  document.getElementById('omok-st').textContent=oOver?'완료':`${oTurn===1?'⬛ 흑':'🟫 백'}`;
+}
+function omokCell(r,c){
+  if(oOver||oBoard[r][c]) return;
+  if(oMode==='ai'&&oTurn!==oMyColor) return;
+  if(oMode==='online'&&oTurn!==oMyColor) return;
+  omokPlace(r,c);
+  if(oMode==='online') sendGameMsg({type:'game_move',data:{r,c}});
+}
+function omokPlace(r,c){
+  oBoard[r][c]=oTurn;oLastMove=[r,c];
+  if(omokCheckWin(r,c,oTurn)){oWinCells=omokGetWinCells(r,c,oTurn);renderOmok();omokEndGame(oTurn,false);return;}
+  let full=true;outer:for(let i=0;i<N;i++)for(let j=0;j<N;j++)if(!oBoard[i][j]){full=false;break outer;}
+  if(full){renderOmok();omokEndGame(0,false);return;}
+  oTurn=3-oTurn;renderOmok();omokStartTurn();
+}
+function omokStartTurn(){
+  stopOmokTimer();
+  if(oTimeLimit>0){
+    oTimerLeft=oTimeLimit;document.getElementById('omok-timer').textContent=`합계: ${oTimerLeft}`;
+    oTimerInterval=setInterval(()=>{
+      oTimerLeft--;document.getElementById('omok-timer').textContent=`합계: ${oTimerLeft}`;
+      if(oTimerLeft<=0){stopOmokTimer();const cands=omokCands();const[tr,tc]=cands[Math.floor(Math.random()*cands.length)];omokPlace(tr,tc);}
+    },1000);
+  } else document.getElementById('omok-timer').textContent='';
+  if(oMode==='ai'&&oTurn===oAiColor&&!oOver){document.getElementById('omok-st').textContent='계산 중...';setTimeout(omokDoAI,80);}
+}
+function stopOmokTimer(){if(oTimerInterval){clearInterval(oTimerInterval);oTimerInterval=null;}}
+function omokCheckWin(r,c,color){return ODIRS.some(([dr,dc])=>{let cnt=1;for(let i=1;i<5;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cnt++;}for(let i=1;i<5;i++){const nr=r-dr*i,nc=c-dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cnt++;}return cnt>=5;});}
+function omokGetWinCells(r,c,color){for(const[dr,dc]of ODIRS){const cells=[[r,c]];for(let i=1;i<5;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cells.push([nr,nc]);}for(let i=1;i<5;i++){const nr=r-dr*i,nc=c-dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cells.push([nr,nc]);}if(cells.length>=5)return cells;}return[];}
+function omokEndGame(winner,resigned){
+  oOver=true;stopOmokTimer();document.getElementById('omok-timer').textContent='';renderOmok();
+  if(winner!==0&&!resigned) lastOmokLoserColor=3-winner;
+  if(oMode==='online'&&!resigned) sendGameMsg({type:'game_end',data:{}});
+  const isMe=(oMode==='ai'&&winner===oMyColor)||(oMode==='online'&&winner===oMyColor);
+  let ico,txt;
+  if(winner===0){ico='ℹ️';txt='무승부';}
+  else if(resigned){ico='⚠️';txt=`${winner===1?'흑':'백'} 중단`;}
+  else{ico=isMe?'ℹ️':'⚠️';txt=oMode==='ai'?(isMe?'분석 결과: 흑 우세':'분석 결과: 백 우세'):`${winner===1?'⬛ 흑':'🟫 백'} 승리!`;}
+  showResultNotify(ico,txt);
+}
+function omokExit(){
+  if(!oOver&&oBoard){if(!confirm('종료하시겠습니까?'))return;}
+  showIngameChat(false);
+  if(oMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;updateMyPresence(false);}
+  show('s-fishworld');if(!FG.tickInterval)fishStartLoops();
+}
+function omokOnlineMove(data){
+  if(data.type==='restart'){
+    oMyColor=data.myColorWas===1?2:1;oAiColor=3-oMyColor;
+    oBoard=Array.from({length:N},()=>new Int8Array(N));
+    oTurn=1;oOver=false;oLastMove=null;oWinCells=null;lastOmokLoserColor=null;
+    closeResultNotify();renderOmok();omokStartTurn();
+  } else omokPlace(data.r,data.c);
+}
+// AI
+const OSEQ=(l,o)=>{if(l>=5)return 1e6;if(!o)return 0;return[[0,0,0],[0,1,2],[0,5,50],[0,500,5000],[0,10000,100000]][Math.min(l,4)][Math.min(o,2)]||0;};
+function omokEval(b,color){let s=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(!b[r][c])continue;const me=b[r][c]===color;for(const[dr,dc]of ODIRS){const pr=r-dr,pc=c-dc;if(pr>=0&&pr<N&&pc>=0&&pc<N&&b[pr][pc]===b[r][c])continue;let len=0,nr=r,nc=c;while(nr>=0&&nr<N&&nc>=0&&nc<N&&b[nr][nc]===b[r][c]){len++;nr+=dr;nc+=dc;}let open=0;if(r-dr>=0&&r-dr<N&&c-dc>=0&&c-dc<N&&b[r-dr][c-dc]===0)open++;if(nr>=0&&nr<N&&nc>=0&&nc<N&&b[nr][nc]===0)open++;s+=me?OSEQ(len,open):-OSEQ(len,open);}}return s;}
+function omokCands(){const vis=new Uint8Array(N*N),res=[];let any=false;for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(!oBoard[r][c])continue;any=true;for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const nr=r+dr,nc=c+dc;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc])continue;const k=nr*N+nc;if(!vis[k]){vis[k]=1;res.push([nr,nc]);}}}return any?res:[[7,7]];}
+function omokWinAt(b,r,c,color){for(const[dr,dc]of ODIRS){let cnt=1;for(let i=1;i<5;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||b[nr][nc]!==color)break;cnt++;}for(let i=1;i<5;i++){const nr=r-dr*i,nc=c-dc*i;if(nr<0||nr>=N||nc<0||nc>=N||b[nr][nc]!==color)break;cnt++;}if(cnt>=5)return true;}return false;}
+function omokMM(b,depth,a,be,isMax,aiC){if(!depth)return omokEval(b,aiC);const opp=3-aiC,cands=omokCands();if(!cands.length)return 0;const cur=isMax?aiC:opp;const sc=cands.map(([r,c])=>{let s=0;for(const[dr,dc]of ODIRS){let cnt=1;for(let i=1;i<3;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||b[nr][nc]!==cur)break;cnt++;}s+=cnt*cnt;}return[r,c,s];}).sort((x,y)=>y[2]-x[2]).slice(0,depth>=3?12:20);if(isMax){let best=-Infinity;for(const[r,c]of sc){b[r][c]=aiC;if(omokWinAt(b,r,c,aiC)){b[r][c]=0;return 1e6+depth;}const v=omokMM(b,depth-1,a,be,false,aiC);b[r][c]=0;if(v>best)best=v;a=Math.max(a,best);if(be<=a)break;}return best;}else{let best=Infinity;for(const[r,c]of sc){b[r][c]=opp;if(omokWinAt(b,r,c,opp)){b[r][c]=0;return-1e6-depth;}const v=omokMM(b,depth-1,a,be,true,aiC);b[r][c]=0;if(v<best)best=v;be=Math.min(be,best);if(be<=a)break;}return best;}}
+function omokDoAI(){if(oOver)return;const[r,c]=omokGetAI();omokPlace(r,c);}
+function omokGetAI(){const DEPTH={easy:0,mid:2,hard:3,expert:4}[oDiff];const cands=omokCands();for(const[r,c]of cands){oBoard[r][c]=oAiColor;if(omokWinAt(oBoard,r,c,oAiColor)){oBoard[r][c]=0;return[r,c];}oBoard[r][c]=0;}for(const[r,c]of cands){oBoard[r][c]=oMyColor;if(omokWinAt(oBoard,r,c,oMyColor)){oBoard[r][c]=0;return[r,c];}oBoard[r][c]=0;}if(oDiff==='easy'&&Math.random()<.5)return cands[Math.floor(Math.random()*Math.min(cands.length,8))];if(DEPTH===0){let best=-Infinity,bm=cands[0];for(const[r,c]of cands){oBoard[r][c]=oAiColor;const s=omokEval(oBoard,oAiColor);oBoard[r][c]=0;if(s>best){best=s;bm=[r,c];}}return bm;}const sorted=[...cands].sort((a,b)=>{oBoard[a[0]][a[1]]=oAiColor;const sa=omokEval(oBoard,oAiColor);oBoard[a[0]][a[1]]=0;oBoard[b[0]][b[1]]=oAiColor;const sb=omokEval(oBoard,oAiColor);oBoard[b[0]][b[1]]=0;return sb-sa;}).slice(0,15);let best=-Infinity,bm=sorted[0];for(const[r,c]of sorted){oBoard[r][c]=oAiColor;const v=omokMM(oBoard,DEPTH-1,-Infinity,Infinity,false,oAiColor);oBoard[r][c]=0;if(v>best){best=v;bm=[r,c];}}return bm;}
+
+// ══════════════════════════════════════════════════════════
+// 숫자야구
+// ══════════════════════════════════════════════════════════
+let bbDigits=4,bbDiff='easy',bbMode='ai',bbMySecret='',bbAISecret='',bbAICands=[],bbMyHist=[],bbAIHist=[],bbOver=false,bbMyTurn=true;
+
+function selBBDiff(d){bbDiff=d;document.getElementById('bb-easy').classList.toggle('on',d==='easy');document.getElementById('bb-hard').classList.toggle('on',d==='hard');}
+function bbExit(){
+  showIngameChat(false);
+  if(bbMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;updateMyPresence(false);}
+  show('s-fishworld');if(!FG.tickInterval)fishStartLoops();
+}
+function buildBBSecretInput(){
+  const wrap=document.getElementById('bb-secret-inp');wrap.innerHTML='';
+  for(let i=0;i<bbDigits;i++){
+    const inp=document.createElement('input');
+    inp.style.cssText='width:34px;height:34px;border:2px solid #7F9DB9;text-align:center;font-size:18px;font-weight:800;font-family:monospace;outline:none;background:#fff;color:#1F1F1F';
+    inp.maxLength=1;inp.inputMode='numeric';inp.type='password';
+    inp.addEventListener('input',e=>{e.target.value=e.target.value.replace(/[^0-9]/g,'').slice(-1);if(e.target.value&&i<bbDigits-1)wrap.children[i+1].focus();});
+    inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!e.target.value&&i>0)wrap.children[i-1].focus();});
+    inp.addEventListener('focus',()=>inp.style.borderColor='#217346');
+    inp.addEventListener('blur',()=>inp.style.borderColor='#7F9DB9');
+    wrap.appendChild(inp);
+  }
+}
+function getBBSecretInput(){const wrap=document.getElementById('bb-secret-inp');return wrap?Array.from(wrap.children).map(el=>el.value).join(''):'';}
+function bbShuffleSecret(){const s=bbRandSecret(bbDigits);const wrap=document.getElementById('bb-secret-inp');if(!wrap)return;[...wrap.children].forEach((el,i)=>el.value=s[i]);}
+function validateBBSecret(s){if(s.length<bbDigits)return '4자리를 모두 입력하세요';if(s[0]==='0')return '첫 자리는 0 불가';if(new Set(s).size<bbDigits)return '중복 없이 입력하세요';return null;}
+function openBBSetup(){show('s-bb-setup');setTimeout(()=>{buildBBSecretInput();document.getElementById('bb-secret-inp')?.children[0]?.focus();},50);}
+function startBBGame(){
+  const s=getBBSecretInput(),err=validateBBSecret(s);
+  if(err){alert(err);return;}
+  bbMyHist=[];bbAIHist=[];bbOver=false;bbMySecret=s;bbAISecret=bbRandSecret(bbDigits);bbAICands=bbGenAll(bbDigits);
+  show('s-bb-game');document.getElementById('bb-ai-panel').style.display='flex';
+  document.getElementById('bb-ai-panel-hdr').textContent='AI 입력 기록';
+  document.getElementById('bb-nb').textContent='A1';buildBBInput();renderBBHist();
+  document.getElementById('bb-st').textContent=`내 비밀번호: ${bbMySecret}  |  AI 번호를 맞혀보세요!`;
+  document.getElementById('bb-status-bar').textContent='진행 중';
+}
+function startBBOnline(){
+  show('s-bb-setup');
+  setTimeout(()=>{buildBBSecretInput();document.getElementById('bb-secret-inp')?.children[0]?.focus();},50);
+  document.querySelector('.bb-start-cell').onclick=doStartBBOnline;
+}
+function doStartBBOnline(){
+  const s=getBBSecretInput(),err=validateBBSecret(s);
+  if(err){alert(err);return;}
+  document.querySelector('.bb-start-cell').onclick=startBBGame;
+  showIngameChat(true);
+  bbMode='online';bbMyHist=[];bbAIHist=[];bbOver=false;bbMySecret=s;
+  bbMyTurn=(currentGame.myColor===1);
+  show('s-bb-game');document.getElementById('bb-ai-panel-hdr').textContent='상대방 입력 기록';
+  buildBBInput();renderBBHist();
+  document.getElementById('bb-st').textContent=`내 비밀번호: ${bbMySecret}  |  ${bbMyTurn?'✏️ 내 차례':'⏳ 상대 차례'}`;
+}
+function bbGenAll(d){const res=[];function gen(cur,used){if(cur.length===d){if(cur[0]!=='0')res.push(cur.join(''));return;}for(const x of '0123456789'){if(!used.has(x)){used.add(x);cur.push(x);gen(cur,used);cur.pop();used.delete(x);}}}gen([],new Set());return res;}
+function bbRandSecret(d){const all=bbGenAll(d);return all[Math.floor(Math.random()*all.length)];}
+function bbScore(secret,guess){let s=0,b=0;for(let i=0;i<secret.length;i++){if(secret[i]===guess[i])s++;else if(secret.includes(guess[i]))b++;}return{s,b};}
+function buildBBInput(){
+  const wrap=document.getElementById('bb-inp');wrap.innerHTML='';
+  for(let i=0;i<bbDigits;i++){const inp=document.createElement('input');inp.className='bb-digit';inp.type='text';inp.maxLength=1;inp.inputMode='numeric';inp.dataset.i=i;inp.addEventListener('input',e=>{e.target.value=e.target.value.replace(/[^0-9]/g,'').slice(-1);if(e.target.value&&i<bbDigits-1)wrap.children[i+1].focus();});inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!e.target.value&&i>0)wrap.children[i-1].focus();if(e.key==='Enter')bbSubmit();});wrap.appendChild(inp);}
+}
+function getBBInput(){return Array.from(document.getElementById('bb-inp').children).map(el=>el.value).join('');}
+function clearBBInput(){Array.from(document.getElementById('bb-inp').children).forEach(el=>el.value='');document.getElementById('bb-inp').children[0]?.focus();}
+function bbSubmit(){
+  if(bbOver) return;
+  const guess=getBBInput();
+  if(guess.length<bbDigits){document.getElementById('bb-st').textContent=bbDigits+'자리 입력';return;}
+  if(new Set(guess).size<bbDigits){document.getElementById('bb-st').textContent='중복 없이';return;}
+  if(guess[0]==='0'){document.getElementById('bb-st').textContent='첫 자리 0 불가';return;}
+  if(bbMode==='ai'){
+    const{s,b}=bbScore(bbAISecret,guess);bbMyHist.push({guess,s,b});renderBBHist();clearBBInput();
+    document.getElementById('bb-nb').textContent=`C${bbMyHist.length}`;
+    document.getElementById('bb-ft').textContent=`="${guess}" → ${s}S${b}B`;
+    if(s===bbDigits){bbOver=true;showResultNotify('ℹ️',`정답! AI 번호: ${bbAISecret}`);return;}
+    setTimeout(()=>{
+      if(bbOver) return;
+      const aiGuess=bbDiff==='easy'?bbAICands[Math.floor(Math.random()*Math.min(bbAICands.length,5))]:bbAICands[0];
+      if(!aiGuess) return;
+      const r=bbScore(bbMySecret,aiGuess);bbAIHist.push({guess:aiGuess,s:r.s,b:r.b});
+      bbAICands=bbAICands.filter(c=>{const x=bbScore(c,aiGuess);return x.s===r.s&&x.b===r.b;});
+      renderBBHist();document.getElementById('bb-st').textContent=`내 번호: ${bbMySecret} | ${bbAICands.length}개 남음`;
+      document.getElementById('bb-status-bar').textContent=`내 ${bbMyHist.length}회 | AI ${bbAIHist.length}회`;
+      if(r.s===bbDigits){bbOver=true;showResultNotify('⚠️',`AI 정답! 내 번호: ${bbMySecret}`);}
+    },600);
+  } else if(bbMode==='online'){
+    if(!bbMyTurn){document.getElementById('bb-st').textContent='상대방 차례';return;}
+    bbMyHist.push({guess,s:'?',b:'?'});renderBBHist();clearBBInput();
+    sendGameMsg({type:'game_move',data:{type:'guess',guess}});
+    bbMyTurn=false;document.getElementById('bb-st').textContent='상대가 계산 중…';
+  }
+}
+function bbOnlineMove(data){
+  if(data.type==='guess'){
+    const{s,b}=bbScore(bbMySecret,data.guess);bbAIHist.push({guess:data.guess,s,b});renderBBHist();
+    sendGameMsg({type:'game_move',data:{type:'result',s,b}});
+    if(s===bbDigits){bbOver=true;showResultNotify('⚠️',`상대 정답! 내 번호: ${bbMySecret}`);}
+    else{bbMyTurn=true;bbUpdateOnlineSt();}
+  } else if(data.type==='result'){
+    const last=bbMyHist[bbMyHist.length-1];if(last){last.s=data.s;last.b=data.b;}renderBBHist();
+    if(data.s===bbDigits){bbOver=true;showResultNotify('ℹ️','내가 맞혔습니다!');}
+    else{bbMyTurn=false;bbUpdateOnlineSt();}
+  }
+}
+function bbUpdateOnlineSt(){
+  document.getElementById('bb-st').textContent=bbMyTurn
+    ?`내 번호: ${bbMySecret}  |  ✏️ 내 차례`:`내 번호: ${bbMySecret}  |  ⏳ 상대 차례`;
+  document.getElementById('bb-status-bar').textContent=`내 ${bbMyHist.length}회 | 상대 ${bbAIHist.length}회`;
+}
+function renderBBHist(){
+  ['my','ai'].forEach(who=>{
+    const div=document.getElementById(`bb-${who}-hist`); if(!div) return;
+    const hist=who==='my'?bbMyHist:bbAIHist;
+    div.innerHTML=hist.map((h,i)=>`
+      <div class="bb-hist-row" style="${i===hist.length-1?'border-top:2px dashed #9DC3E6;margin-top:12px;padding-top:6px':''}">
+        <span style="font-size:10px;color:#9CA3AF;min-width:18px">${i+1}</span>
+        <span class="bb-hist-num">${h.guess}</span>
+        <span class="bb-hist-res"><span class="s">${h.s}S</span> <span class="b">${h.b}B</span></span>
+      </div>`).join('');
+    div.scrollTop=div.scrollHeight;
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// 결과 알림 & 재시작
+// ══════════════════════════════════════════════════════════
+function showResultNotify(ico,txt){
+  document.getElementById('result-ico').textContent=ico;
+  document.getElementById('result-txt').textContent=txt;
+  const isOnline=(oMode==='online'||bbMode==='online');
+  const btn=document.getElementById('result-confirm-btn');
+  if(btn) btn.textContent=isOnline?'로비로 돌아가기':'확인';
+  document.getElementById('result-notify').classList.add('on');
+}
+function closeResultNotify(){document.getElementById('result-notify').classList.remove('on');}
+function confirmResult(){
+  closeResultNotify();
+  if(oMode==='online'||bbMode==='online'){
+    sendGameMsg({type:'game_end',data:{}}); currentGame=null; showIngameChat(false);
+    updateMyPresence(false); show('s-fishworld'); if(!FG.tickInterval)fishStartLoops();
+  }
+}
+function restartFromResult(){
+  closeResultNotify();
+  const scrId=document.querySelector('.scr.on')?.id;
+  if(scrId==='s-omok'){
+    if(oMode==='online'){
+      if(lastOmokLoserColor!==null){oMyColor=lastOmokLoserColor===oMyColor?1:2;oAiColor=3-oMyColor;}
+      oBoard=Array.from({length:N},()=>new Int8Array(N));oTurn=1;oOver=false;oLastMove=null;oWinCells=null;lastOmokLoserColor=null;
+      renderOmok();omokStartTurn();
+      sendGameMsg({type:'game_move',data:{type:'restart',myColorWas:oMyColor}});
+    } else {
+      if(lastOmokLoserColor!==null)oMyColor=lastOmokLoserColor;oAiColor=3-oMyColor;lastOmokLoserColor=null;omokNewGame();
+    }
+  } else if(scrId==='s-bb-game'){
+    if(bbMode==='online')startBBOnline();else startBBGame();
+  } else if(scrId==='s-fishworld'&&FG.isDead){
+    if(FG.money<55){document.getElementById('result-txt').textContent='돈 부족! (금붕어 치어 55원)\n현재: '+FG.money+'원';return;}
+    FG.money-=55;FG.stage=1;FG.hp=50;FG.maxHp=50;FG.fullness=60;FG.xp=0;FG.isDead=false;
+    fishRenderInfo();fishStartLoops();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// 보스키 (S/P)
+// ══════════════════════════════════════════════════════════
+let bossKeyOn=false;
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  if((e.key==='s'||e.key==='S')&&!bossKeyOn){
+    bossKeyOn=true;
+    document.getElementById('boss-overlay').style.display='block';
+    stopOmokTimer();
+    if(!FG.paused&&FG.tickInterval){FG._bossPaused=true;fishPause();}
+  }
+  if((e.key==='p'||e.key==='P')&&bossKeyOn){
+    bossKeyOn=false;
+    document.getElementById('boss-overlay').style.display='none';
+    if(FG._bossPaused){FG._bossPaused=false;fishResume();}
+    if(!oOver&&oBoard&&oMode==='online') omokStartTurn();
+    const chatMsg='상사 크리 ☠️ 잠시 자리 비웠습니다';
+    const msg={fromId:myId,fromName:myName,text:chatMsg};
+    sbSend('chat',msg);addChatMsg(msg);
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+// 초기화 & 업데이트 체크
+// ══════════════════════════════════════════════════════════
+(function(){
+  const saved=localStorage.getItem('u1_name')||'';
+  const el=document.getElementById('e-name');
+  if(el&&saved) el.value=saved;
+})();
+
+// ══════════════════════════════════════════════════════════
+// 관리자
+// ══════════════════════════════════════════════════════════
+let _admEditTarget=null; // {username, server, fish_data}
+
+function adminInit(){
+  document.getElementById('adm-formula-server').textContent=ACTIVE_SERVER;
+  adminLoadUsers();
+  // 접속자 수 실시간 업데이트
+  setInterval(()=>{
+    const cnt=lobbyPlayers.length;
+    document.getElementById('adm-online-count').textContent=cnt;
+    document.getElementById('adm-online-count2').textContent=cnt;
+  },2000);
+}
+
+async function adminLoadUsers(){
+  document.getElementById('adm-status').textContent='불러오는 중…';
+  const filter=document.getElementById('adm-server-filter').value;
+  let query=_sb.from('fish_accounts').select('username,server,fish_data,updated_at').order('updated_at',{ascending:false});
+  if(filter!=='ALL') query=query.eq('server',filter);
+  const{data,error}=await query;
+  if(error){document.getElementById('adm-status').textContent='오류: '+error.message;return;}
+  // 통계 계산
+  const total=data.length;
+  const test1=data.filter(r=>r.server==='TEST-1').length;
+  const u1=data.filter(r=>r.server==='U1').length;
+  document.getElementById('adm-total-count').textContent=total;
+  document.getElementById('adm-test1-count').textContent=test1;
+  document.getElementById('adm-u1-count').textContent=u1;
+  document.getElementById('adm-status').textContent=`총 ${total}명 (필터: ${filter})`;
+  adminRenderTable(data);
+}
+
+function adminRenderTable(rows){
+  const STAGES=['','금붕어 치어','금붕어','비단잉어','아로와나','황금 아로와나'];
+  const tbody=document.getElementById('adm-user-tbody');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#888;padding:20px">유저 없음</td></tr>';return;}
+  tbody.innerHTML=rows.map((r,i)=>{
+    const fd=r.fish_data||{};
+    const stage=fd.stage||1;
+    const money=(fd.money??0).toLocaleString();
+    const food=fd.food??0;
+    const hp=fd.hp??0;
+    const lastSave=fd.lastSave?new Date(fd.lastSave).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'없음';
+    const isAdmin=r.username===ADMIN_USERNAME;
+    const svrBadge=r.server==='TEST-1'
+      ?'<span style="background:#E2EFDA;color:#375623;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700">TEST-1</span>'
+      :'<span style="background:#FFF2CC;color:#7F6000;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700">U1</span>';
+    return `<tr class="${isAdmin?'admin-row':''}">
+      <td style="text-align:center;color:#888">${i+1}</td>
+      <td style="font-weight:700">${esc(r.username)}${isAdmin?' 👑':''}</td>
+      <td>${svrBadge}</td>
+      <td>${stage}단계 · ${STAGES[stage]||''}</td>
+      <td style="text-align:right;font-family:monospace">${money}원</td>
+      <td style="text-align:right">${food}개</td>
+      <td style="text-align:right">${Math.ceil(hp||0)}</td>
+      <td style="color:#888;font-size:10px">${lastSave}</td>
+      <td style="text-align:center">${isAdmin?'<span style="font-size:10px;color:#888">관리자</span>'
+        :`<button class="adm-btn blue" onclick="adminOpenEdit('${r.username}','${r.server}')">수정</button>`}</td>
+    </tr>`;
+  }).join('');
+}
+
+function adminOpenEdit(username,server){
+  const tbody=document.getElementById('adm-user-tbody');
+  const rows=Array.from(tbody.querySelectorAll('tr'));
+  // 해당 유저 데이터 찾기 (이미 로드된 데이터에서)
+  _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).single()
+    .then(({data})=>{
+      if(!data) return;
+      _admEditTarget={username,server,fish_data:data.fish_data||{}};
+      const fd=data.fish_data||{};
+      document.getElementById('adm-edit-title').textContent=`유저: ${username} (${server})`;
+      document.getElementById('adm-edit-stage').value=fd.stage||1;
+      document.getElementById('adm-edit-money').value=fd.money||0;
+      document.getElementById('adm-edit-food').value=fd.food||0;
+      document.getElementById('adm-edit-hp').value=Math.ceil(fd.hp||0);
+      document.getElementById('adm-edit-modal').classList.add('on');
+    });
+}
+
+async function adminSaveEdit(){
+  if(!_admEditTarget) return;
+  const{username,server,fish_data}=_admEditTarget;
+  const stage=parseInt(document.getElementById('adm-edit-stage').value);
+  const money=parseInt(document.getElementById('adm-edit-money').value)||0;
+  const food=parseInt(document.getElementById('adm-edit-food').value)||0;
+  const hp=parseInt(document.getElementById('adm-edit-hp').value)||0;
+  const STAGES=[null,{hp:50},{hp:120},{hp:280},{hp:600},{hp:1200}];
+  const maxHp=STAGES[stage]?.hp||50;
+  const newData={...fish_data,stage,money,food,hp:Math.min(hp,maxHp),maxHp,lastSave:Date.now()};
+  const{error}=await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',username).eq('server',server);
+  if(error){alert('저장 실패: '+error.message);return;}
+  hideDlg('adm-edit-modal');
+  document.getElementById('adm-status').textContent=`${username} 데이터 수정 완료`;
+  adminLoadUsers();
+}
+
+async function adminResetServer(){
+  const filter=document.getElementById('adm-server-filter').value;
+  const target=filter==='ALL'?'전체 서버':filter+' 서버';
+  if(!confirm(`⚠️ ${target}의 모든 유저 데이터를 삭제합니다.\n관리자(${ADMIN_USERNAME}) 계정은 유지됩니다.\n\n정말 초기화하시겠습니까?`)) return;
+  let query=_sb.from('fish_accounts').delete().neq('username',ADMIN_USERNAME);
+  if(filter!=='ALL') query=query.eq('server',filter);
+  const{error}=await query;
+  if(error){alert('초기화 실패: '+error.message);return;}
+  document.getElementById('adm-status').textContent=`${target} 초기화 완료`;
+  adminLoadUsers();
+}
+
+async function adminEnterGame(){
+  const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',ADMIN_USERNAME).eq('server',ACTIVE_SERVER).single();
+  const dbData=data?.fish_data||{};
+  if(dbData&&Object.keys(dbData).length>0) applyFishData(dbData); else fishLoad();
+  // 관리자 돌아가기 버튼 표시
+  const admBtn=document.getElementById('adm-back-btn');
+  if(admBtn) admBtn.style.display='flex';
+  show('s-fishworld');
+  setTimeout(()=>{
+    FG.cvs=document.getElementById('f-canvas');
+    if(FG.cvs){FG.ctx=FG.cvs.getContext('2d');fishResizeCanvas();window.addEventListener('resize',fishResizeCanvas);}
+    fishStartLoops(); fishRenderInfo();
+  },80);
+}
+
+function backToAdmin(){
+  fishSave();
+  fishStopLoops();
+  window.removeEventListener('resize',fishResizeCanvas);
+  show('s-admin');
+  adminLoadUsers();
+}
+
+function adminLogout(){
+  if(!confirm('관리자 로그아웃 하시겠습니까?')) return;
+  fishStopLoops();
+  if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
+  currentUsername=''; myName='';
+  document.getElementById('e-pw').value='';
+  const admBtn=document.getElementById('adm-back-btn');
+  if(admBtn) admBtn.style.display='none';
+  eStatus('로그아웃되었습니다.','#595959');
+  show('s-entry');
+}
+
+function checkForUpdate(){
+  if(location.protocol==='file:') return;
+  fetch(location.href+'?_='+Date.now(),{cache:'no-store'})
+    .then(r=>r.text())
+    .then(html=>{
+      const m=html.match(/const BUILD\s*=\s*['"]([^'"]+)['"]/);
+      if(m&&m[1]!==BUILD) document.getElementById('update-notify').classList.add('on');
+    }).catch(()=>{});
+}
+setTimeout(checkForUpdate,60000);
+setInterval(checkForUpdate,300000);
+</script>
+</body>
+</html>
