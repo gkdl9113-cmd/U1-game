@@ -854,13 +854,15 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 <!-- 업데이트 알림 -->
 <div class="xl-notify-ov" id="update-notify" style="z-index:2000">
   <div class="xl-notify">
-    <div class="xl-notify-title">🔄 U1 수족관 — 업데이트 알림</div>
+    <div class="xl-notify-title">🔄 U1 수족관 — 새 버전 업데이트</div>
     <div class="xl-notify-body"><div class="xl-notify-ico">🆕</div>
-      <div class="xl-notify-txt">새 버전이 업데이트 됐습니다.<br>지금 새로고침하시겠습니까?<br><span style="font-size:10px;color:#888">(나중에 누르면 다음 체크 시 다시 알림)</span></div>
+      <div class="xl-notify-txt">
+        새 버전이 있습니다. 자동 저장 후 업데이트합니다.<br>
+        <span id="update-cd-txt" style="font-size:13px;font-weight:700;color:#217346"></span>
+      </div>
     </div>
     <div class="xl-notify-btns">
-      <button class="xl-notify-btn" onclick="document.getElementById('update-notify').classList.remove('on')">나중에</button>
-      <button class="xl-notify-btn ok" onclick="location.reload(true)">지금 새로고침</button>
+      <button class="xl-notify-btn ok" onclick="doUpdateNow()">지금 업데이트</button>
     </div>
   </div>
 </div>
@@ -3455,13 +3457,44 @@ function battleExit(){
 }
 
 
+let _updateCdInterval=null;
+let _updateTriggered=false;
+
+function doUpdateNow(){
+  clearInterval(_updateCdInterval);
+  if(currentUsername) fishSave();
+  location.reload(true);
+}
+
+function triggerAutoUpdate(){
+  if(_updateTriggered) return; // 중복 방지
+  _updateTriggered=true;
+  // 즉시 저장
+  if(currentUsername) fishSave();
+  // 게임 중이면 30초, 아니면 10초
+  const inGame=!!(currentGame||
+    document.getElementById('s-omok')?.classList.contains('on')||
+    document.getElementById('s-bb-game')?.classList.contains('on')||
+    document.getElementById('s-battle')?.classList.contains('on'));
+  let secs=inGame?30:10;
+  document.getElementById('update-notify').classList.add('on');
+  const cdEl=document.getElementById('update-cd-txt');
+  const update=()=>{
+    if(cdEl) cdEl.textContent=`${secs}초 후 자동 업데이트${inGame?' (게임 종료 대기)':''}`;
+    if(secs<=0){clearInterval(_updateCdInterval);doUpdateNow();}
+    secs--;
+  };
+  update();
+  _updateCdInterval=setInterval(update,1000);
+}
+
 function checkForUpdate(){
-  if(location.protocol==='file:') return;
+  if(location.protocol==='file:'||_updateTriggered) return;
   fetch(location.href+'?_='+Date.now(),{cache:'no-store'})
     .then(r=>r.text())
     .then(html=>{
       const m=html.match(/const BUILD\s*=\s*['"]([^'"]+)['"]/);
-      if(m&&m[1]!==BUILD) document.getElementById('update-notify').classList.add('on');
+      if(m&&m[1]!==BUILD) triggerAutoUpdate();
     }).catch(()=>{});
 }
 // 15초 후 첫 체크, 이후 2분마다 반복
