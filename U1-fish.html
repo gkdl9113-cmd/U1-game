@@ -1729,8 +1729,11 @@ function getFishSellPrice(f){
   const sp=F_SPECIES[type]||F_SPECIES.goldfish;
   let evoCostSum=0;
   for(let s=1;s<stage;s++) evoCostSum+=(sp[s]?.evoCost||0);
-  // 획득비용 35% (착취 방지) + 진화비용 60% (진화 가치 반영)
-  return Math.max(5,Math.round(baseCost*0.35+evoCostSum*0.60));
+  const total=baseCost+evoCostSum;
+  // 금붕어 치어만 손해 (35%) → 직접 구매 착취 방지
+  // 그 외 전부 10% 이득 (110%)
+  if(type==='goldfish'&&stage===1) return Math.max(5,Math.round(total*0.35));
+  return Math.round(total*1.10);
 }
 
 function sellFish(idx){
