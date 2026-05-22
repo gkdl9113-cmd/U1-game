@@ -1038,14 +1038,14 @@ function enterFishWorldWithData(dbData){
 function applyFishData(d){
   if(!d||Object.keys(d).length===0) return;
   if(d.fishes&&Array.isArray(d.fishes)&&d.fishes.length>0){
-    FG.fishes=d.fishes;
+    FG.fishes=d.fishes.map(f=>({...f,type:f.type||'goldfish'}));
   } else if(d.stage){
     FG.fishes=[{id:'legacy',stage:d.stage||1,hp:d.hp||50,maxHp:d.maxHp||50,fullness:d.fullness||80,xp:d.xp||0,isDead:false}];
   }
   if(!FG.fishes||FG.fishes.length===0) FG.fishes=[newFish(1)];
   FG.money=d.money??100;FG.food=d.food??5;FG.autoLevel=d.autoLevel||0;
   FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
-  FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;
+  FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;FG.rodSpecies=d.rodSpecies||null;
   if(d.lastSave){
     const elapsed=(Date.now()-d.lastSave)/1000;
     if(elapsed>10&&elapsed<86400*30) fishCalcOfflineAutoFeed(elapsed);
@@ -1068,7 +1068,7 @@ async function saveFishDataToDB(){
     fishes:cleanFishes,
     money:FG.money,food:FG.food,autoLevel:FG.autoLevel,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
-    rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,
+    rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,rodSpecies:FG.rodSpecies,
     lastSave:Date.now()
   };
   try{
@@ -1246,14 +1246,29 @@ const F_GRADES={
   '영웅':{label:'영웅',bg:'#FFE5CC',fg:'#C05000'},
   '전설':{label:'전설',bg:'#FFF3CD',fg:'#8B6914'},
 };
-const F_STAGES=[null,
-  {name:'금붕어 치어',species:'금붕어',  grade:'일반',color:'#FF8C00',fin:'#FFD700',hp:50, atk:5,  def:2,  agi:3,  luk:5,  income:1, xpRate:1,  xpNeed:100, evoCost:300, foodRate:20},
-  {name:'금붕어',     species:'금붕어',  grade:'일반',color:'#FF6B00',fin:'#FF0000',hp:120,atk:12, def:6,  agi:7,  luk:8,  income:3, xpRate:1.5,xpNeed:300, evoCost:800, foodRate:18},
-  {name:'비단잉어',   species:'비단잉어',grade:'중급',color:'#FF4444',fin:'#FFFFFF',hp:280,atk:28, def:15, agi:15, luk:12, income:8, xpRate:2,  xpNeed:700, evoCost:2000,foodRate:16},
-  {name:'아로와나',   species:'아로와나',grade:'중급',color:'#C0C0C0',fin:'#87CEEB',hp:600,atk:60, def:35, agi:30, luk:20, income:18,xpRate:3,  xpNeed:1500,evoCost:5000,foodRate:14},
-  {name:'황금 아로와나',species:'아로와나',grade:'고급',color:'#FFD700',fin:'#FFA500',hp:1200,atk:120,def:70,agi:55, luk:40, income:45,xpRate:5,xpNeed:9999,evoCost:0, foodRate:12},
-];
-const STAGE_INCOME=[0,2,4,8,18,45];
+// 어종별 단계 데이터
+const F_SPECIES={
+  goldfish:[null,
+    {name:'금붕어 치어',  species:'금붕어',  grade:'일반',color:'#FF8C00',fin:'#FFD700',hp:50,  atk:5,  def:2,  agi:3,  luk:5,  xpRate:1,  xpNeed:100, evoCost:300, foodRate:20},
+    {name:'금붕어',       species:'금붕어',  grade:'일반',color:'#FF6B00',fin:'#FF0000',hp:120, atk:12, def:6,  agi:7,  luk:8,  xpRate:1.5,xpNeed:300, evoCost:800, foodRate:18},
+    {name:'비단잉어',     species:'비단잉어',grade:'중급',color:'#FF4444',fin:'#FFFFFF',hp:280, atk:28, def:15, agi:15, luk:12, xpRate:2,  xpNeed:700, evoCost:2000,foodRate:16},
+    {name:'아로와나',     species:'아로와나',grade:'중급',color:'#C0C0C0',fin:'#87CEEB',hp:600, atk:60, def:35, agi:30, luk:20, xpRate:3,  xpNeed:1500,evoCost:5000,foodRate:14},
+    {name:'황금 아로와나',species:'아로와나',grade:'고급',color:'#FFD700',fin:'#FFA500',hp:1200,atk:120,def:70, agi:55, luk:40, xpRate:5,  xpNeed:9999,evoCost:0,   foodRate:12},
+  ],
+  snakehead:[null,
+    {name:'가물치 치어',  species:'가물치',  grade:'희귀',color:'#3A5A3A',fin:'#5A8A5A',hp:200, atk:25, def:15, agi:20, luk:15, xpRate:2,  xpNeed:200, evoCost:1500,foodRate:22},
+    {name:'가물치',       species:'가물치',  grade:'희귀',color:'#2D4A2D',fin:'#4A7A4A',hp:450, atk:55, def:35, agi:40, luk:25, xpRate:3,  xpNeed:500, evoCost:4000,foodRate:20},
+    {name:'대물 가물치',  species:'가물치',  grade:'영웅',color:'#1A3A1A',fin:'#3A6A3A',hp:900, atk:110,def:70, agi:75, luk:40, xpRate:4,  xpNeed:1000,evoCost:10000,foodRate:18},
+    {name:'흑룡 가물치',  species:'가물치',  grade:'영웅',color:'#0F2A0F',fin:'#2A5A2A',hp:1800,atk:220,def:140,agi:140,luk:60, xpRate:5,  xpNeed:2000,evoCost:25000,foodRate:16},
+    {name:'심연의 가물치',species:'가물치',  grade:'전설',color:'#050F05',fin:'#1A4A1A',hp:3500,atk:450,def:280,agi:250,luk:100,xpRate:7,  xpNeed:9999,evoCost:0,   foodRate:14},
+  ],
+};
+// 하위 호환용 (기존 코드 fStage 사용 위치 유지)
+const F_STAGES=F_SPECIES.goldfish;
+const STAGE_INCOME={
+  goldfish:[0,2,4,8,18,45],
+  snakehead:[0,15,35,80,180,400],
+};
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
 const F_SHOP=[
   {id:'food10', name:'먹이 10개',     price:50,  desc:'포만감 +15씩',      type:'food',qty:10},
@@ -1262,10 +1277,18 @@ const F_SHOP=[
   {id:'auto1',  name:'자동먹이통 I',  price:600, desc:'30초마다 자동 급식', type:'auto',level:1},
   {id:'auto2',  name:'자동먹이통 II', price:2000,desc:'15초마다 자동 급식', type:'auto',level:2},
   {id:'lottery',name:'🎰 행운 복권',  price:300, desc:'1~5등 또는 꽝',     type:'lottery'},
-  {id:'rod1',   name:'하급 낚시대 Ⅰ',price:150, prob:0.005,desc:'1시간, 25%확률',type:'rod'},
-  {id:'rod2',   name:'하급 낚시대 Ⅱ',price:400, prob:0.012,desc:'1시간, 50%확률',type:'rod'},
-  {id:'rod3',   name:'하급 낚시대 Ⅲ',price:1000,prob:0.030,desc:'1시간, 85%확률',type:'rod'},
-  {id:'rod4',   name:'하급 낚시대 Ⅳ',price:3000,prob:0.080,desc:'1시간, ~100%',  type:'rod'},
+  {id:'rod1',name:'하급 낚시대 Ⅰ',price:150, prob:0.005,type:'rod',
+   species:[{type:'goldfish',w:100}],
+   desc:'일반 100%'},
+  {id:'rod2',name:'하급 낚시대 Ⅱ',price:400, prob:0.012,type:'rod',
+   species:[{type:'goldfish',w:85},{type:'snakehead',w:15}],
+   desc:'일반 85% / 희귀 15%'},
+  {id:'rod3',name:'하급 낚시대 Ⅲ',price:1000,prob:0.030,type:'rod',
+   species:[{type:'goldfish',w:65},{type:'snakehead',w:35}],
+   desc:'일반 65% / 희귀 35%'},
+  {id:'rod4',name:'하급 낚시대 Ⅳ',price:3000,prob:0.080,type:'rod',
+   species:[{type:'goldfish',w:45},{type:'snakehead',w:55}],
+   desc:'일반 45% / 희귀 55%'},
 ];
 const LOTTERY_PRIZES=[
   {grade:'1등',amount:1000,prob:0.005,bg:'#FFD700',fg:'#7F4F00'},
@@ -1280,7 +1303,7 @@ const FG={
   fishes:[],           // [{id,stage,hp,maxHp,fullness,xp,isDead}]
   money:100,food:5,autoLevel:0,
   tankLevel:0,tankMax:1,
-  rodActive:false,rodTimer:0,rodProb:0,
+  rodActive:false,rodTimer:0,rodProb:0,rodSpecies:null,
   paused:false,pausedAt:null,
   lastTick:Date.now(),lastAutoFeed:0,
   fishPos:null,
@@ -1288,11 +1311,13 @@ const FG={
   cvs:null,ctx:null,
 };
 function fGet(i){return FG.fishes[i];}
-function fStage(f){return F_STAGES[f.stage]||F_STAGES[1];}
+function fStage(f){const sp=F_SPECIES[f.type||'goldfish']||F_SPECIES.goldfish;return sp[f.stage]||sp[1];}
 function fishStage(){const f=FG.fishes.find(x=>!x.isDead);return f?fStage(f):F_STAGES[1];}
-function newFish(stage=1){const s=F_STAGES[stage];return{id:'f'+Date.now()+Math.random().toString(36).slice(2),stage,hp:s.hp,maxHp:s.hp,fullness:80,xp:0,isDead:false};}
+function newFish(stage=1,type='goldfish'){const s=(F_SPECIES[type]||F_SPECIES.goldfish)[stage];return{id:'f'+Date.now()+Math.random().toString(36).slice(2),type,stage,hp:s.hp,maxHp:s.hp,fullness:80,xp:0,isDead:false};}
+function fIncome(f){return(STAGE_INCOME[f.type||'goldfish']||STAGE_INCOME.goldfish)[f.stage]||2;}
+function totalIncome(){return aliveFishes().reduce((a,f)=>(a+fIncome(f)),0);}
 function aliveFishes(){return FG.fishes.filter(f=>!f.isDead);}
-function totalIncome(){return aliveFishes().reduce((a,f)=>(a+(STAGE_INCOME[f.stage]||2)),0);}
+
 
 function fishResizeCanvas(){
   if(!FG.cvs) return;
@@ -1415,13 +1440,20 @@ function fishTick(){
     FG.rodTimer--;
     if(FG.rodTimer>0&&Math.floor(now/1000)%60===0){
       if(Math.random()<FG.rodProb&&FG.fishes.length<FG.tankMax){
-        FG.fishes.push(newFish(1));FG.fishPos=null;
-        FG.rodActive=false;FG.rodTimer=0;FG.rodProb=0;
-        document.getElementById('f-status').textContent='🎣 낚았습니다! ('+FG.fishes.length+'마리)';
+        // 어종 결정 (가중치 랜덤)
+        const sTable=FG.rodSpecies||[{type:'goldfish',w:100}];
+        const tot=sTable.reduce((a,s)=>a+s.w,0);
+        let rv=Math.random()*tot,picked='goldfish';
+        for(const s of sTable){rv-=s.w;if(rv<=0){picked=s.type;break;}}
+        const caught=newFish(1,picked);
+        FG.fishes.push(caught);FG.fishPos=null;
+        FG.rodActive=false;FG.rodTimer=0;FG.rodProb=0;FG.rodSpecies=null;
+        const cname=fStage(caught).name;
+        document.getElementById('f-status').textContent=`🎣 ${cname} 낚았습니다! (${FG.fishes.length}마리)`;
         setTimeout(()=>fishUpdateStatus(),3000);
       }
     }
-    if(FG.rodTimer<=0){FG.rodActive=false;FG.rodTimer=0;FG.rodProb=0;
+    if(FG.rodTimer<=0){FG.rodActive=false;FG.rodTimer=0;FG.rodProb=0;FG.rodSpecies=null;
       document.getElementById('f-status').textContent='🎣 낚시대가 부러졌습니다 (허탕)';
       setTimeout(()=>fishUpdateStatus(),3000);}
   }
@@ -1446,7 +1478,7 @@ function fishTick(){
     if(f.hp<=0){fishDieOne(f);return;}
     // 수입 (30초마다)
     f._incAcc=(f._incAcc||0)+elapsed;
-    if(f._incAcc>=30){f._incAcc=0;inc+=(STAGE_INCOME[f.stage]||2);}
+    if(f._incAcc>=30){f._incAcc=0;inc+=fIncome(f);}
     // XP (10초마다)
     if(f.fullness>30){f._xpAcc=(f._xpAcc||0)+elapsed;if(f._xpAcc>=10){f._xpAcc=0;f.xp+=s.xpRate;}}
   });
@@ -1476,8 +1508,8 @@ function buyNewFish(){
   }
   FG.money-=55;
   const deadIdx=FG.fishes.findIndex(f=>f.isDead);
-  if(deadIdx>=0) FG.fishes[deadIdx]=newFish(1);
-  else FG.fishes.push(newFish(1));
+  if(deadIdx>=0) FG.fishes[deadIdx]=newFish(1,'goldfish');
+  else FG.fishes.push(newFish(1,'goldfish'));
   FG.fishPos=null;
   const btn=document.querySelector('#result-notify .xl-notify-btn:first-child');
   if(btn) btn.textContent='다시 하기';
@@ -1488,7 +1520,7 @@ function buyNewFish(){
 function buyDeadFish(idx){
   if(FG.money<55){u1Toast('돈 부족 (55원 필요)','#C00000');return;}
   FG.money-=55;
-  FG.fishes[idx]=newFish(1);
+  FG.fishes[idx]=newFish(1,'goldfish');
   FG.fishPos=null;
   hideDlg('fish-detail-modal');
   if(!FG.tickInterval) fishStartLoops();
@@ -1616,7 +1648,7 @@ function showFishDetail(idx){
   document.getElementById('fd-hp').textContent=Math.ceil(f.hp)+'/'+f.maxHp;
   document.getElementById('fd-full').textContent=Math.floor(f.fullness)+'/100';
   document.getElementById('fd-xp').textContent=Math.floor(f.xp)+'/'+s.xpNeed;
-  document.getElementById('fd-income').textContent=(STAGE_INCOME[f.stage]||2)+'원/30초';
+  document.getElementById('fd-income').textContent=fIncome(f)+'원/30초';
   document.getElementById('fd-atk').textContent=s.atk||0;
   document.getElementById('fd-def').textContent=s.def||0;
   document.getElementById('fd-agi').textContent=s.agi||0;
@@ -1701,7 +1733,7 @@ function fishSave(isDisconnect){
   const data={fishes:cleanFishes,
     money:FG.money,food:FG.food,autoLevel:FG.autoLevel,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
-    rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,
+    rodActive:FG.rodActive,rodTimer:FG.rodTimer,rodProb:FG.rodProb,rodSpecies:FG.rodSpecies,
     stoppedByDisconnect:isDisconnect||false,lastSave:Date.now()};
   localStorage.setItem('u1aquarium_v1',JSON.stringify(data));
   if(!isDisconnect){
@@ -1734,7 +1766,7 @@ function fishLoad(){
     const d=JSON.parse(raw);
     // 구버전 호환 (fishes 배열 없으면 단일 물고기로 변환)
     if(d.fishes&&Array.isArray(d.fishes)){
-      FG.fishes=d.fishes;
+      FG.fishes=d.fishes.map(f=>({...f,type:f.type||'goldfish'}));
     } else if(d.stage){
       const s=F_STAGES[d.stage||1];
       FG.fishes=[{id:'legacy',stage:d.stage||1,hp:d.hp||50,maxHp:d.maxHp||50,fullness:d.fullness||80,xp:d.xp||0,isDead:false}];
@@ -1742,7 +1774,7 @@ function fishLoad(){
     if(FG.fishes.length===0) FG.fishes=[newFish(1)];
     FG.money=d.money??100;FG.food=d.food??5;FG.autoLevel=d.autoLevel||0;
     FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
-    FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;
+    FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;FG.rodSpecies=d.rodSpecies||null;
     if(d.lastSave){
       const elapsed=(Date.now()-d.lastSave)/1000;
       if(elapsed>10&&elapsed<86400*30) fishCalcOfflineAutoFeed(elapsed);
@@ -1756,7 +1788,7 @@ function fishLoad(){
 function fishReset(){
   if(!confirm('저장 데이터를 삭제하고 처음부터 시작할까요?')) return;
   localStorage.removeItem('u1aquarium_v1');
-  Object.assign(FG,{fishes:[newFish(1)],money:100,food:5,autoLevel:0,
+  Object.assign(FG,{fishes:[newFish(1,'goldfish')],money:100,food:5,autoLevel:0,
     tankLevel:0,tankMax:1,rodActive:false,rodTimer:0,fishPos:null,lastTick:Date.now()});
   fishRenderInfo();
   document.getElementById('f-status').textContent='새 게임 시작!';
@@ -1808,7 +1840,7 @@ function fishBuy(id){
   if(item.type==='auto') FG.autoLevel=Math.max(FG.autoLevel,item.level);
   if(item.type==='rod'){
     if(FG.rodActive){FG.money+=item.price;document.getElementById('f-status').textContent='이미 낚시 중!';return;}
-    FG.rodActive=true;FG.rodTimer=3600;FG.rodProb=item.prob;
+    FG.rodActive=true;FG.rodTimer=3600;FG.rodProb=item.prob;FG.rodSpecies=item.species||[{type:'goldfish',w:100}];
     document.getElementById('f-status').textContent=`🎣 ${item.name} 투입! 1시간 낚시 시작…`;
     setTimeout(()=>fishUpdateStatus(),3000);
   }
