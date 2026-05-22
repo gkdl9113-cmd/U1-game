@@ -1108,7 +1108,10 @@ function applyFishData(d){
   FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;FG.rodSpecies=d.rodSpecies||null;FG._rodCheckAcc=d.rodCheckAcc||0;
   if(d.lastSave){
     const elapsed=(Date.now()-d.lastSave)/1000;
-    if(elapsed>10&&elapsed<86400*30) fishCalcOfflineAutoFeed(elapsed);
+    if(elapsed>10&&elapsed<86400*30){
+      fishCalcOfflineAutoFeed(elapsed);
+      fishCalcOfflineRod(elapsed); // 낚시대는 항상 시간 흐름
+    }
   }
   FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._incAcc=0;f._xpAcc=0;});
   FG.lastTick=Date.now();
@@ -1455,6 +1458,57 @@ function fishCalcOfflineAutoFeed(seconds){
     const el=document.getElementById('f-status');
     if(el) el.textContent=`오프라인 자동급식 ${activations}회 (먹이 ${foodUsed}개 소모)`;
     setTimeout(()=>fishUpdateStatus(),3000);
+  },100);
+}
+
+function fishCalcOfflineRod(seconds){
+  if(!FG.rodActive||seconds<=0) return;
+  const elapsed=Math.min(seconds,86400);
+  const prevTimer=FG.rodTimer;
+  FG.rodTimer=Math.max(0,FG.rodTimer-elapsed);
+  FG._rodCheckAcc=0;
+
+  if(FG.rodTimer<=0){
+    // 1시간 경과 → 허탕
+    FG.rodActive=false;FG.rodTimer=0;FG.rodProb=0;FG.rodSpecies=null;
+    setTimeout(()=>{
+      const el=document.getElementById('f-status');
+      if(el) el.textContent='🎣 오프라인 중 낚시대가 부러졌습니다 (허탕)';
+      setTimeout(()=>fishUpdateStatus(),3000);
+    },100);
+    return;
+  }
+
+  // 경과 시간 동안 분마다 확률 체크
+  const minutesElapsed=Math.floor(elapsed/60);
+  if(minutesElapsed<=0||FG.fishes.length>=FG.tankMax) return;
+
+  const rng=seededRng(Date.now()^Math.floor(FG.rodTimer));
+  for(let m=0;m<minutesElapsed;m++){
+    if(FG.fishes.length>=FG.tankMax) break;
+    if(rng()<FG.rodProb){
+      // 물고기 낚임
+      const sTable=FG.rodSpecies||[{type:'goldfish',w:100}];
+      const tot=sTable.reduce((a,s)=>a+s.w,0);
+      let rv=rng()*tot,picked='goldfish';
+      for(const s of sTable){rv-=s.w;if(rv<=0){picked=s.type;break;}}
+      const caught=newFish(1,picked);
+      FG.fishes.push(caught);FG.fishPos=null;
+      FG.rodActive=false;FG.rodTimer=0;FG.rodProb=0;FG.rodSpecies=null;
+      const cname=fStage(caught).name;
+      setTimeout(()=>{
+        const el=document.getElementById('f-status');
+        if(el) el.textContent=`🎣 오프라인 중 ${cname} 낚았습니다!`;
+        setTimeout(()=>fishUpdateStatus(),3000);
+      },100);
+      return;
+    }
+  }
+  // 아직 낚이지 않음 → 남은 시간 유지
+  setTimeout(()=>{
+    const el=document.getElementById('f-status');
+    if(el) el.textContent=`🎣 낚시 진행 중 (남은 시간: ${Math.ceil(FG.rodTimer/60)}분)`;
+    setTimeout(()=>fishUpdateStatus(),2000);
   },100);
 }
 
@@ -1847,7 +1901,10 @@ function fishLoad(){
     FG.rodActive=d.rodActive||false;FG.rodTimer=d.rodTimer||0;FG.rodProb=d.rodProb||0;FG.rodSpecies=d.rodSpecies||null;FG._rodCheckAcc=d.rodCheckAcc||0;
     if(d.lastSave){
       const elapsed=(Date.now()-d.lastSave)/1000;
-      if(elapsed>10&&elapsed<86400*30) fishCalcOfflineAutoFeed(elapsed);
+      if(elapsed>10&&elapsed<86400*30){
+      fishCalcOfflineAutoFeed(elapsed);
+      fishCalcOfflineRod(elapsed); // 낚시대는 항상 시간 흐름
+    }
     }
     // 틱 누적값 리셋 (저장된 내부 타이머값 제거)
     FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._incAcc=0;f._xpAcc=0;});
