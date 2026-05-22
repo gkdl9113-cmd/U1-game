@@ -986,8 +986,9 @@ function connectSupabase(){
   .on('broadcast',{event:'challenge'},({payload})=>{
     if(payload.targetId!==myId) return;
     pendingChallenge=payload;
+    const _gname={omok:'오목',baseball:'숫자야구',battle:'수족관 대결'}[payload.game]||payload.game;
     document.getElementById('challenged-txt').textContent=
-      `${payload.fromName}님이 ${payload.game==='omok'?'오목':'숫자야구'} 대전을 신청했습니다.`;
+      `${payload.fromName}님이 ${_gname} 대전을 신청했습니다.`;
     document.getElementById('challenged-notify').classList.add('on');
   })
   .on('broadcast',{event:'game_start'},({payload})=>{
