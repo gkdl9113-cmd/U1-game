@@ -235,8 +235,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 /* 플로팅 버튼: 항상 숨김 → JS로 fish world 진입 시에만 표시 */
 .fw-float-btn{position:fixed;bottom:40px;background:#1F3864;color:#fff;border:none;border-radius:50%;width:46px;height:46px;font-size:19px;cursor:pointer;z-index:697;box-shadow:0 3px 12px rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;flex-direction:column;gap:0}
 .fw-float-btn:active{transform:scale(.93)}
-#fw-float-people{right:10px}
-#fw-float-stats{left:10px}
+#fw-float-people{left:10px}
 .fw-float-badge{position:absolute;top:-4px;right:-4px;background:#E74C3C;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:1.5px solid #fff;pointer-events:none}
 .fw-float-badge.hidden{display:none}
 @keyframes fishingCellWait{0%{background:#EFF6FF}100%{background:#BDD7EE}}
@@ -521,7 +520,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 <button id="fw-float-people" class="fw-float-btn" onclick="toggleMobileSidebar()" style="position:fixed">
   👥<span id="fw-float-badge" class="fw-float-badge hidden">0</span>
 </button>
-<button id="fw-float-stats" class="fw-float-btn" onclick="toggleMobileStats()">📊</button>
 
 <!-- 모바일 배경 오버레이 -->
 <div class="fw-mobile-overlay" id="fw-mobile-overlay" onclick="closeMobilePanels()"></div>
@@ -1841,10 +1839,8 @@ function fishResume(){
   setTimeout(()=>fishUpdateStatus(),2000);
 }
 function showMobileFloatBtns(visible){
-  ['fw-float-people','fw-float-stats'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.style.display=visible?'flex':'none';
-  });
+  const el=document.getElementById('fw-float-people');
+  if(el) el.style.display=visible?'flex':'none';
   if(!visible) closeMobilePanels();
 }
 
