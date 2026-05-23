@@ -986,7 +986,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.87';
+const BUILD = 'v1.88';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1668,6 +1668,30 @@ const F_SPECIES={
     {name:'황금 구피',  species:'구피',  grade:'일반',color:'#DAA520',fin:'#FFD700',hp:300, atk:30, def:18, agi:50, luk:35, xpRate:3,  xpNeed:900, evoCost:3000,foodRate:12},
     {name:'드래곤 구피',species:'구피',  grade:'중급',color:'#8B0000',fin:'#FF4500',hp:600, atk:65, def:40, agi:90, luk:55, xpRate:4,  xpNeed:9999,evoCost:0,   foodRate:10},
   ],
+  // 열대어: 화려하고 XP 획득 특화 (낚시 전용)
+  tropical:[null,
+    {name:'네온테트라',   species:'열대어',grade:'중급',color:'#00BFFF',fin:'#FF1493',hp:200, atk:20, def:10, agi:22, luk:20, xpRate:2.5,xpNeed:500, evoCost:1500,foodRate:18},
+    {name:'구라미',       species:'열대어',grade:'중급',color:'#FF8C69',fin:'#FFD700',hp:400, atk:38, def:22, agi:42, luk:35, xpRate:3.5,xpNeed:1000,evoCost:4000,foodRate:16},
+    {name:'엔젤피시',     species:'열대어',grade:'중급',color:'#F5F5DC',fin:'#708090',hp:750, atk:70, def:42, agi:68, luk:55, xpRate:5,  xpNeed:1800,evoCost:9000,foodRate:14},
+    {name:'디스커스',     species:'열대어',grade:'고급',color:'#DC143C',fin:'#4169E1',hp:1300,atk:115,def:72, agi:100,luk:85, xpRate:7,  xpNeed:3500,evoCost:20000,foodRate:12},
+    {name:'킹디스커스',   species:'열대어',grade:'고급',color:'#9400D3',fin:'#FFD700',hp:2200,atk:190,def:120,agi:160,luk:130,xpRate:10, xpNeed:9999,evoCost:0,   foodRate:10},
+  ],
+  // 피라냐: 극단적 공격 특화, 방어 낮음 (낚시 전용)
+  piranha:[null,
+    {name:'피라냐 치어',  species:'피라냐',grade:'중급',color:'#8B4513',fin:'#FF4500',hp:170, atk:28, def:8,  agi:20, luk:12, xpRate:2,  xpNeed:600, evoCost:2000,foodRate:20},
+    {name:'피라냐',       species:'피라냐',grade:'중급',color:'#B22222',fin:'#FF6347',hp:350, atk:55, def:15, agi:35, luk:18, xpRate:3,  xpNeed:1200,evoCost:5000,foodRate:18},
+    {name:'홍피라냐',     species:'피라냐',grade:'고급',color:'#DC143C',fin:'#FF0000',hp:750, atk:110,def:30, agi:60, luk:25, xpRate:4,  xpNeed:2500,evoCost:12000,foodRate:16},
+    {name:'블랙피라냐',   species:'피라냐',grade:'희귀',color:'#1C1C1C',fin:'#8B0000',hp:1100,atk:180,def:55, agi:90, luk:38, xpRate:5.5,xpNeed:5000,evoCost:30000,foodRate:14},
+    {name:'심연의 피라냐',species:'피라냐',grade:'영웅',color:'#0D0D0D',fin:'#CC0000',hp:2200,atk:380,def:100,agi:160,luk:60, xpRate:8,  xpNeed:9999,evoCost:0,   foodRate:12},
+  ],
+  // 클라운피시: 수입/행운 특화 (낚시 전용)
+  clownfish:[null,
+    {name:'흰동가리 치어',  species:'흰동가리',grade:'일반',color:'#FF6600',fin:'#FFFFFF',hp:40,  atk:4,  def:2,  agi:5,  luk:12, xpRate:1,  xpNeed:90,  evoCost:250, foodRate:18},
+    {name:'흰동가리',       species:'흰동가리',grade:'일반',color:'#FF4500',fin:'#FFFFFF',hp:90,  atk:9,  def:5,  agi:10, luk:20, xpRate:1.5,xpNeed:250, evoCost:700, foodRate:16},
+    {name:'왕관 흰동가리',  species:'흰동가리',grade:'중급',color:'#FF3300',fin:'#FFFACD',hp:300, atk:28, def:15, agi:22, luk:35, xpRate:2,  xpNeed:600, evoCost:2500,foodRate:14},
+    {name:'불꽃 흰동가리',  species:'흰동가리',grade:'중급',color:'#CC2200',fin:'#FFD700',hp:600, atk:55, def:30, agi:40, luk:55, xpRate:3,  xpNeed:1200,evoCost:6000,foodRate:12},
+    {name:'태양의 흰동가리',species:'흰동가리',grade:'고급',color:'#FF8C00',fin:'#FFFFFF',hp:1100,atk:100,def:60, agi:70, luk:80, xpRate:4.5,xpNeed:9999,evoCost:0,   foodRate:10},
+  ],
 };
 // 하위 호환용 (기존 코드 fStage 사용 위치 유지)
 const F_STAGES=F_SPECIES.goldfish;
@@ -1675,6 +1699,9 @@ const STAGE_INCOME={
   goldfish:[0,2,4,8,18,45],
   snakehead:[0,15,35,80,180,400],
   guppy:[0,2,4,10,22,55],
+  tropical:[0,8,18,38,80,180],
+  piranha:[0,8,18,45,100,220],
+  clownfish:[0,3,6,15,32,70],
 };
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
 const F_SHOP=[
@@ -2462,6 +2489,31 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*1.25,fy-size*.3);
     c.lineTo(fx-dir*size*1.25,fy+size*.3);
     c.fill();
+  } else if(type==='tropical'){
+    // 열대어: 두 갈래 포크 꼬리
+    c.beginPath();
+    c.moveTo(fx-dir*size*.75,fy);
+    c.lineTo(fx-dir*size*1.5,fy-size*.55);
+    c.lineTo(fx-dir*size*1.2,fy-size*.15);
+    c.lineTo(fx-dir*size*1.5,fy+size*.55);
+    c.closePath();c.fill();
+  } else if(type==='piranha'){
+    // 피라냐: 반달 꼬리 (넓고 공격적)
+    c.beginPath();
+    c.moveTo(fx-dir*size*.85,fy-size*.1);
+    c.lineTo(fx-dir*size*1.5,fy-size*.65);
+    c.lineTo(fx-dir*size*1.6,fy);
+    c.lineTo(fx-dir*size*1.5,fy+size*.65);
+    c.lineTo(fx-dir*size*.85,fy+size*.1);
+    c.closePath();c.fill();
+  } else if(type==='clownfish'){
+    // 흰동가리: 둥근 부채 꼬리
+    c.beginPath();
+    c.moveTo(fx-dir*size*.72,fy);
+    c.lineTo(fx-dir*size*1.45,fy-size*.6);
+    c.lineTo(fx-dir*size*1.55,fy);
+    c.lineTo(fx-dir*size*1.45,fy+size*.6);
+    c.closePath();c.fill();
   } else {
     // 금붕어 기본 꼬리
     c.beginPath();c.moveTo(fx-dir*size*.8,fy);
@@ -2469,8 +2521,8 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
   }
   // 몸통
-  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:size;
-  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:size*.58;
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:type==='piranha'?size*1.05:type==='tropical'?size*.95:size;
+  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:type==='piranha'?size*.55:type==='tropical'?size*.6:size*.58;
   const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);
   g.addColorStop(0,s.fin);g.addColorStop(1,s.color);
   c.fillStyle=g;c.beginPath();c.ellipse(fx,fy,bodyRx,bodyRy,0,0,Math.PI*2);c.fill();
@@ -2490,6 +2542,28 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
       c.beginPath();c.moveTo(fx+dir*size*.1*i,fy-bodyRy*.5);
       c.lineTo(fx+dir*size*.1*i,fy+bodyRy*.5);c.stroke();
     }
+  }
+  // 열대어 줄무늬
+  if(type==='tropical'){
+    c.strokeStyle=s.fin+'99';c.lineWidth=2;
+    for(let i=-1;i<=1;i++){
+      c.beginPath();c.moveTo(fx+dir*size*.25*i,fy-bodyRy*.9);
+      c.lineTo(fx+dir*size*.25*i,fy+bodyRy*.9);c.stroke();
+    }
+  }
+  // 피라냐 날카로운 이빨 암시 (입 부분 선)
+  if(type==='piranha'){
+    c.strokeStyle='rgba(255,255,255,0.5)';c.lineWidth=1.2;
+    c.beginPath();c.moveTo(fx+dir*bodyRx*.7,fy+bodyRy*.2);
+    c.lineTo(fx+dir*bodyRx*.95,fy+bodyRy*.05);c.stroke();
+  }
+  // 흰동가리 흰 줄무늬
+  if(type==='clownfish'){
+    c.strokeStyle='rgba(255,255,255,0.7)';c.lineWidth=2.5;
+    c.beginPath();c.moveTo(fx+dir*size*.1,fy-bodyRy*.95);
+    c.lineTo(fx+dir*size*.1,fy+bodyRy*.95);c.stroke();
+    c.beginPath();c.moveTo(fx-dir*size*.35,fy-bodyRy*.8);
+    c.lineTo(fx-dir*size*.35,fy+bodyRy*.8);c.stroke();
   }
   // 눈
   c.fillStyle='#fff';c.beginPath();c.arc(fx+dir*bodyRx*.48,fy-bodyRy*.15,size*.17,0,Math.PI*2);c.fill();
@@ -2522,7 +2596,7 @@ function fishDraw(){
     const fish=FG.fishes[idx];
     if(!fish) return;
     // 가물치는 금붕어보다 1.4배 크게
-    const speciesMult=(fish.type==='snakehead')?1.4:1;
+    const speciesMult=(fish.type==='snakehead')?1.4:(fish.type==='piranha')?1.2:(fish.type==='tropical')?1.1:1;
     const size=Math.min(W,H)*(.05+(fish.isDead?1:fish.stage)*.012)*speciesMult;
     if(fish.isDead){
       // 사망 물고기: 회색 + 💀
