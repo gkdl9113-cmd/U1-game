@@ -681,10 +681,10 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
           <tr>
             <td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:10px;color:#555;position:sticky;left:0;z-index:1">4</td>
             <td colspan="5" style="border:1px solid #D0D0D0;padding:0;vertical-align:middle">
-              <div id="fishing-msg" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:108px;padding:10px;gap:5px">
-                <div id="fishing-msg-ico" style="font-size:36px;line-height:1">🎣</div>
-                <div id="fishing-msg-txt" style="font-size:13px;font-weight:800;color:#1F3864;text-align:center">낚싯대를 선택하세요</div>
-                <div id="fishing-msg-sub" style="font-size:10px;color:#595959;text-align:center;line-height:1.6;pointer-events:auto"></div>
+              <div id="fishing-msg" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 0 6px;gap:3px">
+                <canvas id="fishing-bobber-canvas" width="300" height="118" style="width:100%;height:118px;display:block;image-rendering:pixelated"></canvas>
+                <div id="fishing-msg-txt" style="font-size:11px;font-weight:700;color:#1F3864;text-align:center;padding:0 8px">낚싯대를 선택하세요</div>
+                <div id="fishing-msg-sub" style="font-size:10px;color:#595959;text-align:center;line-height:1.6;pointer-events:auto;padding:0 8px"></div>
               </div>
             </td>
           </tr>
@@ -986,7 +986,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.89';
+const BUILD = 'v1.90';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1877,6 +1877,8 @@ const FMG={
   biteTimer:null, biteWindowTimer:null,
   gaugePos:0, gaugeDir:1, gaugeZoneStart:0, gaugeZoneWidth:0.3,
   gaugeSpeed:1, gaugeRaf:null, gaugeLastTime:null,
+  // 찌 애니메이션
+  bobRaf:null, bobState:'idle', bobT:0, bobSink:0, bobLastTs:null, bobBlink:0,
 };
 
 function fishingEnter(){
@@ -1888,8 +1890,9 @@ function fishingEnter(){
   _fishingSetCells('-','-','-','-','-');
   _fishingSetFormula('=FISHING.SELECT("낚싯대를 선택하세요")');
   fishingRenderRodBtns();
-  _fishingSetMsg('🎣','아래 낚싯대를 선택하세요','');
+  _fishingSetMsg('아래 낚싯대를 선택하세요','');
   _fishingSetState('낚싯대 선택 대기');
+  _fishingBobStart('idle');
   const m=document.getElementById('fishing-money');
   if(m) m.textContent=FG.money.toLocaleString();
 }
@@ -1906,7 +1909,7 @@ function _fishingCleanup(){
   if(FMG.gaugeRaf){cancelAnimationFrame(FMG.gaugeRaf);FMG.gaugeRaf=null;}
   const gw=document.getElementById('fishing-gauge-wrap');if(gw)gw.style.display='none';
   const ba=document.getElementById('fishing-bite-alert');if(ba)ba.style.display='none';
-  const bob=document.getElementById('fishing-bobber');if(bob)bob.style.display='none';
+  _fishingBobStart('idle');
   FMG.state='idle';
 }
 
@@ -1938,8 +1941,9 @@ function fishingSelectRod(rodId){
   _fishingSetRodInfo(`${rod.name} | 성공률 ${Math.round(rod.catchProb*100)}%`);
   _fishingSetFormula(`=FISHING.CAST("${rod.name}",${Math.round(rod.catchProb*100)}%)`);
   _fishingSetCells(1,rod.name,'-','-','투척중...');
-  _fishingSetMsg('🎣','낚시찌를 던지는 중…','');
+  _fishingSetMsg('찌를 던지는 중…','');
   _fishingSetState('투척 중');
+  _fishingBobStart('casting');
   setTimeout(()=>fishingStartWait(),700);
 }
 
@@ -1948,8 +1952,9 @@ function fishingStartWait(){
   _fishingSetFormula('=FISHING.WAIT("입질 대기 중...")');
   const rod=F_SHOP.find(r=>r.id===FMG.rodId);
   _fishingSetCells(1,rod?rod.name:'-','-','대기중...','⏳');
-  _fishingSetMsg('🪣','입질을 기다리는 중…','찌가 들어가면 즉시 클릭!');
+  _fishingSetMsg('입질 대기 중…','찌가 쏙 들어가면 클릭!');
   _fishingSetState('입질 대기');
+  _fishingBobStart('bobbing');
   const delay=(3+Math.random()*9)*1000;
   FMG.biteTimer=setTimeout(()=>fishingBite(),delay);
 }
@@ -1961,8 +1966,9 @@ function fishingBite(){
   const rod=F_SHOP.find(r=>r.id===FMG.rodId);
   _fishingSetCells(1,rod?rod.name:'-','-','⚡입질!','클릭!','fishing-cell-bite');
   _fishingSetFormula('=FISHING.BITE("⚡ 입질! 클릭하세요!")');
-  _fishingSetMsg('⚡','','');
+  _fishingSetMsg('⚡ 입질! 지금 클릭!','');
   _fishingSetState('⚡ 입질!');
+  _fishingBobStart('biting');
   document.getElementById('fishing-status-bar').textContent='지금 클릭!';
   FMG.biteWindowTimer=setTimeout(()=>fishingMissBite(),1500);
 }
@@ -1970,6 +1976,7 @@ function fishingBite(){
 function fishingMissBite(){
   FMG.state='result';
   const ba=document.getElementById('fishing-bite-alert');if(ba)ba.style.display='none';
+  _fishingBobStart('idle');
   _fishingShowResult(false,'놓쳤다! 물고기가 도망쳤습니다 🐟💨');
 }
 
@@ -1997,8 +2004,9 @@ function fishingStartGauge(){
   const ba=document.getElementById('fishing-bite-alert');if(ba)ba.style.display='none';
   _fishingSetFormula('=FISHING.GAUGE("초록 구간에서 클릭!")');
   _fishingSetCells(1,rod?rod.name:'-','-','타이밍!','⚠️','fishing-cell-wait');
-  _fishingSetMsg('','','');
+  _fishingSetMsg('초록 구간에서 클릭!','');
   _fishingSetState('타이밍!');
+  _fishingBobStart('sunken');
   FMG.gaugeRaf=requestAnimationFrame(_fishingGaugeTick);
 }
 
@@ -2040,7 +2048,7 @@ function _fishingShowResult(success, msg, grade){
   FMG.state='result';FMG.rodId=null;
   const gd=grade?(F_GRADES[grade]||{}):{};
   const gradeTag=grade?`<span style="font-size:11px;font-weight:700;padding:2px 6px;background:${gd.bg||'#E8E8E8'};color:${gd.fg||'#333'}">${grade}</span>`:'';
-  _fishingSetMsg(success?'🏆':'😔',msg,'');
+  _fishingSetMsg(msg,'');
   document.getElementById('fishing-msg-txt').style.color=success?'#217346':'#C00000';
   document.getElementById('fishing-msg-sub').innerHTML=
     (gradeTag?`<div style="margin-bottom:8px">${gradeTag}</div>`:'')+
@@ -2072,13 +2080,13 @@ function fishingTryAgain(){
   _fishingSetCells('-','-','-','-','-');
   _fishingSetFormula('=FISHING.SELECT("낚싯대를 선택하세요")');
   fishingRenderRodBtns();
-  _fishingSetMsg('🎣','아래 낚싯대를 선택하세요','');
+  _fishingSetMsg('아래 낚싯대를 선택하세요','');
   _fishingSetState('낚싯대 선택 대기');
   _fishingSetRodInfo('없음');
+  _fishingBobStart('idle');
 }
 
-function _fishingSetMsg(ico,txt,sub){
-  const i=document.getElementById('fishing-msg-ico');if(i)i.textContent=ico;
+function _fishingSetMsg(txt,sub){
   const t=document.getElementById('fishing-msg-txt');if(t){t.textContent=txt;t.style.color='#1F3864';}
   const s=document.getElementById('fishing-msg-sub');if(s)s.innerHTML=sub;
 }
@@ -2101,6 +2109,170 @@ function _fishingSetCells(no,rod,sp,gr,res,cls){
     el.style.border='2px solid #217346';
     if(vals[i]!==undefined) el.textContent=vals[i];
   });
+}
+
+// ── 낚시찌(찌) 캔버스 애니메이션 ─────────────────────────────────────────────
+function _fishingBobStart(state){
+  FMG.bobState=state;
+  if(state==='idle'||state==='bobbing'||state==='casting'){FMG.bobT=0;FMG.bobSink=0;FMG.bobBlink=0;}
+  else if(state==='biting'){FMG.bobSink=0;FMG.bobBlink=0;}
+  if(!FMG.bobRaf){FMG.bobLastTs=null;FMG.bobRaf=requestAnimationFrame(_fishingBobTick);}
+}
+
+function _fishingBobTick(ts){
+  const cvs=document.getElementById('fishing-bobber-canvas');
+  if(!cvs){FMG.bobRaf=null;return;}
+  const dt=FMG.bobLastTs?Math.min((ts-FMG.bobLastTs)/1000,0.05):0;
+  FMG.bobLastTs=ts;
+  if(FMG.bobState==='bobbing'||FMG.bobState==='casting'||FMG.bobState==='biting'||FMG.bobState==='sunken'){
+    FMG.bobT+=dt;
+  }
+  if(FMG.bobState==='biting'){
+    FMG.bobSink=Math.min(FMG.bobSink+dt*3.5,1);
+    FMG.bobBlink=(Math.sin(FMG.bobT*18)>0)?1:0;
+  }
+  // 캔버스 픽셀 크기를 표시 크기에 맞춤
+  if(cvs.offsetWidth>0&&cvs.width!==cvs.offsetWidth){cvs.width=cvs.offsetWidth;}
+  _fishingBobDraw(cvs);
+  FMG.bobRaf=requestAnimationFrame(_fishingBobTick);
+}
+
+function _fishingBobDraw(cvs){
+  const c=cvs.getContext('2d');
+  const W=cvs.width,H=cvs.height;
+  if(!W||!H) return;
+  const CX=W/2, waterY=H*0.54;
+  const t=FMG.bobT;
+
+  // 흰 배경
+  c.fillStyle='#FFFFFF'; c.fillRect(0,0,W,H);
+  // 엑셀 격자 (연하게)
+  c.strokeStyle='#E8E8E8'; c.lineWidth=0.5;
+  const gW=Math.max(22,W/13), gH=18;
+  for(let x=0;x<=W;x+=gW){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
+  for(let y=0;y<=H;y+=gH){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
+
+  // 수면 파동 계산
+  const wvAmp=(FMG.bobState==='biting')?3.5:1.8;
+  const wvPhase=t*2.8;
+  function waterSurfaceY(x){
+    return waterY+Math.sin(x*0.038+wvPhase)*wvAmp+Math.sin(x*0.015+wvPhase*0.6)*wvAmp*0.45;
+  }
+
+  // 물 영역 채우기
+  const wg=c.createLinearGradient(0,waterY,0,H);
+  wg.addColorStop(0,'rgba(100,190,240,0.28)');
+  wg.addColorStop(1,'rgba(20, 90,180,0.22)');
+  c.beginPath(); c.moveTo(0,waterSurfaceY(0));
+  for(let x=1;x<=W;x++) c.lineTo(x,waterSurfaceY(x));
+  c.lineTo(W,H); c.lineTo(0,H); c.closePath();
+  c.fillStyle=wg; c.fill();
+
+  // 수면 선
+  c.beginPath(); c.moveTo(0,waterSurfaceY(0));
+  for(let x=1;x<=W;x++) c.lineTo(x,waterSurfaceY(x));
+  c.strokeStyle='rgba(70,155,215,0.55)'; c.lineWidth=1.5; c.stroke();
+
+  // 찌 Y 위치 (수면 기준 오프셋)
+  let bobOff=0;
+  if(FMG.bobState==='bobbing'){
+    bobOff=Math.sin(t*2.4)*5+Math.sin(t*0.9)*1.8;
+  } else if(FMG.bobState==='biting'){
+    const e=FMG.bobSink<0.5?(4*FMG.bobSink*FMG.bobSink*FMG.bobSink):(1-Math.pow(-2*FMG.bobSink+2,3)/2);
+    bobOff=e*40;
+  } else if(FMG.bobState==='sunken'){
+    bobOff=40;
+  } else if(FMG.bobState==='casting'){
+    const ease=Math.min(t/0.4,1); bobOff=(1-ease)*-30;
+  }
+  const floatY=waterY+bobOff;
+
+  // 잔물결 (입질 때)
+  if(FMG.bobState==='biting'&&FMG.bobSink>0.08){
+    const rp=FMG.bobSink*26;
+    c.strokeStyle=`rgba(70,155,215,${Math.max(0,0.65-FMG.bobSink*0.55)})`;
+    c.lineWidth=1.5; c.beginPath(); c.arc(CX,waterY,rp,0,Math.PI*2); c.stroke();
+    if(FMG.bobSink>0.35){
+      c.strokeStyle=`rgba(70,155,215,${Math.max(0,0.35-FMG.bobSink*0.3)})`;
+      c.beginPath(); c.arc(CX,waterY,rp*1.8,0,Math.PI*2); c.stroke();
+    }
+  }
+  // 잔물결 (대기 중)
+  if(FMG.bobState==='bobbing'){
+    const ripAlpha=0.13+Math.sin(t*1.2)*0.04;
+    c.strokeStyle=`rgba(70,155,215,${ripAlpha})`; c.lineWidth=1;
+    c.beginPath(); c.arc(CX,waterSurfaceY(CX),9+Math.sin(t)*2,0,Math.PI*2); c.stroke();
+  }
+
+  // 낚싯줄: 화면 우상단 → 찌 안테나 끝
+  const antTopY=floatY-22-20;
+  c.strokeStyle='rgba(80,60,40,0.55)'; c.lineWidth=1.2;
+  c.beginPath();
+  c.moveTo(W*0.8,5);
+  c.bezierCurveTo(W*0.65,H*0.18,CX+18,antTopY-12,CX,antTopY);
+  c.stroke();
+
+  // 찌 그리기
+  _fishingDrawFloat(c,CX,floatY);
+
+  // 입질 깜빡이 오버레이
+  if(FMG.bobState==='biting'&&FMG.bobBlink){
+    c.fillStyle='rgba(255,160,0,0.09)'; c.fillRect(0,0,W,H);
+  }
+
+  // idle 힌트
+  if(FMG.bobState==='idle'){
+    c.fillStyle='rgba(150,150,150,0.5)';
+    c.font=`9px "맑은 고딕",monospace`; c.textAlign='center';
+    c.fillText('낚싯대를 선택하면 시작됩니다',CX,H-7);
+  }
+}
+
+function _fishingDrawFloat(c,cx,waterContactY){
+  // waterContactY: 찌가 수면에 닿는 y (찌 몸통의 약 55% 지점)
+  const bodyH=30, bodyW=8.5;
+  const subFrac=0.55;
+  const bodyTop=waterContactY-bodyH*(1-subFrac);
+  const bodyBottom=bodyTop+bodyH;
+  const bodyCY=bodyTop+bodyH*0.5;
+  const antH=20, antTop=bodyTop-antH;
+  const tipH=8;
+
+  // 안테나
+  c.strokeStyle='#444'; c.lineWidth=1.5; c.lineCap='round';
+  c.beginPath(); c.moveTo(cx,antTop); c.lineTo(cx,bodyTop+1); c.stroke();
+  // 안테나 끝 빨간 점
+  c.fillStyle='#EE1100';
+  c.beginPath(); c.arc(cx,antTop,2.8,0,Math.PI*2); c.fill();
+
+  // 몸통 — 클리핑으로 상하 이중 색상
+  c.save();
+  c.beginPath(); c.ellipse(cx,bodyCY,bodyW,bodyH*0.5,0,0,Math.PI*2); c.clip();
+  // 상단 빨강
+  const topG=c.createLinearGradient(cx-bodyW,bodyTop,cx+bodyW,bodyTop);
+  topG.addColorStop(0,'#990000'); topG.addColorStop(0.45,'#EE4400'); topG.addColorStop(1,'#990000');
+  c.fillStyle=topG; c.fillRect(cx-bodyW-1,bodyTop-1,bodyW*2+2,bodyH*0.52+1);
+  // 하단 노랑
+  const botG=c.createLinearGradient(cx-bodyW,bodyCY,cx+bodyW,bodyCY);
+  botG.addColorStop(0,'#C8C000'); botG.addColorStop(0.45,'#FFFF66'); botG.addColorStop(1,'#C8C000');
+  c.fillStyle=botG; c.fillRect(cx-bodyW-1,bodyTop+bodyH*0.5,bodyW*2+2,bodyH*0.52+1);
+  c.restore();
+
+  // 몸통 테두리
+  c.strokeStyle='rgba(0,0,0,0.45)'; c.lineWidth=1;
+  c.beginPath(); c.ellipse(cx,bodyCY,bodyW,bodyH*0.5,0,0,Math.PI*2); c.stroke();
+
+  // 하이라이트
+  c.save();
+  c.beginPath(); c.ellipse(cx,bodyCY,bodyW,bodyH*0.5,0,0,Math.PI*2); c.clip();
+  const hl=c.createRadialGradient(cx-bodyW*0.3,bodyTop+bodyH*0.18,0,cx-bodyW*0.3,bodyTop+bodyH*0.18,bodyW*0.75);
+  hl.addColorStop(0,'rgba(255,255,255,0.42)'); hl.addColorStop(1,'rgba(255,255,255,0)');
+  c.fillStyle=hl; c.fillRect(cx-bodyW-1,bodyTop-1,bodyW*2+2,bodyH+2);
+  c.restore();
+
+  // 아랫 침봉
+  c.strokeStyle='#555'; c.lineWidth=1.5;
+  c.beginPath(); c.moveTo(cx,bodyBottom); c.lineTo(cx,bodyBottom+tipH); c.stroke();
 }
 
 function fishCalcOfflineRod(){
