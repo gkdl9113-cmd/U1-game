@@ -2370,18 +2370,14 @@ function fishTick(){
   FG.money+=inc;
   // 보조 수족관 처리 (2.5배 소모, 수입, 0 시 자동 방생)
   if(FG.auxFishes.length>0){
-    let auxInc=0;
     const auxRelease=[];
     FG.auxFishes.forEach((f,i)=>{
       const s=fStage(f);
       f._fullAcc=(f._fullAcc||0)+elapsed;
       const fullRate=Math.max(1,s.foodRate/2.5);
       if(f._fullAcc>=fullRate){f._fullAcc=0;f.fullness=Math.max(0,f.fullness-1);}
-      f._incAcc=(f._incAcc||0)+elapsed;
-      if(f._incAcc>=30){f._incAcc=0;auxInc+=fIncome(f);}
       if(f.fullness<=0) auxRelease.push(i);
     });
-    FG.money+=auxInc;
     if(auxRelease.length>0){
       const names=auxRelease.map(i=>fStage(FG.auxFishes[i]).name);
       for(let i=auxRelease.length-1;i>=0;i--) FG.auxFishes.splice(auxRelease[i],1);
