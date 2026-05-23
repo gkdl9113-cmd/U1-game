@@ -4248,9 +4248,12 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
       buffTimer:0,
     };
   };
-  const myBt=myFish.map((f,i)=>mkFish(f,i,myFish.length,'my'));
-  const oppBt=oppFish.map((f,i)=>mkFish(f,i,oppFish.length,'opp'));
-  btFishes=[...myBt,...oppBt];
+  // P1 물고기를 먼저 생성 후 배치 (mkFish 호출 순서 동기화)
+  const p1Data=imP1?myFish:oppFish;
+  const p2Data=imP1?oppFish:myFish;
+  const p1Bt=p1Data.map((f,i)=>{const fish=mkFish(f,i,p1Data.length,imP1?'my':'opp');fish.isP1=true;return fish;});
+  const p2Bt=p2Data.map((f,i)=>{const fish=mkFish(f,i,p2Data.length,imP1?'opp':'my');fish.isP1=false;return fish;});
+  btFishes=[...p1Bt,...p2Bt];
 
   // VS 배너 표시
   const vsBanner=document.getElementById('bt-vs-banner');
