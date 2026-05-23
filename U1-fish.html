@@ -1574,24 +1574,24 @@ function sendIngameChat(){
 const FWCOLORS=['#4F46E5','#DC2626','#059669','#D97706','#7C3AED','#DB2777','#0891B2','#65A30D'];
 function fwUpdateSidebar(){
   fwUpdateSidebarMobile();
+  const others=lobbyPlayers.filter(p=>p.name!==myName); // 자신 제외
   const countEl=document.getElementById('fw-count');
-  if(countEl) countEl.textContent=lobbyPlayers.length+'명';
+  if(countEl) countEl.textContent=others.length+'명';
   // 플로팅 버튼 뱃지 업데이트
   const badge=document.getElementById('fw-float-badge');
   if(badge){
-    const cnt=lobbyPlayers.length;
+    const cnt=others.length;
     badge.textContent=cnt;
     badge.className='fw-float-badge'+(cnt===0?' hidden':'');
   }
   const list=document.getElementById('fw-players');
   if(!list) return;
-  list.innerHTML=lobbyPlayers.map((p,i)=>{
-    const isMe=p.name===myName;
-    const btn=(!isMe&&!p.inGame)
+  list.innerHTML=others.map((p,i)=>{
+    const btn=!p.inGame
       ?`<button class="fw-challenge-btn" onclick="fwChallenge('${p.id}','${p.name.replace(/'/g,"\\'")}')">도전</button>`:'';
     return `<div class="fw-player-row">
       <div class="fw-player-avatar" style="background:${FWCOLORS[i%FWCOLORS.length]}">${esc((p.name||'?')[0])}</div>
-      <span class="fw-player-name">${esc(p.name)}${isMe?'<span style="color:#4F46E5;font-size:9px">(나)</span>':''}</span>
+      <span class="fw-player-name">${esc(p.name)}</span>
       ${btn}
     </div>`;
   }).join('');
