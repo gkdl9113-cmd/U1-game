@@ -1043,7 +1043,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.11';
+const BUILD = 'v2.12';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -4312,13 +4312,13 @@ function btApplyEvents(){
       attacker=btImP1?oppFishes[evt.ai]:myFishes[evt.ai];
       target=btImP1?myFishes[evt.ti]:oppFishes[evt.ti];
     }
-    if(!attacker||!target||target.isDead) return;
+    if(!attacker||!target) return;
 
-    // 피해 적용
-    if(evt.dodge){
+    // 피해 적용 (target이 이미 사망했어도 attacker의 스킬은 적용)
+    if(evt.dodge&&!target.isDead){
       // 회피
       target.floatTxt={txt:'회피!',age:0,x:target.x,y:target.y-0.06,color:'#4F46E5'};
-    } else {
+    } else if(!evt.dodge) {
       // 명중
       target.curHp=evt.hpAfter;
       if(target.curHp<=0){
@@ -4331,12 +4331,12 @@ function btApplyEvents(){
       // 플로팅 데미지 텍스트
       const dmgTxt=evt.crit?`⚡${evt.dmg}⚡`:`${evt.dmg}`;
       target.floatTxt={txt:dmgTxt,age:0,x:target.x,y:target.y-0.06,color:evt.crit?'#FF6B35':'#EF4444'};
+    }
 
-      // 스킬: 폭식 (흡수) - 사전계산된 값 적용
-      if(evt.skillHeal>0&&evt.atkHpAfter!=null){
-        attacker.curHp=evt.atkHpAfter;
-        attacker.healTxt={txt:`💚+${evt.skillHeal}`,age:0,x:attacker.x,y:attacker.y-0.06,color:'#16A34A'};
-      }
+    // 스킬: 폭식 (흡수) - target 상태와 관계없이 항상 적용
+    if(evt.skillHeal>0&&evt.atkHpAfter!=null&&!evt.dodge){
+      attacker.curHp=evt.atkHpAfter;
+      attacker.healTxt={txt:`💚+${evt.skillHeal}`,age:0,x:attacker.x,y:attacker.y-0.06,color:'#16A34A'};
     }
   });
 }
