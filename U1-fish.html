@@ -237,11 +237,10 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 .fw-float-btn{position:fixed;bottom:36px;background:#1F3864;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:18px;cursor:pointer;z-index:697;box-shadow:0 3px 10px rgba(0,0,0,.35);display:none;align-items:center;justify-content:center}
 #fw-float-people{right:8px}
 #fw-float-stats{left:8px}
-@keyframes fishingPulse{0%{transform:translateX(-50%) scale(1)}100%{transform:translateX(-50%) scale(1.08)}}
-@keyframes bobblerFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-@keyframes bobblerDip{0%{transform:translateY(0)}100%{transform:translateY(18px)}}
-.bobber-float{animation:bobblerFloat 1.4s ease-in-out infinite}
-.bobber-dip{animation:bobblerDip 0.2s ease-in forwards}
+@keyframes fishingCellWait{0%{background:#EFF6FF}100%{background:#BDD7EE}}
+@keyframes fishingCellBite{0%{background:#FFEB9C}100%{background:#FFD966}}
+.fishing-cell-wait{animation:fishingCellWait 1s ease-in-out infinite alternate}
+.fishing-cell-bite{animation:fishingCellBite 0.25s ease-in-out infinite alternate}
 @media(min-width:769px){
   body{max-width:100%;font-size:12px}
   .xl-dlg-ov,.xl-notify-ov{max-width:100%}
@@ -636,32 +635,80 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
   <div class="xl-fbar">
     <div class="xl-namebox">A1</div><div class="xl-fx">fx</div>
-    <div class="xl-ftext">=FISHING.CAST(낚싯대,확률,어종)</div>
+    <div class="xl-ftext" id="fishing-ftext">=FISHING.CAST(낚싯대,확률,어종)</div>
   </div>
-  <!-- 낚시 메인 영역 -->
-  <div id="fishing-area" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#87CEEB 0%,#5AAEDB 32%,#1B6FA8 55%,#0D4F7A 100%);position:relative;overflow:hidden;cursor:pointer;user-select:none" onclick="fishingAreaClick()">
-    <!-- 수면 라인 -->
-    <div style="position:absolute;top:33%;left:0;right:0;height:2px;background:rgba(255,255,255,0.35)"></div>
-    <div style="position:absolute;top:calc(33% + 2px);left:0;right:0;height:1px;background:rgba(255,255,255,0.15)"></div>
-    <!-- 낚시찌 -->
-    <div id="fishing-bobber" style="position:absolute;top:28%;left:50%;transform:translateX(-50%);display:none;font-size:24px" class="bobber-float">🔴</div>
-    <!-- 중앙 메시지 -->
-    <div id="fishing-msg" style="text-align:center;z-index:2;pointer-events:none;padding:0 20px">
-      <div id="fishing-msg-ico" style="font-size:52px;margin-bottom:10px;line-height:1">🎣</div>
-      <div id="fishing-msg-txt" style="font-size:16px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.6)">낚싯대를 선택하세요</div>
-      <div id="fishing-msg-sub" style="font-size:11px;color:rgba(255,255,255,0.8);margin-top:6px;line-height:1.6"></div>
+  <!-- 낚시 메인 영역 (엑셀 시트) -->
+  <div id="fishing-area" style="flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;cursor:default;user-select:none" onclick="fishingAreaClick()">
+    <!-- 입질 알림 바 (엑셀 노란 경고 바) -->
+    <div id="fishing-bite-alert" style="display:none;background:#FFEB9C;border-bottom:2px solid #C8850B;padding:5px 12px;flex-shrink:0;cursor:pointer">
+      <span style="font-size:12px;font-weight:700;color:#9C3400">⚡ 입질! 지금 클릭하세요!</span>
+      <span style="font-size:10px;color:#7F5200;margin-left:8px">(1.5초 안에)</span>
     </div>
-    <!-- 입질 알림 -->
-    <div id="fishing-bite-alert" style="display:none;position:absolute;top:18%;left:50%;transform:translateX(-50%);background:rgba(220,38,38,0.95);color:#fff;padding:10px 24px;border-radius:24px;font-size:16px;font-weight:900;z-index:10;animation:fishingPulse 0.25s ease-in-out infinite alternate;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.4)">⚡ 입질! 클릭!</div>
-    <!-- 타이밍 게이지 -->
-    <div id="fishing-gauge-wrap" style="display:none;position:absolute;bottom:18%;left:8%;right:8%;z-index:10">
-      <div style="font-size:13px;font-weight:900;color:#fff;text-align:center;margin-bottom:8px;text-shadow:0 1px 4px rgba(0,0,0,0.6)" id="fishing-gauge-label">초록 구간에서 클릭!</div>
-      <div id="fishing-gauge-bar" style="height:40px;background:rgba(0,0,0,0.5);border-radius:8px;position:relative;overflow:hidden;border:2px solid rgba(255,255,255,0.6);box-shadow:0 2px 12px rgba(0,0,0,0.4)">
-        <div id="fishing-gauge-zone" style="position:absolute;top:0;bottom:0;background:rgba(34,197,94,0.75);border-radius:0"></div>
-        <div id="fishing-gauge-needle" style="position:absolute;top:2px;bottom:2px;width:5px;background:#fff;border-radius:3px;left:50%;transform:translateX(-50%);box-shadow:0 0 8px rgba(255,255,255,0.9)"></div>
+    <!-- 엑셀 그리드 -->
+    <div style="flex:1;overflow:auto;background:#fff">
+      <table style="border-collapse:collapse;width:100%;font-size:11px">
+        <thead>
+          <tr>
+            <th style="background:#F2F2F2;border:1px solid #D0D0D0;width:26px;height:18px;font-weight:400;font-size:10px;color:#555;text-align:center;position:sticky;top:0;left:0;z-index:3"></th>
+            <th style="background:#F2F2F2;border:1px solid #D0D0D0;width:26px;height:18px;font-weight:400;font-size:10px;color:#555;text-align:center;position:sticky;top:0;z-index:2">A</th>
+            <th style="background:#F2F2F2;border:1px solid #D0D0D0;min-width:82px;height:18px;font-weight:400;font-size:10px;color:#555;text-align:center;position:sticky;top:0;z-index:2">B</th>
+            <th style="background:#F2F2F2;border:1px solid #D0D0D0;min-width:56px;height:18px;font-weight:400;font-size:10px;color:#555;text-align:center;position:sticky;top:0;z-index:2">C</th>
+            <th style="background:#F2F2F2;border:1px solid #D0D0D0;min-width:44px;height:18px;font-weight:400;font-size:10px;color:#555;text-align:center;position:sticky;top:0;z-index:2">D</th>
+            <th style="background:#F2F2F2;border:1px solid #D0D0D0;min-width:64px;height:18px;font-weight:400;font-size:10px;color:#555;text-align:center;position:sticky;top:0;z-index:2">E</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:10px;color:#555;position:sticky;left:0;z-index:1">1</td>
+            <td colspan="5" style="background:#1F3864;color:#fff;font-weight:800;font-size:12px;padding:5px 10px;border:1px solid #1F3864;letter-spacing:.3px">🎣 낚시기록_2026.xlsx</td>
+          </tr>
+          <tr style="background:#DEEAF1">
+            <td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:10px;color:#555;position:sticky;left:0;z-index:1">2</td>
+            <td style="border:1px solid #9DC3E6;padding:3px 5px;font-weight:700;font-size:10px;color:#1F497D;text-align:center">NO</td>
+            <td style="border:1px solid #9DC3E6;padding:3px 5px;font-weight:700;font-size:10px;color:#1F497D">낚싯대</td>
+            <td style="border:1px solid #9DC3E6;padding:3px 5px;font-weight:700;font-size:10px;color:#1F497D">어종</td>
+            <td style="border:1px solid #9DC3E6;padding:3px 5px;font-weight:700;font-size:10px;color:#1F497D">등급</td>
+            <td style="border:1px solid #9DC3E6;padding:3px 5px;font-weight:700;font-size:10px;color:#1F497D">결과</td>
+          </tr>
+          <tr id="fishing-active-row">
+            <td style="background:#1F3864;color:#fff;border:1px solid #D0D0D0;text-align:center;font-size:10px;position:sticky;left:0;z-index:1;font-weight:700">3</td>
+            <td id="frow-no"  class="fishing-cell-wait" style="border:2px solid #217346;padding:3px 5px;text-align:center;font-size:11px">-</td>
+            <td id="frow-rod" class="fishing-cell-wait" style="border:2px solid #217346;padding:3px 5px;font-size:10px">-</td>
+            <td id="frow-sp"  class="fishing-cell-wait" style="border:2px solid #217346;padding:3px 5px;font-size:10px">-</td>
+            <td id="frow-gr"  class="fishing-cell-wait" style="border:2px solid #217346;padding:3px 5px;font-size:10px">-</td>
+            <td id="frow-res" class="fishing-cell-wait" style="border:2px solid #217346;padding:3px 5px;font-size:10px">-</td>
+          </tr>
+          <tr>
+            <td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:10px;color:#555;position:sticky;left:0;z-index:1">4</td>
+            <td colspan="5" style="border:1px solid #D0D0D0;padding:0;vertical-align:middle">
+              <div id="fishing-msg" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:108px;padding:10px;gap:5px">
+                <div id="fishing-msg-ico" style="font-size:36px;line-height:1">🎣</div>
+                <div id="fishing-msg-txt" style="font-size:13px;font-weight:800;color:#1F3864;text-align:center">낚싯대를 선택하세요</div>
+                <div id="fishing-msg-sub" style="font-size:10px;color:#595959;text-align:center;line-height:1.6;pointer-events:auto"></div>
+              </div>
+            </td>
+          </tr>
+          <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:10px;color:#555;position:sticky;left:0;z-index:1">5</td><td colspan="5" style="border:1px solid #D0D0D0;height:24px"></td></tr>
+          <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:10px;color:#555;position:sticky;left:0;z-index:1">6</td><td colspan="5" style="border:1px solid #D0D0D0;height:24px"></td></tr>
+          <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:10px;color:#555;position:sticky;left:0;z-index:1">7</td><td colspan="5" style="border:1px solid #D0D0D0;height:24px"></td></tr>
+          <tr><td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:10px;color:#555;position:sticky;left:0;z-index:1">8</td><td colspan="5" style="border:1px solid #D0D0D0;height:24px"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- 타이밍 게이지 (엑셀 조건부 서식 스타일) -->
+    <div id="fishing-gauge-wrap" style="display:none;background:#F2F2F2;border-top:2px solid #217346;padding:10px 14px;flex-shrink:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span id="fishing-gauge-label" style="font-size:11px;font-weight:700;color:#1F3864">초록 구간에서 클릭!</span>
+        <span style="font-size:9px;color:#888;padding:1px 6px;background:#E8F5ED;border:1px solid #C6EFCE">타이밍 게이지</span>
       </div>
-      <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:rgba(255,255,255,0.6)"><span>←</span><span>→</span></div>
+      <div id="fishing-gauge-bar" style="height:30px;background:#E8E8E8;border:1px solid #C8C8C8;position:relative;overflow:hidden">
+        <div id="fishing-gauge-zone" style="position:absolute;top:0;bottom:0;background:#C6EFCE;border-left:1px solid #70AD47;border-right:1px solid #70AD47"></div>
+        <div id="fishing-gauge-needle" style="position:absolute;top:0;bottom:0;width:3px;background:#217346;left:50%;transform:translateX(-50%)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px;color:#888"><span>0%</span><span>100%</span></div>
     </div>
+    <!-- 낚시찌 숨김 처리 (엑셀 모드에서 미사용) -->
+    <div id="fishing-bobber" style="display:none"></div>
   </div>
   <!-- 낚싯대 선택 패널 -->
   <div id="fishing-rod-btns" style="padding:8px;background:#F2F2F2;border-top:1px solid #C8C8C8;display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;min-height:52px;align-items:center"></div>
@@ -939,7 +986,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.83';
+const BUILD = 'v1.84';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1813,6 +1860,8 @@ function fishingEnter(){
   if(FG.fishes.length>=FG.tankMax){u1Toast('수조가 꽉 찼습니다!','#C00000');return;}
   show('s-fishing');
   FMG.state='idle'; FMG.rodId=null;
+  _fishingSetCells('-','-','-','-','-');
+  _fishingSetFormula('=FISHING.SELECT("낚싯대를 선택하세요")');
   fishingRenderRodBtns();
   _fishingSetMsg('🎣','아래 낚싯대를 선택하세요','');
   _fishingSetState('낚싯대 선택 대기');
@@ -1862,15 +1911,18 @@ function fishingSelectRod(rodId){
   fishingRenderRodBtns();
   const rod=F_SHOP.find(r=>r.id===rodId);
   _fishingSetRodInfo(`${rod.name} | 성공률 ${Math.round(rod.catchProb*100)}%`);
+  _fishingSetFormula(`=FISHING.CAST("${rod.name}",${Math.round(rod.catchProb*100)}%)`);
+  _fishingSetCells(1,rod.name,'-','-','투척중...');
   _fishingSetMsg('🎣','낚시찌를 던지는 중…','');
   _fishingSetState('투척 중');
-  const bob=document.getElementById('fishing-bobber');
-  if(bob){bob.style.display='';bob.className='bobber-float';}
   setTimeout(()=>fishingStartWait(),700);
 }
 
 function fishingStartWait(){
   FMG.state='waiting';
+  _fishingSetFormula('=FISHING.WAIT("입질 대기 중...")');
+  const rod=F_SHOP.find(r=>r.id===FMG.rodId);
+  _fishingSetCells(1,rod?rod.name:'-','-','대기중...','⏳');
   _fishingSetMsg('🪣','입질을 기다리는 중…','찌가 들어가면 즉시 클릭!');
   _fishingSetState('입질 대기');
   const delay=(3+Math.random()*9)*1000;
@@ -1879,10 +1931,11 @@ function fishingStartWait(){
 
 function fishingBite(){
   FMG.state='bite';
-  const bob=document.getElementById('fishing-bobber');
-  if(bob) bob.className='bobber-dip';
   const ba=document.getElementById('fishing-bite-alert');
   if(ba) ba.style.display='';
+  const rod=F_SHOP.find(r=>r.id===FMG.rodId);
+  _fishingSetCells(1,rod?rod.name:'-','-','⚡입질!','클릭!','fishing-cell-bite');
+  _fishingSetFormula('=FISHING.BITE("⚡ 입질! 클릭하세요!")');
   _fishingSetMsg('⚡','','');
   _fishingSetState('⚡ 입질!');
   document.getElementById('fishing-status-bar').textContent='지금 클릭!';
@@ -1892,7 +1945,6 @@ function fishingBite(){
 function fishingMissBite(){
   FMG.state='result';
   const ba=document.getElementById('fishing-bite-alert');if(ba)ba.style.display='none';
-  const bob=document.getElementById('fishing-bobber');if(bob){bob.className='bobber-float';}
   _fishingShowResult(false,'놓쳤다! 물고기가 도망쳤습니다 🐟💨');
 }
 
@@ -1918,6 +1970,8 @@ function fishingStartGauge(){
   if(zone){zone.style.left=(FMG.gaugeZoneStart*100)+'%';zone.style.width=(FMG.gaugeZoneWidth*100)+'%';}
   const gw=document.getElementById('fishing-gauge-wrap');if(gw)gw.style.display='';
   const ba=document.getElementById('fishing-bite-alert');if(ba)ba.style.display='none';
+  _fishingSetFormula('=FISHING.GAUGE("초록 구간에서 클릭!")');
+  _fishingSetCells(1,rod?rod.name:'-','-','타이밍!','⚠️','fishing-cell-wait');
   _fishingSetMsg('','','');
   _fishingSetState('타이밍!');
   FMG.gaugeRaf=requestAnimationFrame(_fishingGaugeTick);
@@ -1949,7 +2003,9 @@ function fishingGaugeClick(){
     const caught=newFish(1,picked);
     FG.fishes.push(caught);FG.fishPos=null;
     fishRenderInfo();fishQuickSave();
-    _fishingShowResult(true,`🎉 ${fStage(caught).name} 낚았습니다!`,fStage(caught).grade);
+    const cs=fStage(caught);
+    document.getElementById('frow-sp').textContent=cs.name;
+    _fishingShowResult(true,`🎉 ${cs.name} 낚았습니다!`,cs.grade);
   } else {
     _fishingShowResult(false,'아깝다! 물고기가 빠져나갔습니다 🐟💨');
   }
@@ -1957,17 +2013,27 @@ function fishingGaugeClick(){
 
 function _fishingShowResult(success, msg, grade){
   FMG.state='result';FMG.rodId=null;
-  const bob=document.getElementById('fishing-bobber');if(bob)bob.style.display='none';
   const gd=grade?(F_GRADES[grade]||{}):{};
-  const gradeTag=grade?`<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;background:${gd.bg||'#E8E8E8'};color:${gd.fg||'#333'}">${grade}</span>`:'';
+  const gradeTag=grade?`<span style="font-size:11px;font-weight:700;padding:2px 6px;background:${gd.bg||'#E8E8E8'};color:${gd.fg||'#333'}">${grade}</span>`:'';
   _fishingSetMsg(success?'🏆':'😔',msg,'');
-  document.getElementById('fishing-msg-txt').style.color=success?'#4ADE80':'#FB7185';
+  document.getElementById('fishing-msg-txt').style.color=success?'#217346':'#C00000';
   document.getElementById('fishing-msg-sub').innerHTML=
     (gradeTag?`<div style="margin-bottom:8px">${gradeTag}</div>`:'')+
     `<div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
-      <button onclick="fishingTryAgain()" style="background:#217346;color:#fff;border:none;padding:8px 18px;border-radius:4px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">다시 낚시</button>
-      <button onclick="fishingExit()" style="background:#555;color:#fff;border:none;padding:8px 18px;border-radius:4px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">수족관으로</button>
+      <button onclick="fishingTryAgain()" style="background:#217346;color:#fff;border:1px solid #1A5C35;padding:5px 16px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">다시 낚시</button>
+      <button onclick="fishingExit()" style="background:#E8E8E8;color:#333;border:1px solid #B4B4B4;padding:5px 16px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">수족관으로</button>
     </div>`;
+  // 결과 셀 업데이트
+  const resultBg=success?'#E2EFDA':'#FCE4D6';
+  const resultBdr=success?'#70AD47':'#FF0000';
+  ['frow-no','frow-rod','frow-sp','frow-gr','frow-res'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.className='';el.style.background=resultBg;el.style.border=`2px solid ${resultBdr}`;}
+  });
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  if(grade){set('frow-gr',grade);}
+  set('frow-res',success?'✅ 성공':'❌ 실패');
+  _fishingSetFormula(success?`=FISHING.SUCCESS("${msg}")`:`=FISHING.FAIL("${msg}")`);
   _fishingSetState(success?'✅ 성공!':'❌ 실패');
   fishingRenderRodBtns();
   const m=document.getElementById('fishing-money');if(m)m.textContent=FG.money.toLocaleString();
@@ -1978,7 +2044,8 @@ function fishingTryAgain(){
   const available=F_SHOP.filter(r=>r.type==='rod'&&(FG.rods[r.id]||0)>0);
   if(available.length===0){u1Toast('낚싯대가 없습니다!','#C00000');fishingExit();return;}
   if(FG.fishes.length>=FG.tankMax){u1Toast('수조가 꽉 찼습니다!','#C00000');fishingExit();return;}
-  document.getElementById('fishing-msg-txt').style.color='#fff';
+  _fishingSetCells('-','-','-','-','-');
+  _fishingSetFormula('=FISHING.SELECT("낚싯대를 선택하세요")');
   fishingRenderRodBtns();
   _fishingSetMsg('🎣','아래 낚싯대를 선택하세요','');
   _fishingSetState('낚싯대 선택 대기');
@@ -1987,7 +2054,7 @@ function fishingTryAgain(){
 
 function _fishingSetMsg(ico,txt,sub){
   const i=document.getElementById('fishing-msg-ico');if(i)i.textContent=ico;
-  const t=document.getElementById('fishing-msg-txt');if(t){t.textContent=txt;t.style.color='#fff';}
+  const t=document.getElementById('fishing-msg-txt');if(t){t.textContent=txt;t.style.color='#1F3864';}
   const s=document.getElementById('fishing-msg-sub');if(s)s.innerHTML=sub;
 }
 function _fishingSetState(txt){
@@ -1996,6 +2063,19 @@ function _fishingSetState(txt){
 }
 function _fishingSetRodInfo(txt){
   const el=document.getElementById('fishing-rod-info');if(el)el.textContent=txt;
+}
+function _fishingSetFormula(f){
+  const el=document.getElementById('fishing-ftext');if(el)el.textContent=f;
+}
+function _fishingSetCells(no,rod,sp,gr,res,cls){
+  const cells=['frow-no','frow-rod','frow-sp','frow-gr','frow-res'];
+  const vals=[no,rod,sp,gr,res];
+  cells.forEach((id,i)=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.className=cls||'fishing-cell-wait';
+    el.style.border='2px solid #217346';
+    if(vals[i]!==undefined) el.textContent=vals[i];
+  });
 }
 
 function fishCalcOfflineRod(){
