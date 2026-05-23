@@ -1043,7 +1043,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.96';
+const BUILD = 'v1.97';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -4214,7 +4214,7 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
       vx:0,vy:0,
       orbitDir:Math.random()>0.5?1:-1, // 나선 방향
       phase:'orbit', // 'orbit'(선회) | 'charge'(돌진)
-      phaseTimer:Math.floor(Math.random()*200+60), // 3~13초 랜덤 초기화 (50ms*200=10초)
+      phaseTimer:Math.floor(Math.random()*60+20), // 1~4초 랜덤 초기화
       hasHit:false, // 이번 돌진에서 데미지 줬는지
       curHp:fd.hp, isDead:false,
       hitFlash:0, hitType:'',
@@ -4283,21 +4283,21 @@ function btPhysicsStep(){
     let nearest=enemies[0],minD=Infinity;
     enemies.forEach(e=>{const d=Math.hypot(e.x-f.x,e.y-f.y);if(d<minD){minD=d;nearest=e;}});
     const bm=f.buffMult||1;
-    const spd=0.004+f.agi*bm*0.00005;
+    const spd=0.007+f.agi*bm*0.0001;
     const collR=0.09;
     // ── 페이즈 타이머 ──────────────────────────────────────
     f.phaseTimer--;
     if(f.phaseTimer<=0){
       if(f.phase==='retreat'){
         f.phase='orbit';
-        f.phaseTimer=Math.floor(Math.random()*200+100); // 5~15초 선회
+        f.phaseTimer=Math.floor(Math.random()*60+30); // 1.5~4.5초 선회
       } else if(f.phase==='orbit'){
         f.phase='charge';
-        f.phaseTimer=Math.floor(Math.random()*180+60);  // 3~12초 돌진
+        f.phaseTimer=Math.floor(Math.random()*100+50); // 2.5~7.5초 돌진
         f.hasHit=false;
       } else {
         f.phase='orbit';
-        f.phaseTimer=Math.floor(Math.random()*200+100);
+        f.phaseTimer=Math.floor(Math.random()*60+30);
       }
     }
     // ── 돌진 중 접촉 시 데미지 ─────────────────────────────
@@ -4315,9 +4315,9 @@ function btPhysicsStep(){
       const dy=(f.y-nearest.y)/Math.max(0.001,minD);
       f.vx=dx*0.08; f.vy=dy*0.08; // 속도 리셋 후 강한 반발
       nearest.vx=-dx*0.06; nearest.vy=-dy*0.06;
-      // 공격 후 retreat 페이즈 (2~4초 도망)
+      // 공격 후 retreat 페이즈 (1~2.5초 도망)
       f.phase='retreat';
-      f.phaseTimer=Math.floor(Math.random()*80+40);
+      f.phaseTimer=Math.floor(Math.random()*30+20);
       // 브로드캐스트로 HP 동기화
       if(currentGame) sbSend('battle_hit',{fromId:myId,victimId:nearest.id,dmg:fd,crit});
       // 이펙트
@@ -4358,7 +4358,7 @@ function btPhysicsStep(){
       f.vy=(f.vy||0)*0.82+Math.sin(awayAngle)*spd*2.0;
     } else if(f.phase==='orbit'){
       // 선회: orbitDist 유지하며 공전
-      const orbitDist=0.30; // 거리 넓힘
+      const orbitDist=0.22;
       const orbitAngle=toEnemyAngle+Math.PI/2*f.orbitDir;
       const distErr=minD-orbitDist;
       f.vx=(f.vx||0)*0.88+Math.cos(toEnemyAngle)*distErr*0.04+Math.cos(orbitAngle)*spd*0.85;
