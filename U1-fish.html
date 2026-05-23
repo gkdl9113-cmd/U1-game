@@ -643,7 +643,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div style="text-align:center;font-size:12px;font-weight:700;color:#217346;margin-bottom:8px;border-bottom:1px solid #E0E0E0;padding-bottom:6px">⚔️ 내 물고기</div>
     <div id="bt-status-mobile-list"></div>
   <!-- 모바일 메인 화면 물고기 상태 버튼 -->
-  <button id="fw-status-toggle" onclick="toggleFishworldStatusMobile()" class="fw-status-toggle-btn" style="position:fixed;bottom:80px;right:16px;width:52px;height:52px;border-radius:50%;background:#4472C4;color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.4);z-index:99;align-items:center;justify-content:center;font-weight:bold">🐟</button>
+  <button id="fw-status-toggle" onclick="toggleFishworldStatusMobile()" class="fw-status-toggle-btn" style="position:fixed;bottom:80px;right:16px;width:52px;height:52px;border-radius:50%;background:#4472C4;color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.4);z-index:99;align-items:center;justify-content:center;font-weight:bold;display:none">🐟</button>
   <!-- 모바일 메인 화면 물고기 상태 패널 -->
   <div id="fw-status-panel-mobile" class="fw-status-panel-mobile" style="position:fixed;bottom:145px;right:12px;width:210px;background:#fff;border:2px solid #4472C4;border-radius:10px;padding:10px;z-index:99;max-height:55vh;overflow-y:auto;box-shadow:0 6px 16px rgba(0,0,0,0.3)">
     <div style="text-align:center;font-size:12px;font-weight:700;color:#4472C4;margin-bottom:8px;border-bottom:1px solid #E0E0E0;padding-bottom:6px">🐟 내 물고기</div>
@@ -1071,7 +1071,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.17';
+const BUILD = 'v2.18';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -2664,6 +2664,11 @@ function fishRenderInfo(){
   const rodLbl=document.getElementById('f-rod-lbl');
   if(rodLbl){const t=Object.values(FG.rods||{}).reduce((a,b)=>a+b,0);rodLbl.textContent=t>0?`낚시(${t})`: '낚시';}
   fishCheckEvoReady(); fishUpdateStatus(); fishRenderInfoMobile();
+  // 모바일 상태창 버튼 활성화
+  if(window.innerWidth<=768){
+    const btn=document.getElementById('fw-status-toggle');
+    if(btn) btn.style.display='flex';
+  }
 }
 
 let _fdIdx=-1;
