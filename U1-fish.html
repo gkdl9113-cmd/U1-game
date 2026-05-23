@@ -1921,8 +1921,6 @@ const FMG={
 };
 
 function fishingEnter(){
-  const available=F_SHOP.filter(r=>r.type==='rod'&&(FG.rods[r.id]||0)>0);
-  if(available.length===0){u1Toast('낚싯대가 없습니다! 상점에서 구매하세요.','#C00000');return;}
   show('s-fishing');
   FMG.state='idle'; FMG.rodId=null;
   _fishingSetCells('-','-','-','-','-');
@@ -2114,7 +2112,7 @@ function _fishingShowResult(success, msg, grade){
 function fishingTryAgain(){
   _fishingCleanup();
   const available=F_SHOP.filter(r=>r.type==='rod'&&(FG.rods[r.id]||0)>0);
-  if(available.length===0){u1Toast('낚싯대가 없습니다!','#C00000');fishingExit();return;}
+  if(available.length===0){_fishingSetMsg('낚싯대가 없습니다','상점에서 낚싯대를 구매하세요');return;}
   if(FG.auxFishes.length>=FG.auxMax){_fishingSetMsg('보조 수족관이 꽉 찼습니다','메인 수족관으로 보내거나 방생을 기다리세요');return;}
   _fishingSetCells('-','-','-','-','-');
   _fishingSetFormula('=FISHING.SELECT("낚싯대를 선택하세요")');
