@@ -3751,7 +3751,7 @@ async function adminConfirmSkill(){
   if(idx<0){alert('물고기를 선택하세요');return;}
 
   // Load current data from DB instead of stale _admSkillTarget.fish_data
-  const{data:[currentRecord],error:fetchErr}=await _sb.from('fish_accounts')
+  const{data:currentRecord,error:fetchErr}=await _sb.from('fish_accounts')
     .select('fish_data').eq('username',_admSkillTarget.username).eq('server',_admSkillTarget.server).single();
   if(fetchErr||!currentRecord){alert('데이터 로드 실패');return;}
 
