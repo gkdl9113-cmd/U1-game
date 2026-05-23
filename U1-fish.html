@@ -902,7 +902,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.77';
+const BUILD = 'v1.78';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1669,7 +1669,38 @@ function fishExitConfirm(){
   eStatus('로그아웃되었습니다. 다시 로그인하세요.','#595959');
   show('s-entry');
 }
-// 탭 전환 자동 정지 제거 — 다른 탭 보는 동안에도 게임 계속 진행
+// 탭 숨김/복귀: 숨겨진 시간만큼 오프라인 계산 적용 (브라우저 throttle 보완)
+let _tabHiddenAt=0;
+document.addEventListener('visibilitychange',()=>{
+  const fishActive=!!FG.tickInterval;
+  if(document.hidden){
+    // 숨겨지는 시점 기록
+    if(fishActive) _tabHiddenAt=Date.now();
+  } else {
+    // 복귀: 숨겨진 동안 시간 계산 후 오프라인 처리
+    if(_tabHiddenAt&&fishActive){
+      const elapsed=(Date.now()-_tabHiddenAt)/1000;
+      _tabHiddenAt=0;
+      if(elapsed>30){ // 30초 이상 숨겨졌을 때만 처리
+        const cappedElapsed=Math.min(elapsed,14400); // 최대 4시간
+        fishCalcOffline(cappedElapsed);        // 포만감/HP/수입
+        fishCalcOfflineAutoFeed(cappedElapsed); // 자동먹이통
+        fishCalcOfflineRod(cappedElapsed);      // 낚시대
+        FG.lastTick=Date.now();                 // tick 기준 리셋
+        fishRenderInfo();
+        const mins=Math.floor(elapsed/60);
+        const secs=Math.floor(elapsed%60);
+        document.getElementById('f-status').textContent=
+          `⏰ ${mins}분 ${secs}초 자리 비움 처리 완료`;
+        setTimeout(()=>fishUpdateStatus(),3000);
+        // 물고기 죽음 체크
+        FG.fishes.forEach(f=>{
+          if(!f.isDead&&f.hp<=0) fishDieOne(f);
+        });
+      }
+    }
+  }
+});
 
 function fishCalcOfflineAutoFeed(seconds){
   if(!FG.autoFeeders.length||FG.food===0) return;
