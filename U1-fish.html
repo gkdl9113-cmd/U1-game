@@ -201,6 +201,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 @media(max-width:768px){
   .bt-hp-panel.right{width:160px;right:4px;top:4px;padding:4px;background:rgba(255,255,255,0.95);max-height:40vh;overflow-y:auto}
   .bt-hp-panel.left{display:none}
+  #bt-status-toggle{display:flex!important}
 }
 .bt-fish-row{margin-bottom:5px}
 .bt-fish-lbl{font-size:9px;font-weight:700;color:#1F3864;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
@@ -627,10 +628,10 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-statusbar" style="color:#aaa"><span class="xl-sitem" id="battle-status">대기 중</span></div>
   </div>
   <!-- 모바일 전투 상태창 토글 버튼 -->
-  <button id="bt-status-toggle" onclick="toggleBattleStatusMobile()" style="display:none;position:fixed;bottom:60px;right:12px;width:48px;height:48px;border-radius:50%;background:#217346;color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:50;align-items:center;justify-content:center">❤️</button>
+  <button id="bt-status-toggle" onclick="toggleBattleStatusMobile()" style="display:none;position:fixed;bottom:80px;right:16px;width:52px;height:52px;border-radius:50%;background:#217346;color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.4);z-index:99;align-items:center;justify-content:center;font-weight:bold">❤️</button>
   <!-- 모바일 전투 상태창 패널 -->
-  <div id="bt-status-panel-mobile" style="display:none;position:fixed;bottom:60px;right:8px;width:180px;background:rgba(255,255,255,0.96);border:1px solid #C8C8C8;border-radius:8px;padding:8px;z-index:50;max-height:50vh;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.2)">
-    <div style="text-align:center;font-size:11px;font-weight:700;color:#217346;margin-bottom:6px">내 물고기</div>
+  <div id="bt-status-panel-mobile" style="display:none;position:fixed;bottom:145px;right:12px;width:200px;background:#fff;border:2px solid #217346;border-radius:10px;padding:10px;z-index:99;max-height:55vh;overflow-y:auto;box-shadow:0 6px 16px rgba(0,0,0,0.3)">
+    <div style="text-align:center;font-size:12px;font-weight:700;color:#217346;margin-bottom:8px;border-bottom:1px solid #E0E0E0;padding-bottom:6px">⚔️ 내 물고기</div>
     <div id="bt-status-mobile-list"></div>
   </div>
 </div>
@@ -1054,7 +1055,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.14';
+const BUILD = 'v2.15';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -4294,8 +4295,10 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
   const mobileToggle=document.getElementById('bt-status-toggle');
   const mobilePanel=document.getElementById('bt-status-panel-mobile');
   if(mobileToggle&&mobilePanel){
-    mobileToggle.style.display='flex';
-    mobilePanel.style.display='none';
+    if(window.innerWidth<=768){
+      mobileToggle.style.display='flex';
+      mobilePanel.style.display='none';
+    }
   }
 
   // 결과 배너 숨기기
