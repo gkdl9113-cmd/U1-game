@@ -2922,7 +2922,10 @@ function fishRenderAux(){
           <div style="text-align:right;font-size:9px;color:#555;margin-top:1px">${fp}%</div>
         </td>
         <td style="border:1px solid #D0D0D0;padding:2px 5px;text-align:center">
-          <button onclick="fishAuxToMain(${i})" ${mainFull?'disabled':''} style="${btnStyle}">→메인</button>
+          <div style="display:flex;gap:3px;justify-content:center">
+            <button onclick="fishAuxToMain(${i})" ${mainFull?'disabled':''} style="${btnStyle}">→메인</button>
+            <button onclick="fishAuxRelease(${i})" style="background:#C05000;color:#fff;border:none;padding:2px 6px;border-radius:2px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit">방생</button>
+          </div>
         </td>
       </tr>`;
     }).join('');
@@ -2950,6 +2953,15 @@ function fishRenderAux(){
       expandBtn.style.cursor=canBuy?'pointer':'default';
     }
   }
+}
+function fishAuxRelease(idx){
+  const f=FG.auxFishes[idx]; if(!f) return;
+  const s=fStage(f);
+  FG.auxFishes.splice(idx,1);
+  fishRenderAux();
+  fishRenderInfo();
+  fishQuickSave();
+  u1Toast(`🌊 ${s.name} 방생했습니다`,'#1F3864');
 }
 function fishAuxToMain(idx){
   if(FG.fishes.length>=FG.tankMax){u1Toast('메인 수조가 꽉 찼습니다!','#C00000');return;}
