@@ -1635,8 +1635,8 @@ function acceptChallenge(){
   if(!pendingChallenge){u1Toast('[A]pendingChallenge없음','#C00000');return;}
   const{fromId,fromName,game,digits}=pendingChallenge;
   u1Toast(`[A]game:${game} from:${fromName}`,'#217346');
-  sbSend('game_start',{targetId:fromId,fromId:myId,fromName:myName,game,youAre:2,digits:digits||4});
-  currentGame={type:game,myColor:1,opponentId:fromId,opponentName:fromName,digits:digits||4};
+  sbSend('game_start',{targetId:fromId,fromId:myId,fromName:myName,game,youAre:1,digits:digits||4});
+  currentGame={type:game,myColor:2,opponentId:fromId,opponentName:fromName,digits:digits||4};
   bbDigits=digits||4;
   document.getElementById('challenged-notify').classList.remove('on');
   pendingChallenge=null;
