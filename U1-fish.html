@@ -986,7 +986,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.84';
+const BUILD = 'v1.85';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1061,27 +1061,24 @@ function connectSupabase(){
   .on('presence',{event:'join'},({newPresences})=>{
     newPresences.forEach(p=>{
       if(p.name===myName) return;
-      const now=Date.now();
-      const last=_presenceTs[p.name]||0;
-      // 30초 이내 재접속은 채팅 알림 생략 (연결 불안정 스팸 방지)
-      // 입장 메시지 제거 - 사이드바 접속자 목록으로 대체
-      _presenceTs[p.name]=now;
+      // leave 딜레이 중이면 취소 (재접속 → 사이드바 유지)
+      if(_leaveDebounce[p.name]){clearTimeout(_leaveDebounce[p.name]);delete _leaveDebounce[p.name];}
+      _presenceTs[p.name]=Date.now();
     });
     onPresenceSync();
   })
   .on('presence',{event:'leave'},({leftPresences})=>{
     leftPresences.forEach(p=>{
       const leftAt=Date.now();
-      const oppId=p.userId;
       const oppName=p.name;
-      setTimeout(()=>{
-        const lastJoin=_presenceTs[oppName]||0;
-        if(lastJoin>=leftAt) return; // 5초 안에 재접속 → 무시
-        // 채팅 퇴장 알림만 표시 (탈주 감지는 heartbeat로만 처리)
-        // 퇴장 메시지 제거 - 사이드바 접속자 목록으로 대체
-      },5000); // 5초 대기: 순간 끊김/재연결 구분
+      // 15초 딜레이 후 사이드바 갱신 — 빠른 재접속 시 깜빡임 방지
+      clearTimeout(_leaveDebounce[oppName]);
+      _leaveDebounce[oppName]=setTimeout(()=>{
+        delete _leaveDebounce[oppName];
+        onPresenceSync();
+      },15000);
     });
-    onPresenceSync();
+    // 즉시 onPresenceSync 호출 안 함 → 재연결 시 사이드바 깜빡임 없음
   })
   .on('broadcast',{event:'chat'},({payload})=>addChatMsg(payload))
   .on('broadcast',{event:'challenge'},({payload})=>{
@@ -1214,7 +1211,7 @@ async function reloadFishDataFromDB(fishName){
 
 function reconnectChannel(){
   if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
-  _chConnectedOnce=false;
+  // _chConnectedOnce 리셋 안 함 → 재연결 시 "연결 완료" 토스트 미표시
   connectSupabase();
 }
 
@@ -1580,6 +1577,7 @@ function rejectChallenge(){
 }
 
 const _presenceTs={}; // {username: 마지막 입장 시각} - 입장/퇴장 스팸 방지
+const _leaveDebounce={}; // {username: timeoutId} - leave 후 사이드바 갱신 딜레이
 let _gameStartTs=0;
 let _gameHbInterval=null; // heartbeat 인터벌
 let _gameLastHb=0;        // 상대방 마지막 heartbeat 수신 시각
