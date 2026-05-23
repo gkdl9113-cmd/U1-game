@@ -917,6 +917,37 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
+<!-- 스킬 지급 모달 -->
+<div class="xl-dlg-ov" id="adm-skill-modal">
+  <div class="adm-modal-dark" style="min-width:360px;max-width:440px">
+    <div class="adm-modal-hdr">🎯 스킬 지급 <button onclick="hideDlg('adm-skill-modal')" style="background:none;border:none;color:#7A9BBF;cursor:pointer;font-size:16px;padding:0">✕</button></div>
+    <div class="adm-modal-body">
+      <div id="adm-skill-title" style="font-size:12px;color:#A0C4E8;margin-bottom:12px"></div>
+      <div class="adm-form-row">
+        <label>🐟 물고기</label>
+        <select class="adm-form-select" id="adm-skill-fish-sel" onchange="adminSkillOnFishChange()"></select>
+      </div>
+      <div class="adm-form-row">
+        <label>슬롯 1</label>
+        <select class="adm-form-select" id="adm-skill-slot1">
+          <option value="">없음 (삭제)</option>
+        </select>
+      </div>
+      <div class="adm-form-row" style="border-bottom:none">
+        <label>슬롯 2</label>
+        <select class="adm-form-select" id="adm-skill-slot2" disabled>
+          <option value="">없음 (준비 중)</option>
+        </select>
+      </div>
+      <div id="adm-skill-preview" style="margin:10px 0;padding:8px;background:#0F1724;border-radius:4px;font-size:11px;color:#7A9BBF;min-height:38px"></div>
+      <div class="adm-btn-row">
+        <button class="adm-btn secondary" onclick="hideDlg('adm-skill-modal')">취소</button>
+        <button class="adm-btn primary" onclick="adminConfirmSkill()" style="background:#1F3864;color:#60A5FA">🎯 저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 상사 크리 보스키 오버레이 -->
 <div id="boss-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#fff;overflow:auto;font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:clamp(10px,1.4vw,14px);color:#000">
   <div style="background:#217346;color:#fff;padding:3px 10px;font-size:11px;display:flex;justify-content:space-between;flex-shrink:0">
@@ -1012,7 +1043,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.93';
+const BUILD = 'v1.94';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1684,6 +1715,12 @@ const F_GRADES={
   '희귀':{label:'희귀',bg:'#E8D5F5',fg:'#6A0DAD'},
   '영웅':{label:'영웅',bg:'#FFE5CC',fg:'#C05000'},
   '전설':{label:'전설',bg:'#FFF3CD',fg:'#8B6914'},
+};
+// 물고기 스킬 정의
+const FISH_SKILLS={
+  'gs_폭식':      {name:'폭식',      species:'goldfish',slot:1,desc:'공격 후 30% 확률, 데미지의 30% HP 회복'},
+  'gs_칼로리소모': {name:'칼로리소모',species:'goldfish',slot:1,desc:'5초마다 35% 확률, 포만감-15 → HP+8% 회복'},
+  'gs_과식':      {name:'과식',      species:'goldfish',slot:1,desc:'포만감 91%+ 조건, 4초마다 25% 확률, 스탯 일시 강화'},
 };
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -3641,6 +3678,77 @@ async function adminConfirmGiveFish(){
   sbSend('data_reload',{targetName:_admGiveTarget.username,fishName:s.name,fromAdmin:ADMIN_USERNAME});
   adminLoadUsers();
 }
+
+// ── 스킬 지급 ─────────────────────────────────────────────
+let _admSkillTarget=null; // {username, server, fish_data}
+
+async function adminOpenSkill(username,server){
+  const{data,error}=await _sb.from('fish_accounts').select('fish_data')
+    .eq('username',username).eq('server',server).single();
+  if(error||!data){alert('데이터 로드 실패: '+(error?.message||'없음'));return;}
+  _admSkillTarget={username,server,fish_data:data.fish_data||{}};
+  document.getElementById('adm-skill-title').textContent=`${username} (${server})`;
+  // 물고기 목록 셀렉트 채우기
+  const fishes=(_admSkillTarget.fish_data.fishes||[]);
+  const sel=document.getElementById('adm-skill-fish-sel');
+  sel.innerHTML=fishes.map((f,i)=>{
+    const s=fStage(f);
+    const sk=f.skill1?` [${FISH_SKILLS[f.skill1]?.name||f.skill1}]`:'';
+    const dead=f.isDead?'💀 ':'🐟 ';
+    return `<option value="${i}">${dead}#${i+1} ${s.name} (${s.grade})${sk}</option>`;
+  }).join('');
+  if(!fishes.length) sel.innerHTML='<option>물고기 없음</option>';
+  adminSkillOnFishChange();
+  document.getElementById('adm-skill-modal').classList.add('on');
+}
+
+function adminSkillOnFishChange(){
+  const idx=parseInt(document.getElementById('adm-skill-fish-sel').value);
+  const fishes=_admSkillTarget?.fish_data?.fishes||[];
+  const f=fishes[idx];
+  const sel1=document.getElementById('adm-skill-slot1');
+  if(!f){document.getElementById('adm-skill-preview').innerHTML='';sel1.innerHTML='<option value="">없음</option>';return;}
+  const s=fStage(f);
+  const fishType=f.type||'goldfish';
+  // 해당 어종에 맞는 스킬만 필터링
+  const available=Object.entries(FISH_SKILLS).filter(([,sk])=>sk.species===fishType);
+  sel1.innerHTML=`<option value="">없음 (삭제)</option>`+
+    available.map(([id,sk])=>`<option value="${id}">${id==='gs_폭식'?'💚':id==='gs_칼로리소모'?'🔥':'⚡'} ${sk.name} — ${sk.desc}</option>`).join('');
+  sel1.disabled=available.length===0;
+  const sk1=f.skill1||'';
+  sel1.value=sk1;
+  const skInfo=FISH_SKILLS[sk1];
+  const gd=F_GRADES[s.grade]||F_GRADES['일반'];
+  document.getElementById('adm-skill-preview').innerHTML=
+    `<span style="padding:1px 5px;border-radius:3px;background:${gd.bg};color:${gd.fg};font-size:10px;font-weight:700">${s.grade}</span> `+
+    `<strong style="color:#E2E8F0">${s.name}</strong> `+
+    `<span style="color:#7A9BBF">HP ${f.hp}/${f.maxHp} | 포만감 ${Math.round(f.fullness||0)}%</span><br>`+
+    (available.length===0
+      ? `<span style="color:#FB7185">이 어종에 사용 가능한 스킬이 없습니다</span>`
+      : `<span style="color:#60A5FA">현재 슬롯1: ${skInfo?`<strong style="color:#FBBF24">${skInfo.name}</strong> — ${skInfo.desc}`:'없음'}</span>`);
+}
+
+async function adminConfirmSkill(){
+  if(!_admSkillTarget) return;
+  const idx=parseInt(document.getElementById('adm-skill-fish-sel').value);
+  const sk1=document.getElementById('adm-skill-slot1').value||null;
+  const fishes=_admSkillTarget.fish_data.fishes||[];
+  if(idx<0||idx>=fishes.length){alert('물고기를 선택하세요');return;}
+  fishes[idx].skill1=sk1||undefined;
+  if(!sk1) delete fishes[idx].skill1;
+  const newData={..._admSkillTarget.fish_data,fishes,lastSave:Date.now()};
+  const{error}=await _sb.from('fish_accounts')
+    .update({fish_data:newData,updated_at:new Date().toISOString()})
+    .eq('username',_admSkillTarget.username).eq('server',_admSkillTarget.server);
+  if(error){alert('저장 실패: '+error.message);return;}
+  hideDlg('adm-skill-modal');
+  const skName=sk1?(FISH_SKILLS[sk1]?.name||sk1):'없음';
+  document.getElementById('adm-status').textContent=
+    `✅ ${_admSkillTarget.username} #${idx+1} 물고기 스킬1 → ${skName}`;
+  sbSend('data_reload',{targetName:_admSkillTarget.username,fromAdmin:ADMIN_USERNAME});
+  adminLoadUsers();
+}
+
 function adminInit(){
   document.getElementById('adm-server-badge').textContent='● '+ACTIVE_SERVER;
   adminLoadUsers();
@@ -3710,6 +3818,7 @@ function adminRenderTable(rows){
       <div class="adm-actions">
         ${isAdmin?'':`
           <button class="adm-act-btn green" onclick="adminOpenGiveFish('${r.username}','${r.server}')">🐟 지급</button>
+          <button class="adm-act-btn" onclick="adminOpenSkill('${r.username}','${r.server}')">🎯 스킬</button>
           <button class="adm-act-btn" onclick="adminOpenEdit('${r.username}','${r.server}')">✏️ 수정</button>
         `}
       </div>
@@ -3976,7 +4085,8 @@ function startBattleGame(){
     const s=fStage(f);
     return{origIdx:FG.fishes.indexOf(f),name:s.name,grade:s.grade,type:f.type||'goldfish',
       stage:f.stage,hp:f.hp,maxHp:f.maxHp,atk:s.atk,def:s.def,agi:s.agi,luk:s.luk,
-      color:s.color,fin:s.fin,species:s.species};
+      color:s.color,fin:s.fin,species:s.species,fullness:f.fullness||80,
+      skill1:f.skill1||null,skill2:f.skill2||null};
   });
   if(!btMyFishData.length){
     u1Toast('살아있는 물고기가 없습니다!','#C00000');
@@ -4096,6 +4206,10 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
       curHp:fd.hp, isDead:false,
       hitFlash:0, hitType:'',
       floatTxt:null,
+      healTxt:null,
+      skillTimer:0,
+      buffMult:1.0,
+      buffTimer:0,
     };
   };
   const myBt=myFish.map((f,i)=>mkFish(f,i,myFish.length,'my'));
@@ -4155,7 +4269,8 @@ function btPhysicsStep(){
     if(!enemies.length) return;
     let nearest=enemies[0],minD=Infinity;
     enemies.forEach(e=>{const d=Math.hypot(e.x-f.x,e.y-f.y);if(d<minD){minD=d;nearest=e;}});
-    const spd=0.004+f.agi*0.00005;
+    const bm=f.buffMult||1;
+    const spd=0.004+f.agi*bm*0.00005;
     const collR=0.09;
     // ── 페이즈 타이머 ──────────────────────────────────────
     f.phaseTimer--;
@@ -4175,8 +4290,10 @@ function btPhysicsStep(){
     // ── 돌진 중 접촉 시 데미지 ─────────────────────────────
     if(f.phase==='charge'&&f.side==='my'&&minD<collR&&!f.hasHit){
       f.hasHit=true;
-      const crit=Math.random()<f.luk/200;
-      const dmg=Math.max(1,Math.floor(f.atk*0.7-nearest.def*0.3+(Math.random()-0.5)*f.atk*0.15));
+      const bAtk=Math.floor(f.atk*bm);
+      const bLuk=Math.floor(f.luk*bm);
+      const crit=Math.random()<bLuk/200;
+      const dmg=Math.max(1,Math.floor(bAtk*0.7-nearest.def*0.3+(Math.random()-0.5)*bAtk*0.15));
       const fd=crit?dmg*2:dmg;
       nearest.curHp=Math.max(0,nearest.curHp-fd);
       if(nearest.curHp<=0) nearest.isDead=true;
@@ -4193,6 +4310,31 @@ function btPhysicsStep(){
       // 이펙트
       nearest.hitFlash=crit?12:8; nearest.hitType=crit?'crit':'hit';
       nearest.floatTxt={txt:crit?`💥${fd}`:`-${fd}`,age:0,x:nearest.x,y:nearest.y-0.03,color:crit?'#E55':'#333'};
+      // ── 스킬 1: 폭식 (공격 후 30% 확률, 데미지의 30% 회복) ──
+      if(f.skill1==='gs_폭식'&&f.side==='my'&&Math.random()<0.30){
+        const heal=Math.max(1,Math.floor(fd*0.30));
+        f.curHp=Math.min(f.maxHp,f.curHp+heal);
+        f.healTxt={txt:`💚+${heal}`,age:0,x:f.x,y:f.y-0.06,color:'#22C55E'};
+      }
+    }
+    // ── 주기 스킬 체크 ────────────────────────────────────────
+    if(f.side==='my'&&(f.skill1==='gs_칼로리소모'||f.skill1==='gs_과식')){
+      f.skillTimer=(f.skillTimer||0)+1;
+      if(f.buffTimer>0){f.buffTimer--;if(f.buffTimer===0)f.buffMult=1.0;}
+      // 스킬: 칼로리소모 (100틱마다 35% 확률, 포만감→HP 회복)
+      if(f.skill1==='gs_칼로리소모'&&f.skillTimer%100===0&&(f.fullness||0)>=15&&Math.random()<0.35){
+        f.fullness=Math.max(0,(f.fullness||0)-15);
+        const heal=Math.max(1,Math.floor(f.maxHp*0.08));
+        f.curHp=Math.min(f.maxHp,f.curHp+heal);
+        f.healTxt={txt:`🔥+${heal}`,age:0,x:f.x,y:f.y-0.06,color:'#FB923C'};
+      }
+      // 스킬: 과식 (80틱마다 25% 확률, 포만감 91%+ 조건, 스탯 강화)
+      if(f.skill1==='gs_과식'&&f.skillTimer%80===0&&(f.fullness||0)>=91&&f.buffTimer<=0&&Math.random()<0.25){
+        const pct=Math.round((f.fullness||0)-90);
+        f.buffMult=1+pct*0.01;
+        f.buffTimer=280;
+        f.healTxt={txt:`⚡스탯+${pct}%`,age:0,x:f.x,y:f.y-0.06,color:'#FBBF24'};
+      }
     }
     // ── 이동 ───────────────────────────────────────────────
     const toEnemyAngle=Math.atan2(nearest.y-f.y,nearest.x-f.x);
@@ -4229,6 +4371,8 @@ function btPhysicsStep(){
     if(f.hitFlash>0) f.hitFlash--;
     if(f.floatTxt){f.floatTxt.age++;f.floatTxt.y-=0.003;}
     if(f.floatTxt&&f.floatTxt.age>22) f.floatTxt=null;
+    if(f.healTxt){f.healTxt.age++;f.healTxt.y-=0.003;}
+    if(f.healTxt&&f.healTxt.age>26) f.healTxt=null;
   });
 
   // HP 패널 업데이트
@@ -4317,6 +4461,16 @@ function btDraw(W,H){
       c.globalAlpha=Math.max(0,1-f.floatTxt.age/22);
       c.strokeText(f.floatTxt.txt,f.floatTxt.x*W,f.floatTxt.y*H);
       c.fillText(f.floatTxt.txt,f.floatTxt.x*W,f.floatTxt.y*H);
+      c.globalAlpha=1;c.lineWidth=0.7;
+    }
+    // 플로팅 스킬 텍스트 (회복/버프)
+    if(f.healTxt){
+      c.font=`bold ${Math.max(9,size*.72)}px monospace`;
+      c.fillStyle=f.healTxt.color||'#22C55E';
+      c.strokeStyle='rgba(255,255,255,0.9)';c.lineWidth=2;
+      c.globalAlpha=Math.max(0,1-f.healTxt.age/26);
+      c.strokeText(f.healTxt.txt,f.healTxt.x*W,f.healTxt.y*H);
+      c.fillText(f.healTxt.txt,f.healTxt.x*W,f.healTxt.y*H);
       c.globalAlpha=1;c.lineWidth=0.7;
     }
     // 포만감 낮으면 거품
