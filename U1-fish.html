@@ -483,37 +483,11 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       </div>
     </div>
   </div>
-  <div id="aux-tank-view" style="position:absolute;inset:0;display:none;flex-direction:column;background:#fff;overflow:hidden">
-    <div style="background:#F2F2F2;border-bottom:1px solid #D0D0D0;padding:5px 10px;font-size:11px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <span style="font-weight:700;color:#1F3864">🐟 보조 수족관</span>
-      <span id="aux-tank-info" style="color:#595959;font-size:10px">0/1마리</span>
-    </div>
-    <div style="flex:1;overflow-y:auto;min-height:0">
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <thead>
-          <tr style="background:#D9D9D9;font-weight:700">
-            <th style="border:1px solid #C0C0C0;padding:3px 5px;text-align:center;width:24px">#</th>
-            <th style="border:1px solid #C0C0C0;padding:3px 5px;text-align:left">이름</th>
-            <th style="border:1px solid #C0C0C0;padding:3px 5px;text-align:center;width:36px">등급</th>
-            <th style="border:1px solid #C0C0C0;padding:3px 5px;text-align:center">포만감</th>
-            <th style="border:1px solid #C0C0C0;padding:3px 5px;text-align:center;width:36px">상태</th>
-          </tr>
-        </thead>
-        <tbody id="aux-fish-tbody"></tbody>
-      </table>
-    </div>
-    <div style="border-top:1px solid #D0D0D0;padding:7px 10px;font-size:10px;background:#F8F9FF;flex-shrink:0">
-      <div style="color:#888;margin-bottom:5px">포만감 <strong style="color:#C05000">×2.5</strong> 빠름 · 먹이 불가 · 0% 시 자동 방생</div>
-      <div id="aux-expand-row" style="display:flex;justify-content:space-between;align-items:center">
-        <span id="aux-expand-txt" style="color:#555">확장 가능</span>
-        <button id="aux-expand-btn" onclick="fishAuxExpand()" style="background:#1F3864;color:#fff;border:none;padding:4px 10px;border-radius:3px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">확장</button>
-      </div>
-    </div>
-  </div>
 </div>
 <div class="xl-bottombar">
-  <div class="xl-stabs"><button class="xl-stab on" id="stab-main" onclick="fishShowMain()">수조1</button><button class="xl-stab" onclick="fishOpenFeeders()">🍤 먹이통</button><button class="xl-stab" onclick="fishOpenShop()">상점</button><button class="xl-stab" id="stab-aux" onclick="fishShowAux()">보조 수조</button><button class="xl-stab-plus">＋</button></div>
+  <div class="xl-stabs"><button class="xl-stab on">수조1</button><button class="xl-stab" onclick="fishOpenFeeders()">🍤 먹이통</button><button class="xl-stab" onclick="fishOpenShop()">상점</button><button class="xl-stab-plus">＋</button></div>
   <div class="xl-statusbar"><span class="xl-sitem" id="f-status">준비</span><span class="xl-sitem" id="f-save-status">저장 안 됨</span><span class="xl-sitem">100%</span></div>
+</div>
 </div>
 
 <!-- 플로팅 버튼 -->
@@ -748,6 +722,36 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
   <!-- 낚싯대 선택 패널 -->
   <div id="fishing-rod-btns" style="padding:8px;background:#F2F2F2;border-top:1px solid #C8C8C8;display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;min-height:52px;align-items:center"></div>
+  <!-- 보조 수족관 패널 -->
+  <div id="fishing-aux-panel" style="background:#EFF6FF;border-top:2px solid #9DC3E6;flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px 3px;flex-shrink:0">
+      <span style="font-size:10px;font-weight:700;color:#1F3864">🐟 보조 수족관</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span id="aux-tank-info" style="font-size:9px;color:#595959">0/1마리</span>
+        <span style="font-size:9px;color:#C05000;font-weight:700">포만감 ×2.5 · 자동 방생</span>
+      </div>
+    </div>
+    <div id="aux-fish-tbody-wrap" style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:10px;min-width:280px">
+        <thead>
+          <tr style="background:#DEEAF1">
+            <th style="border:1px solid #9DC3E6;padding:2px 4px;text-align:center;width:20px;color:#1F497D">#</th>
+            <th style="border:1px solid #9DC3E6;padding:2px 5px;text-align:left;color:#1F497D">이름</th>
+            <th style="border:1px solid #9DC3E6;padding:2px 4px;text-align:center;width:32px;color:#1F497D">등급</th>
+            <th style="border:1px solid #9DC3E6;padding:2px 5px;text-align:center;color:#1F497D">포만감</th>
+            <th style="border:1px solid #9DC3E6;padding:2px 4px;text-align:center;width:28px;color:#1F497D">상태</th>
+          </tr>
+        </thead>
+        <tbody id="aux-fish-tbody"></tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px">
+      <span style="font-size:9px;color:#888" id="aux-expand-txt"></span>
+      <div id="aux-expand-row">
+        <button id="aux-expand-btn" onclick="fishAuxExpand()" style="background:#1F3864;color:#fff;border:none;padding:3px 9px;border-radius:2px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">확장</button>
+      </div>
+    </div>
+  </div>
   <div class="xl-bottombar">
     <div class="xl-stabs"><button class="xl-stab on">낚시터</button><button class="xl-stab-plus">＋</button></div>
     <div class="xl-statusbar"><span class="xl-sitem" id="fishing-status-bar">대기 중</span><span class="xl-sitem">100%</span></div>
@@ -1944,6 +1948,7 @@ function fishingEnter(){
   _fishingBobStart('idle');
   const m=document.getElementById('fishing-money');
   if(m) m.textContent=FG.money.toLocaleString();
+  fishRenderAux();
 }
 
 function fishingExit(){
@@ -2904,54 +2909,30 @@ function fishLoad(){
     FG.lastAutoFeed=Date.now(); // 로그인 직후 즉시 발동 방지
   }catch(e){FG.fishes=[newFish(1)];}
 }
-function fishShowMain(){
-  const mv=document.getElementById('main-tank-view');
-  const av=document.getElementById('aux-tank-view');
-  if(mv) mv.style.display='flex';
-  if(av) av.style.display='none';
-  const sm=document.getElementById('stab-main');
-  const sa=document.getElementById('stab-aux');
-  if(sm){sm.classList.add('on');}
-  if(sa){sa.classList.remove('on');}
-}
-function fishShowAux(){
-  const mv=document.getElementById('main-tank-view');
-  const av=document.getElementById('aux-tank-view');
-  if(mv) mv.style.display='none';
-  if(av) av.style.display='flex';
-  const sm=document.getElementById('stab-main');
-  const sa=document.getElementById('stab-aux');
-  if(sm){sm.classList.remove('on');}
-  if(sa){sa.classList.add('on');}
-  fishRenderAux();
-}
 function fishRenderAux(){
   const tbody=document.getElementById('aux-fish-tbody');
   if(!tbody) return;
   const info=document.getElementById('aux-tank-info');
   if(info) info.textContent=`${FG.auxFishes.length}/${FG.auxMax}마리`;
   if(FG.auxFishes.length===0){
-    tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:20px;color:#888;border:1px solid #E0E0E0;font-size:11px">
-      낚시를 통해 물고기를 잡으면 여기에 배치됩니다<br>
-      <span style="font-size:9px">(먹이 불가 · 포만감 소진 시 자동 방생)</span>
-    </td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:6px;color:#888;border:1px solid #BDD7EE;font-size:10px">낚시로 잡은 물고기가 여기에 배치됩니다</td></tr>`;
   } else {
     tbody.innerHTML=FG.auxFishes.map((f,i)=>{
       const s=fStage(f);
       const gd=F_GRADES[s.grade]||{};
       const fp=Math.round(f.fullness);
       const bc=fp>60?'#217346':fp>30?'#FFA500':'#C00000';
-      return `<tr style="background:${i%2===0?'#fff':'#F9F9F9'}">
-        <td style="border:1px solid #E0E0E0;padding:3px 5px;text-align:center;color:#888">${i+1}</td>
-        <td style="border:1px solid #E0E0E0;padding:3px 5px">${s.name}</td>
-        <td style="border:1px solid #E0E0E0;padding:3px 5px;text-align:center">
-          <span style="font-size:9px;font-weight:700;padding:1px 3px;background:${gd.bg||'#E8E8E8'};color:${gd.fg||'#333'}">${s.grade}</span>
+      return `<tr style="background:${i%2===0?'#EFF6FF':'#DEEAF1'}">
+        <td style="border:1px solid #BDD7EE;padding:2px 4px;text-align:center;color:#888">${i+1}</td>
+        <td style="border:1px solid #BDD7EE;padding:2px 5px;color:#1F3864">${s.name}</td>
+        <td style="border:1px solid #BDD7EE;padding:2px 4px;text-align:center">
+          <span style="font-size:8px;font-weight:700;padding:1px 3px;background:${gd.bg||'#E8E8E8'};color:${gd.fg||'#333'}">${s.grade}</span>
         </td>
-        <td style="border:1px solid #E0E0E0;padding:3px 6px">
-          <div style="background:#E0E0E0;border-radius:2px;height:7px"><div style="background:${bc};height:100%;width:${fp}%;border-radius:2px"></div></div>
-          <div style="text-align:right;font-size:9px;color:#555;margin-top:1px">${fp}%</div>
+        <td style="border:1px solid #BDD7EE;padding:2px 5px">
+          <div style="background:#C8D8EC;border-radius:2px;height:6px"><div style="background:${bc};height:100%;width:${fp}%;border-radius:2px"></div></div>
+          <div style="text-align:right;font-size:8px;color:#555">${fp}%</div>
         </td>
-        <td style="border:1px solid #E0E0E0;padding:3px 5px;text-align:center;font-size:11px">${fp>30?'🐟':'⚠️'}</td>
+        <td style="border:1px solid #BDD7EE;padding:2px 4px;text-align:center;font-size:10px">${fp>30?'🐟':'⚠️'}</td>
       </tr>`;
     }).join('');
   }
@@ -2960,15 +2941,15 @@ function fishRenderAux(){
   const expandTxt=document.getElementById('aux-expand-txt');
   if(FG.auxMax>=3){
     if(expandRow) expandRow.style.display='none';
+    if(expandTxt) expandTxt.textContent='최대 확장 완료';
   } else {
-    if(expandRow) expandRow.style.display='flex';
+    if(expandRow) expandRow.style.display='';
     const prices=[0,3000,10000];
     const price=prices[FG.auxMax];
     const canBuy=FG.money>=price;
-    if(expandTxt) expandTxt.textContent=`${FG.auxMax}→${FG.auxMax+1}칸 확장`;
+    if(expandTxt) expandTxt.textContent=`${FG.auxMax}→${FG.auxMax+1}칸 (${price.toLocaleString()}원)`;
     if(expandBtn){
       expandBtn.disabled=!canBuy;
-      expandBtn.textContent=`${price.toLocaleString()}원`;
       expandBtn.style.background=canBuy?'#1F3864':'#E8E8E8';
       expandBtn.style.color=canBuy?'#fff':'#999';
       expandBtn.style.cursor=canBuy?'pointer':'default';
