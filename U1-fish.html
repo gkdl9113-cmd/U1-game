@@ -986,7 +986,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.85';
+const BUILD = 'v1.86';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1685,20 +1685,20 @@ const F_SHOP=[
   {id:'lottery',name:'🎰 행운 복권',  price:300, desc:'1~5등 또는 꽝',     type:'lottery'},
   {id:'rod1',name:'하급 낚시대 Ⅰ', price:150, type:'rod',
    catchProb:0.30, gaugeWidth:0.22, gaugeSpeed:130,
-   grades:[{grade:'일반',w:100}],
-   desc:'성공률 30% | 일반 100%'},
+   grades:[{grade:'일반',w:93},{grade:'중급',w:5},{grade:'희귀',w:2}],
+   desc:'성공률 30%'},
   {id:'rod2',name:'하급 낚시대 Ⅱ', price:400, type:'rod',
    catchProb:0.45, gaugeWidth:0.30, gaugeSpeed:105,
-   grades:[{grade:'일반',w:90},{grade:'희귀',w:10}],
-   desc:'성공률 45% | 일반 90% / 희귀 10%'},
+   grades:[{grade:'일반',w:75},{grade:'중급',w:14},{grade:'희귀',w:7},{grade:'고급',w:3},{grade:'영웅',w:1}],
+   desc:'성공률 45%'},
   {id:'rod3',name:'하급 낚시대 Ⅲ', price:1000, type:'rod',
    catchProb:0.60, gaugeWidth:0.40, gaugeSpeed:82,
-   grades:[{grade:'일반',w:75},{grade:'희귀',w:25}],
-   desc:'성공률 60% | 일반 75% / 희귀 25%'},
+   grades:[{grade:'일반',w:55},{grade:'중급',w:20},{grade:'희귀',w:14},{grade:'고급',w:6},{grade:'영웅',w:4},{grade:'전설',w:1}],
+   desc:'성공률 60%'},
   {id:'rod4',name:'하급 낚시대 Ⅳ', price:3000, type:'rod',
    catchProb:0.75, gaugeWidth:0.52, gaugeSpeed:62,
-   grades:[{grade:'일반',w:55},{grade:'희귀',w:45}],
-   desc:'성공률 75% | 일반 55% / 희귀 45%'},
+   grades:[{grade:'일반',w:35},{grade:'중급',w:25},{grade:'희귀',w:20},{grade:'고급',w:10},{grade:'영웅',w:7},{grade:'전설',w:3}],
+   desc:'성공률 75%'},
 ];
 const LOTTERY_PRIZES=[
   {grade:'1등',amount:1000,prob:0.005,bg:'#FFD700',fg:'#7F4F00'},
@@ -1997,8 +1997,8 @@ function fishingGaugeClick(){
   if(!inZone){_fishingShowResult(false,'타이밍 실패! 물고기가 빠져나갔습니다 🐟💨');return;}
   const rod=F_SHOP.find(r=>r.id===FMG.rodId);
   if(Math.random()<rod.catchProb){
-    const {type:picked}=pickSpeciesByGrade(rod.grades);
-    const caught=newFish(1,picked);
+    const {type:picked,stage:pickedStage}=pickSpeciesByGrade(rod.grades);
+    const caught=newFish(pickedStage,picked);
     FG.fishes.push(caught);FG.fishPos=null;
     fishRenderInfo();fishQuickSave();
     const cs=fStage(caught);
@@ -2627,13 +2627,27 @@ function fishOpenShop(){
   const div=document.getElementById('f-shop-items');
   div.innerHTML=F_SHOP.map(item=>{
     const cnt=item.type==='rod'?(FG.rods[item.id]||0):0;
-    const cntTxt=item.type==='rod'?` <span style="color:#217346;font-weight:700">(${cnt}개 보유)</span>`:'';
     const disabled=FG.money<item.price;
+    const btnStyle=`background:${disabled?'#E8E8E8':'#217346'};color:${disabled?'#999':'#fff'};border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:${disabled?'default':'pointer'};font-family:inherit;white-space:nowrap`;
+    if(item.type==='rod'){
+      const gradesHtml=item.grades.map(g=>{
+        const gd=F_GRADES[g.grade]||{bg:'#E8E8E8',fg:'#555'};
+        return `<span style="display:inline-block;background:${gd.bg};color:${gd.fg};font-size:9px;font-weight:700;padding:1px 5px;margin:1px 2px 0 0;border-radius:2px">${g.grade} ${g.w}%</span>`;
+      }).join('');
+      return `<div style="padding:7px 0;border-bottom:1px solid #F0F0F0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:700">${item.name} <span style="color:#217346;font-weight:700;font-size:10px">${cnt}개 보유</span></div>
+            <div style="font-size:10px;color:#555;margin:2px 0">${item.desc} | 게이지 ${Math.round(item.gaugeWidth*100)}%</div>
+            <div style="margin-top:3px">${gradesHtml}</div>
+          </div>
+          <button onclick="fishBuy('${item.id}')" ${disabled?'disabled':''} style="${btnStyle}">${item.price.toLocaleString()}원</button>
+        </div></div>`;
+    }
+    const cntTxt=item.type==='rod'?` <span style="color:#217346;font-weight:700">(${cnt}개 보유)</span>`:'';
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F0F0F0">
       <div><div style="font-size:12px;font-weight:700">${item.name}${cntTxt}</div><div style="font-size:10px;color:#888">${item.desc}</div></div>
-      <button onclick="fishBuy('${item.id}')" ${disabled?'disabled':''}
-        style="background:${disabled?'#E8E8E8':'#217346'};color:${disabled?'#999':'#fff'};border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:${disabled?'default':'pointer'};font-family:inherit;white-space:nowrap">
-        ${item.price}원</button></div>`;
+      <button onclick="fishBuy('${item.id}')" ${disabled?'disabled':''} style="${btnStyle}">${item.price}원</button></div>`;
   }).join('');
   // 자동먹이통 구매 (가격 체증)
   const maxFeeders=FG.tankMax; // 수조 크기 = 최대 먹이통 수
@@ -3542,13 +3556,17 @@ function pickSpeciesByGrade(gradesTable, rngFn){
   const tot=table.reduce((a,g)=>a+g.w,0);
   let rv=rng()*tot, pickedGrade='일반';
   for(const g of table){rv-=g.w;if(rv<=0){pickedGrade=g.grade;break;}}
-  // 해당 등급의 1단계 물고기 어종 목록
-  const candidates=Object.keys(F_SPECIES).filter(type=>
-    F_SPECIES[type]?.[1]?.grade===pickedGrade
-  );
-  if(!candidates.length) return{type:'goldfish',grade:'일반'};
-  const type=candidates[Math.floor(rng()*candidates.length)];
-  return{type,grade:pickedGrade};
+  // 해당 등급의 물고기 전 단계 검색
+  const candidates=[];
+  for(const type of Object.keys(F_SPECIES)){
+    const sp=F_SPECIES[type];
+    for(let s=1;s<=5;s++){
+      if(sp[s]&&sp[s].grade===pickedGrade) candidates.push({type,stage:s});
+    }
+  }
+  if(!candidates.length) return{type:'goldfish',grade:'일반',stage:1};
+  const picked=candidates[Math.floor(rng()*candidates.length)];
+  return{type:picked.type,grade:pickedGrade,stage:picked.stage};
 }
 
 function seededRng(seed){
