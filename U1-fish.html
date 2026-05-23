@@ -844,30 +844,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
-<!-- 유저 데이터 수정 모달 -->
-<div class="xl-dlg-ov" id="adm-edit-modal">
-  <div class="xl-dlg" style="min-width:300px">
-    <div class="xl-dlg-title" style="background:#1F3864">🛠️ 유저 데이터 수정 <button class="xl-dlg-x" onclick="hideDlg('adm-edit-modal')">✕</button></div>
-    <div class="xl-dlg-body">
-      <div style="font-size:12px;font-weight:700;color:#1F3864;margin-bottom:10px" id="adm-edit-title">유저: </div>
-      <div class="adm-edit-row"><span style="min-width:70px" style="color:#888;font-size:10px">📊 최고단계</span>
-        <select id="adm-edit-stage" style="border:1px solid #9DC3E6;padding:3px 6px;font-size:12px;font-family:inherit;color:#888" disabled>
-          <option value="1">1단계</option><option value="2">2단계</option><option value="3">3단계</option>
-          <option value="4">4단계</option><option value="5">5단계</option>
-        </select>
-        <span style="font-size:10px;color:#888;margin-left:4px">(참고용)</span>
-      </div>
-      <div class="adm-edit-row"><span style="min-width:70px">💰 금액</span><input class="adm-edit-inp" id="adm-edit-money" type="number" min="0"></div>
-      <div class="adm-edit-row"><span style="min-width:70px">🍤 먹이</span><input class="adm-edit-inp" id="adm-edit-food" type="number" min="0"></div>
-      <!-- HP 수정 제거: fishes 배열 직접 수정 불필요 -->
-      <div class="xl-dlg-btns" style="margin-top:12px">
-        <button class="xl-dlg-btn" onclick="hideDlg('adm-edit-modal')">취소</button>
-        <button class="xl-dlg-btn ok" onclick="adminSaveEdit()">저장</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- 상사 크리 보스키 오버레이 -->
 <div id="boss-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#fff;overflow:auto;font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:clamp(10px,1.4vw,14px);color:#000">
   <div style="background:#217346;color:#fff;padding:3px 10px;font-size:11px;display:flex;justify-content:space-between;flex-shrink:0">
@@ -963,7 +939,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.82';
+const BUILD = 'v1.83';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -3292,15 +3268,19 @@ function adminOpenEdit(username,server){
 
 async function adminSaveEdit(){
   if(!_admEditTarget) return;
-  const{username,server,fish_data}=_admEditTarget;
+  const{username,server}=_admEditTarget;
   const money=parseInt(document.getElementById('adm-edit-money').value)||0;
   const food=parseInt(document.getElementById('adm-edit-food').value)||0;
-  // fishes 배열은 유지, money/food만 수정
-  const newData={...fish_data,money,food,lastSave:Date.now()};
+  // 최신 DB 데이터 재조회 후 money/food만 덮어씀 (fishes 등 다른 데이터 유지)
+  const{data,error:e1}=await _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).single();
+  if(e1||!data){alert('데이터 로드 실패: '+(e1?.message||'없음'));return;}
+  const newData={...(data.fish_data||{}),money,food,lastSave:Date.now()};
   const{error}=await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',username).eq('server',server);
   if(error){alert('저장 실패: '+error.message);return;}
   hideDlg('adm-edit-modal');
-  document.getElementById('adm-status').textContent=`${username} 데이터 수정 완료`;
+  document.getElementById('adm-status').textContent=`✅ ${username} 수정 완료 (💰${money.toLocaleString()}원 🍤${food}개)`;
+  // 접속 중인 플레이어에게 실시간 동기화 신호 전송
+  sbSend('data_reload',{targetName:username,fromAdmin:ADMIN_USERNAME});
   adminLoadUsers();
 }
 
