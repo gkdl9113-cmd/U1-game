@@ -4232,7 +4232,7 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
     const baseY=0.15+(total>1?i/(total-1)*0.7:0.35);
     return{
       ...fd, side,
-      x:baseX+Math.random()*0.06,
+      x:baseX+btRng()*0.06,
       y:baseY,
       vx:0,vy:0,
       orbitDir:btRng()>0.5?1:-1, // 나선 방향
@@ -4513,9 +4513,9 @@ function btDraw(W,H){
       c.globalAlpha=1;c.lineWidth=0.7;
     }
     // 포만감 낮으면 거품
-    if(Math.random()<0.02&&f.side==='my'){
+    if(btRng()<0.02&&f.side==='my'){
       c.fillStyle='rgba(150,200,255,0.3)';
-      c.beginPath();c.arc(fx+(Math.random()-.5)*size,fy-size*1.1,1.5,0,Math.PI*2);c.fill();
+      c.beginPath();c.arc(fx+(btRng()-.5)*size,fy-size*1.1,1.5,0,Math.PI*2);c.fill();
     }
   });
 }
