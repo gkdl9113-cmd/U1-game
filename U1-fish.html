@@ -902,7 +902,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.75';
+const BUILD = 'v1.76';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -3416,10 +3416,17 @@ function btPhysicsStep(){
     // ── 페이즈 타이머 ──────────────────────────────────────
     f.phaseTimer--;
     if(f.phaseTimer<=0){
-      f.phase=f.phase==='orbit'?'charge':'orbit';
-      // 3~15초 랜덤 (50ms×60=3초, ×300=15초)
-      f.phaseTimer=Math.floor(Math.random()*240+60);
-      if(f.phase==='charge') f.hasHit=false;
+      if(f.phase==='retreat'){
+        f.phase='orbit';
+        f.phaseTimer=Math.floor(Math.random()*200+100); // 5~15초 선회
+      } else if(f.phase==='orbit'){
+        f.phase='charge';
+        f.phaseTimer=Math.floor(Math.random()*180+60);  // 3~12초 돌진
+        f.hasHit=false;
+      } else {
+        f.phase='orbit';
+        f.phaseTimer=Math.floor(Math.random()*200+100);
+      }
     }
     // ── 돌진 중 접촉 시 데미지 ─────────────────────────────
     if(f.phase==='charge'&&f.side==='my'&&minD<collR&&!f.hasHit){
@@ -3429,45 +3436,52 @@ function btPhysicsStep(){
       const fd=crit?dmg*2:dmg;
       nearest.curHp=Math.max(0,nearest.curHp-fd);
       if(nearest.curHp<=0) nearest.isDead=true;
-      // 반발력 (충돌 후 튕김)
+      // 강한 반발력 (충돌 후 확실히 분리)
       const dx=(f.x-nearest.x)/Math.max(0.001,minD);
       const dy=(f.y-nearest.y)/Math.max(0.001,minD);
-      f.vx=(f.vx||0)+dx*0.04; f.vy=(f.vy||0)+dy*0.04;
-      nearest.vx=(nearest.vx||0)-dx*0.03; nearest.vy=(nearest.vy||0)-dy*0.03;
-      // 돌진 후 즉시 선회로 전환
-      f.phase='orbit';
-      f.phaseTimer=Math.floor(Math.random()*200+80);
+      f.vx=dx*0.08; f.vy=dy*0.08; // 속도 리셋 후 강한 반발
+      nearest.vx=-dx*0.06; nearest.vy=-dy*0.06;
+      // 공격 후 retreat 페이즈 (2~4초 도망)
+      f.phase='retreat';
+      f.phaseTimer=Math.floor(Math.random()*80+40);
       // 브로드캐스트로 HP 동기화
       if(currentGame) sbSend('battle_hit',{fromId:myId,victimId:nearest.id,dmg:fd,crit});
       // 이펙트
       nearest.hitFlash=crit?12:8; nearest.hitType=crit?'crit':'hit';
       nearest.floatTxt={txt:crit?`💥${fd}`:`-${fd}`,age:0,x:nearest.x,y:nearest.y-0.03,color:crit?'#E55':'#333'};
     }
-    // ── 이동 (부드러운 물리) ───────────────────────────────
+    // ── 이동 ───────────────────────────────────────────────
     const toEnemyAngle=Math.atan2(nearest.y-f.y,nearest.x-f.x);
-    if(f.phase==='orbit'){
-      // 선회: 적 주변을 일정 거리 유지하며 공전
-      const orbitDist=0.25;
+    const awayAngle=toEnemyAngle+Math.PI; // 적 반대 방향
+    if(f.phase==='retreat'){
+      // 적 반대 방향으로 빠르게 이탈
+      f.vx=(f.vx||0)*0.82+Math.cos(awayAngle)*spd*2.0;
+      f.vy=(f.vy||0)*0.82+Math.sin(awayAngle)*spd*2.0;
+    } else if(f.phase==='orbit'){
+      // 선회: orbitDist 유지하며 공전
+      const orbitDist=0.30; // 거리 넓힘
       const orbitAngle=toEnemyAngle+Math.PI/2*f.orbitDir;
       const distErr=minD-orbitDist;
-      // 거리 보정력 + 접선 방향 힘 (약하게)
-      f.vx=(f.vx||0)*0.88+Math.cos(toEnemyAngle)*distErr*0.03+Math.cos(orbitAngle)*spd*0.9;
-      f.vy=(f.vy||0)*0.88+Math.sin(toEnemyAngle)*distErr*0.03+Math.sin(orbitAngle)*spd*0.9;
+      f.vx=(f.vx||0)*0.88+Math.cos(toEnemyAngle)*distErr*0.04+Math.cos(orbitAngle)*spd*0.85;
+      f.vy=(f.vy||0)*0.88+Math.sin(toEnemyAngle)*distErr*0.04+Math.sin(orbitAngle)*spd*0.85;
     } else {
-      // 돌진: 적을 향해 직진 (가속도 부드럽게)
-      f.vx=(f.vx||0)*0.80+Math.cos(toEnemyAngle)*spd*1.8;
-      f.vy=(f.vy||0)*0.80+Math.sin(toEnemyAngle)*spd*1.8;
+      // 돌진
+      f.vx=(f.vx||0)*0.82+Math.cos(toEnemyAngle)*spd*1.8;
+      f.vy=(f.vy||0)*0.82+Math.sin(toEnemyAngle)*spd*1.8;
     }
-    // 속도 제한 (낮춰서 안정적)
+    // 중앙 인력 (구석 갇힘 방지)
+    f.vx=(f.vx||0)+(0.5-f.x)*0.003;
+    f.vy=(f.vy||0)+(0.5-f.y)*0.003;
+    // 속도 제한
     const vLen=Math.hypot(f.vx||0,f.vy||0);
-    const maxSpd=spd*(f.phase==='orbit'?1.5:2.5);
+    const maxSpd=spd*(f.phase==='orbit'?1.5:f.phase==='retreat'?2.5:2.2);
     if(vLen>maxSpd){f.vx=(f.vx||0)/vLen*maxSpd;f.vy=(f.vy||0)/vLen*maxSpd;}
     f.x+=(f.vx||0); f.y+=(f.vy||0);
-    // 벽 바운스 (하드클램프 대신 반발)
-    if(f.x<0.06){f.x=0.06;f.vx=Math.abs(f.vx||0)*0.4;}
-    if(f.x>0.94){f.x=0.94;f.vx=-Math.abs(f.vx||0)*0.4;}
-    if(f.y<0.06){f.y=0.06;f.vy=Math.abs(f.vy||0)*0.4;}
-    if(f.y>0.94){f.y=0.94;f.vy=-Math.abs(f.vy||0)*0.4;}
+    // 벽 반발 (강하게)
+    if(f.x<0.08){f.x=0.08;f.vx=Math.abs(f.vx||0)*0.6;}
+    if(f.x>0.92){f.x=0.92;f.vx=-Math.abs(f.vx||0)*0.6;}
+    if(f.y<0.08){f.y=0.08;f.vy=Math.abs(f.vy||0)*0.6;}
+    if(f.y>0.92){f.y=0.92;f.vy=-Math.abs(f.vy||0)*0.6;}
     if(f.hitFlash>0) f.hitFlash--;
     if(f.floatTxt){f.floatTxt.age++;f.floatTxt.y-=0.003;}
     if(f.floatTxt&&f.floatTxt.age>22) f.floatTxt=null;
