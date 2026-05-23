@@ -2074,7 +2074,7 @@ function fishingGaugeClick(){
     const {type:picked,stage:pickedStage}=pickSpeciesByGrade(rod.grades);
     const caught=newFish(pickedStage,picked);
     FG.auxFishes.push(caught);
-    fishRenderInfo();fishQuickSave();
+    fishRenderAux();fishRenderInfo();fishQuickSave();
     const cs=fStage(caught);
     document.getElementById('frow-sp').textContent=cs.name;
     _fishingShowResult(true,`🎉 ${cs.name} 낚았습니다!`,cs.grade);
