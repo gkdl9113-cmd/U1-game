@@ -3748,11 +3748,19 @@ async function adminConfirmSkill(){
   if(!_admSkillTarget) return;
   const idx=parseInt(document.getElementById('adm-skill-fish-sel').value);
   const sk1=document.getElementById('adm-skill-slot1').value||null;
-  const fishes=_admSkillTarget.fish_data.fishes||[];
-  if(idx<0||idx>=fishes.length){alert('물고기를 선택하세요');return;}
-  fishes[idx].skill1=sk1||undefined;
-  if(!sk1) delete fishes[idx].skill1;
-  const newData={..._admSkillTarget.fish_data,fishes,lastSave:Date.now()};
+  if(idx<0){alert('물고기를 선택하세요');return;}
+
+  // Load current data from DB instead of stale _admSkillTarget.fish_data
+  const{data:[currentRecord],error:fetchErr}=await _sb.from('fish_accounts')
+    .select('fish_data').eq('username',_admSkillTarget.username).eq('server',_admSkillTarget.server).single();
+  if(fetchErr||!currentRecord){alert('데이터 로드 실패');return;}
+
+  const currentFishes=currentRecord.fish_data.fishes||[];
+  if(idx>=currentFishes.length){alert('물고기를 선택하세요');return;}
+
+  currentFishes[idx].skill1=sk1||undefined;
+  if(!sk1) delete currentFishes[idx].skill1;
+  const newData={...currentRecord.fish_data,fishes:currentFishes,lastSave:Date.now()};
   const{error}=await _sb.from('fish_accounts')
     .update({fish_data:newData,updated_at:new Date().toISOString()})
     .eq('username',_admSkillTarget.username).eq('server',_admSkillTarget.server);
