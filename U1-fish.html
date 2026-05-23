@@ -1043,7 +1043,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.99';
+const BUILD = 'v2.00';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -4051,6 +4051,7 @@ let btCanvas=null,btCtx=null;
 let btImP1=false;        // 내가 도전자(p1)인지
 let btMyFishData=[];     // 브로드캐스트용 내 물고기 데이터
 let btOppReceived=null;  // 상대 물고기 데이터 (수신 후 저장)
+let btRng=null;          // 배틀용 seeded RNG
 
 // 시드 RNG
 // 등급 기반 어종 결정: grades 배열 → 등급 선택 → 해당 등급 1단계 어종 중 랜덤
@@ -4129,11 +4130,11 @@ function onBothBattleReady(myFish,oppFish){
   u1Toast(`[4]양쪽준비 p1여부:${btImP1}`,'#1F3864');
   if(btImP1){
     const seed=Date.now();
-    const rng=seededRng(seed);
+    const rng=mulberry32(seed);
     const events=calcBattleEvents(myFish,oppFish,rng);
     sbSend('battle_actions',{targetId:currentGame.opponentId,fromId:myId,
       seed,events,myFish,oppFish});
-    initRealtimeBattle(myFish,oppFish,events,true);
+    initRealtimeBattle(myFish,oppFish,seed,true);
   }
   // p2는 battle_actions 수신 대기
 }
@@ -4143,7 +4144,7 @@ function onBattleActions(payload){
   if(payload.fromId!==currentGame?.opponentId){u1Toast('[5]actions무시:id불일치','#C00000');return;}
   u1Toast(`[5]actions수신 events:${payload.events?.length}`,'#217346');
   // p2 관점: payload.myFish = 도전자(상대), payload.oppFish = 나
-  initRealtimeBattle(payload.oppFish,payload.myFish,payload.events,false);
+  initRealtimeBattle(payload.oppFish,payload.myFish,payload.seed,false);
 }
 
 // ── 공격 이벤트 사전 계산 (순수 함수) ───────────────────────
@@ -4197,6 +4198,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
 // ── 실시간 전투 초기화 ─────────────────────────────────────
 function initRealtimeBattle(myFish,oppFish,seed,imP1){
   btTick=0;btImP1=imP1;
+  btRng=mulberry32(seed); // seeded RNG 초기화
   // 캔버스 초기화
   btCanvas=document.getElementById('battle-canvas');
   const par=btCanvas.parentElement;
@@ -4213,9 +4215,9 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
       x:baseX+Math.random()*0.06,
       y:baseY,
       vx:0,vy:0,
-      orbitDir:Math.random()>0.5?1:-1, // 나선 방향
+      orbitDir:btRng()>0.5?1:-1, // 나선 방향
       phase:'orbit', // 'orbit'(선회) | 'charge'(돌진)
-      phaseTimer:Math.floor(Math.random()*120+40), // 2~8초 랜덤 초기화
+      phaseTimer:Math.floor(btRng()*120+40), // 2~8초 랜덤 초기화
       hasHit:false, // 이번 돌진에서 데미지 줬는지
       curHp:fd.hp, isDead:false,
       hitFlash:0, hitType:'',
@@ -4291,14 +4293,14 @@ function btPhysicsStep(){
     if(f.phaseTimer<=0){
       if(f.phase==='retreat'){
         f.phase='orbit';
-        f.phaseTimer=Math.floor(Math.random()*120+60); // 3~9초 선회
+        f.phaseTimer=Math.floor(btRng()*120+60); // 3~9초 선회
       } else if(f.phase==='orbit'){
         f.phase='charge';
-        f.phaseTimer=Math.floor(Math.random()*140+60); // 3~10초 돌진
+        f.phaseTimer=Math.floor(btRng()*140+60); // 3~10초 돌진
         f.hasHit=false;
       } else {
         f.phase='orbit';
-        f.phaseTimer=Math.floor(Math.random()*120+60);
+        f.phaseTimer=Math.floor(btRng()*120+60);
       }
     }
     // ── 돌진 중 접촉 시 데미지 ─────────────────────────────
@@ -4306,8 +4308,8 @@ function btPhysicsStep(){
       f.hasHit=true;
       const bAtk=Math.floor(f.atk*bm);
       const bLuk=Math.floor(f.luk*bm);
-      const crit=Math.random()<bLuk/200;
-      const dmg=Math.max(1,Math.floor(bAtk*0.7-nearest.def*0.3+(Math.random()-0.5)*bAtk*0.15));
+      const crit=btRng()<bLuk/200;
+      const dmg=Math.max(1,Math.floor(bAtk*0.7-nearest.def*0.3+(btRng()-0.5)*bAtk*0.15));
       const fd=crit?dmg*2:dmg;
       nearest.curHp=Math.max(0,nearest.curHp-fd);
       if(nearest.curHp<=0) nearest.isDead=true;
@@ -4318,14 +4320,14 @@ function btPhysicsStep(){
       nearest.vx=-dx*0.06; nearest.vy=-dy*0.06;
       // 공격 후 retreat 페이즈 (1~2.5초 도망)
       f.phase='retreat';
-      f.phaseTimer=Math.floor(Math.random()*60+30);
+      f.phaseTimer=Math.floor(btRng()*60+30);
       // 브로드캐스트로 HP 동기화
       if(currentGame) sbSend('battle_hit',{fromId:myId,victimId:nearest.id,dmg:fd,crit});
       // 이펙트
       nearest.hitFlash=crit?12:8; nearest.hitType=crit?'crit':'hit';
       nearest.floatTxt={txt:crit?`💥${fd}`:`-${fd}`,age:0,x:nearest.x,y:nearest.y-0.03,color:crit?'#E55':'#333'};
       // ── 스킬 1: 폭식 (공격 후 30% 확률, 데미지의 30% 회복) ──
-      if(f.skill1==='gs_폭식'&&f.side==='my'&&Math.random()<0.30){
+      if(f.skill1==='gs_폭식'&&f.side==='my'&&btRng()<0.30){
         const heal=Math.max(1,Math.floor(fd*0.30));
         f.curHp=Math.min(f.maxHp,f.curHp+heal);
         f.healTxt={txt:`💚+${heal}`,age:0,x:f.x,y:f.y-0.06,color:'#22C55E'};
@@ -4336,14 +4338,14 @@ function btPhysicsStep(){
       f.skillTimer=(f.skillTimer||0)+1;
       if(f.buffTimer>0){f.buffTimer--;if(f.buffTimer===0)f.buffMult=1.0;}
       // 스킬: 칼로리소모 (100틱마다 35% 확률, 포만감→HP 회복)
-      if(f.skill1==='gs_칼로리소모'&&f.skillTimer%100===0&&(f.fullness||0)>=15&&Math.random()<0.35){
+      if(f.skill1==='gs_칼로리소모'&&f.skillTimer%100===0&&(f.fullness||0)>=15&&btRng()<0.35){
         f.fullness=Math.max(0,(f.fullness||0)-15);
         const heal=Math.max(1,Math.floor(f.maxHp*0.08));
         f.curHp=Math.min(f.maxHp,f.curHp+heal);
         f.healTxt={txt:`🔥+${heal}`,age:0,x:f.x,y:f.y-0.06,color:'#FB923C'};
       }
       // 스킬: 과식 (80틱마다 25% 확률, 포만감 91%+ 조건, 스탯 강화)
-      if(f.skill1==='gs_과식'&&f.skillTimer%80===0&&(f.fullness||0)>=91&&f.buffTimer<=0&&Math.random()<0.25){
+      if(f.skill1==='gs_과식'&&f.skillTimer%80===0&&(f.fullness||0)>=91&&f.buffTimer<=0&&btRng()<0.25){
         const pct=Math.round((f.fullness||0)-90);
         f.buffMult=1+pct*0.01;
         f.buffTimer=280;
