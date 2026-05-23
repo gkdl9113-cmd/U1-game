@@ -221,22 +221,24 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 .adm-btn.blue{background:#1F3864}
 .adm-edit-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F0F0F0;font-size:11px}
 .adm-edit-inp{width:80px;border:1px solid #9DC3E6;padding:3px 6px;font-size:12px;font-family:inherit;text-align:right}
-/* ── 모바일: 사이드바·스탯패널 숨기고 플로팅 버튼으로 ── */
+/* ── 사이드바 항상 숨김 (플로팅 버튼으로 대체) ── */
+.fw-sidebar{display:none!important}
 @media(max-width:768px){
   #fw-stats-panel{display:none!important}
-  .fw-sidebar{display:none!important}
 }
 .fw-mobile-overlay{display:none;position:fixed;inset:0;z-index:698;background:rgba(0,0,0,.45)}
-.fw-mobile-panel{position:fixed;top:0;right:0;height:100dvh;width:240px;max-width:85vw;background:#fff;z-index:699;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s;box-shadow:-4px 0 16px rgba(0,0,0,.3)}
+.fw-mobile-panel{position:fixed;top:0;right:0;height:100dvh;width:260px;max-width:90vw;background:#fff;z-index:699;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 20px rgba(0,0,0,.35)}
 .fw-mobile-panel.open{transform:translateX(0)}
 .fw-mobile-stats-panel{position:fixed;top:0;left:0;height:100dvh;width:200px;max-width:75vw;background:#fff;z-index:699;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .25s;box-shadow:4px 0 16px rgba(0,0,0,.3);overflow-y:auto;padding:10px}
 .fw-mobile-stats-panel.open{transform:translateX(0)}
 .fw-mob-close{background:#1F3864;color:#fff;border:none;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;text-align:right;font-family:inherit;flex-shrink:0}
-/* 플로팅 버튼 */
 /* 플로팅 버튼: 항상 숨김 → JS로 fish world 진입 시에만 표시 */
-.fw-float-btn{position:fixed;bottom:36px;background:#1F3864;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:18px;cursor:pointer;z-index:697;box-shadow:0 3px 10px rgba(0,0,0,.35);display:none;align-items:center;justify-content:center}
-#fw-float-people{right:8px}
-#fw-float-stats{left:8px}
+.fw-float-btn{position:fixed;bottom:40px;background:#1F3864;color:#fff;border:none;border-radius:50%;width:46px;height:46px;font-size:19px;cursor:pointer;z-index:697;box-shadow:0 3px 12px rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;flex-direction:column;gap:0}
+.fw-float-btn:active{transform:scale(.93)}
+#fw-float-people{right:10px}
+#fw-float-stats{left:10px}
+.fw-float-badge{position:absolute;top:-4px;right:-4px;background:#E74C3C;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:1.5px solid #fff;pointer-events:none}
+.fw-float-badge.hidden{display:none}
 @keyframes fishingCellWait{0%{background:#EFF6FF}100%{background:#BDD7EE}}
 @keyframes fishingCellBite{0%{background:#FFEB9C}100%{background:#FFD966}}
 .fishing-cell-wait{animation:fishingCellWait 1s ease-in-out infinite alternate}
@@ -486,22 +488,29 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
-<!-- 모바일 플로팅 버튼 -->
-<button id="fw-float-people" class="fw-float-btn" onclick="toggleMobileSidebar()">👥</button>
+<!-- 플로팅 버튼 -->
+<button id="fw-float-people" class="fw-float-btn" onclick="toggleMobileSidebar()" style="position:fixed">
+  👥<span id="fw-float-badge" class="fw-float-badge hidden">0</span>
+</button>
 <button id="fw-float-stats" class="fw-float-btn" onclick="toggleMobileStats()">📊</button>
 
 <!-- 모바일 배경 오버레이 -->
 <div class="fw-mobile-overlay" id="fw-mobile-overlay" onclick="closeMobilePanels()"></div>
 
-<!-- 모바일 접속자/채팅 패널 (우측 슬라이드) -->
+<!-- 접속자/채팅 슬라이드 패널 -->
 <div class="fw-mobile-panel" id="fw-mobile-people-panel">
-  <button class="fw-mob-close" onclick="toggleMobileSidebar()">✕ 닫기</button>
-  <div class="fw-sidebar-hdr"><span>접속자</span><span id="fw-count-m">0명</span></div>
+  <div class="fw-sidebar-hdr" style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px">
+    <span>👥 접속자</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span id="fw-count-m" style="font-size:12px">0명</span>
+      <button onclick="toggleMobileSidebar()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;font-family:inherit">✕</button>
+    </div>
+  </div>
   <div class="fw-players" id="fw-players-m" style="flex:1;overflow-y:auto;padding:4px 0;min-height:0"></div>
   <div class="fw-chat-hdr">💬 채팅</div>
-  <div class="fw-chat-msgs" id="fw-chat-msgs-m" style="height:180px"></div>
+  <div class="fw-chat-msgs" id="fw-chat-msgs-m" style="flex:1;min-height:120px;max-height:200px"></div>
   <div class="fw-chat-inp-row">
-    <input class="fw-chat-inp" id="fw-chat-inp-m" type="text" placeholder="메시지…" maxlength="60"
+    <input class="fw-chat-inp" id="fw-chat-inp-m" type="text" placeholder="메시지 입력…" maxlength="60"
       onkeydown="if(event.key==='Enter')fwSendChatMobile()">
     <button class="fw-chat-send" onclick="fwSendChatMobile()">→</button>
   </div>
@@ -986,7 +995,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v1.90';
+const BUILD = 'v1.91';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1508,6 +1517,13 @@ function fwUpdateSidebar(){
   fwUpdateSidebarMobile();
   const countEl=document.getElementById('fw-count');
   if(countEl) countEl.textContent=lobbyPlayers.length+'명';
+  // 플로팅 버튼 뱃지 업데이트
+  const badge=document.getElementById('fw-float-badge');
+  if(badge){
+    const cnt=lobbyPlayers.length;
+    badge.textContent=cnt;
+    badge.className='fw-float-badge'+(cnt===0?' hidden':'');
+  }
   const list=document.getElementById('fw-players');
   if(!list) return;
   list.innerHTML=lobbyPlayers.map((p,i)=>{
@@ -1786,8 +1802,6 @@ function fishResume(){
   setTimeout(()=>fishUpdateStatus(),2000);
 }
 function showMobileFloatBtns(visible){
-  const isMobile=window.innerWidth<=768;
-  if(!isMobile) return;
   ['fw-float-people','fw-float-stats'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.style.display=visible?'flex':'none';
