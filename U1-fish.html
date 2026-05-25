@@ -1095,7 +1095,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.25';
+const BUILD = 'v2.26';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1977,8 +1977,8 @@ document.addEventListener('visibilitychange',()=>{
       _tabHiddenAt=0;
       if(elapsed>30){ // 30초 이상 숨겨졌을 때만 처리
         const cappedElapsed=Math.min(elapsed,14400); // 최대 4시간
-        fishCalcOffline(cappedElapsed);        // 포만감/HP/수입
-        fishCalcOfflineAutoFeed(cappedElapsed); // 자동먹이통
+        fishCalcOfflineAutoFeed(cappedElapsed); // 자동먹이통 먼저
+        fishCalcOffline(cappedElapsed);        // 포만감/수입
         fishCalcOfflineRod(cappedElapsed);      // 낚시대
         FG.lastTick=serverNow();                 // tick 기준 리셋
         fishRenderInfo();
@@ -2412,7 +2412,7 @@ function fishCalcOffline(seconds){
     if(f.isDead) return;
     const s=fStage(f);
     f.fullness=Math.max(0,f.fullness-Math.floor(ticks/s.foodRate));
-    if(f.fullness===0) f.hp=Math.max(1,f.hp-Math.floor(ticks/5));
+    // HP 오프라인 감소 없음 — 복귀 후 실시간 틱이 정상 처리
     const inc=Math.floor(ticks/30)*(STAGE_INCOME[f.stage]||2);
     totalOff+=inc;
     f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
