@@ -1067,7 +1067,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.19';
+const BUILD = 'v2.20';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1080,6 +1080,23 @@ const myId = (typeof crypto!=='undefined'&&crypto.randomUUID)
 
 let myName = '';
 let _sb = null, _ch = null;
+// 서버 시간 보정값 (ms) — HTTP Date 헤더 기반, CORS 노출 시 자동 갱신
+let _serverTimeOffset = 0;
+function serverNow(){ return Date.now() + _serverTimeOffset; }
+function makeSb(){
+  return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: {
+      fetch: async (url, options) => {
+        const res = await fetch(url, options);
+        try {
+          const d = res.headers.get('Date');
+          if(d) _serverTimeOffset = new Date(d).getTime() - Date.now();
+        } catch(e){}
+        return res;
+      }
+    }
+  });
+}
 let lobbyPlayers  = [];
 let currentGame   = null;   // {type, myColor, opponentId, opponentName, digits}
 let pendingChallenge = null;
@@ -1134,7 +1151,7 @@ function connectSupabase(){
     return;
   }
   // _sb 재사용 (매번 새로 만들지 않음)
-  if(!_sb) _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  if(!_sb) _sb=makeSb();
   _ch=_sb.channel(CHANNEL_NAME,{
     config:{broadcast:{self:false},presence:{key:currentUsername}}  // username = key → 같은 아이디는 1명만 표시
   })
@@ -1354,7 +1371,7 @@ async function doLogin(){
   entryStatus('로그인 중…','#595959');
   if(!_sb){
     // Supabase 아직 초기화 안됨 → 먼저 연결
-    _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    _sb=makeSb();
   }
   const hash=await hashPassword(v.pw);
   const{data,error}=await _sb.from('fish_accounts').select('password_hash,fish_data').eq('username',v.uid).eq('server',ACTIVE_SERVER).single();
@@ -1375,7 +1392,7 @@ async function doRegister(){
   const v=validateInput(); if(!v) return;
   if(!/^[a-zA-Z0-9가-힣_]{2,16}$/.test(v.uid)){entryStatus('아이디: 2~16자 (한글·영문·숫자·_ 사용가능)','#C00000');return;}
   entryStatus('회원가입 중…','#595959');
-  if(!_sb) _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  if(!_sb) _sb=makeSb();
   const hash=await hashPassword(v.pw);
   const{error}=await _sb.from('fish_accounts').insert({username:v.uid,server:ACTIVE_SERVER,password_hash:hash,fish_data:{},updated_at:new Date().toISOString()});
   if(error){
@@ -1392,7 +1409,7 @@ async function doRegister(){
 function enterFishWorldWithData(dbData){
   // 관리자 계정이면 관리자 화면으로
   if(currentUsername===ADMIN_USERNAME){
-    if(!_sb) _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    if(!_sb) _sb=makeSb();
     show('s-admin');
     connectSupabase();
     adminInit();
@@ -1467,7 +1484,7 @@ function applyFishData(d){
   FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
   FG.auxMax=d.auxMax||1;
   if(d.lastSave){
-    const elapsed=(Date.now()-d.lastSave)/1000;
+    const elapsed=(serverNow()-d.lastSave)/1000;
     if(elapsed>10&&elapsed<86400*30){
       fishCalcOfflineAutoFeed(elapsed);
     }
@@ -1500,7 +1517,7 @@ async function saveFishDataToDB(){
     money:FG.money,food:FG.food,autoFeeders:FG.autoFeeders,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,
-    lastSave:Date.now()
+    lastSave:serverNow()
   };
   try{
     const{error}=await _sb.from('fish_accounts').update({fish_data:data,updated_at:new Date().toISOString()}).eq('username',currentUsername).eq('server',ACTIVE_SERVER);
@@ -1519,7 +1536,7 @@ async function saveFishDataToDB(){
   const sessHash=sessionStorage.getItem('u1_sess_hash');
   if(sessUid&&sessHash){
     entryStatus('자동 로그인 중…','#595959');
-    if(!_sb) _sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    if(!_sb) _sb=makeSb();
     _sb.from('fish_accounts').select('password_hash,fish_data')
       .eq('username',sessUid).eq('server',ACTIVE_SERVER).single()
       .then(({data,error})=>{
@@ -1920,18 +1937,18 @@ document.addEventListener('visibilitychange',()=>{
   const fishActive=!!FG.tickInterval;
   if(document.hidden){
     // 숨겨지는 시점 기록
-    if(fishActive) _tabHiddenAt=Date.now();
+    if(fishActive) _tabHiddenAt=serverNow();
   } else {
     // 복귀: 숨겨진 동안 시간 계산 후 오프라인 처리
     if(_tabHiddenAt&&fishActive){
-      const elapsed=(Date.now()-_tabHiddenAt)/1000;
+      const elapsed=(serverNow()-_tabHiddenAt)/1000;
       _tabHiddenAt=0;
       if(elapsed>30){ // 30초 이상 숨겨졌을 때만 처리
         const cappedElapsed=Math.min(elapsed,14400); // 최대 4시간
         fishCalcOffline(cappedElapsed);        // 포만감/HP/수입
         fishCalcOfflineAutoFeed(cappedElapsed); // 자동먹이통
         fishCalcOfflineRod(cappedElapsed);      // 낚시대
-        FG.lastTick=Date.now();                 // tick 기준 리셋
+        FG.lastTick=serverNow();                 // tick 기준 리셋
         fishRenderInfo();
         const mins=Math.floor(elapsed/60);
         const secs=Math.floor(elapsed%60);
@@ -2915,7 +2932,7 @@ function fishSave(isDisconnect){
     money:FG.money,food:FG.food,autoFeeders:FG.autoFeeders,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,
-    stoppedByDisconnect:isDisconnect||false,lastSave:Date.now()};
+    stoppedByDisconnect:isDisconnect||false,lastSave:serverNow()};
   localStorage.setItem('u1aquarium_v1',JSON.stringify(data));
   if(!isDisconnect){
     saveFishDataToDB();
@@ -2959,7 +2976,7 @@ function fishLoad(){
     FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
     FG.auxMax=d.auxMax||1;
     if(d.lastSave){
-      const elapsed=(Date.now()-d.lastSave)/1000;
+      const elapsed=(serverNow()-d.lastSave)/1000;
       if(elapsed>10&&elapsed<86400*30){
         fishCalcOfflineAutoFeed(elapsed);
       }
@@ -3708,7 +3725,7 @@ async function adminConfirmGiveFish(){
   const newFish={id:'adm_'+Date.now(),type,stage,
     hp:s.hp,maxHp:s.hp,fullness:80,xp:0,isDead:false};
   fishes.push(newFish);
-  const newData={...fd,fishes,lastSave:Date.now()};
+  const newData={...fd,fishes,lastSave:serverNow()};
   const{error:e2}=await _sb.from('fish_accounts')
     .update({fish_data:newData,updated_at:new Date().toISOString()})
     .eq('username',_admGiveTarget.username).eq('server',_admGiveTarget.server);
@@ -3786,7 +3803,7 @@ async function adminConfirmSkill(){
 
   currentFishes[idx].skill1=sk1||undefined;
   if(!sk1) delete currentFishes[idx].skill1;
-  const newData={...currentRecord.fish_data,fishes:currentFishes,lastSave:Date.now()};
+  const newData={...currentRecord.fish_data,fishes:currentFishes,lastSave:serverNow()};
   const{error}=await _sb.from('fish_accounts')
     .update({fish_data:newData,updated_at:new Date().toISOString()})
     .eq('username',_admSkillTarget.username).eq('server',_admSkillTarget.server);
@@ -3906,7 +3923,7 @@ async function adminSaveEdit(){
   // 최신 DB 데이터 재조회 후 money/food만 덮어씀 (fishes 등 다른 데이터 유지)
   const{data,error:e1}=await _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).single();
   if(e1||!data){alert('데이터 로드 실패: '+(e1?.message||'없음'));return;}
-  const newData={...(data.fish_data||{}),money,food,lastSave:Date.now()};
+  const newData={...(data.fish_data||{}),money,food,lastSave:serverNow()};
   const{error}=await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',username).eq('server',server);
   if(error){alert('저장 실패: '+error.message);return;}
   hideDlg('adm-edit-modal');
