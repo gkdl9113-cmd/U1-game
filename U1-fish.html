@@ -1096,7 +1096,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.28';
+const BUILD = 'v2.31';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1457,7 +1457,13 @@ function enterFishWorldWithData(dbData){
   showMobileFloatBtns(true);
   setTimeout(()=>{
     FG.cvs=document.getElementById('f-canvas');
-    if(FG.cvs){FG.ctx=FG.cvs.getContext('2d');fishResizeCanvas();window.addEventListener('resize',fishResizeCanvas);}
+    if(FG.cvs){
+      FG.ctx=FG.cvs.getContext('2d');
+      fishResizeCanvas();
+      if(FG._ro){FG._ro.disconnect();}
+      FG._ro=new ResizeObserver(fishResizeCanvas);
+      FG._ro.observe(FG.cvs.parentElement);
+    }
     fishStartLoops(); fishRenderInfo();
     // 로드 후 모든 물고기 사망 상태이면 구매 팝업 표시
     setTimeout(()=>{
@@ -1916,9 +1922,9 @@ function aliveFishes(){return FG.fishes.filter(f=>!f.isDead);}
 function fishResizeCanvas(){
   if(!FG.cvs) return;
   const a=FG.cvs.parentElement;
-  if(!a.clientWidth){setTimeout(fishResizeCanvas,100);return;} // CSS 미완료 시 재시도
-  FG.cvs.width=a.clientWidth; FG.cvs.height=a.clientHeight;
-  // fishPos는 정규화 좌표(0~1)라 캔버스 크기와 무관 → 리셋 불필요
+  const w=a.clientWidth,h=a.clientHeight;
+  if(!w||!h){setTimeout(fishResizeCanvas,100);return;} // 가로·세로 모두 확인
+  FG.cvs.width=w; FG.cvs.height=h;
 }
 
 function fishStartLoops(){
@@ -1955,7 +1961,7 @@ function fishExitConfirm(){
   fishSave();
   fishStopLoops();
   showMobileFloatBtns(false);
-  window.removeEventListener('resize',fishResizeCanvas);
+  if(FG._ro){FG._ro.disconnect();FG._ro=null;}
   _intentionalDisconnect=true;
   if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
   currentUsername=''; myName='';
@@ -3084,7 +3090,11 @@ function fishRenderAux(){
 function _fishingResetIfAuxFree(){
   if(!document.getElementById('s-fishing')?.classList.contains('on')) return;
   if(FG.auxFishes.length>=FG.auxMax) return;
+  _fishingCleanup(); // state를 idle로 리셋
+  _fishingSetCells('-','-','-','-','-');
+  _fishingSetFormula('=FISHING.SELECT("낚싯대를 선택하세요")');
   _fishingSetMsg('아래 낚싯대를 선택하세요','');
+  _fishingSetState('낚싯대 선택 대기');
   fishingRenderRodBtns();
 }
 function fishAuxRelease(idx){
@@ -4085,7 +4095,13 @@ async function adminEnterGame(){
   show('s-fishworld');
   setTimeout(()=>{
     FG.cvs=document.getElementById('f-canvas');
-    if(FG.cvs){FG.ctx=FG.cvs.getContext('2d');fishResizeCanvas();window.addEventListener('resize',fishResizeCanvas);}
+    if(FG.cvs){
+      FG.ctx=FG.cvs.getContext('2d');
+      fishResizeCanvas();
+      if(FG._ro){FG._ro.disconnect();}
+      FG._ro=new ResizeObserver(fishResizeCanvas);
+      FG._ro.observe(FG.cvs.parentElement);
+    }
     fishStartLoops(); fishRenderInfo();
     // 로드 후 모든 물고기 사망 상태이면 구매 팝업 표시
     setTimeout(()=>{
@@ -4105,7 +4121,7 @@ async function adminEnterGame(){
 function backToAdmin(){
   fishSave();
   fishStopLoops();
-  window.removeEventListener('resize',fishResizeCanvas);
+  if(FG._ro){FG._ro.disconnect();FG._ro=null;}
   show('s-admin');
   adminLoadUsers();
 }
@@ -4365,7 +4381,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
       let skillHeal=0;
-      if(f.skill1==='gs_폭식'&&rng()<0.30){
+      if((f.skill1==='gs_폭식'||f.skill2==='gs_폭식')&&rng()<0.30){
         skillHeal=Math.floor(fd*0.30);
         f.curHp=Math.min(f.hp,f.curHp+skillHeal);
       }
@@ -4388,7 +4404,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
       let skillHeal=0;
-      if(f.skill1==='gs_폭식'&&rng()<0.30){
+      if((f.skill1==='gs_폭식'||f.skill2==='gs_폭식')&&rng()<0.30){
         skillHeal=Math.floor(fd*0.30);
         f.curHp=Math.min(f.hp,f.curHp+skillHeal);
       }
@@ -4586,19 +4602,20 @@ function btPhysicsStep(){
       f.phase='retreat';
       f.phaseTimer=Math.floor(btRng()*60+30);
     }
-    // ── 주기 스킬 체크 ────────────────────────────────────────
-    if(f.side==='my'&&(f.skill1==='gs_칼로리소모'||f.skill1==='gs_과식')){
+    // ── 주기 스킬 체크 (양쪽 동일 RNG 소모를 위해 side 무관하게 실행) ──
+    const hasPeriodicSkill=(s)=>s==='gs_칼로리소모'||s==='gs_과식';
+    if(hasPeriodicSkill(f.skill1)||hasPeriodicSkill(f.skill2)){
       f.skillTimer=(f.skillTimer||0)+1;
       if(f.buffTimer>0){f.buffTimer--;if(f.buffTimer===0)f.buffMult=1.0;}
       // 스킬: 칼로리소모 (100틱마다 35% 확률, 포만감→HP 회복)
-      if(f.skill1==='gs_칼로리소모'&&f.skillTimer%100===0&&(f.fullness||0)>=15&&btRng()<0.35){
+      if((f.skill1==='gs_칼로리소모'||f.skill2==='gs_칼로리소모')&&f.skillTimer%100===0&&(f.fullness||0)>=15&&btRng()<0.35){
         f.fullness=Math.max(0,(f.fullness||0)-15);
         const heal=Math.max(1,Math.floor(f.maxHp*0.08));
         f.curHp=Math.min(f.maxHp,f.curHp+heal);
         f.healTxt={txt:`🔥+${heal}`,age:0,x:f.x,y:f.y-0.06,color:'#FB923C'};
       }
       // 스킬: 과식 (80틱마다 25% 확률, 포만감 91%+ 조건, 스탯 강화)
-      if(f.skill1==='gs_과식'&&f.skillTimer%80===0&&(f.fullness||0)>=91&&f.buffTimer<=0&&btRng()<0.25){
+      if((f.skill1==='gs_과식'||f.skill2==='gs_과식')&&f.skillTimer%80===0&&(f.fullness||0)>=91&&f.buffTimer<=0&&btRng()<0.25){
         const pct=Math.round((f.fullness||0)-90);
         f.buffMult=1+pct*0.01;
         f.buffTimer=280;
