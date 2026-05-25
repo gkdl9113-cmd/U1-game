@@ -844,6 +844,33 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
+<!-- 숫자 복권 -->
+<div class="xl-dlg-ov" id="numlt-modal">
+  <div class="xl-dlg" style="min-width:300px;max-width:360px">
+    <div class="xl-dlg-title" style="background:#7B2D8B">🎯 숫자 복권 <button class="xl-dlg-x" onclick="hideDlg('numlt-modal')">✕</button></div>
+    <div class="xl-dlg-body" style="padding:16px">
+      <div style="text-align:center;margin-bottom:14px;padding:10px;background:#F9F0FF;border-radius:6px">
+        <div style="font-size:10px;color:#888;margin-bottom:2px">현재 잭팟</div>
+        <div id="numlt-pool" style="font-size:26px;font-weight:900;color:#7B2D8B">---</div>
+        <div style="font-size:9px;color:#AAA;margin-top:2px">구매마다 1,000원 누적</div>
+      </div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:11px;color:#555;margin-bottom:6px;font-weight:700">행운의 숫자를 입력하세요 (0 ~ 333)</div>
+        <input type="number" id="numlt-input" min="0" max="333" placeholder="0 ~ 333"
+          style="width:100%;box-sizing:border-box;padding:10px;border:2px solid #C8A8D8;border-radius:6px;font-size:18px;font-family:inherit;text-align:center;font-weight:700;color:#333">
+      </div>
+      <div id="numlt-result" style="display:none;margin-bottom:10px"></div>
+      <div style="display:flex;gap:6px">
+        <button class="xl-dlg-btn ok" style="flex:2;background:#7B2D8B;border-color:#7B2D8B" onclick="buyNumberLottery()">🎯 구매 (1,000원)</button>
+        <button class="xl-dlg-btn" style="flex:1" onclick="hideDlg('numlt-modal')">닫기</button>
+      </div>
+      <div style="margin-top:10px;font-size:9px;color:#AAA;text-align:center;line-height:1.6">
+        당첨 번호는 구매마다 새로 바뀝니다 · 확률 약 0.3%<br>당첨 시 잭팟 전액 수령 + 10,000원으로 리셋
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 물고기 상점 -->
 <div class="xl-dlg-ov" id="f-shop-modal">
   <div class="xl-dlg" style="min-width:280px">
@@ -1067,7 +1094,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.20';
+const BUILD = 'v2.21';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1234,6 +1261,9 @@ function connectSupabase(){
   .on('broadcast',{event:'challenge_reject'},({payload})=>{
     if(payload.targetId!==myId) return;
     u1Toast(payload.fromName+'님이 거절했습니다','#C00000');
+  })
+  .on('broadcast',{event:'jackpot_win'},({payload})=>{
+    u1Toast(`🎯 ${payload.winner}님이 숫자 복권 잭팟 당첨! +${payload.amount.toLocaleString()}원 (번호: ${payload.number})`,'#7B2D8B');
   })
   .on('broadcast',{event:'data_reload'},({payload})=>{
     if(payload.targetName!==myName) return;
@@ -1832,6 +1862,7 @@ const F_SHOP=[
   {id:'food100',name:'먹이 100개',    price:400, desc:'대량 할인',          type:'food',qty:100},
   // 자동먹이통: 상점에서 동적으로 구매 (fishOpenShop 참조)
   {id:'lottery',name:'🎰 행운 복권',  price:300, desc:'1~5등 또는 꽝',     type:'lottery'},
+  {id:'numlt',  name:'🎯 숫자 복권', price:1000,desc:'잭팟 도전! 확률 0.3%',type:'numlt'},
   {id:'rod1',name:'나무 낚시대', price:150, type:'rod',
    catchProb:0.30, gaugeWidth:0.22, gaugeSpeed:130,
    grades:[{grade:'일반',w:93},{grade:'중급',w:5},{grade:'희귀',w:2}],
@@ -3285,6 +3316,7 @@ function fishBuyTank(level){
 function fishBuy(id){
   const item=F_SHOP.find(i=>i.id===id); if(!item||FG.money<item.price) return;
   if(item.type==='lottery'){hideDlg('f-shop-modal');buyLottery();return;}
+  if(item.type==='numlt'){hideDlg('f-shop-modal');openNumberLottery();return;}
   if(item.type==='newfish'){
     if(aliveFishes().length>0){document.getElementById('f-status').textContent='살아있는 물고기가 있습니다!';return;}
     if(FG.fishes.length>=FG.tankMax){document.getElementById('f-status').textContent='수조가 꽉 찼습니다!';return;}
@@ -3370,6 +3402,90 @@ function lotteryBuyAgain(){
   if(FG.money<300){u1Toast('300원이 부족합니다','#C00000');return;}
   document.getElementById('lottery-buy-btn').style.display='none';
   buyLottery();
+}
+
+// ── 숫자 복권 (잭팟) ─────────────────────────────────────
+const NUMLT_USERNAME='__JACKPOT__';
+const NUMLT_START=10000;
+const NUMLT_PRICE=1000;
+const NUMLT_MAX=333;
+
+async function getJackpotData(){
+  const{data}=await _sb.from('fish_accounts').select('fish_data')
+    .eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER).single();
+  return data?.fish_data||null;
+}
+
+async function ensureJackpot(){
+  const jd=await getJackpotData();
+  if(jd) return jd;
+  const target=Math.floor(Math.random()*(NUMLT_MAX+1));
+  const init={pool:NUMLT_START,target,round:1};
+  await _sb.from('fish_accounts').upsert({
+    username:NUMLT_USERNAME,server:ACTIVE_SERVER,
+    password_hash:'__JACKPOT__',fish_data:init,
+    updated_at:new Date().toISOString()
+  },{onConflict:'username,server'});
+  return init;
+}
+
+async function openNumberLottery(){
+  if(FG.money<NUMLT_PRICE){u1Toast('숫자 복권 구매에 1,000원이 필요합니다','#C00000');return;}
+  const jd=await ensureJackpot();
+  document.getElementById('numlt-pool').textContent=jd.pool.toLocaleString()+'원';
+  document.getElementById('numlt-input').value='';
+  document.getElementById('numlt-result').style.display='none';
+  const buyBtn=document.querySelector('#numlt-modal .xl-dlg-btn.ok');
+  if(buyBtn){buyBtn.disabled=false;buyBtn.style.opacity='1';}
+  document.getElementById('numlt-modal').classList.add('on');
+}
+
+async function buyNumberLottery(){
+  const raw=document.getElementById('numlt-input').value.trim();
+  const num=parseInt(raw);
+  if(raw===''||isNaN(num)||num<0||num>NUMLT_MAX){
+    u1Toast('0 ~ 333 사이 숫자를 입력하세요','#C00000');return;
+  }
+  if(FG.money<NUMLT_PRICE){u1Toast('1,000원이 부족합니다','#C00000');return;}
+
+  const buyBtn=document.querySelector('#numlt-modal .xl-dlg-btn.ok');
+  if(buyBtn){buyBtn.disabled=true;buyBtn.style.opacity='0.5';}
+
+  FG.money-=NUMLT_PRICE;
+  fishRenderInfo();
+
+  const jd=await getJackpotData();
+  if(!jd){u1Toast('잭팟 데이터를 불러오지 못했습니다','#C00000');FG.money+=NUMLT_PRICE;fishRenderInfo();if(buyBtn){buyBtn.disabled=false;buyBtn.style.opacity='1';}return;}
+
+  const newTarget=Math.floor(Math.random()*(NUMLT_MAX+1));
+  const won=(num===jd.target);
+  const resultEl=document.getElementById('numlt-result');
+
+  if(won){
+    FG.money+=jd.pool;
+    fishRenderInfo();
+    fishQuickSave();
+    const newPool=NUMLT_START;
+    await _sb.from('fish_accounts').update({
+      fish_data:{pool:newPool,target:newTarget,round:(jd.round||1)+1},
+      updated_at:new Date().toISOString()
+    }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
+    resultEl.style.cssText='display:block;text-align:center;padding:14px;border-radius:6px;background:#FFD700;color:#7F4F00;font-size:15px;font-weight:900;margin-bottom:10px';
+    resultEl.innerHTML=`🎉 JACKPOT 당첨!<br>+${jd.pool.toLocaleString()}원 수령!<br><span style="font-size:11px;font-weight:400">당첨 번호: ${jd.target}</span>`;
+    document.getElementById('numlt-pool').textContent=newPool.toLocaleString()+'원';
+    if(_ch) _ch.send({type:'broadcast',event:'jackpot_win',payload:{winner:myName,amount:jd.pool,number:jd.target}});
+  } else {
+    const newPool=jd.pool+NUMLT_PRICE;
+    await _sb.from('fish_accounts').update({
+      fish_data:{pool:newPool,target:newTarget,round:(jd.round||1)+1},
+      updated_at:new Date().toISOString()
+    }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
+    fishQuickSave();
+    resultEl.style.cssText='display:block;text-align:center;padding:12px;border-radius:6px;background:#F2F2F2;color:#555;font-size:12px;font-weight:700;margin-bottom:10px;border:1px solid #DDD';
+    resultEl.innerHTML=`😢 꽝!<br>당첨 번호: <strong>${jd.target}</strong> / 내 번호: <strong>${num}</strong><br><span style="font-size:10px;color:#888">잭팟 적립: +1,000원 → 현재 ${newPool.toLocaleString()}원</span>`;
+    document.getElementById('numlt-pool').textContent=newPool.toLocaleString()+'원';
+    if(buyBtn){buyBtn.disabled=false;buyBtn.style.opacity='1';}
+  }
 }
 
 // ══════════════════════════════════════════════════════════
