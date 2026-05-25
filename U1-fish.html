@@ -1095,7 +1095,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.22';
+const BUILD = 'v2.23';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -3432,7 +3432,8 @@ async function ensureJackpot(){
 }
 
 async function openNumberLottery(){
-  if(FG.money<NUMLT_PRICE){u1Toast('숫자 복권 구매에 1,000원이 필요합니다','#C00000');return;}
+  const isAdmin=(currentUsername===ADMIN_USERNAME);
+  if(!isAdmin&&FG.money<NUMLT_PRICE){u1Toast('숫자 복권 구매에 1,000원이 필요합니다','#C00000');return;}
   const jd=await ensureJackpot();
   document.getElementById('numlt-pool').textContent=jd.pool.toLocaleString()+'원';
   document.getElementById('numlt-input').value='';
@@ -3448,13 +3449,13 @@ async function buyNumberLottery(){
   if(raw===''||isNaN(num)||num<0||num>NUMLT_MAX){
     u1Toast('0 ~ 333 사이 숫자를 입력하세요','#C00000');return;
   }
-  if(FG.money<NUMLT_PRICE){u1Toast('1,000원이 부족합니다','#C00000');return;}
+  const isAdmin=(currentUsername===ADMIN_USERNAME);
+  if(!isAdmin&&FG.money<NUMLT_PRICE){u1Toast('1,000원이 부족합니다','#C00000');return;}
 
   const buyBtn=document.querySelector('#numlt-modal .xl-dlg-btn.ok');
   if(buyBtn){buyBtn.disabled=true;buyBtn.style.opacity='0.5';}
 
-  FG.money-=NUMLT_PRICE;
-  fishRenderInfo();
+  if(!isAdmin){FG.money-=NUMLT_PRICE;fishRenderInfo();}
 
   const jd=await getJackpotData();
   if(!jd){u1Toast('잭팟 데이터를 불러오지 못했습니다','#C00000');FG.money+=NUMLT_PRICE;fishRenderInfo();if(buyBtn){buyBtn.disabled=false;buyBtn.style.opacity='1';}return;}
@@ -3464,9 +3465,7 @@ async function buyNumberLottery(){
   const resultEl=document.getElementById('numlt-result');
 
   if(won){
-    FG.money+=jd.pool;
-    fishRenderInfo();
-    fishQuickSave();
+    if(!isAdmin){FG.money+=jd.pool;fishRenderInfo();fishQuickSave();}
     const newPool=NUMLT_START;
     await _sb.from('fish_accounts').update({
       fish_data:{pool:newPool,target:newTarget,round:(jd.round||1)+1},
@@ -3477,12 +3476,12 @@ async function buyNumberLottery(){
     document.getElementById('numlt-pool').textContent=newPool.toLocaleString()+'원';
     if(_ch) _ch.send({type:'broadcast',event:'jackpot_win',payload:{winner:myName,amount:jd.pool,number:jd.target}});
   } else {
-    const newPool=jd.pool+NUMLT_PRICE;
+    const newPool=jd.pool+(isAdmin?0:NUMLT_PRICE);
     await _sb.from('fish_accounts').update({
       fish_data:{pool:newPool,target:newTarget,round:(jd.round||1)+1},
       updated_at:new Date().toISOString()
     }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
-    fishQuickSave();
+    if(!isAdmin) fishQuickSave();
     resultEl.style.cssText='display:block;text-align:center;padding:12px;border-radius:6px;background:#F2F2F2;color:#555;font-size:12px;font-weight:700;margin-bottom:10px;border:1px solid #DDD';
     resultEl.innerHTML=`😢 꽝!<br>당첨 번호: <strong>${jd.target}</strong> / 내 번호: <strong>${num}</strong><br><span style="font-size:10px;color:#888">잭팟 적립: +1,000원 → 현재 ${newPool.toLocaleString()}원</span>`;
     document.getElementById('numlt-pool').textContent=newPool.toLocaleString()+'원';
