@@ -1873,6 +1873,9 @@ const FISH_SKILLS={
   'pr_폭식':       {name:'폭식',      species:'piranha', slot:1,icon:'🩸',desc:'배틀 패시브: 공격 후 20% 확률, 데미지의 50% HP 회복'},
   'pr_혈흔의냄새': {name:'혈흔의냄새',species:'piranha', slot:1,icon:'👃',desc:'배틀 패시브: 적 처치 시 공격력 +8% 누적 (최대 3스택)'},
   'pr_포식자의영역':{name:'포식자의영역',species:'piranha',slot:1,icon:'🦈',desc:'배틀 패시브: 아군 피라냐 2마리+ 시 공격력 +20%'},
+  'cl_행운의기운': {name:'행운의기운',species:'clownfish',slot:1,icon:'🍀',desc:'수조 패시브: 모든 물고기 수입에 이 물고기 LUK×0.2원 추가'},
+  'cl_공생':       {name:'공생',      species:'clownfish',slot:1,icon:'🌿',desc:'수조 패시브: 다른 어종과 함께 있을 때 포만감 소모 -25%'},
+  'cl_행운의폭발': {name:'행운의폭발',species:'clownfish',slot:1,icon:'💥',desc:'배틀 패시브: 크리티컬 시 LUK×2 추가 데미지'},
 };
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -2707,7 +2710,10 @@ function fishTick(){
     // 포만감 감소 (MAX일 때 2배 속도)
     f._fullAcc=(f._fullAcc||0)+elapsed;
     const fullRate=f.fullness>=100?Math.max(1,Math.floor(s.foodRate/2)):Math.max(2,s.foodRate);
-    if(f._fullAcc>=fullRate){f._fullAcc=0;f.fullness=Math.max(0,f.fullness-1);}
+    // 스킬: 공생 - 다른 어종과 함께 있을 때 포만감 소모 -25%
+    const hasSym=(f.skill1==='cl_공생'||f.skill2==='cl_공생')&&FG.fishes.some(tf=>!tf.isDead&&tf.type!==f.type);
+    const effFullRate=hasSym?Math.floor(fullRate*4/3):fullRate;
+    if(f._fullAcc>=effFullRate){f._fullAcc=0;f.fullness=Math.max(0,f.fullness-1);}
     // HP 변화 (퍼센트 기반 소수점 누적)
     f._hpAcc=(f._hpAcc||0)+elapsed;
     if(f.fullness<20&&f._hpAcc>=5){
@@ -2734,6 +2740,9 @@ function fishTick(){
         const tropCnt=FG.fishes.filter(tf=>tf.type==='tropical'&&!tf.isDead).length;
         if(tropCnt>=2) fishInc=Math.floor(fishInc*1.2);
       }
+      // 스킬: 행운의 기운 - 흰동가리 LUK×0.2원 추가 (수족관 전체 적용)
+      const luckyAura=FG.fishes.find(lf=>!lf.isDead&&(lf.skill1==='cl_행운의기운'||lf.skill2==='cl_행운의기운'));
+      if(luckyAura) fishInc+=Math.floor(fStage(luckyAura).luk*0.2);
       inc+=fishInc;
     }
     // XP (10초마다)
@@ -5056,7 +5065,9 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       // 스킬: 혈흔의 냄새 - 처치 누적 공격력 +8%
       const bloodMult1=1+(f.bloodStacks||0)*0.08;
       const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
-      const fd=crit?dmg*2:dmg;
+      let fd=crit?dmg*2:dmg;
+      // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
+      if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
       let skillHeal=0;
@@ -5092,7 +5103,9 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       // 스킬: 혈흔의 냄새 - 처치 누적 공격력 +8%
       const bloodMult2=1+(f.bloodStacks||0)*0.08;
       const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
-      const fd=crit?dmg*2:dmg;
+      let fd=crit?dmg*2:dmg;
+      // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
+      if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
       let skillHeal=0;
