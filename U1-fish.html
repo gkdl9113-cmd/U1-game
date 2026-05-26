@@ -1560,7 +1560,7 @@ function applyFishData(d){
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0},d.rods||{});
   FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
   FG.auxMax=d.auxMax||1;
-  FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{}};
+  FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{}};
   if(d.battlePickIds&&d.battlePickIds.length){
     FG.battlePick=d.battlePickIds.map(id=>FG.fishes.find(f=>f.id===id)).filter(f=>f&&!f.isDead);
     const lbl=document.getElementById('btpick-ribbon-lbl');
@@ -1843,6 +1843,7 @@ const F_GRADES={
   '희귀':{label:'희귀',bg:'#E8D5F5',fg:'#6A0DAD'},
   '영웅':{label:'영웅',bg:'#FFE5CC',fg:'#C05000'},
   '전설':{label:'전설',bg:'#FFF3CD',fg:'#8B6914'},
+  '영물':{label:'영물',bg:'#D4F0EB',fg:'#00574B'},
 };
 // 물고기 스킬 정의
 const FISH_SKILLS={
@@ -1916,6 +1917,10 @@ const F_SPECIES={
     {name:'황금전기뱀장어',   species:'전기뱀장어',grade:'영웅',color:'#F57F17',fin:'#FF6D00',hp:1600,atk:210,def:62, agi:178,luk:58, xpRate:6,  xpNeed:2200,evoCost:25000,foodRate:14},
     {name:'심해전기뱀장어',   species:'전기뱀장어',grade:'전설',color:'#33691E',fin:'#558B2F',hp:2980,atk:418,def:108,agi:285,luk:84, xpRate:8,  xpNeed:9999,evoCost:0,   foodRate:12},
   ],
+  // 용왕의 거북: 영물 단독, 운철 낚시대 전용 획득
+  yongwang:[null,
+    {name:'용왕의 거북',species:'용왕의 거북',grade:'영물',color:'#004D40',fin:'#FFD700',hp:9999,atk:700,def:1800,agi:120,luk:400,xpRate:15,xpNeed:9999,evoCost:0,foodRate:6},
+  ],
   // 거북이: HP/DEF 특화 탱커, 낮은 AGI, 높은 행운 (호수 전용)
   // 등급: 중급→고급→희귀→영웅→전설
   turtle:[null,
@@ -1938,6 +1943,7 @@ const STAGE_INCOME={
   mandarin:[0,12,32,75,170,380],
   electric:[0,10,28,65,150,350],
   turtle:[0,12,35,85,200,450],
+  yongwang:[0,2000],
 };
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
 const F_SHOP=[
@@ -1992,7 +1998,7 @@ const FG={
   fishPos:null,
   tickInterval:null,swimInterval:null,saveInterval:null,
   cvs:null,ctx:null,
-  fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{}}, // 도감: {type:{stage:bool}}
+  fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{}}, // 도감: {type:{stage:bool}}
 };
 function fGet(i){return FG.fishes[i];}
 function fStage(f){const sp=F_SPECIES[f.type||'goldfish']||F_SPECIES.goldfish;return sp[f.stage]||sp[1];}
@@ -2996,8 +3002,8 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*2.2,fy+size*.04);
     c.lineTo(fx-dir*size*1.4,fy+size*.08);
     c.closePath();c.fill();
-  } else if(type==='turtle'){
-    // 거북이: 짧은 꼬리 + 4발 (발은 몸통 뒤에 그림)
+  } else if(type==='turtle'||type==='yongwang'){
+    // 거북이/용왕의 거북: 짧은 꼬리 + 4발 (발은 몸통 뒤에 그림)
     c.beginPath();
     c.moveTo(fx-dir*size*.82,fy);
     c.lineTo(fx-dir*size*1.1,fy-size*.18);
@@ -3013,8 +3019,8 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
   }
   // 몸통
-  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:type==='piranha'?size*1.05:type==='tropical'?size*.95:type==='electric'?size*1.45:type==='turtle'?size*.92:size;
-  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:type==='piranha'?size*.55:type==='tropical'?size*.6:type==='electric'?size*.28:type==='turtle'?size*.72:size*.58;
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:type==='piranha'?size*1.05:type==='tropical'?size*.95:type==='electric'?size*1.45:(type==='turtle'||type==='yongwang')?size*.92:size;
+  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:type==='piranha'?size*.55:type==='tropical'?size*.6:type==='electric'?size*.28:(type==='turtle'||type==='yongwang')?size*.72:size*.58;
   const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);
   g.addColorStop(0,s.fin);g.addColorStop(1,s.color);
   c.fillStyle=g;c.beginPath();c.ellipse(fx,fy,bodyRx,bodyRy,0,0,Math.PI*2);c.fill();
@@ -3076,8 +3082,8 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx+dir*bodyRx*.5,fy);
     c.stroke();
   }
-  // 거북이 등딱지 무늬 + 앞발 + 머리
-  if(type==='turtle'){
+  // 거북이/용왕의 거북 등딱지 무늬 + 앞발 + 머리
+  if(type==='turtle'||type==='yongwang'){
     // 등딱지 중앙 육각 패턴
     c.strokeStyle='rgba(0,0,0,0.18)';c.lineWidth=1.2;
     c.beginPath();c.ellipse(fx,fy,bodyRx*.55,bodyRy*.55,0,0,Math.PI*2);c.stroke();
@@ -3093,10 +3099,10 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.beginPath();c.arc(fx+dir*(bodyRx+size*.28),fy,size*.28,0,Math.PI*2);c.fill();
   }
   // 눈 (전기뱀장어는 작은 눈, 거북이는 머리 위치에)
-  const eyeR=type==='electric'?size*.1:type==='turtle'?size*.13:size*.17;
-  const eyePupilR=type==='electric'?size*.055:type==='turtle'?size*.07:size*.09;
-  const eyeX=type==='turtle'?fx+dir*(bodyRx+size*.22):fx+dir*bodyRx*.48;
-  const eyeY=type==='turtle'?fy-size*.12:fy-bodyRy*.15;
+  const eyeR=type==='electric'?size*.1:(type==='turtle'||type==='yongwang')?size*.13:size*.17;
+  const eyePupilR=type==='electric'?size*.055:(type==='turtle'||type==='yongwang')?size*.07:size*.09;
+  const eyeX=(type==='turtle'||type==='yongwang')?fx+dir*(bodyRx+size*.22):fx+dir*bodyRx*.48;
+  const eyeY=(type==='turtle'||type==='yongwang')?fy-size*.12:fy-bodyRy*.15;
   c.fillStyle='#fff';c.beginPath();c.arc(eyeX,eyeY,eyeR,0,Math.PI*2);c.fill();
   c.fillStyle='#111';c.beginPath();c.arc(eyeX+dir*size*.04,eyeY,eyePupilR,0,Math.PI*2);c.fill();
 }
@@ -3438,8 +3444,8 @@ function drawMinifish(type,s,has){
     svg+=`<path d="M ${fx-dir*size*0.8},${fy} L ${fx-dir*size*1.35},${fy-size*0.65} L ${fx-dir*size*1.5},${fy-size*0.25} L ${fx-dir*size*1.55},${fy} L ${fx-dir*size*1.5},${fy+size*0.25} L ${fx-dir*size*1.35},${fy+size*0.65} Z" fill="${finColor}"/>`;
   } else if(type==='electric'){
     svg+=`<path d="M ${fx-dir*size*1.4},${fy-size*0.08} L ${fx-dir*size*2.2},${fy-size*0.04} L ${fx-dir*size*2.6},${fy} L ${fx-dir*size*2.2},${fy+size*0.04} L ${fx-dir*size*1.4},${fy+size*0.08} Z" fill="${finColor}"/>`;
-  } else if(type==='turtle'){
-    // 거북이: 짧은 꼬리 + 뒷발
+  } else if(type==='turtle'||type==='yongwang'){
+    // 거북이/용왕의 거북: 짧은 꼬리 + 뒷발
     svg+=`<path d="M ${fx-dir*size*0.82},${fy} L ${fx-dir*size*1.1},${fy-size*0.18} L ${fx-dir*size*1.1},${fy+size*0.18} Z" fill="${finColor}"/>`;
     svg+=`<ellipse cx="${fx-dir*size*0.38}" cy="${fy-size*0.78}" rx="${size*0.22}" ry="${size*0.11}" fill="${finColor}"/>`;
     svg+=`<ellipse cx="${fx-dir*size*0.38}" cy="${fy+size*0.78}" rx="${size*0.22}" ry="${size*0.11}" fill="${finColor}"/>`;
@@ -3494,8 +3500,8 @@ function drawMinifish(type,s,has){
     svg+=`<path d="M ${fx-dir*bodyRx*0.7},${fy} L ${fx-dir*bodyRx*0.4},${fy-bodyRy*0.5} L ${fx-dir*bodyRx*0.1},${fy} L ${fx+dir*bodyRx*0.2},${fy-bodyRy*0.5} L ${fx+dir*bodyRx*0.5},${fy}" stroke="rgba(255,255,255,0.45)" stroke-width="1.4" fill="none"/>`;
   }
 
-  // 거북이 등딱지 무늬 + 앞발 + 머리
-  if(type==='turtle'){
+  // 거북이/용왕의 거북 등딱지 무늬 + 앞발 + 머리
+  if(type==='turtle'||type==='yongwang'){
     svg+=`<ellipse cx="${fx}" cy="${fy}" rx="${bodyRx*0.55}" ry="${bodyRy*0.55}" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1.2"/>`;
     svg+=`<line x1="${fx}" y1="${fy-bodyRy*0.55}" x2="${fx}" y2="${fy+bodyRy*0.55}" stroke="rgba(0,0,0,0.18)" stroke-width="1.2"/>`;
     svg+=`<line x1="${fx-bodyRx*0.48}" y1="${fy-bodyRy*0.28}" x2="${fx+bodyRx*0.48}" y2="${fy-bodyRy*0.28}" stroke="rgba(0,0,0,0.18)" stroke-width="1.2"/>`;
@@ -3503,13 +3509,14 @@ function drawMinifish(type,s,has){
     svg+=`<ellipse cx="${fx+dir*size*0.38}" cy="${fy-bodyRy*0.9}" rx="${size*0.22}" ry="${size*0.11}" fill="${finColor}"/>`;
     svg+=`<ellipse cx="${fx+dir*size*0.38}" cy="${fy+bodyRy*0.9}" rx="${size*0.22}" ry="${size*0.11}" fill="${finColor}"/>`;
     svg+=`<circle cx="${fx+dir*(bodyRx+size*0.28)}" cy="${fy}" r="${size*0.28}" fill="${bodyColor}" stroke="rgba(0,0,0,0.12)" stroke-width="0.5"/>`;
+    if(type==='yongwang') svg+=`<circle cx="${fx+dir*(bodyRx+size*0.28)}" cy="${fy}" r="${size*0.28}" fill="none" stroke="${finColor}" stroke-width="1.5" opacity="0.7"/>`;
   }
 
-  // 눈 (전기뱀장어는 작은 눈, 거북이는 머리 위치)
-  const eyeR=type==='electric'?size*0.1:type==='turtle'?size*0.13:size*0.17;
-  const eyePupilR=type==='electric'?size*0.055:type==='turtle'?size*0.07:size*0.09;
-  const eyeX=type==='turtle'?fx+dir*(bodyRx+size*0.22):fx+dir*bodyRx*0.48;
-  const eyeY=type==='turtle'?fy-size*0.12:fy-bodyRy*0.15;
+  // 눈 (전기뱀장어는 작은 눈, 거북이/용왕은 머리 위치)
+  const eyeR=type==='electric'?size*0.1:(type==='turtle'||type==='yongwang')?size*0.13:size*0.17;
+  const eyePupilR=type==='electric'?size*0.055:(type==='turtle'||type==='yongwang')?size*0.07:size*0.09;
+  const eyeX=(type==='turtle'||type==='yongwang')?fx+dir*(bodyRx+size*0.22):fx+dir*bodyRx*0.48;
+  const eyeY=(type==='turtle'||type==='yongwang')?fy-size*0.12:fy-bodyRy*0.15;
   svg+=`<circle cx="${eyeX}" cy="${eyeY}" r="${eyeR}" fill="#fff" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>`;
   svg+=`<circle cx="${eyeX+dir*size*0.04}" cy="${eyeY}" r="${eyePupilR}" fill="#111"/>`;
   svg+=`</svg>`;
@@ -3517,8 +3524,8 @@ function drawMinifish(type,s,has){
 }
 
 function renderFishCodex(){
-  const types=['goldfish','snakehead','guppy','tropical','piranha','clownfish','mandarin','electric','turtle'];
-  const typeNames={goldfish:'금붕어',snakehead:'가물치',guppy:'구피',tropical:'열대어',piranha:'피라냐',clownfish:'흰동가리',mandarin:'쏘가리',electric:'전기뱀장어',turtle:'거북이'};
+  const types=['goldfish','snakehead','guppy','tropical','piranha','clownfish','mandarin','electric','turtle','yongwang'];
+  const typeNames={goldfish:'금붕어',snakehead:'가물치',guppy:'구피',tropical:'열대어',piranha:'피라냐',clownfish:'흰동가리',mandarin:'쏘가리',electric:'전기뱀장어',turtle:'거북이',yongwang:'용왕의 거북'};
   let total=0,collected=0;
   let html='';
   types.forEach(type=>{
@@ -3557,8 +3564,9 @@ const BTPICK_SPECIES=[
   {key:'mandarin',  label:'쏘가리'},
   {key:'electric',  label:'전기뱀장어'},
   {key:'turtle',    label:'거북이'},
+  {key:'yongwang',  label:'용왕의 거북'},
 ];
-const GRADE_CLR={'일반':'#555','중급':'#1565C0','고급':'#558B2F','희귀':'#7B1FA2','영웅':'#E65100','전설':'#B71C1C'};
+const GRADE_CLR={'일반':'#555','중급':'#1565C0','고급':'#558B2F','희귀':'#7B1FA2','영웅':'#E65100','전설':'#B71C1C','영물':'#00574B'};
 
 function openBattlePick(){
   if(!FG.battlePick) FG.battlePick=[];
@@ -4263,6 +4271,8 @@ const ADM_GIVE_SPECIES=[
   {key:'clownfish',label:'흰동가리'},
   {key:'mandarin', label:'쏘가리'},
   {key:'electric', label:'전기뱀장어'},
+  {key:'turtle',   label:'거북이'},
+  {key:'yongwang', label:'용왕의 거북'},
 ];
 let _admGiveType='goldfish';
 let _admGiveStage=1;
@@ -5272,10 +5282,10 @@ function btDraw(W,H){
     c.strokeStyle=f.side==='my'?'rgba(31,73,125,0.7)':'rgba(192,0,0,0.7)';
     c.lineWidth=1.5;c.stroke();
     // 눈 (거북이는 머리 위치에)
-    const btEyeR=ftype==='electric'?size*.1:ftype==='turtle'?size*.13:size*.17;
-    const btEyePR=ftype==='electric'?size*.055:ftype==='turtle'?size*.07:size*.09;
-    const btEyeX=ftype==='turtle'?fx+dir*(size*.92+size*.22):fx+dir*size*.5;
-    const btEyeY=ftype==='turtle'?fy-size*.12:fy-size*.1;
+    const btEyeR=ftype==='electric'?size*.1:(ftype==='turtle'||ftype==='yongwang')?size*.13:size*.17;
+    const btEyePR=ftype==='electric'?size*.055:(ftype==='turtle'||ftype==='yongwang')?size*.07:size*.09;
+    const btEyeX=(ftype==='turtle'||ftype==='yongwang')?fx+dir*(size*.92+size*.22):fx+dir*size*.5;
+    const btEyeY=(ftype==='turtle'||ftype==='yongwang')?fy-size*.12:fy-size*.1;
     c.fillStyle='#fff';c.beginPath();c.arc(btEyeX,btEyeY,btEyeR,0,Math.PI*2);c.fill();
     c.fillStyle='#111';c.beginPath();c.arc(btEyeX+dir*size*.04,btEyeY,btEyePR,0,Math.PI*2);c.fill();
     // HP바 (물고기 위)
