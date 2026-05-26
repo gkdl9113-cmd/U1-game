@@ -4977,7 +4977,7 @@ function btFrame(){
   const myAlive=btFishes.filter(f=>f.side==='my'&&!f.isDead).length;
   const oppAlive=btFishes.filter(f=>f.side==='opp'&&!f.isDead).length;
   if(myAlive===0||oppAlive===0){
-    clearInterval(btInterval);
+    clearInterval(btInterval);btInterval=null;
     btDraw(W,H);
     setTimeout(()=>btShowResult(myAlive,oppAlive),800);
   }
