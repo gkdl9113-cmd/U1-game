@@ -1870,6 +1870,9 @@ const FISH_SKILLS={
   'tr_화려한섬광': {name:'화려한섬광',species:'tropical',slot:1,icon:'✨',desc:'배틀 패시브: 크리티컬 확률 2배 (LUK/200 → LUK/100)'},
   'tr_학습가속':   {name:'학습가속',  species:'tropical',slot:1,icon:'📚',desc:'수조 패시브: 포만감 70%+ 시 XP 획득 +50%'},
   'tr_무리의식':   {name:'무리의식',  species:'tropical',slot:1,icon:'🐠',desc:'수조 패시브: 수족관에 열대어 2마리+ 시 수입 +20%'},
+  'pr_폭식':       {name:'폭식',      species:'piranha', slot:1,icon:'🩸',desc:'배틀 패시브: 공격 후 20% 확률, 데미지의 50% HP 회복'},
+  'pr_혈흔의냄새': {name:'혈흔의냄새',species:'piranha', slot:1,icon:'👃',desc:'배틀 패시브: 적 처치 시 공격력 +8% 누적 (최대 3스택)'},
+  'pr_포식자의영역':{name:'포식자의영역',species:'piranha',slot:1,icon:'🦈',desc:'배틀 패시브: 아군 피라냐 2마리+ 시 공격력 +20%'},
 };
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -5048,7 +5051,11 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const dodge=rng()<tgt.agi/800*((tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1);
       if(dodge){events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;}
       const crit=rng()<f.luk/200*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
-      const dmg=Math.max(1,Math.floor(f.atk*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
+      // 스킬: 포식자의 영역 - 아군 피라냐 2마리+ 시 공격력 +20%
+      const domainMult1=(f.skill1==='pr_포식자의영역'||f.skill2==='pr_포식자의영역')&&p1.filter(ff=>ff.type==='piranha'&&ff.curHp>0).length>=2?1.2:1;
+      // 스킬: 혈흔의 냄새 - 처치 누적 공격력 +8%
+      const bloodMult1=1+(f.bloodStacks||0)*0.08;
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
       const fd=crit?dmg*2:dmg;
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
@@ -5056,6 +5063,15 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((f.skill1==='gs_폭식'||f.skill2==='gs_폭식')&&rng()<0.30){
         skillHeal=Math.floor(fd*0.30);
         f.curHp=Math.min(f.maxHp,f.curHp+skillHeal);
+      }
+      // 스킬: 피라냐 폭식 - 공격 후 20% 확률로 데미지의 50% 회복
+      if((f.skill1==='pr_폭식'||f.skill2==='pr_폭식')&&rng()<0.20){
+        const ph=Math.floor(fd*0.50);skillHeal+=ph;
+        f.curHp=Math.min(f.maxHp,f.curHp+ph);
+      }
+      // 스킬: 혈흔의 냄새 - 적 처치 시 스택 증가
+      if(tgt.curHp<=0&&(f.skill1==='pr_혈흔의냄새'||f.skill2==='pr_혈흔의냄새')){
+        f.bloodStacks=Math.min(3,(f.bloodStacks||0)+1);
       }
       events.push({t,side:1,ai:i,ti,dmg:fd,crit,dodge:false,hpAfter:tgt.curHp,skillHeal,atkHpAfter:f.curHp});
       f.atkCd=Math.max(45,270-f.agi*4.5); // AGI 높을수록 빠른 공격
@@ -5071,7 +5087,11 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const dodge=rng()<tgt.agi/800*((tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1);
       if(dodge){events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;}
       const crit=rng()<f.luk/200*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
-      const dmg=Math.max(1,Math.floor(f.atk*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
+      // 스킬: 포식자의 영역 - 아군 피라냐 2마리+ 시 공격력 +20%
+      const domainMult2=(f.skill1==='pr_포식자의영역'||f.skill2==='pr_포식자의영역')&&p2.filter(ff=>ff.type==='piranha'&&ff.curHp>0).length>=2?1.2:1;
+      // 스킬: 혈흔의 냄새 - 처치 누적 공격력 +8%
+      const bloodMult2=1+(f.bloodStacks||0)*0.08;
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
       const fd=crit?dmg*2:dmg;
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
@@ -5079,6 +5099,15 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((f.skill1==='gs_폭식'||f.skill2==='gs_폭식')&&rng()<0.30){
         skillHeal=Math.floor(fd*0.30);
         f.curHp=Math.min(f.maxHp,f.curHp+skillHeal);
+      }
+      // 스킬: 피라냐 폭식 - 공격 후 20% 확률로 데미지의 50% 회복
+      if((f.skill1==='pr_폭식'||f.skill2==='pr_폭식')&&rng()<0.20){
+        const ph=Math.floor(fd*0.50);skillHeal+=ph;
+        f.curHp=Math.min(f.maxHp,f.curHp+ph);
+      }
+      // 스킬: 혈흔의 냄새 - 적 처치 시 스택 증가
+      if(tgt.curHp<=0&&(f.skill1==='pr_혈흔의냄새'||f.skill2==='pr_혈흔의냄새')){
+        f.bloodStacks=Math.min(3,(f.bloodStacks||0)+1);
       }
       events.push({t,side:2,ai:i,ti,dmg:fd,crit,dodge:false,hpAfter:tgt.curHp,skillHeal,atkHpAfter:f.curHp});
       f.atkCd=Math.max(45,270-f.agi*4.5);
