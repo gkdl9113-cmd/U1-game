@@ -4637,7 +4637,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
   const events=[];
   const p1=p1Fish.map(f=>({...f,curHp:f.hp,atkCd:Math.floor(rng()*90)}));
   const p2=p2Fish.map(f=>({...f,curHp:f.hp,atkCd:Math.floor(rng()*90)}));
-  const MAX=7200; // 최대 6분 (50ms * 7200 = 360초)
+  const MAX=7200; // 최대 약 3.6분 (30ms * 7200 = 216초)
   for(let t=0;t<MAX;t++){
     const a1=p1.some(f=>f.curHp>0);
     const a2=p2.some(f=>f.curHp>0);
@@ -4753,9 +4753,9 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
   // 결과 배너 숨기기
   document.getElementById('bt-result-banner').style.display='none';
 
-  // 50ms 인터벌 시작
+  // 30ms 인터벌 시작
   clearInterval(btInterval);
-  btInterval=setInterval(btFrame,50);
+  btInterval=setInterval(btFrame,30);
 }
 
 // ── 사전 계산 이벤트 적용 ────────────────────────────────
@@ -4817,7 +4817,7 @@ let _btSeed=0; // 공유 시드 기준 클럭 (P1/P2 틱 동기화)
 function btFrame(){
   const now=Date.now();
   // seed 기준으로 현재 예상 틱 계산 → P2도 P1과 동일한 틱 위치 유지
-  const expectedTick=Math.floor((now-_btSeed)/50);
+  const expectedTick=Math.floor((now-_btSeed)/30);
   const stepsNeeded=Math.max(0,expectedTick-btTick);
   // 최대 8틱 따라잡기 (지연이 크면 한 번에 정렬)
   const steps=Math.min(Math.max(1,stepsNeeded),8);
