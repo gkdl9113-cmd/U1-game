@@ -954,26 +954,21 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 
 <!-- 물고기 지급 모달 -->
 <div class="xl-dlg-ov" id="adm-give-modal">
-  <div class="adm-modal-dark">
+  <div class="adm-modal-dark" style="min-width:420px;max-width:520px">
     <div class="adm-modal-hdr">🐟 물고기 지급 <button onclick="hideDlg('adm-give-modal')" style="background:none;border:none;color:#7A9BBF;cursor:pointer;font-size:16px;padding:0">✕</button></div>
     <div class="adm-modal-body">
-      <div id="adm-give-title" style="font-size:12px;color:#A0C4E8;margin-bottom:12px"></div>
-      <div class="adm-form-row">
-        <label>🐠 어종</label>
-        <select class="adm-form-select" id="adm-give-type" onchange="adminGiveUpdateStages()">
-          <option value="goldfish">금붕어 계열</option>
-          <option value="guppy">구피 계열</option>
-          <option value="snakehead">가물치 계열</option>
-        </select>
-      </div>
-      <div class="adm-form-row">
-        <label>📊 단계</label>
-        <select class="adm-form-select" id="adm-give-stage"></select>
-      </div>
-      <div id="adm-give-preview" style="margin:10px 0;padding:8px;background:#0F1724;border-radius:4px;font-size:11px;color:#7A9BBF"></div>
-      <div class="adm-btn-row">
+      <div id="adm-give-title" style="font-size:12px;color:#A0C4E8;margin-bottom:10px;font-weight:700"></div>
+      <!-- 어종 카드 그리드 -->
+      <div style="font-size:10px;color:#7A9BBF;margin-bottom:6px;font-weight:700">어종 선택</div>
+      <div id="adm-give-species-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:12px"></div>
+      <!-- 단계 버튼 -->
+      <div style="font-size:10px;color:#7A9BBF;margin-bottom:6px;font-weight:700">단계 선택</div>
+      <div id="adm-give-stage-btns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px"></div>
+      <!-- 미리보기 -->
+      <div id="adm-give-preview" style="padding:10px;background:#0F1724;border-radius:6px;font-size:11px;color:#7A9BBF;min-height:60px;display:flex;gap:12px;align-items:center"></div>
+      <div class="adm-btn-row" style="margin-top:12px">
         <button class="adm-btn secondary" onclick="hideDlg('adm-give-modal')">취소</button>
-        <button class="adm-btn green primary" onclick="adminConfirmGiveFish()" style="background:#1A5C35;color:#4ADE80">🐟 지급</button>
+        <button class="adm-btn green primary" onclick="adminConfirmGiveFish()" style="background:#1A5C35;color:#4ADE80;font-size:12px;padding:6px 16px">🐟 지급</button>
       </div>
     </div>
   </div>
@@ -4011,39 +4006,97 @@ let _admEditTarget=null; // {username, server, fish_data}
 
 let _admGiveTarget=null;
 
+const ADM_GIVE_SPECIES=[
+  {key:'goldfish',  label:'금붕어'},
+  {key:'guppy',    label:'구피'},
+  {key:'snakehead',label:'가물치'},
+  {key:'tropical', label:'열대어'},
+  {key:'piranha',  label:'피라냐'},
+  {key:'clownfish',label:'흰동가리'},
+  {key:'mandarin', label:'쏘가리'},
+  {key:'electric', label:'전기뱀장어'},
+];
+let _admGiveType='goldfish';
+let _admGiveStage=1;
+
 function adminOpenGiveFish(username,server){
   _admGiveTarget={username,server};
-  document.getElementById('adm-give-title').textContent=`${username} (${server}) 에게 지급`;
-  adminGiveUpdateStages();
+  _admGiveType='goldfish';
+  _admGiveStage=1;
+  document.getElementById('adm-give-title').textContent=`▶ ${username} (${server}) 에게 물고기 지급`;
+  adminGiveRenderSpecies();
+  adminGiveRenderStages();
+  adminGiveUpdatePreview();
   document.getElementById('adm-give-modal').classList.add('on');
 }
 
-function adminGiveUpdateStages(){
-  const type=document.getElementById('adm-give-type').value;
-  const sp=F_SPECIES[type]||F_SPECIES.goldfish;
-  const sel=document.getElementById('adm-give-stage');
-  sel.innerHTML=sp.slice(1).map((s,i)=>
-    `<option value="${i+1}">${i+1}단계 - ${s.name} (${s.grade})</option>`
-  ).join('');
+function adminGiveRenderSpecies(){
+  const grid=document.getElementById('adm-give-species-grid');
+  grid.innerHTML=ADM_GIVE_SPECIES.map(sp=>{
+    const sel=sp.key===_admGiveType;
+    const stages=F_SPECIES[sp.key]||[];
+    const first=stages[1];
+    const color=first?first.color:'#888';
+    return `<div onclick="adminGiveSelectType('${sp.key}')" style="cursor:pointer;padding:6px 4px;border-radius:5px;border:2px solid ${sel?'#4ADE80':'#2D4A6A'};background:${sel?'#1A3D2A':'#0F1724'};text-align:center;transition:.15s">
+      <div style="width:32px;height:22px;margin:0 auto 3px;background:${color};border-radius:50% 50% 45% 45%;border:1px solid ${sel?'#4ADE80':'#2D4A6A'}"></div>
+      <div style="font-size:9px;color:${sel?'#4ADE80':'#A0C4E8'};font-weight:${sel?'700':'400'}">${sp.label}</div>
+    </div>`;
+  }).join('');
+}
+
+function adminGiveSelectType(type){
+  _admGiveType=type;
+  _admGiveStage=1;
+  adminGiveRenderSpecies();
+  adminGiveRenderStages();
+  adminGiveUpdatePreview();
+}
+
+function adminGiveRenderStages(){
+  const sp=F_SPECIES[_admGiveType]||F_SPECIES.goldfish;
+  const container=document.getElementById('adm-give-stage-btns');
+  container.innerHTML=sp.slice(1).map((s,i)=>{
+    const stg=i+1;
+    const sel=stg===_admGiveStage;
+    const gd=F_GRADES[s.grade]||F_GRADES['일반'];
+    return `<button onclick="adminGiveSelectStage(${stg})" style="cursor:pointer;padding:4px 8px;border-radius:4px;border:1.5px solid ${sel?'#4ADE80':'#2D4A6A'};background:${sel?'#1A3D2A':'#0F1724'};color:${sel?'#4ADE80':'#A0C4E8'};font-size:10px;font-weight:${sel?'700':'400'};font-family:inherit">
+      <span style="font-size:9px;padding:1px 4px;border-radius:2px;background:${gd.bg};color:${gd.fg};margin-right:3px">${s.grade}</span>${s.name}
+    </button>`;
+  }).join('');
+}
+
+function adminGiveSelectStage(stage){
+  _admGiveStage=stage;
+  adminGiveRenderStages();
   adminGiveUpdatePreview();
 }
 
 function adminGiveUpdatePreview(){
-  const type=document.getElementById('adm-give-type').value;
-  const stage=parseInt(document.getElementById('adm-give-stage').value)||1;
-  const s=(F_SPECIES[type]||F_SPECIES.goldfish)[stage];
-  if(!s) return;
+  const s=(F_SPECIES[_admGiveType]||F_SPECIES.goldfish)[_admGiveStage];
+  if(!s){document.getElementById('adm-give-preview').innerHTML='';return;}
   const gd=F_GRADES[s.grade]||F_GRADES['일반'];
+  const fishSvg=drawMinifish(_admGiveType,s,true);
   document.getElementById('adm-give-preview').innerHTML=
-    `<span style="padding:1px 5px;border-radius:3px;background:${gd.bg};color:${gd.fg};font-size:10px;font-weight:700">${s.grade}</span> `+
-    `<strong style="color:#E2E8F0">${s.name}</strong><br>`+
-    `<span style="color:#7A9BBF">HP ${s.hp} | ⚔️${s.atk} 🛡️${s.def} 💨${s.agi} 🍀${s.luk}</span>`;
+    `<div style="flex-shrink:0">${fishSvg}</div>`+
+    `<div style="flex:1">
+      <div style="margin-bottom:4px">
+        <span style="padding:1px 6px;border-radius:3px;background:${gd.bg};color:${gd.fg};font-size:10px;font-weight:700">${s.grade}</span>
+        <strong style="color:#E2E8F0;font-size:13px;margin-left:6px">${s.name}</strong>
+      </div>
+      <div style="color:#94A3B8;font-size:10px;line-height:1.8">
+        ❤️ HP ${s.hp} &nbsp;⚔️ ATK ${s.atk} &nbsp;🛡️ DEF ${s.def}<br>
+        💨 AGI ${s.agi} &nbsp;🍀 LUK ${s.luk} &nbsp;📈 XP속도 ${s.xpRate}x
+      </div>
+    </div>`;
 }
+
+// 구버전 호환 (단계 select 참조 가능성)
+function adminGiveUpdateStages(){ adminGiveRenderStages(); adminGiveUpdatePreview(); }
 
 async function adminConfirmGiveFish(){
   if(!_admGiveTarget) return;
-  const type=document.getElementById('adm-give-type').value;
-  const stage=parseInt(document.getElementById('adm-give-stage').value)||1;
+  const type=_admGiveType;
+  const stage=_admGiveStage;
   const s=(F_SPECIES[type]||F_SPECIES.goldfish)[stage];
   if(!s){alert('물고기 정보를 찾을 수 없습니다');return;}
   // DB에서 현재 데이터 로드
