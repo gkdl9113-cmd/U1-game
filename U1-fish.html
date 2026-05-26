@@ -2891,6 +2891,25 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*1.55,fy);
     c.lineTo(fx-dir*size*1.45,fy+size*.6);
     c.closePath();c.fill();
+  } else if(type==='mandarin'){
+    // 쏘가리: 불꽃 같은 펼쳐진 꼬리 (육식 물고기답게 공격적)
+    c.beginPath();
+    c.moveTo(fx-dir*size*.8,fy);
+    c.lineTo(fx-dir*size*1.35,fy-size*.65);
+    c.lineTo(fx-dir*size*1.5,fy-size*.25);
+    c.lineTo(fx-dir*size*1.55,fy);
+    c.lineTo(fx-dir*size*1.5,fy+size*.25);
+    c.lineTo(fx-dir*size*1.35,fy+size*.65);
+    c.closePath();c.fill();
+  } else if(type==='electric'){
+    // 전기뱀장어: 긴 뱀같은 S자 꼬리
+    c.beginPath();
+    c.moveTo(fx-dir*size*.7,fy);
+    c.lineTo(fx-dir*size*1.25,fy-size*.5);
+    c.lineTo(fx-dir*size*1.6,fy-size*.3);
+    c.lineTo(fx-dir*size*1.55,fy+size*.3);
+    c.lineTo(fx-dir*size*1.2,fy+size*.55);
+    c.closePath();c.fill();
   } else {
     // 금붕어 기본 꼬리
     c.beginPath();c.moveTo(fx-dir*size*.8,fy);
@@ -2898,8 +2917,8 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
   }
   // 몸통
-  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:type==='piranha'?size*1.05:type==='tropical'?size*.95:size;
-  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:type==='piranha'?size*.55:type==='tropical'?size*.6:size*.58;
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:type==='piranha'?size*1.05:type==='tropical'?size*.95:type==='electric'?size*1.1:size;
+  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:type==='piranha'?size*.55:type==='tropical'?size*.6:type==='electric'?size*.65:size*.58;
   const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);
   g.addColorStop(0,s.fin);g.addColorStop(1,s.color);
   c.fillStyle=g;c.beginPath();c.ellipse(fx,fy,bodyRx,bodyRy,0,0,Math.PI*2);c.fill();
@@ -2941,6 +2960,25 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx+dir*size*.1,fy+bodyRy*.95);c.stroke();
     c.beginPath();c.moveTo(fx-dir*size*.35,fy-bodyRy*.8);
     c.lineTo(fx-dir*size*.35,fy+bodyRy*.8);c.stroke();
+  }
+  // 쏘가리 깊은 색상 반점 (육식 포식자 느낌)
+  if(type==='mandarin'){
+    c.fillStyle='rgba(0,0,0,0.15)';
+    const spotPositions=[{x:dir*size*.2,y:-size*.2},{x:dir*size*.35,y:size*.25},{x:-dir*size*.15,y:0}];
+    spotPositions.forEach(spot=>{
+      c.beginPath();c.arc(fx+spot.x,fy+spot.y,size*.12,0,Math.PI*2);c.fill();
+    });
+  }
+  // 전기뱀장어 번쩍거리는 전기선 무늬 (지그재그)
+  if(type==='electric'){
+    c.strokeStyle='rgba(255,255,255,0.4)';c.lineWidth=1.8;
+    c.beginPath();
+    c.moveTo(fx+dir*size*.05,fy-bodyRy*.7);
+    c.lineTo(fx+dir*size*.25,fy-bodyRy*.4);
+    c.lineTo(fx+dir*size*.05,fy);
+    c.lineTo(fx+dir*size*.25,fy+bodyRy*.4);
+    c.lineTo(fx+dir*size*.05,fy+bodyRy*.7);
+    c.stroke();
   }
   // 눈
   c.fillStyle='#fff';c.beginPath();c.arc(fx+dir*bodyRx*.48,fy-bodyRy*.15,size*.17,0,Math.PI*2);c.fill();
@@ -3275,17 +3313,17 @@ function drawMinifish(type,s,has){
   } else if(type==='clownfish'){
     svg+=`<path d="M ${fx-dir*size*0.72},${fy} L ${fx-dir*size*1.45},${fy-size*0.6} L ${fx-dir*size*1.55},${fy} L ${fx-dir*size*1.45},${fy+size*0.6} Z" fill="${finColor}"/>`;
   } else if(type==='mandarin'){
-    svg+=`<path d="M ${fx-dir*size*0.75},${fy} L ${fx-dir*size*1.5},${fy-size*0.55} L ${fx-dir*size*1.2},${fy-size*0.15} L ${fx-dir*size*1.5},${fy+size*0.55} Z" fill="${finColor}"/>`;
+    svg+=`<path d="M ${fx-dir*size*0.8},${fy} L ${fx-dir*size*1.35},${fy-size*0.65} L ${fx-dir*size*1.5},${fy-size*0.25} L ${fx-dir*size*1.55},${fy} L ${fx-dir*size*1.5},${fy+size*0.25} L ${fx-dir*size*1.35},${fy+size*0.65} Z" fill="${finColor}"/>`;
   } else if(type==='electric'){
-    svg+=`<path d="M ${fx-dir*size*0.9},${fy} L ${fx-dir*size*1.3},${fy-size*0.35} L ${fx-dir*size*1.3},${fy+size*0.35} Z" fill="${finColor}"/>`;
+    svg+=`<path d="M ${fx-dir*size*0.7},${fy} L ${fx-dir*size*1.25},${fy-size*0.5} L ${fx-dir*size*1.6},${fy-size*0.3} L ${fx-dir*size*1.55},${fy+size*0.3} L ${fx-dir*size*1.2},${fy+size*0.55} Z" fill="${finColor}"/>`;
   } else {
     // 기본 금붕어 꼬리
     svg+=`<path d="M ${fx-dir*size*0.8},${fy} L ${fx-dir*size*1.4},${fy-size*0.5} L ${fx-dir*size*1.4},${fy+size*0.5} Z" fill="${finColor}"/>`;
   }
 
   // 몸통
-  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*0.88:type==='piranha'?size*1.05:type==='tropical'?size*0.95:size;
-  const bodyRy=type==='snakehead'?size*0.42:type==='guppy'?size*0.62:type==='piranha'?size*0.55:type==='tropical'?size*0.6:size*0.58;
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*0.88:type==='piranha'?size*1.05:type==='tropical'?size*0.95:type==='electric'?size*1.1:size;
+  const bodyRy=type==='snakehead'?size*0.42:type==='guppy'?size*0.62:type==='piranha'?size*0.55:type==='tropical'?size*0.6:type==='electric'?size*0.65:size*0.58;
   svg+=`<ellipse cx="${fx}" cy="${fy}" rx="${bodyRx}" ry="${bodyRy}" fill="url(#grad_${type}_${s.grade})" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`;
 
   // 구피 등지느러미
@@ -3316,6 +3354,17 @@ function drawMinifish(type,s,has){
   if(type==='clownfish'){
     svg+=`<line x1="${fx+dir*size*0.1}" y1="${fy-bodyRy*0.95}" x2="${fx+dir*size*0.1}" y2="${fy+bodyRy*0.95}" stroke="rgba(255,255,255,0.7)" stroke-width="2.5"/>`;
     svg+=`<line x1="${fx-dir*size*0.35}" y1="${fy-bodyRy*0.8}" x2="${fx-dir*size*0.35}" y2="${fy+bodyRy*0.8}" stroke="rgba(255,255,255,0.7)" stroke-width="2.5"/>`;
+  }
+
+  // 쏘가리 반점 (깊은 색상)
+  if(type==='mandarin'){
+    svg+=`<circle cx="${fx+dir*size*0.2}" cy="${fy-size*0.2}" r="${size*0.12}" fill="rgba(0,0,0,0.15)"/>`;
+    svg+=`<circle cx="${fx+dir*size*0.35}" cy="${fy+size*0.25}" r="${size*0.12}" fill="rgba(0,0,0,0.15)"/>`;
+  }
+
+  // 전기뱀장어 번쩍 지그재그선
+  if(type==='electric'){
+    svg+=`<path d="M ${fx+dir*size*0.05},${fy-bodyRy*0.7} L ${fx+dir*size*0.25},${fy-bodyRy*0.4} L ${fx+dir*size*0.05},${fy} L ${fx+dir*size*0.25},${fy+bodyRy*0.4} L ${fx+dir*size*0.05},${fy+bodyRy*0.7}" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" fill="none"/>`;
   }
 
   // 눈
