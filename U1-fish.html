@@ -1879,6 +1879,9 @@ const FISH_SKILLS={
   'md_방패돌격':   {name:'방패돌격',  species:'mandarin', slot:1,icon:'🛡️',desc:'배틀 패시브: 공격 시 DEF×0.3 추가 데미지'},
   'md_반격':       {name:'반격',      species:'mandarin', slot:1,icon:'⚔️',desc:'배틀 패시브: 피격 시 받은 피해가 DEF보다 작으면 즉시 반격 (atkCd=0)'},
   'md_철옹성':     {name:'철옹성',    species:'mandarin', slot:1,icon:'🏰',desc:'배틀 패시브: HP 50% 이하 시 받는 피해 DEF×0.5 감소'},
+  'el_감전':       {name:'감전',      species:'electric', slot:1,icon:'⚡',desc:'배틀 패시브: 공격 시 25% 확률로 적 atkCd +40 (공격 지연)'},
+  'el_연쇄방전':   {name:'연쇄방전',  species:'electric', slot:1,icon:'🌩️',desc:'배틀 패시브: 공격 후 AGI/500 확률로 즉시 추가 타격 (ATK 50%)'},
+  'el_번개반격':   {name:'번개반격',  species:'electric', slot:1,icon:'🔁',desc:'배틀 패시브: 회피 성공 시 atkCd 즉시 0 (즉시 반격)'},
 };
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -5061,7 +5064,11 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const tgt=targets[Math.floor(rng()*targets.length)];
       const ti=p2.indexOf(tgt);
       const dodge=rng()<tgt.agi/800*((tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1);
-      if(dodge){events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;}
+      if(dodge){
+        // 스킬: 번개 반격 - 회피 성공 시 즉시 반격
+        if(tgt.skill1==='el_번개반격'||tgt.skill2==='el_번개반격') tgt.atkCd=0;
+        events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;
+      }
       const crit=rng()<f.luk/200*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
       // 스킬: 포식자의 영역 - 아군 피라냐 2마리+ 시 공격력 +20%
       const domainMult1=(f.skill1==='pr_포식자의영역'||f.skill2==='pr_포식자의영역')&&p1.filter(ff=>ff.type==='piranha'&&ff.curHp>0).length>=2?1.2:1;
@@ -5082,6 +5089,10 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){
         tgt.atkCd=0;
       }
+      // 스킬: 감전 - 25% 확률로 적 atkCd +40
+      if((f.skill1==='el_감전'||f.skill2==='el_감전')&&tgt.curHp>0&&rng()<0.25){
+        tgt.atkCd+=40;
+      }
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
       let skillHeal=0;
       if((f.skill1==='gs_폭식'||f.skill2==='gs_폭식')&&rng()<0.30){
@@ -5098,6 +5109,17 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
         f.bloodStacks=Math.min(3,(f.bloodStacks||0)+1);
       }
       events.push({t,side:1,ai:i,ti,dmg:fd,crit,dodge:false,hpAfter:tgt.curHp,skillHeal,atkHpAfter:f.curHp});
+      // 스킬: 연쇄 방전 - AGI/500 확률로 즉시 추가 타격
+      if((f.skill1==='el_연쇄방전'||f.skill2==='el_연쇄방전')&&rng()<f.agi/500){
+        const cTgts=p2.filter(t=>t.curHp>0);
+        if(cTgts.length){
+          const cTgt=cTgts[Math.floor(rng()*cTgts.length)];
+          const cTi=p2.indexOf(cTgt);
+          const cDmg=Math.max(1,Math.floor(f.atk*0.5*0.7-cTgt.def*0.3+(rng()-0.5)*f.atk*0.1));
+          cTgt.curHp=Math.max(0,cTgt.curHp-cDmg);
+          events.push({t,side:1,ai:i,ti:cTi,dmg:cDmg,crit:false,dodge:false,hpAfter:cTgt.curHp,skillHeal:0,atkHpAfter:f.curHp,chain:true});
+        }
+      }
       f.atkCd=Math.max(45,270-f.agi*4.5); // AGI 높을수록 빠른 공격
     });
     // p2 공격 체크
@@ -5109,7 +5131,11 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const tgt=targets[Math.floor(rng()*targets.length)];
       const ti=p1.indexOf(tgt);
       const dodge=rng()<tgt.agi/800*((tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1);
-      if(dodge){events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;}
+      if(dodge){
+        // 스킬: 번개 반격 - 회피 성공 시 즉시 반격
+        if(tgt.skill1==='el_번개반격'||tgt.skill2==='el_번개반격') tgt.atkCd=0;
+        events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;
+      }
       const crit=rng()<f.luk/200*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
       // 스킬: 포식자의 영역 - 아군 피라냐 2마리+ 시 공격력 +20%
       const domainMult2=(f.skill1==='pr_포식자의영역'||f.skill2==='pr_포식자의영역')&&p2.filter(ff=>ff.type==='piranha'&&ff.curHp>0).length>=2?1.2:1;
@@ -5130,6 +5156,10 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){
         tgt.atkCd=0;
       }
+      // 스킬: 감전 - 25% 확률로 적 atkCd +40
+      if((f.skill1==='el_감전'||f.skill2==='el_감전')&&tgt.curHp>0&&rng()<0.25){
+        tgt.atkCd+=40;
+      }
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
       let skillHeal=0;
       if((f.skill1==='gs_폭식'||f.skill2==='gs_폭식')&&rng()<0.30){
@@ -5146,6 +5176,17 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
         f.bloodStacks=Math.min(3,(f.bloodStacks||0)+1);
       }
       events.push({t,side:2,ai:i,ti,dmg:fd,crit,dodge:false,hpAfter:tgt.curHp,skillHeal,atkHpAfter:f.curHp});
+      // 스킬: 연쇄 방전 - AGI/500 확률로 즉시 추가 타격
+      if((f.skill1==='el_연쇄방전'||f.skill2==='el_연쇄방전')&&rng()<f.agi/500){
+        const cTgts=p1.filter(t=>t.curHp>0);
+        if(cTgts.length){
+          const cTgt=cTgts[Math.floor(rng()*cTgts.length)];
+          const cTi=p1.indexOf(cTgt);
+          const cDmg=Math.max(1,Math.floor(f.atk*0.5*0.7-cTgt.def*0.3+(rng()-0.5)*f.atk*0.1));
+          cTgt.curHp=Math.max(0,cTgt.curHp-cDmg);
+          events.push({t,side:2,ai:i,ti:cTi,dmg:cDmg,crit:false,dodge:false,hpAfter:cTgt.curHp,skillHeal:0,atkHpAfter:f.curHp,chain:true});
+        }
+      }
       f.atkCd=Math.max(45,270-f.agi*4.5);
     });
   }
