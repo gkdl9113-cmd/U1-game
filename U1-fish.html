@@ -1867,6 +1867,9 @@ const FISH_SKILLS={
   'gu_선제일격':   {name:'선제일격',  species:'guppy',   slot:1,icon:'⚡',desc:'배틀 시작 시 AGI가 적 평균보다 높으면 선제 공격 (atkCd=0)'},
   'gu_민첩한유영': {name:'황금비늘',  species:'guppy',   slot:1,icon:'💨',desc:'수조 패시브: 수입 발생 시 AGI×0.5원 추가 획득'},
   'gu_황금비늘':   {name:'민첩한유영',species:'guppy',   slot:1,icon:'✨',desc:'배틀 패시브: AGI 기반 회피율 추가 (agi/800 → agi/400)'},
+  'tr_화려한섬광': {name:'화려한섬광',species:'tropical',slot:1,icon:'✨',desc:'배틀 패시브: 크리티컬 확률 2배 (LUK/200 → LUK/100)'},
+  'tr_학습가속':   {name:'학습가속',  species:'tropical',slot:1,icon:'📚',desc:'수조 패시브: 포만감 70%+ 시 XP 획득 +50%'},
+  'tr_무리의식':   {name:'무리의식',  species:'tropical',slot:1,icon:'🐠',desc:'수조 패시브: 수족관에 열대어 2마리+ 시 수입 +20%'},
 };
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -2723,10 +2726,15 @@ function fishTick(){
       let fishInc=fIncome(f);
       // 스킬: 민첩한유영 - AGI×0.5원 추가
       if(f.skill1==='gu_민첩한유영'||f.skill2==='gu_민첩한유영'){fishInc+=Math.floor(fStage(f).agi*0.5);}
+      // 스킬: 무리의식 - 열대어 2마리+ 시 수입 +20%
+      if(f.skill1==='tr_무리의식'||f.skill2==='tr_무리의식'){
+        const tropCnt=FG.fishes.filter(tf=>tf.type==='tropical'&&!tf.isDead).length;
+        if(tropCnt>=2) fishInc=Math.floor(fishInc*1.2);
+      }
       inc+=fishInc;
     }
     // XP (10초마다)
-    if(f.fullness>30){f._xpAcc=(f._xpAcc||0)+elapsed;if(f._xpAcc>=10){f._xpAcc=0;f.xp+=s.xpRate;}}
+    if(f.fullness>30){f._xpAcc=(f._xpAcc||0)+elapsed;if(f._xpAcc>=10){f._xpAcc=0;const xpMult=((f.skill1==='tr_학습가속'||f.skill2==='tr_학습가속')&&f.fullness>=70)?1.5:1;f.xp+=s.xpRate*xpMult;}}
   });
   FG.money+=inc;
   // 보조 수족관 처리 (2.5배 소모, 수입, 0 시 자동 방생)
@@ -5039,7 +5047,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const ti=p2.indexOf(tgt);
       const dodge=rng()<tgt.agi/800*((tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1);
       if(dodge){events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;}
-      const crit=rng()<f.luk/200;
+      const crit=rng()<f.luk/200*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
       const dmg=Math.max(1,Math.floor(f.atk*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
       const fd=crit?dmg*2:dmg;
       tgt.curHp=Math.max(0,tgt.curHp-fd);
@@ -5062,7 +5070,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const ti=p1.indexOf(tgt);
       const dodge=rng()<tgt.agi/800*((tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1);
       if(dodge){events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;}
-      const crit=rng()<f.luk/200;
+      const crit=rng()<f.luk/200*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
       const dmg=Math.max(1,Math.floor(f.atk*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
       const fd=crit?dmg*2:dmg;
       tgt.curHp=Math.max(0,tgt.curHp-fd);
