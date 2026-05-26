@@ -4696,6 +4696,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
 function initRealtimeBattle(myFish,oppFish,seed,imP1){
   btTick=0;btImP1=imP1;_btSeed=seed;
   btRng=mulberry32(seed); // seeded RNG 초기화
+  _btLocalStart=Date.now(); // 틱 클럭: 각 플레이어 로컬 시계 기준 (시계 차이 방지)
   // 캔버스 초기화
   btCanvas=document.getElementById('battle-canvas');
   const par=btCanvas.parentElement;
@@ -4813,11 +4814,12 @@ function btApplyEvents(){
 }
 
 // ── 매 프레임 ─────────────────────────────────────────────
-let _btSeed=0; // 공유 시드 기준 클럭 (P1/P2 틱 동기화)
+let _btSeed=0;       // RNG 시드 (P1/P2 공유 — 결정론적 이벤트)
+let _btLocalStart=0; // 틱 클럭 기준 (각 플레이어 로컬 시계 — 시계 차이 영향 없음)
 function btFrame(){
   const now=Date.now();
   // seed 기준으로 현재 예상 틱 계산 → P2도 P1과 동일한 틱 위치 유지
-  const expectedTick=Math.floor((now-_btSeed)/30);
+  const expectedTick=Math.floor((now-_btLocalStart)/30);
   const stepsNeeded=Math.max(0,expectedTick-btTick);
   // 최대 8틱 따라잡기 (지연이 크면 한 번에 정렬)
   const steps=Math.min(Math.max(1,stepsNeeded),8);
