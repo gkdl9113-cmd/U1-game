@@ -2464,6 +2464,28 @@ function fishingTryAgain(){
   _fishingBobStart('idle');
 }
 
+// ── 낚시 키보드 단축키 ──────────────────────────────────────
+document.addEventListener('keydown',function(e){
+  // 입력 필드 포커스 시 무시
+  const tag=document.activeElement?.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+  // 낚시 화면이 활성화 상태일 때만
+  if(!document.getElementById('s-fishing')?.classList.contains('on')) return;
+  // 모달이 열려 있으면 무시
+  if(document.getElementById('bait-modal')?.classList.contains('on')) return;
+
+  const k=e.key;
+  if(k>='1'&&k<='6'){
+    e.preventDefault();
+    fishingSelectRod('rod'+k);
+  } else if(k===' '){
+    e.preventDefault();
+    const st=FMG.state;
+    if(st==='bite'||st==='gauge') fishingAreaClick();
+    else if(st==='result') fishingTryAgain();
+  }
+});
+
 function _fishingSetMsg(txt,sub){
   const t=document.getElementById('fishing-msg-txt');if(t){t.textContent=txt;t.style.color='#1F3864';}
   const s=document.getElementById('fishing-msg-sub');if(s)s.innerHTML=sub;
