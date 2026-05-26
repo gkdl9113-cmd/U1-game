@@ -461,7 +461,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <button class="xl-rbtn" id="f-feed-btn" onclick="fishFeed()"><span class="xl-rico">🍤</span><span class="xl-rlbl">먹이주기</span></button>
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishOpenShop()"><span class="xl-rico">🛒</span><span class="xl-rlbl">상점</span></button>
-    <button class="xl-rbtn" onclick="openSkillGacha()"><span class="xl-rico">🎲</span><span class="xl-rlbl">스킬가챠</span></button>
     <button class="xl-rbtn" onclick="openSkillInventory()"><span class="xl-rico">✨</span><span class="xl-rlbl">스킬</span></button>
     <button class="xl-rbtn" id="f-evo-btn" onclick="fishEvolve()" style="opacity:.4"><span class="xl-rico">⬆️</span><span class="xl-rlbl">진화</span></button>
     <button class="xl-rbtn" onclick="openBattlePick()"><span class="xl-rico">⚔️</span><span class="xl-rlbl" id="btpick-ribbon-lbl">출전 선택</span></button>
@@ -3845,7 +3844,17 @@ function fishReset(){
 
 function fishOpenShop(){
   const div=document.getElementById('f-shop-items');
-  div.innerHTML=F_SHOP.map(item=>{
+  // 스킬뽑기 섹션
+  const can1=FG.money>=SKILL_GACHA_COST,can10=FG.money>=48000;
+  div.innerHTML=`<div style="background:linear-gradient(135deg,#1A0A3D,#2D1060);border-radius:6px;padding:10px 12px;margin-bottom:8px">
+    <div style="font-size:11px;font-weight:700;color:#FFD700;margin-bottom:6px">🎲 스킬뽑기</div>
+    <div style="font-size:9px;color:#C8B8FF;margin-bottom:8px;line-height:1.6">등급별 확률: ⚪일반 60% · 🔵희귀 30% · 🟠영웅 9% · 🟡전설 1%</div>
+    <div style="display:flex;gap:6px">
+      <button onclick="hideDlg('f-shop-modal');openSkillGacha()" style="flex:1;background:${can1?'#4F46E5':'#3D3D5C'};color:${can1?'#fff':'#888'};border:none;padding:7px 4px;border-radius:5px;font-size:10px;font-weight:700;cursor:${can1?'pointer':'default'};font-family:inherit;line-height:1.5">🎲 1회 뽑기<br><span style="font-size:9px;opacity:.85">5,000원</span></button>
+      <button onclick="hideDlg('f-shop-modal');openSkillGacha()" style="flex:1;background:${can10?'#7C3AED':'#3D3D5C'};color:${can10?'#fff':'#888'};border:none;padding:7px 4px;border-radius:5px;font-size:10px;font-weight:700;cursor:${can10?'pointer':'default'};font-family:inherit;line-height:1.5">🎲 10회 뽑기<br><span style="font-size:9px;opacity:.85">48,000원</span></button>
+    </div>
+  </div>`;
+  div.innerHTML+=F_SHOP.map(item=>{
     const cnt=item.type==='rod'?(FG.rods[item.id]||0):0;
     const disabled=FG.money<item.price;
     const btnStyle=`background:${disabled?'#E8E8E8':'#217346'};color:${disabled?'#999':'#fff'};border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:${disabled?'default':'pointer'};font-family:inherit;white-space:nowrap`;
