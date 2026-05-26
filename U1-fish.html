@@ -255,6 +255,13 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 .fw-float-badge.hidden{display:none}
 @keyframes fishingCellWait{0%{background:#EFF6FF}100%{background:#BDD7EE}}
 @keyframes fishingCellBite{0%{background:#FFEB9C}100%{background:#FFD966}}
+@keyframes starTwinkle{0%,100%{opacity:.2;transform:scale(.6)}50%{opacity:1;transform:scale(1.4)}}
+@keyframes starBurst{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(.2);opacity:0}}
+@keyframes legendCardIn{0%{transform:scale(0) rotate(-8deg);opacity:0}65%{transform:scale(1.08) rotate(1deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:1}}
+@keyframes legendGlow{0%,100%{box-shadow:0 0 24px #FFD700,0 0 48px #FF8C00}50%{box-shadow:0 0 60px #FFD700,0 0 100px #FF8C00,0 0 140px #FFFF00}}
+@keyframes legendText{0%,100%{text-shadow:0 0 16px #FFD700,0 0 32px #FF8C00}50%{text-shadow:0 0 40px #FFD700,0 0 80px #FF8C00,0 0 120px #fff}}
+@keyframes gachaPop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+@keyframes bgPulse{0%,100%{background:#000}50%{background:#0a0020}}
 .fishing-cell-wait{animation:fishingCellWait 1s ease-in-out infinite alternate}
 .fishing-cell-bite{animation:fishingCellBite 0.25s ease-in-out infinite alternate}
 @media(min-width:769px){
@@ -454,6 +461,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <button class="xl-rbtn" id="f-feed-btn" onclick="fishFeed()"><span class="xl-rico">🍤</span><span class="xl-rlbl">먹이주기</span></button>
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishOpenShop()"><span class="xl-rico">🛒</span><span class="xl-rlbl">상점</span></button>
+    <button class="xl-rbtn" onclick="openSkillGacha()"><span class="xl-rico">🎲</span><span class="xl-rlbl">스킬가챠</span></button>
     <button class="xl-rbtn" id="f-evo-btn" onclick="fishEvolve()" style="opacity:.4"><span class="xl-rico">⬆️</span><span class="xl-rlbl">진화</span></button>
     <button class="xl-rbtn" onclick="openBattlePick()"><span class="xl-rico">⚔️</span><span class="xl-rlbl" id="btpick-ribbon-lbl">출전 선택</span></button>
     <div class="xl-rsep"></div>
@@ -607,6 +615,58 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
+
+<!-- 스킬 가챠 모달 -->
+<div class="xl-dlg-ov" id="skill-gacha-modal">
+  <div class="xl-dlg" style="min-width:290px;max-width:330px">
+    <div class="xl-dlg-title" style="background:#1A0A3D;color:#FFD700;border-bottom:1px solid #FFD70044">🎲 스킬 가챠 <button class="xl-dlg-x" onclick="hideDlg('skill-gacha-modal')" style="color:#FFD700">✕</button></div>
+    <div class="xl-dlg-body" style="padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:11px;color:#555">💰 보유: <strong id="gacha-money-display">0</strong>원</span>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px">
+          <div style="background:#E8E8E8;color:#555;font-size:8px;font-weight:700;padding:3px 2px;border-radius:2px;text-align:center">⚪일반<br>60%</div>
+          <div style="background:#D6EAFF;color:#0047AB;font-size:8px;font-weight:700;padding:3px 2px;border-radius:2px;text-align:center">🔵희귀<br>30%</div>
+          <div style="background:#FFE8D0;color:#C05000;font-size:8px;font-weight:700;padding:3px 2px;border-radius:2px;text-align:center">🟠영웅<br>9%</div>
+          <div style="background:#FFF8DC;color:#8B6914;font-size:8px;font-weight:700;padding:3px 2px;border-radius:2px;text-align:center">🟡전설<br>1%</div>
+        </div>
+      </div>
+      <div id="gacha-result" style="min-height:90px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;border-radius:8px;background:#F8F8F8;padding:8px">
+        <div style="color:#999;font-size:11px;text-align:center">🎲<br>뽑기 버튼을 눌러보세요!</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button id="gacha-btn-1" onclick="doSkillGacha(1)" style="flex:1;background:#4F46E5;color:#fff;border:none;padding:10px 6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.5">🎲 1회<br><span style="font-size:10px;opacity:.85">500원</span></button>
+        <button id="gacha-btn-10" onclick="doSkillGacha(10)" style="flex:1;background:#7C3AED;color:#fff;border:none;padding:10px 6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.5">🎲 10회<br><span style="font-size:10px;opacity:.85">4,500원</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 전설 스킬 연출 오버레이 -->
+<div id="legend-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#000;overflow:hidden;flex-direction:column;align-items:center;justify-content:center;animation:bgPulse 2s ease-in-out infinite">
+  <div id="legend-stars" style="position:absolute;inset:0;pointer-events:none"></div>
+  <div id="legend-card" style="position:relative;z-index:10;text-align:center;transform:scale(0);transition:transform .55s cubic-bezier(.34,1.56,.64,1)">
+    <div style="font-size:13px;font-weight:900;letter-spacing:4px;margin-bottom:10px;animation:legendText 1.5s ease-in-out infinite" id="legend-rarity-label">★ 전 설 ★</div>
+    <div style="background:linear-gradient(135deg,#1A0A3D 0%,#2D1060 50%,#1A0A3D 100%);border:2px solid #FFD700;border-radius:14px;padding:22px 30px;animation:legendGlow 1.5s ease-in-out infinite">
+      <div style="font-size:36px;margin-bottom:8px" id="legend-skill-icon">🏆</div>
+      <div style="font-size:20px;font-weight:900;color:#FFD700;margin-bottom:6px;text-shadow:0 0 12px #FFD700" id="legend-skill-name">스킬명</div>
+      <div style="font-size:11px;color:#C8B8FF;line-height:1.6;max-width:200px" id="legend-skill-desc">설명</div>
+    </div>
+    <button onclick="closeLegendOverlay()" style="margin-top:20px;background:#FFD700;color:#1A0A3D;border:none;padding:11px 32px;border-radius:24px;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 0 20px #FFD700">✨ 확인</button>
+  </div>
+</div>
+
+<!-- 스킬 배정 모달 -->
+<div class="xl-dlg-ov" id="skill-assign-modal">
+  <div class="xl-dlg" style="min-width:280px;max-width:320px">
+    <div class="xl-dlg-title" style="background:#4F46E5">✨ 스킬 배정 <button class="xl-dlg-x" onclick="hideDlg('skill-assign-modal')">✕</button></div>
+    <div class="xl-dlg-body" style="padding:12px">
+      <div style="font-size:11px;color:#4F46E5;font-weight:700;margin-bottom:8px" id="sk-assign-label">전용스킬 슬롯</div>
+      <div style="margin-bottom:8px" id="sk-assign-current"></div>
+      <div style="font-size:10px;color:#444;font-weight:700;margin-bottom:4px">보유 스킬</div>
+      <div id="sk-assign-list" style="display:grid;gap:4px;max-height:240px;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ 수족관 실시간 대결 ══ -->
 <div id="s-battle" class="scr">
@@ -1572,6 +1632,7 @@ function applyFishData(d){
   FG.money=d.money??100;FG.food=d.food??5;FG.autoFeeders=d.autoFeeders||[];
   FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
+  FG.skillInventory=d.skillInventory||{};
   FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
   FG.auxMax=d.auxMax||1;
   FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{}};
@@ -1614,6 +1675,7 @@ async function saveFishDataToDB(){
     money:FG.money,food:FG.food,autoFeeders:FG.autoFeeders,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,fishCodex:FG.fishCodex,
+    skillInventory:FG.skillInventory,
     battlePickIds:(FG.battlePick||[]).map(f=>f.id),
     lastSave:serverNow()
   };
@@ -1861,44 +1923,52 @@ const F_GRADES={
 };
 // 물고기 스킬 정의
 const FISH_SKILLS={
-  'gs_폭식':       {name:'폭식',      species:'goldfish',slot:1,icon:'💚',desc:'공격 후 30% 확률, 데미지의 30% HP 회복'},
-  'gs_칼로리소모':  {name:'칼로리소모',species:'goldfish',slot:1,icon:'🔥',desc:'5초마다 35% 확률, 포만감-15 → HP+8% 회복'},
-  'gs_과식':       {name:'과식',      species:'goldfish',slot:1,icon:'⚡',desc:'포만감 91%+ 조건, 4초마다 25% 확률, 스탯 일시 강화'},
-  'gu_선제일격':   {name:'선제일격',  species:'guppy',   slot:1,icon:'⚡',desc:'배틀 시작 시 AGI가 적 평균보다 높으면 선제 공격 (atkCd=0)'},
-  'gu_민첩한유영': {name:'황금비늘',  species:'guppy',   slot:1,icon:'💨',desc:'수조 패시브: 수입 발생 시 AGI×0.5원 추가 획득'},
-  'gu_황금비늘':   {name:'민첩한유영',species:'guppy',   slot:1,icon:'✨',desc:'배틀 패시브: AGI 기반 회피율 추가 (agi/800 → agi/400)'},
-  'tr_화려한섬광': {name:'화려한섬광',species:'tropical',slot:1,icon:'✨',desc:'배틀 패시브: 크리티컬 확률 2배 (LUK/200 → LUK/100)'},
-  'tr_학습가속':   {name:'학습가속',  species:'tropical',slot:1,icon:'📚',desc:'수조 패시브: 포만감 70%+ 시 XP 획득 +50%'},
-  'tr_무리의식':   {name:'무리의식',  species:'tropical',slot:1,icon:'🐠',desc:'수조 패시브: 수족관에 열대어 2마리+ 시 수입 +20%'},
-  'pr_폭식':       {name:'폭식',      species:'piranha', slot:1,icon:'🩸',desc:'배틀 패시브: 공격 후 20% 확률, 데미지의 50% HP 회복'},
-  'pr_혈흔의냄새': {name:'혈흔의냄새',species:'piranha', slot:1,icon:'👃',desc:'배틀 패시브: 적 처치 시 공격력 +8% 누적 (최대 3스택)'},
-  'pr_포식자의영역':{name:'포식자의영역',species:'piranha',slot:1,icon:'🦈',desc:'배틀 패시브: 아군 피라냐 2마리+ 시 공격력 +20%'},
-  'cl_행운의기운': {name:'행운의기운',species:'clownfish',slot:1,icon:'🍀',desc:'수조 패시브: 모든 물고기 수입에 이 물고기 LUK×0.2원 추가'},
-  'cl_공생':       {name:'공생',      species:'clownfish',slot:1,icon:'🌿',desc:'수조 패시브: 다른 어종과 함께 있을 때 포만감 소모 -25%'},
-  'cl_행운의폭발': {name:'행운의폭발',species:'clownfish',slot:1,icon:'💥',desc:'배틀 패시브: 크리티컬 시 LUK×2 추가 데미지'},
-  'md_방패돌격':   {name:'방패돌격',  species:'mandarin', slot:1,icon:'🛡️',desc:'배틀 패시브: 공격 시 DEF×0.3 추가 데미지'},
-  'md_반격':       {name:'반격',      species:'mandarin', slot:1,icon:'⚔️',desc:'배틀 패시브: 피격 시 받은 피해가 DEF보다 작으면 즉시 반격 (atkCd=0)'},
-  'md_철옹성':     {name:'철옹성',    species:'mandarin', slot:1,icon:'🏰',desc:'배틀 패시브: HP 50% 이하 시 받는 피해 DEF×0.5 감소'},
-  'el_감전':       {name:'감전',      species:'electric', slot:1,icon:'⚡',desc:'배틀 패시브: 공격 시 25% 확률로 적 atkCd +40 (공격 지연)'},
-  'el_연쇄방전':   {name:'연쇄방전',  species:'electric', slot:1,icon:'🌩️',desc:'배틀 패시브: 공격 후 AGI/500 확률로 즉시 추가 타격 (ATK 50%)'},
-  'el_번개반격':   {name:'번개반격',  species:'electric', slot:1,icon:'🔁',desc:'배틀 패시브: 회피 성공 시 atkCd 즉시 0 (즉시 반격)'},
-  'cm_부지런함':   {name:'부지런함',  species:'common',   slot:1,icon:'📖',desc:'수조 패시브: XP 획득 +20% (항상)'},
-  'cm_절약':       {name:'절약',      species:'common',   slot:1,icon:'🌱',desc:'수조 패시브: 포만감 소모 -15%'},
-  'cm_황금손':     {name:'황금손',    species:'common',   slot:1,icon:'💰',desc:'수조 패시브: 수입 +10%'},
-  'cm_회복의기운': {name:'회복의기운',species:'common',   slot:1,icon:'💧',desc:'수조 패시브: 10초마다 최대 HP 0.5% 자동 회복'},
-  'cm_선봉':       {name:'선봉',      species:'common',   slot:1,icon:'🚀',desc:'배틀 패시브: 배틀 시작 시 atkCd -60 (빠른 선공)'},
-  'cm_결사항전':   {name:'결사항전',  species:'common',   slot:1,icon:'🔥',desc:'배틀 패시브: HP 25% 이하 시 ATK·DEF +50%'},
-  'cm_분노':       {name:'분노',      species:'common',   slot:1,icon:'😤',desc:'배틀 패시브: 아군 처치 시 ATK +15% 누적 (최대 2스택)'},
-  'cm_흡혈':       {name:'흡혈',      species:'common',   slot:1,icon:'🩸',desc:'배틀 패시브: 공격 시 15% 확률로 데미지 20% 회복'},
-  'cm_강인함':     {name:'강인함',    species:'common',   slot:1,icon:'🪨',desc:'배틀 패시브: 한 번에 받는 피해가 최대 HP 20% 초과 시 초과분 50% 감소'},
-  'cm_도망가기':   {name:'도망가기',  species:'common',   slot:1,icon:'🏃',desc:'배틀 패시브: 치명상 1회 무효화, HP 10%로 생존 (배틀당 1회)'},
-  'sn_위압감':     {name:'위압감',    species:'snakehead',slot:1,icon:'😤',desc:'배틀 패시브: 배틀 시작 시 적 전체 ATK -10%'},
-  'sn_제압':       {name:'제압',      species:'snakehead',slot:1,icon:'⬇️',desc:'배틀 패시브: 공격마다 확정으로 적 atkCd +10 (공격 지연)'},
-  'sn_압도':       {name:'압도',      species:'snakehead',slot:1,icon:'💪',desc:'배틀 패시브: 대상 HP가 자신 최대 HP의 50% 이하 시 ATK +20%'},
-  'tu_장수의기운': {name:'장수의기운',species:'turtle',   slot:1,icon:'🐢',desc:'수조 패시브: 수족관 전체 HP 자동 회복 속도 +50%'},
-  'tu_수축':       {name:'수축',      species:'turtle',   slot:1,icon:'🛡️',desc:'배틀 패시브: HP 35% 이하 시 받는 피해 60% 감소'},
-  'tu_가시방어':   {name:'가시방어',  species:'turtle',   slot:1,icon:'🌵',desc:'배틀 패시브: 피격 시 받은 피해의 25%를 공격자에게 반사'},
+  'gs_폭식':        {name:'폭식',        species:'goldfish', slot:1,icon:'💚',rarity:'희귀',desc:'공격 후 30% 확률, 데미지의 30% HP 회복'},
+  'gs_칼로리소모':  {name:'칼로리소모',  species:'goldfish', slot:1,icon:'🔥',rarity:'희귀',desc:'5초마다 35% 확률, 포만감-15 → HP+8% 회복'},
+  'gs_과식':        {name:'과식',        species:'goldfish', slot:1,icon:'⚡',rarity:'영웅',desc:'포만감 91%+ 조건, 4초마다 25% 확률, 스탯 일시 강화'},
+  'gu_선제일격':    {name:'선제일격',    species:'guppy',    slot:1,icon:'⚡',rarity:'희귀',desc:'배틀 시작 시 AGI가 적 평균보다 높으면 선제 공격 (atkCd=0)'},
+  'gu_민첩한유영':  {name:'황금비늘',    species:'guppy',    slot:1,icon:'💨',rarity:'희귀',desc:'수조 패시브: 수입 발생 시 AGI×0.5원 추가 획득'},
+  'gu_황금비늘':    {name:'민첩한유영',  species:'guppy',    slot:1,icon:'✨',rarity:'영웅',desc:'배틀 패시브: AGI 기반 회피율 추가 (agi/800 → agi/400)'},
+  'tr_화려한섬광':  {name:'화려한섬광',  species:'tropical', slot:1,icon:'✨',rarity:'전설',desc:'배틀 패시브: 크리티컬 확률 2배 (LUK/200 → LUK/100)'},
+  'tr_학습가속':    {name:'학습가속',    species:'tropical', slot:1,icon:'📚',rarity:'희귀',desc:'수조 패시브: 포만감 70%+ 시 XP 획득 +50%'},
+  'tr_무리의식':    {name:'무리의식',    species:'tropical', slot:1,icon:'🐠',rarity:'희귀',desc:'수조 패시브: 수족관에 열대어 2마리+ 시 수입 +20%'},
+  'pr_폭식':        {name:'폭식',        species:'piranha',  slot:1,icon:'🩸',rarity:'영웅',desc:'배틀 패시브: 공격 후 20% 확률, 데미지의 50% HP 회복'},
+  'pr_혈흔의냄새':  {name:'혈흔의냄새',  species:'piranha',  slot:1,icon:'👃',rarity:'영웅',desc:'배틀 패시브: 적 처치 시 공격력 +8% 누적 (최대 3스택)'},
+  'pr_포식자의영역':{name:'포식자의영역',species:'piranha',  slot:1,icon:'🦈',rarity:'희귀',desc:'배틀 패시브: 아군 피라냐 2마리+ 시 공격력 +20%'},
+  'cl_행운의기운':  {name:'행운의기운',  species:'clownfish',slot:1,icon:'🍀',rarity:'전설',desc:'수조 패시브: 모든 물고기 수입에 이 물고기 LUK×0.2원 추가'},
+  'cl_공생':        {name:'공생',        species:'clownfish',slot:1,icon:'🌿',rarity:'희귀',desc:'수조 패시브: 다른 어종과 함께 있을 때 포만감 소모 -25%'},
+  'cl_행운의폭발':  {name:'행운의폭발',  species:'clownfish',slot:1,icon:'💥',rarity:'영웅',desc:'배틀 패시브: 크리티컬 시 LUK×2 추가 데미지'},
+  'md_방패돌격':    {name:'방패돌격',    species:'mandarin', slot:1,icon:'🛡️',rarity:'희귀',desc:'배틀 패시브: 공격 시 DEF×0.3 추가 데미지'},
+  'md_반격':        {name:'반격',        species:'mandarin', slot:1,icon:'⚔️',rarity:'영웅',desc:'배틀 패시브: 피격 시 받은 피해가 DEF보다 작으면 즉시 반격 (atkCd=0)'},
+  'md_철옹성':      {name:'철옹성',      species:'mandarin', slot:1,icon:'🏰',rarity:'영웅',desc:'배틀 패시브: HP 50% 이하 시 받는 피해 DEF×0.5 감소'},
+  'el_감전':        {name:'감전',        species:'electric', slot:1,icon:'⚡',rarity:'희귀',desc:'배틀 패시브: 공격 시 25% 확률로 적 atkCd +40 (공격 지연)'},
+  'el_연쇄방전':    {name:'연쇄방전',    species:'electric', slot:1,icon:'🌩️',rarity:'영웅',desc:'배틀 패시브: 공격 후 AGI/500 확률로 즉시 추가 타격 (ATK 50%)'},
+  'el_번개반격':    {name:'번개반격',    species:'electric', slot:1,icon:'🔁',rarity:'전설',desc:'배틀 패시브: 회피 성공 시 atkCd 즉시 0 (즉시 반격)'},
+  'cm_부지런함':    {name:'부지런함',    species:'common',   slot:1,icon:'📖',rarity:'일반',desc:'수조 패시브: XP 획득 +20% (항상)'},
+  'cm_절약':        {name:'절약',        species:'common',   slot:1,icon:'🌱',rarity:'일반',desc:'수조 패시브: 포만감 소모 -15%'},
+  'cm_황금손':      {name:'황금손',      species:'common',   slot:1,icon:'💰',rarity:'일반',desc:'수조 패시브: 수입 +10%'},
+  'cm_회복의기운':  {name:'회복의기운',  species:'common',   slot:1,icon:'💧',rarity:'일반',desc:'수조 패시브: 10초마다 최대 HP 0.5% 자동 회복'},
+  'cm_선봉':        {name:'선봉',        species:'common',   slot:1,icon:'🚀',rarity:'희귀',desc:'배틀 패시브: 배틀 시작 시 atkCd -60 (빠른 선공)'},
+  'cm_결사항전':    {name:'결사항전',    species:'common',   slot:1,icon:'🔥',rarity:'영웅',desc:'배틀 패시브: HP 25% 이하 시 ATK·DEF +50%'},
+  'cm_분노':        {name:'분노',        species:'common',   slot:1,icon:'😤',rarity:'희귀',desc:'배틀 패시브: 아군 처치 시 ATK +15% 누적 (최대 2스택)'},
+  'cm_흡혈':        {name:'흡혈',        species:'common',   slot:1,icon:'🩸',rarity:'희귀',desc:'배틀 패시브: 공격 시 15% 확률로 데미지 20% 회복'},
+  'cm_강인함':      {name:'강인함',      species:'common',   slot:1,icon:'🪨',rarity:'영웅',desc:'배틀 패시브: 한 번에 받는 피해가 최대 HP 20% 초과 시 초과분 50% 감소'},
+  'cm_도망가기':    {name:'도망가기',    species:'common',   slot:1,icon:'🏃',rarity:'전설',desc:'배틀 패시브: 치명상 1회 무효화, HP 10%로 생존 (배틀당 1회)'},
+  'sn_위압감':      {name:'위압감',      species:'snakehead',slot:1,icon:'😤',rarity:'희귀',desc:'배틀 패시브: 배틀 시작 시 적 전체 ATK -10%'},
+  'sn_제압':        {name:'제압',        species:'snakehead',slot:1,icon:'⬇️',rarity:'영웅',desc:'배틀 패시브: 공격마다 확정으로 적 atkCd +10 (공격 지연)'},
+  'sn_압도':        {name:'압도',        species:'snakehead',slot:1,icon:'💪',rarity:'희귀',desc:'배틀 패시브: 대상 HP가 자신 최대 HP의 50% 이하 시 ATK +20%'},
+  'tu_장수의기운':  {name:'장수의기운',  species:'turtle',   slot:1,icon:'🐢',rarity:'희귀',desc:'수조 패시브: 수족관 전체 HP 자동 회복 속도 +50%'},
+  'tu_수축':        {name:'수축',        species:'turtle',   slot:1,icon:'🛡️',rarity:'영웅',desc:'배틀 패시브: HP 35% 이하 시 받는 피해 60% 감소'},
+  'tu_가시방어':    {name:'가시방어',    species:'turtle',   slot:1,icon:'🌵',rarity:'희귀',desc:'배틀 패시브: 피격 시 받은 피해의 25%를 공격자에게 반사'},
 };
+const SKILL_RARITY={
+  '일반':{bg:'#E8E8E8',fg:'#555555',border:'#BBBBBB',label:'⚪ 일반'},
+  '희귀':{bg:'#D6EAFF',fg:'#0047AB',border:'#90C0FF',label:'🔵 희귀'},
+  '영웅':{bg:'#FFE8D0',fg:'#C05000',border:'#FFB070',label:'🟠 영웅'},
+  '전설':{bg:'#FFF8DC',fg:'#8B6914',border:'#FFD700',label:'🟡 전설'},
+};
+const SKILL_GACHA_COST=500;
+
 // 어종별 단계 데이터
 const F_SPECIES={
   goldfish:[null,
@@ -2048,6 +2118,7 @@ const FG={
   money:100,food:5,autoFeeders:[],  // [{targetIdx:null/idx, acc:0}]
   tankLevel:0,tankMax:1,
   rods:{rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0}, // 낚싯대 인벤토리
+  skillInventory:{}, // {skillId: count}
   paused:false,pausedAt:null,
   lastTick:Date.now(),lastAutoFeed:0,
   fishPos:null,
@@ -3037,6 +3108,180 @@ function fishRenderInfo(){
   fishCheckEvoReady(); fishUpdateStatus(); fishRenderInfoMobile();
 }
 
+// ─── 스킬 가챠 ───
+function openSkillGacha(){
+  document.getElementById('gacha-money-display').textContent=FG.money.toLocaleString();
+  document.getElementById('gacha-result').innerHTML='<div style="color:#999;font-size:11px;text-align:center">🎲<br>뽑기 버튼을 눌러보세요!</div>';
+  _gachaUpdateBtns();
+  document.getElementById('skill-gacha-modal').classList.add('on');
+}
+function _gachaUpdateBtns(){
+  const b1=document.getElementById('gacha-btn-1');
+  const b10=document.getElementById('gacha-btn-10');
+  const can1=FG.money>=SKILL_GACHA_COST;
+  const can10=FG.money>=SKILL_GACHA_COST*9;
+  b1.disabled=!can1;b1.style.opacity=can1?'1':'0.5';
+  b10.disabled=!can10;b10.style.opacity=can10?'1':'0.5';
+}
+function _drawOneSkill(){
+  const r=Math.random()*100;
+  let rarity=r<1?'전설':r<10?'영웅':r<40?'희귀':'일반';
+  const pool=Object.entries(FISH_SKILLS).filter(([,sk])=>sk.rarity===rarity);
+  if(!pool.length) return null;
+  return pool[Math.floor(Math.random()*pool.length)][0];
+}
+function doSkillGacha(times){
+  const cost=times===1?SKILL_GACHA_COST:Math.floor(SKILL_GACHA_COST*times*.9);
+  if(FG.money<cost){u1Toast('💰 돈이 부족합니다!','#C00000');return;}
+  FG.money-=cost;
+  document.getElementById('f-money').textContent=FG.money;
+  document.getElementById('gacha-money-display').textContent=FG.money.toLocaleString();
+  const results=[];
+  let legendId=null;
+  for(let i=0;i<times;i++){
+    const id=_drawOneSkill();if(!id)continue;
+    FG.skillInventory[id]=(FG.skillInventory[id]||0)+1;
+    results.push(id);
+    if(FISH_SKILLS[id].rarity==='전설') legendId=id;
+  }
+  saveFishDataToDB();
+  _gachaUpdateBtns();
+  if(times===1){
+    const sk=FISH_SKILLS[results[0]];
+    if(!sk)return;
+    if(sk.rarity==='전설'){
+      hideDlg('skill-gacha-modal');
+      setTimeout(()=>showLegendOverlay(sk),120);
+      return;
+    }
+    const cfg=SKILL_RARITY[sk.rarity];
+    document.getElementById('gacha-result').innerHTML=`<div style="background:${cfg.bg};border:2px solid ${cfg.border};border-radius:8px;padding:14px 18px;text-align:center;width:100%;animation:gachaPop .4s cubic-bezier(.34,1.56,.64,1)">
+      <div style="font-size:9px;font-weight:700;color:${cfg.fg};margin-bottom:4px">${cfg.label}</div>
+      <div style="font-size:28px;margin-bottom:6px">${sk.icon}</div>
+      <div style="font-size:14px;font-weight:900;color:${cfg.fg}">${sk.name}</div>
+      <div style="font-size:9px;color:#555;margin-top:5px;line-height:1.5">${sk.desc}</div>
+    </div>`;
+  } else {
+    // 10회 결과 그리드 (전설 있으면 마지막에 따로 연출)
+    const html=results.map(id=>{
+      const sk=FISH_SKILLS[id];const cfg=SKILL_RARITY[sk.rarity];
+      return `<div style="background:${cfg.bg};border:1.5px solid ${cfg.border};border-radius:5px;padding:5px 3px;text-align:center;font-size:9px">
+        <div style="font-size:18px">${sk.icon}</div>
+        <div style="font-weight:700;color:${cfg.fg};font-size:9px">${sk.name}</div>
+        <div style="color:${cfg.fg};font-size:8px;opacity:.8">${sk.rarity}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('gacha-result').innerHTML=`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:100%;animation:gachaPop .4s cubic-bezier(.34,1.56,.64,1)">${html}</div>`;
+    if(legendId){
+      setTimeout(()=>{
+        hideDlg('skill-gacha-modal');
+        showLegendOverlay(FISH_SKILLS[legendId]);
+      },900);
+    }
+  }
+}
+function showLegendOverlay(sk){
+  const ov=document.getElementById('legend-overlay');
+  const starsDiv=document.getElementById('legend-stars');
+  starsDiv.innerHTML='';
+  // 배경 별
+  for(let i=0;i<100;i++){
+    const el=document.createElement('div');
+    const x=Math.random()*100,y=Math.random()*100,sz=Math.random()*3+1;
+    const dur=(.8+Math.random()*1.5).toFixed(2),del=(Math.random()*2).toFixed(2);
+    el.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;background:#FFD700;border-radius:50%;animation:starTwinkle ${dur}s ${del}s ease-in-out infinite`;
+    starsDiv.appendChild(el);
+  }
+  // 버스트 파티클
+  for(let i=0;i<30;i++){
+    const el=document.createElement('div');
+    const angle=Math.random()*360;
+    const dist=80+Math.random()*200;
+    const tx=Math.round(Math.cos(angle*Math.PI/180)*dist);
+    const ty=Math.round(Math.sin(angle*Math.PI/180)*dist);
+    const sz=Math.random()*5+2;
+    const del=(Math.random()*.5).toFixed(2);
+    el.style.cssText=`position:absolute;left:50%;top:50%;width:${sz}px;height:${sz}px;background:#FFD700;border-radius:50%;--tx:${tx}px;--ty:${ty}px;animation:starBurst 1.2s ${del}s ease-out forwards`;
+    starsDiv.appendChild(el);
+  }
+  document.getElementById('legend-skill-icon').textContent=sk.icon;
+  document.getElementById('legend-skill-name').textContent=sk.name;
+  document.getElementById('legend-skill-desc').textContent=sk.desc;
+  ov.style.display='flex';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.getElementById('legend-card').style.transform='scale(1)';
+  }));
+}
+function closeLegendOverlay(){
+  const ov=document.getElementById('legend-overlay');
+  document.getElementById('legend-card').style.transform='scale(0)';
+  setTimeout(()=>{ov.style.display='none';},450);
+}
+// ─── 스킬 배정 ───
+let _saFishIdx=-1,_saSlot=0;
+function openSkillAssign(fishIdx,slot){
+  _saFishIdx=fishIdx;_saSlot=slot;
+  const f=FG.fishes[fishIdx];if(!f)return;
+  const slotKey=slot===1?'skill1':'skill2';
+  const curSkId=f[slotKey];const curSk=FISH_SKILLS[curSkId];
+  document.getElementById('sk-assign-label').textContent=slot===1?'⚔️ 전용스킬 슬롯':'🌐 공용스킬 슬롯';
+  const curDiv=document.getElementById('sk-assign-current');
+  if(curSk){
+    curDiv.innerHTML=`<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:4px;padding:8px;font-size:10px">
+      <div style="font-weight:700;color:#3730A3;margin-bottom:2px">현재: ${curSk.icon} ${curSk.name}</div>
+      <div style="color:#6366F1;font-size:9px;margin-bottom:5px">${curSk.desc}</div>
+      <button onclick="skillAssignRemove()" style="background:#C05000;color:#fff;border:none;padding:2px 8px;border-radius:3px;font-size:10px;cursor:pointer;font-family:inherit">🗑️ 제거 (인벤토리 반환)</button>
+    </div>`;
+  }else{
+    curDiv.innerHTML=`<div style="color:#888;font-size:10px;text-align:center;padding:6px;background:#F5F5F5;border-radius:4px">현재 장착 없음</div>`;
+  }
+  const listDiv=document.getElementById('sk-assign-list');
+  const fishType=f.type||'goldfish';
+  const relevant=Object.entries(FISH_SKILLS).filter(([id,sk])=>slot===1?sk.species===fishType:sk.species==='common');
+  const owned=relevant.filter(([id])=>(FG.skillInventory[id]||0)>0);
+  if(owned.length===0){
+    listDiv.innerHTML=`<div style="text-align:center;color:#888;font-size:10px;padding:12px">보유 스킬 없음</div>`;
+  }else{
+    listDiv.innerHTML=owned.map(([id,sk])=>{
+      const cnt=FG.skillInventory[id]||0;
+      return `<div onclick="skillAssignConfirm('${id}')" style="background:#F8F9FF;border:1px solid #C7D2FE;border-radius:4px;padding:7px;cursor:pointer;font-size:10px" onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='#F8F9FF'">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+          <span style="font-weight:700;color:#3730A3">${sk.icon} ${sk.name}</span>
+          <span style="background:#4F46E5;color:#fff;border-radius:10px;padding:0 6px;font-size:9px">×${cnt}</span>
+        </div>
+        <div style="color:#6366F1;font-size:9px">${sk.desc}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('skill-assign-modal').classList.add('on');
+}
+function skillAssignConfirm(skillId){
+  const f=FG.fishes[_saFishIdx];if(!f)return;
+  const slotKey=_saSlot===1?'skill1':'skill2';
+  const existing=f[slotKey];
+  if(existing&&FISH_SKILLS[existing]) FG.skillInventory[existing]=(FG.skillInventory[existing]||0)+1;
+  FG.skillInventory[skillId]=Math.max(0,(FG.skillInventory[skillId]||0)-1);
+  if(FG.skillInventory[skillId]<=0) delete FG.skillInventory[skillId];
+  f[slotKey]=skillId;
+  hideDlg('skill-assign-modal');
+  showFishDetail(_saFishIdx);
+  saveFishDataToDB();
+  u1Toast('✨ '+FISH_SKILLS[skillId].name+' 장착!','#4F46E5');
+}
+function skillAssignRemove(){
+  const f=FG.fishes[_saFishIdx];if(!f)return;
+  const slotKey=_saSlot===1?'skill1':'skill2';
+  const existing=f[slotKey];
+  if(existing&&FISH_SKILLS[existing]){
+    FG.skillInventory[existing]=(FG.skillInventory[existing]||0)+1;
+    delete f[slotKey];
+    hideDlg('skill-assign-modal');
+    showFishDetail(_saFishIdx);
+    saveFishDataToDB();
+    u1Toast('🗑️ '+FISH_SKILLS[existing].name+' 제거됨','#888');
+  }
+}
+
 let _fdIdx=-1;
 function showFishDetail(idx){
   const f=FG.fishes[idx]; if(!f) return;
@@ -3056,15 +3301,16 @@ function showFishDetail(idx){
   // 스킬 슬롯 표시
   const fdSkills=document.getElementById('fd-skills');
   if(fdSkills){
-    const renderSlot=(skId,slotLabel)=>{
+    const renderSlot=(skId,slotLabel,slotNum)=>{
       const sk=FISH_SKILLS[skId];
-      if(sk) return `<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:3px;padding:6px;font-size:10px;color:#3730A3">
+      if(sk) return `<div onclick="openSkillAssign(${idx},${slotNum})" style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:3px;padding:6px;font-size:10px;color:#3730A3;cursor:pointer" onmouseover="this.style.background='#E0E7FF'" onmouseout="this.style.background='#EEF2FF'">
         <div style="font-weight:700;margin-bottom:2px">${slotLabel}: ${sk.icon||'⚡'} ${sk.name}</div>
         <div style="font-size:9px;color:#6366F1">${sk.desc}</div>
+        <div style="font-size:8px;color:#A5B4FC;margin-top:2px">탭하여 변경</div>
       </div>`;
-      return `<div style="background:#E8E8E8;border:1px dashed #B4B4B4;border-radius:3px;padding:6px;text-align:center;font-size:10px;color:#999">${slotLabel}<br><span style="font-size:9px">없음</span></div>`;
+      return `<div onclick="openSkillAssign(${idx},${slotNum})" style="background:#F0F0FF;border:1px dashed #A5B4FC;border-radius:3px;padding:6px;text-align:center;font-size:10px;color:#888;cursor:pointer" onmouseover="this.style.background='#E8E8FF'" onmouseout="this.style.background='#F0F0FF'">${slotLabel}<br><span style="font-size:9px;color:#A5B4FC">+ 스킬 장착</span></div>`;
     };
-    fdSkills.innerHTML=renderSlot(f.skill1,'전용스킬')+renderSlot(f.skill2,'공용스킬');
+    fdSkills.innerHTML=renderSlot(f.skill1,'전용스킬',1)+renderSlot(f.skill2,'공용스킬',2);
   }
   // 먹이통 배정 표시
   const assignedIdx=FG.autoFeeders.findIndex(fd=>fd.targetIdx===idx);
@@ -3350,12 +3596,12 @@ function fishDraw(){
 }
 
 function fishSave(isDisconnect){
-  const cleanFishes=FG.fishes.map(f=>{const s=fStage(f);return{id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',name:s.name,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:f.isDead||false};});
+  const cleanFishes=FG.fishes.map(f=>{const s=fStage(f);return{id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',name:s.name,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:f.isDead||false,skill1:f.skill1||undefined,skill2:f.skill2||undefined};});
   const cleanAux=FG.auxFishes.map(f=>{const s=fStage(f);return{id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',name:s.name,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:false};});
   const data={fishes:cleanFishes,auxFishes:cleanAux,auxMax:FG.auxMax,
     money:FG.money,food:FG.food,autoFeeders:FG.autoFeeders,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
-    rods:FG.rods,
+    rods:FG.rods,skillInventory:FG.skillInventory,
     battlePickIds:(FG.battlePick||[]).map(f=>f.id),
     stoppedByDisconnect:isDisconnect||false,lastSave:serverNow()};
   localStorage.setItem('u1aquarium_v1',JSON.stringify(data));
@@ -3398,6 +3644,7 @@ function fishLoad(){
     FG.money=d.money??100;FG.food=d.food??5;FG.autoFeeders=d.autoFeeders||[];
     FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
     FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
+    FG.skillInventory=d.skillInventory||{};
     FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
     FG.auxMax=d.auxMax||1;
     if(d.battlePickIds&&d.battlePickIds.length){
