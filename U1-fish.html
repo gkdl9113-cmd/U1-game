@@ -3240,6 +3240,86 @@ function fishOpenCodex(){
   renderFishCodex();
   document.getElementById('f-codex-modal').classList.add('on');
 }
+function drawMinifish(type,s,has){
+  // SVG로 작은 물고기 그리기
+  const w=56,h=56,cx=w/2,cy=h/2;
+  if(!has) return `<svg width="${w}" height="${h}" style="display:block;margin:auto"><rect width="${w}" height="${h}" fill="none"/></svg>`;
+
+  const bodyColor=s.color,finColor=s.fin;
+  const dir=1; // 오른쪽 향함
+  const size=12;
+  const fx=cx-6,fy=cy;
+
+  let svg=`<svg width="${w}" height="${h}" style="display:block;margin:auto">
+    <defs>
+      <radialGradient id="grad_${type}_${s.grade}" cx="40%" cy="40%">
+        <stop offset="0%" style="stop-color:${finColor};stop-opacity:1" />
+        <stop offset="100%" style="stop-color:${bodyColor};stop-opacity:1" />
+      </radialGradient>
+    </defs>`;
+
+  // 꼬리 (타입별로 다름)
+  if(type==='guppy'){
+    svg+=`<path d="M ${fx-dir*size*0.7},${fy} L ${fx-dir*size*1.7},${fy-size*0.75} L ${fx-dir*size*1.35},${fy} L ${fx-dir*size*1.7},${fy+size*0.75} Z" fill="${finColor}"/>`;
+  } else if(type==='snakehead'){
+    svg+=`<path d="M ${fx-dir*size*0.9},${fy} L ${fx-dir*size*1.25},${fy-size*0.3} L ${fx-dir*size*1.25},${fy+size*0.3} Z" fill="${finColor}"/>`;
+  } else if(type==='tropical'){
+    svg+=`<path d="M ${fx-dir*size*0.75},${fy} L ${fx-dir*size*1.5},${fy-size*0.55} L ${fx-dir*size*1.2},${fy-size*0.15} L ${fx-dir*size*1.5},${fy+size*0.55} Z" fill="${finColor}"/>`;
+  } else if(type==='piranha'){
+    svg+=`<path d="M ${fx-dir*size*0.85},${fy-size*0.1} L ${fx-dir*size*1.5},${fy-size*0.65} L ${fx-dir*size*1.6},${fy} L ${fx-dir*size*1.5},${fy+size*0.65} L ${fx-dir*size*0.85},${fy+size*0.1} Z" fill="${finColor}"/>`;
+  } else if(type==='clownfish'){
+    svg+=`<path d="M ${fx-dir*size*0.72},${fy} L ${fx-dir*size*1.45},${fy-size*0.6} L ${fx-dir*size*1.55},${fy} L ${fx-dir*size*1.45},${fy+size*0.6} Z" fill="${finColor}"/>`;
+  } else if(type==='mandarin'){
+    svg+=`<path d="M ${fx-dir*size*0.75},${fy} L ${fx-dir*size*1.5},${fy-size*0.55} L ${fx-dir*size*1.2},${fy-size*0.15} L ${fx-dir*size*1.5},${fy+size*0.55} Z" fill="${finColor}"/>`;
+  } else if(type==='electric'){
+    svg+=`<path d="M ${fx-dir*size*0.9},${fy} L ${fx-dir*size*1.3},${fy-size*0.35} L ${fx-dir*size*1.3},${fy+size*0.35} Z" fill="${finColor}"/>`;
+  } else {
+    // 기본 금붕어 꼬리
+    svg+=`<path d="M ${fx-dir*size*0.8},${fy} L ${fx-dir*size*1.4},${fy-size*0.5} L ${fx-dir*size*1.4},${fy+size*0.5} Z" fill="${finColor}"/>`;
+  }
+
+  // 몸통
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*0.88:type==='piranha'?size*1.05:type==='tropical'?size*0.95:size;
+  const bodyRy=type==='snakehead'?size*0.42:type==='guppy'?size*0.62:type==='piranha'?size*0.55:type==='tropical'?size*0.6:size*0.58;
+  svg+=`<ellipse cx="${fx}" cy="${fy}" rx="${bodyRx}" ry="${bodyRy}" fill="url(#grad_${type}_${s.grade})" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`;
+
+  // 구피 등지느러미
+  if(type==='guppy'){
+    svg+=`<path d="M ${fx},${fy-bodyRy} L ${fx+dir*size*0.35},${fy-bodyRy*1.5} L ${fx-dir*size*0.25},${fy-bodyRy} Z" fill="${finColor}" opacity="0.7"/>`;
+  }
+
+  // 가물치 옆 무늬
+  if(type==='snakehead'){
+    for(let i=-1;i<=1;i++){
+      svg+=`<line x1="${fx+dir*size*0.1*i}" y1="${fy-bodyRy*0.5}" x2="${fx+dir*size*0.1*i}" y2="${fy+bodyRy*0.5}" stroke="rgba(0,0,0,0.2)" stroke-width="1.5"/>`;
+    }
+  }
+
+  // 열대어 줄무늬
+  if(type==='tropical'){
+    for(let i=-1;i<=1;i++){
+      svg+=`<line x1="${fx+dir*size*0.25*i}" y1="${fy-bodyRy*0.9}" x2="${fx+dir*size*0.25*i}" y2="${fy+bodyRy*0.9}" stroke="${finColor}" stroke-width="2" opacity="0.6"/>`;
+    }
+  }
+
+  // 피라냐 이빨 선
+  if(type==='piranha'){
+    svg+=`<line x1="${fx+dir*bodyRx*0.7}" y1="${fy+bodyRy*0.2}" x2="${fx+dir*bodyRx*0.95}" y2="${fy+bodyRy*0.05}" stroke="rgba(255,255,255,0.5)" stroke-width="1.2"/>`;
+  }
+
+  // 흰동가리 줄무늬
+  if(type==='clownfish'){
+    svg+=`<line x1="${fx+dir*size*0.1}" y1="${fy-bodyRy*0.95}" x2="${fx+dir*size*0.1}" y2="${fy+bodyRy*0.95}" stroke="rgba(255,255,255,0.7)" stroke-width="2.5"/>`;
+    svg+=`<line x1="${fx-dir*size*0.35}" y1="${fy-bodyRy*0.8}" x2="${fx-dir*size*0.35}" y2="${fy+bodyRy*0.8}" stroke="rgba(255,255,255,0.7)" stroke-width="2.5"/>`;
+  }
+
+  // 눈
+  svg+=`<circle cx="${fx+dir*bodyRx*0.48}" cy="${fy-bodyRy*0.15}" r="${size*0.17}" fill="#fff" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>`;
+  svg+=`<circle cx="${fx+dir*bodyRx*0.54}" cy="${fy-bodyRy*0.15}" r="${size*0.09}" fill="#111"/>`;
+  svg+=`</svg>`;
+  return svg;
+}
+
 function renderFishCodex(){
   const types=['goldfish','snakehead','guppy','tropical','piranha','clownfish','mandarin','electric'];
   const typeNames={goldfish:'금붕어',snakehead:'가물치',guppy:'구피',tropical:'열대어',piranha:'피라냐',clownfish:'흰동가리',mandarin:'쏘가리',electric:'전기뱀장어'};
@@ -3259,10 +3339,9 @@ function renderFishCodex(){
       if(has) collected++;
       const bg=has?'#D1FAE5':'#F0F0F0';
       const border=has?'#059669':'#B0B0B0';
-      const txt=has?'✓':'─';
-      const color=has?'#059669':'#888';
-      html+=`<div style="aspect-ratio:1;border:1.5px solid ${border};background:${bg};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;color:${color};font-weight:700;cursor:help" title="${s.name}">
-        <span>${txt}</span></div>`;
+      const fishSvg=drawMinifish(type,s,has);
+      html+=`<div style="aspect-ratio:1;border:1.5px solid ${border};background:${bg};border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:help;overflow:hidden" title="${s.name}">
+        ${fishSvg}</div>`;
     }
     html+=`</div></div>`;
   });
