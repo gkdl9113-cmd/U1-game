@@ -1876,6 +1876,9 @@ const FISH_SKILLS={
   'cl_행운의기운': {name:'행운의기운',species:'clownfish',slot:1,icon:'🍀',desc:'수조 패시브: 모든 물고기 수입에 이 물고기 LUK×0.2원 추가'},
   'cl_공생':       {name:'공생',      species:'clownfish',slot:1,icon:'🌿',desc:'수조 패시브: 다른 어종과 함께 있을 때 포만감 소모 -25%'},
   'cl_행운의폭발': {name:'행운의폭발',species:'clownfish',slot:1,icon:'💥',desc:'배틀 패시브: 크리티컬 시 LUK×2 추가 데미지'},
+  'md_방패돌격':   {name:'방패돌격',  species:'mandarin', slot:1,icon:'🛡️',desc:'배틀 패시브: 공격 시 DEF×0.3 추가 데미지'},
+  'md_반격':       {name:'반격',      species:'mandarin', slot:1,icon:'⚔️',desc:'배틀 패시브: 피격 시 받은 피해가 DEF보다 작으면 즉시 반격 (atkCd=0)'},
+  'md_철옹성':     {name:'철옹성',    species:'mandarin', slot:1,icon:'🏰',desc:'배틀 패시브: HP 50% 이하 시 받는 피해 DEF×0.5 감소'},
 };
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -5068,7 +5071,17 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
+      // 스킬: 방패 돌격 - DEF×0.3 추가 데미지
+      if(f.skill1==='md_방패돌격'||f.skill2==='md_방패돌격') fd+=Math.floor(f.def*0.3);
+      // 스킬: 철옹성 - 피격 대상 HP 50% 이하 시 받는 피해 DEF×0.5 감소
+      if((tgt.skill1==='md_철옹성'||tgt.skill2==='md_철옹성')&&tgt.curHp<=tgt.maxHp*0.5){
+        fd=Math.max(1,fd-Math.floor(tgt.def*0.5));
+      }
       tgt.curHp=Math.max(0,tgt.curHp-fd);
+      // 스킬: 반격 - 받은 피해가 DEF보다 작으면 즉시 반격
+      if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){
+        tgt.atkCd=0;
+      }
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
       let skillHeal=0;
       if((f.skill1==='gs_폭식'||f.skill2==='gs_폭식')&&rng()<0.30){
@@ -5106,7 +5119,17 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
+      // 스킬: 방패 돌격 - DEF×0.3 추가 데미지
+      if(f.skill1==='md_방패돌격'||f.skill2==='md_방패돌격') fd+=Math.floor(f.def*0.3);
+      // 스킬: 철옹성 - 피격 대상 HP 50% 이하 시 받는 피해 DEF×0.5 감소
+      if((tgt.skill1==='md_철옹성'||tgt.skill2==='md_철옹성')&&tgt.curHp<=tgt.maxHp*0.5){
+        fd=Math.max(1,fd-Math.floor(tgt.def*0.5));
+      }
       tgt.curHp=Math.max(0,tgt.curHp-fd);
+      // 스킬: 반격 - 받은 피해가 DEF보다 작으면 즉시 반격
+      if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){
+        tgt.atkCd=0;
+      }
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
       let skillHeal=0;
       if((f.skill1==='gs_폭식'||f.skill2==='gs_폭식')&&rng()<0.30){
