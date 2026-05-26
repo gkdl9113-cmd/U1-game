@@ -1096,7 +1096,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.31';
+const BUILD = 'v2.32';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -4417,7 +4417,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
 
 // ── 실시간 전투 초기화 ─────────────────────────────────────
 function initRealtimeBattle(myFish,oppFish,seed,imP1){
-  btTick=0;btImP1=imP1;
+  btTick=0;btImP1=imP1;_btSeed=seed;
   btRng=mulberry32(seed); // seeded RNG 초기화
   // 캔버스 초기화
   btCanvas=document.getElementById('battle-canvas');
@@ -4536,13 +4536,14 @@ function btApplyEvents(){
 }
 
 // ── 매 프레임 ─────────────────────────────────────────────
-let _btLastMs=0;
+let _btSeed=0; // 공유 시드 기준 클럭 (P1/P2 틱 동기화)
 function btFrame(){
   const now=Date.now();
-  if(!_btLastMs) _btLastMs=now;
-  const elapsed=now-_btLastMs; _btLastMs=now;
-  // 창 최소화로 밀린 틱 처리 (최대 5틱)
-  const steps=Math.min(Math.max(1,Math.floor(elapsed/50)),5);
+  // seed 기준으로 현재 예상 틱 계산 → P2도 P1과 동일한 틱 위치 유지
+  const expectedTick=Math.floor((now-_btSeed)/50);
+  const stepsNeeded=Math.max(0,expectedTick-btTick);
+  // 최대 8틱 따라잡기 (지연이 크면 한 번에 정렬)
+  const steps=Math.min(Math.max(1,stepsNeeded),8);
   for(let _s=0;_s<steps;_s++) btPhysicsStep();
   // 위치 브로드캐스트 (20틱마다)
   const W=btCanvas.width,H=btCanvas.height;
