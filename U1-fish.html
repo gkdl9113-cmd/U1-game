@@ -1892,6 +1892,9 @@ const FISH_SKILLS={
   'cm_흡혈':       {name:'흡혈',      species:'common',   slot:1,icon:'🩸',desc:'배틀 패시브: 공격 시 15% 확률로 데미지 20% 회복'},
   'cm_강인함':     {name:'강인함',    species:'common',   slot:1,icon:'🪨',desc:'배틀 패시브: 한 번에 받는 피해가 최대 HP 20% 초과 시 초과분 50% 감소'},
   'cm_도망가기':   {name:'도망가기',  species:'common',   slot:1,icon:'🏃',desc:'배틀 패시브: 치명상 1회 무효화, HP 10%로 생존 (배틀당 1회)'},
+  'tu_장수의기운': {name:'장수의기운',species:'turtle',   slot:1,icon:'🐢',desc:'수조 패시브: 수족관 전체 HP 자동 회복 속도 +50%'},
+  'tu_수축':       {name:'수축',      species:'turtle',   slot:1,icon:'🛡️',desc:'배틀 패시브: HP 35% 이하 시 받는 피해 60% 감소'},
+  'tu_가시방어':   {name:'가시방어',  species:'turtle',   slot:1,icon:'🌵',desc:'배틀 패시브: 피격 시 받은 피해의 25%를 공격자에게 반사'},
 };
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -2737,7 +2740,9 @@ function fishTick(){
     if(f.fullness<20&&f._hpAcc>=5){
       f._hpAcc=0;f.hp=Math.max(0,f.hp-1);
     } else if(f.hp<f.maxHp&&f.fullness>20){
-      const rate=f.fullness>=100?(f.maxHp*0.002):(f.fullness>60?(f.maxHp*0.0006):0);
+      // 스킬: 장수의 기운 - 수족관 전체 HP 회복 속도 +50%
+      const turtleAura=FG.fishes.some(lf=>!lf.isDead&&(lf.skill1==='tu_장수의기운'||lf.skill2==='tu_장수의기운'));
+      const rate=(f.fullness>=100?(f.maxHp*0.002):(f.fullness>60?(f.maxHp*0.0006):0))*(turtleAura?1.5:1);
       if(rate>0){
         f._hpFrac=(f._hpFrac||0)+rate*elapsed;
         const heal=Math.floor(f._hpFrac);
@@ -5120,6 +5125,10 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((tgt.skill1==='md_철옹성'||tgt.skill2==='md_철옹성')&&tgt.curHp<=tgt.maxHp*0.5){
         fd=Math.max(1,fd-Math.floor(tgt.def*0.5));
       }
+      // 스킬: 수축 - HP 35% 이하 시 받는 피해 60% 감소
+      if((tgt.skill1==='tu_수축'||tgt.skill2==='tu_수축')&&tgt.curHp<=tgt.maxHp*0.35){
+        fd=Math.max(1,Math.floor(fd*0.4));
+      }
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 도망가기 - 치명상 1회 무효화, HP 10%로 생존
       if(tgt.curHp<=0&&!tgt.deathSaved&&(tgt.skill1==='cm_도망가기'||tgt.skill2==='cm_도망가기')){
@@ -5143,6 +5152,10 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       // 스킬: 흡혈 - 15% 확률로 데미지 20% 회복
       if((f.skill1==='cm_흡혈'||f.skill2==='cm_흡혈')&&rng()<0.15){
         const vh=Math.floor(fd*0.20);skillHeal+=vh;f.curHp=Math.min(f.maxHp,f.curHp+vh);
+      }
+      // 스킬: 가시 방어 - 피격 시 받은 피해 25% 반사
+      if((tgt.skill1==='tu_가시방어'||tgt.skill2==='tu_가시방어')&&tgt.curHp>0){
+        f.curHp=Math.max(0,f.curHp-Math.max(1,Math.floor(fd*0.25)));
       }
       // 스킬: 혈흔의 냄새 - 적 처치 시 스택 증가
       if(tgt.curHp<=0&&(f.skill1==='pr_혈흔의냄새'||f.skill2==='pr_혈흔의냄새')){
@@ -5199,6 +5212,10 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((tgt.skill1==='md_철옹성'||tgt.skill2==='md_철옹성')&&tgt.curHp<=tgt.maxHp*0.5){
         fd=Math.max(1,fd-Math.floor(tgt.def*0.5));
       }
+      // 스킬: 수축 - HP 35% 이하 시 받는 피해 60% 감소
+      if((tgt.skill1==='tu_수축'||tgt.skill2==='tu_수축')&&tgt.curHp<=tgt.maxHp*0.35){
+        fd=Math.max(1,Math.floor(fd*0.4));
+      }
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 도망가기 - 치명상 1회 무효화, HP 10%로 생존
       if(tgt.curHp<=0&&!tgt.deathSaved&&(tgt.skill1==='cm_도망가기'||tgt.skill2==='cm_도망가기')){
@@ -5222,6 +5239,10 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       // 스킬: 흡혈 - 15% 확률로 데미지 20% 회복
       if((f.skill1==='cm_흡혈'||f.skill2==='cm_흡혈')&&rng()<0.15){
         const vh=Math.floor(fd*0.20);skillHeal+=vh;f.curHp=Math.min(f.maxHp,f.curHp+vh);
+      }
+      // 스킬: 가시 방어 - 피격 시 받은 피해 25% 반사
+      if((tgt.skill1==='tu_가시방어'||tgt.skill2==='tu_가시방어')&&tgt.curHp>0){
+        f.curHp=Math.max(0,f.curHp-Math.max(1,Math.floor(fd*0.25)));
       }
       // 스킬: 혈흔의 냄새 - 적 처치 시 스택 증가
       if(tgt.curHp<=0&&(f.skill1==='pr_혈흔의냄새'||f.skill2==='pr_혈흔의냄새')){
