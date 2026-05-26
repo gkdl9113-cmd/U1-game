@@ -1586,7 +1586,7 @@ function applyFishData(d){
       fishCalcOfflineAutoFeed(elapsed);
     }
   }
-  FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._hpFrac=0;f._incAcc=0;f._xpAcc=0;});
+  FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._hpFrac=0;f._incAcc=0;f._xpAcc=0;f._healAcc=0;});
   FG.auxFishes.forEach(f=>{f._fullAcc=0;f._incAcc=0;});
   FG.lastTick=Date.now();
   FG.lastAutoFeed=Date.now();
@@ -1882,6 +1882,16 @@ const FISH_SKILLS={
   'el_감전':       {name:'감전',      species:'electric', slot:1,icon:'⚡',desc:'배틀 패시브: 공격 시 25% 확률로 적 atkCd +40 (공격 지연)'},
   'el_연쇄방전':   {name:'연쇄방전',  species:'electric', slot:1,icon:'🌩️',desc:'배틀 패시브: 공격 후 AGI/500 확률로 즉시 추가 타격 (ATK 50%)'},
   'el_번개반격':   {name:'번개반격',  species:'electric', slot:1,icon:'🔁',desc:'배틀 패시브: 회피 성공 시 atkCd 즉시 0 (즉시 반격)'},
+  'cm_부지런함':   {name:'부지런함',  species:'common',   slot:1,icon:'📖',desc:'수조 패시브: XP 획득 +20% (항상)'},
+  'cm_절약':       {name:'절약',      species:'common',   slot:1,icon:'🌱',desc:'수조 패시브: 포만감 소모 -15%'},
+  'cm_황금손':     {name:'황금손',    species:'common',   slot:1,icon:'💰',desc:'수조 패시브: 수입 +10%'},
+  'cm_회복의기운': {name:'회복의기운',species:'common',   slot:1,icon:'💧',desc:'수조 패시브: 10초마다 최대 HP 0.5% 자동 회복'},
+  'cm_선봉':       {name:'선봉',      species:'common',   slot:1,icon:'🚀',desc:'배틀 패시브: 배틀 시작 시 atkCd -60 (빠른 선공)'},
+  'cm_결사항전':   {name:'결사항전',  species:'common',   slot:1,icon:'🔥',desc:'배틀 패시브: HP 25% 이하 시 ATK·DEF +50%'},
+  'cm_분노':       {name:'분노',      species:'common',   slot:1,icon:'😤',desc:'배틀 패시브: 아군 처치 시 ATK +15% 누적 (최대 2스택)'},
+  'cm_흡혈':       {name:'흡혈',      species:'common',   slot:1,icon:'🩸',desc:'배틀 패시브: 공격 시 15% 확률로 데미지 20% 회복'},
+  'cm_강인함':     {name:'강인함',    species:'common',   slot:1,icon:'🪨',desc:'배틀 패시브: 한 번에 받는 피해가 최대 HP 20% 초과 시 초과분 50% 감소'},
+  'cm_도망가기':   {name:'도망가기',  species:'common',   slot:1,icon:'🏃',desc:'배틀 패시브: 치명상 1회 무효화, HP 10%로 생존 (배틀당 1회)'},
 };
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -2718,7 +2728,9 @@ function fishTick(){
     const fullRate=f.fullness>=100?Math.max(1,Math.floor(s.foodRate/2)):Math.max(2,s.foodRate);
     // 스킬: 공생 - 다른 어종과 함께 있을 때 포만감 소모 -25%
     const hasSym=(f.skill1==='cl_공생'||f.skill2==='cl_공생')&&FG.fishes.some(tf=>!tf.isDead&&tf.type!==f.type);
-    const effFullRate=hasSym?Math.floor(fullRate*4/3):fullRate;
+    let effFullRate=hasSym?Math.floor(fullRate*4/3):fullRate;
+    // 스킬: 절약 - 포만감 소모 -15%
+    if(f.skill1==='cm_절약'||f.skill2==='cm_절약') effFullRate=Math.floor(effFullRate/0.85);
     if(f._fullAcc>=effFullRate){f._fullAcc=0;f.fullness=Math.max(0,f.fullness-1);}
     // HP 변화 (퍼센트 기반 소수점 누적)
     f._hpAcc=(f._hpAcc||0)+elapsed;
@@ -2749,10 +2761,14 @@ function fishTick(){
       // 스킬: 행운의 기운 - 흰동가리 LUK×0.2원 추가 (수족관 전체 적용)
       const luckyAura=FG.fishes.find(lf=>!lf.isDead&&(lf.skill1==='cl_행운의기운'||lf.skill2==='cl_행운의기운'));
       if(luckyAura) fishInc+=Math.floor(fStage(luckyAura).luk*0.2);
+      // 스킬: 황금손 - 수입 +10%
+      if(f.skill1==='cm_황금손'||f.skill2==='cm_황금손') fishInc=Math.floor(fishInc*1.1);
       inc+=fishInc;
     }
     // XP (10초마다)
-    if(f.fullness>30){f._xpAcc=(f._xpAcc||0)+elapsed;if(f._xpAcc>=10){f._xpAcc=0;const xpMult=((f.skill1==='tr_학습가속'||f.skill2==='tr_학습가속')&&f.fullness>=70)?1.5:1;f.xp+=s.xpRate*xpMult;}}
+    if(f.fullness>30){f._xpAcc=(f._xpAcc||0)+elapsed;if(f._xpAcc>=10){f._xpAcc=0;let xpMult=1;if((f.skill1==='tr_학습가속'||f.skill2==='tr_학습가속')&&f.fullness>=70)xpMult*=1.5;if(f.skill1==='cm_부지런함'||f.skill2==='cm_부지런함')xpMult*=1.2;f.xp+=s.xpRate*xpMult;}}
+    // 스킬: 회복의 기운 - 10초마다 최대 HP 0.5% 회복
+    if(f.skill1==='cm_회복의기운'||f.skill2==='cm_회복의기운'){f._healAcc=(f._healAcc||0)+elapsed;if(f._healAcc>=10){f._healAcc=0;f.hp=Math.min(f.maxHp,f.hp+Math.max(1,Math.floor(f.maxHp*0.005)));}}
   });
   FG.money+=inc;
   // 보조 수족관 처리 (2.5배 소모, 수입, 0 시 자동 방생)
@@ -3388,7 +3404,7 @@ function fishLoad(){
       }
     }
     // 틱 누적값 리셋 (저장된 내부 타이머값 제거)
-    FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._hpFrac=0;f._incAcc=0;f._xpAcc=0;});
+    FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._hpFrac=0;f._incAcc=0;f._xpAcc=0;f._healAcc=0;});
     FG.auxFishes.forEach(f=>{f._fullAcc=0;f._incAcc=0;});
     FG.lastTick=Date.now();
     FG.lastAutoFeed=Date.now(); // 로그인 직후 즉시 발동 방지
@@ -4574,7 +4590,7 @@ function adminSkillOnFishChange(){
   const s=fStage(f);
   const fishType=f.type||'goldfish';
   // 해당 어종에 맞는 스킬만 필터링
-  const available=Object.entries(FISH_SKILLS).filter(([,sk])=>sk.species===fishType);
+  const available=Object.entries(FISH_SKILLS).filter(([,sk])=>sk.species===fishType||sk.species==='common');
   sel1.innerHTML=`<option value="">없음 (삭제)</option>`+
     available.map(([id,sk])=>`<option value="${id}">${sk.icon||'⚡'} ${sk.name} — ${sk.desc}</option>`).join('');
   sel1.disabled=available.length===0;
@@ -5050,6 +5066,9 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
   const hasPre=(f,oppAvg)=>(f.skill1==='gu_선제일격'||f.skill2==='gu_선제일격')&&f.agi>oppAvg;
   const p1=p1Fish.map(f=>({...f,curHp:f.hp,atkCd:hasPre(f,p2AvgAgi)?0:Math.floor(rng()*135)}));
   const p2=p2Fish.map(f=>({...f,curHp:f.hp,atkCd:hasPre(f,p1AvgAgi)?0:Math.floor(rng()*135)}));
+  // 스킬: 선봉 - 배틀 시작 시 atkCd -60
+  p1.forEach(f=>{if(f.skill1==='cm_선봉'||f.skill2==='cm_선봉') f.atkCd=Math.max(0,f.atkCd-60);});
+  p2.forEach(f=>{if(f.skill1==='cm_선봉'||f.skill2==='cm_선봉') f.atkCd=Math.max(0,f.atkCd-60);});
   const MAX=7200; // 최대 약 3.6분 (30ms * 7200 = 216초)
   for(let t=0;t<MAX;t++){
     const a1=p1.some(f=>f.curHp>0);
@@ -5074,35 +5093,47 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const domainMult1=(f.skill1==='pr_포식자의영역'||f.skill2==='pr_포식자의영역')&&p1.filter(ff=>ff.type==='piranha'&&ff.curHp>0).length>=2?1.2:1;
       // 스킬: 혈흔의 냄새 - 처치 누적 공격력 +8%
       const bloodMult1=1+(f.bloodStacks||0)*0.08;
-      const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
+      // 스킬: 결사항전 - HP 25% 이하 시 ATK +50%
+      const desperateAtk1=(f.skill1==='cm_결사항전'||f.skill2==='cm_결사항전')&&f.curHp<=f.maxHp*0.25?1.5:1;
+      // 스킬: 분노 - 아군 처치 시 ATK +15% 누적
+      const rageMult1=1+(f.rageStacks||0)*0.15;
+      // 스킬: 결사항전 - 피격 대상 HP 25% 이하 시 DEF +50%
+      const desperateDef1=(tgt.skill1==='cm_결사항전'||tgt.skill2==='cm_결사항전')&&tgt.curHp<=tgt.maxHp*0.25?1.5:1;
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*desperateAtk1*rageMult1*0.7-tgt.def*desperateDef1*0.3+(rng()-0.5)*f.atk*0.15));
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
       // 스킬: 방패 돌격 - DEF×0.3 추가 데미지
       if(f.skill1==='md_방패돌격'||f.skill2==='md_방패돌격') fd+=Math.floor(f.def*0.3);
+      // 스킬: 강인함 - 최대 HP 20% 초과 피해의 초과분 50% 감소
+      if(tgt.skill1==='cm_강인함'||tgt.skill2==='cm_강인함'){const th=Math.floor(tgt.maxHp*0.2);if(fd>th)fd=th+Math.floor((fd-th)*0.5);}
       // 스킬: 철옹성 - 피격 대상 HP 50% 이하 시 받는 피해 DEF×0.5 감소
       if((tgt.skill1==='md_철옹성'||tgt.skill2==='md_철옹성')&&tgt.curHp<=tgt.maxHp*0.5){
         fd=Math.max(1,fd-Math.floor(tgt.def*0.5));
       }
       tgt.curHp=Math.max(0,tgt.curHp-fd);
+      // 스킬: 도망가기 - 치명상 1회 무효화, HP 10%로 생존
+      if(tgt.curHp<=0&&!tgt.deathSaved&&(tgt.skill1==='cm_도망가기'||tgt.skill2==='cm_도망가기')){
+        tgt.curHp=Math.max(1,Math.floor(tgt.maxHp*0.1));tgt.deathSaved=true;
+      }
       // 스킬: 반격 - 받은 피해가 DEF보다 작으면 즉시 반격
-      if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){
-        tgt.atkCd=0;
-      }
+      if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){tgt.atkCd=0;}
       // 스킬: 감전 - 25% 확률로 적 atkCd +40
-      if((f.skill1==='el_감전'||f.skill2==='el_감전')&&tgt.curHp>0&&rng()<0.25){
-        tgt.atkCd+=40;
-      }
+      if((f.skill1==='el_감전'||f.skill2==='el_감전')&&tgt.curHp>0&&rng()<0.25){tgt.atkCd+=40;}
+      // 스킬: 분노 - 아군(p2) 처치 시 생존 p2 분노 스택 증가
+      if(tgt.curHp<=0){p2.filter(ff=>ff.curHp>0&&(ff.skill1==='cm_분노'||ff.skill2==='cm_분노')).forEach(ff=>{ff.rageStacks=Math.min(2,(ff.rageStacks||0)+1);});}
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
       let skillHeal=0;
       if((f.skill1==='gs_폭식'||f.skill2==='gs_폭식')&&rng()<0.30){
-        skillHeal=Math.floor(fd*0.30);
-        f.curHp=Math.min(f.maxHp,f.curHp+skillHeal);
+        skillHeal=Math.floor(fd*0.30);f.curHp=Math.min(f.maxHp,f.curHp+skillHeal);
       }
       // 스킬: 피라냐 폭식 - 공격 후 20% 확률로 데미지의 50% 회복
       if((f.skill1==='pr_폭식'||f.skill2==='pr_폭식')&&rng()<0.20){
-        const ph=Math.floor(fd*0.50);skillHeal+=ph;
-        f.curHp=Math.min(f.maxHp,f.curHp+ph);
+        const ph=Math.floor(fd*0.50);skillHeal+=ph;f.curHp=Math.min(f.maxHp,f.curHp+ph);
+      }
+      // 스킬: 흡혈 - 15% 확률로 데미지 20% 회복
+      if((f.skill1==='cm_흡혈'||f.skill2==='cm_흡혈')&&rng()<0.15){
+        const vh=Math.floor(fd*0.20);skillHeal+=vh;f.curHp=Math.min(f.maxHp,f.curHp+vh);
       }
       // 스킬: 혈흔의 냄새 - 적 처치 시 스택 증가
       if(tgt.curHp<=0&&(f.skill1==='pr_혈흔의냄새'||f.skill2==='pr_혈흔의냄새')){
@@ -5141,35 +5172,47 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const domainMult2=(f.skill1==='pr_포식자의영역'||f.skill2==='pr_포식자의영역')&&p2.filter(ff=>ff.type==='piranha'&&ff.curHp>0).length>=2?1.2:1;
       // 스킬: 혈흔의 냄새 - 처치 누적 공격력 +8%
       const bloodMult2=1+(f.bloodStacks||0)*0.08;
-      const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
+      // 스킬: 결사항전 - HP 25% 이하 시 ATK +50%
+      const desperateAtk2=(f.skill1==='cm_결사항전'||f.skill2==='cm_결사항전')&&f.curHp<=f.maxHp*0.25?1.5:1;
+      // 스킬: 분노 - 아군 처치 시 ATK +15% 누적
+      const rageMult2=1+(f.rageStacks||0)*0.15;
+      // 스킬: 결사항전 - 피격 대상 HP 25% 이하 시 DEF +50%
+      const desperateDef2=(tgt.skill1==='cm_결사항전'||tgt.skill2==='cm_결사항전')&&tgt.curHp<=tgt.maxHp*0.25?1.5:1;
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*desperateAtk2*rageMult2*0.7-tgt.def*desperateDef2*0.3+(rng()-0.5)*f.atk*0.15));
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
       // 스킬: 방패 돌격 - DEF×0.3 추가 데미지
       if(f.skill1==='md_방패돌격'||f.skill2==='md_방패돌격') fd+=Math.floor(f.def*0.3);
+      // 스킬: 강인함 - 최대 HP 20% 초과 피해의 초과분 50% 감소
+      if(tgt.skill1==='cm_강인함'||tgt.skill2==='cm_강인함'){const th=Math.floor(tgt.maxHp*0.2);if(fd>th)fd=th+Math.floor((fd-th)*0.5);}
       // 스킬: 철옹성 - 피격 대상 HP 50% 이하 시 받는 피해 DEF×0.5 감소
       if((tgt.skill1==='md_철옹성'||tgt.skill2==='md_철옹성')&&tgt.curHp<=tgt.maxHp*0.5){
         fd=Math.max(1,fd-Math.floor(tgt.def*0.5));
       }
       tgt.curHp=Math.max(0,tgt.curHp-fd);
+      // 스킬: 도망가기 - 치명상 1회 무효화, HP 10%로 생존
+      if(tgt.curHp<=0&&!tgt.deathSaved&&(tgt.skill1==='cm_도망가기'||tgt.skill2==='cm_도망가기')){
+        tgt.curHp=Math.max(1,Math.floor(tgt.maxHp*0.1));tgt.deathSaved=true;
+      }
       // 스킬: 반격 - 받은 피해가 DEF보다 작으면 즉시 반격
-      if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){
-        tgt.atkCd=0;
-      }
+      if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){tgt.atkCd=0;}
       // 스킬: 감전 - 25% 확률로 적 atkCd +40
-      if((f.skill1==='el_감전'||f.skill2==='el_감전')&&tgt.curHp>0&&rng()<0.25){
-        tgt.atkCd+=40;
-      }
+      if((f.skill1==='el_감전'||f.skill2==='el_감전')&&tgt.curHp>0&&rng()<0.25){tgt.atkCd+=40;}
+      // 스킬: 분노 - 아군(p1) 처치 시 생존 p1 분노 스택 증가
+      if(tgt.curHp<=0){p1.filter(ff=>ff.curHp>0&&(ff.skill1==='cm_분노'||ff.skill2==='cm_분노')).forEach(ff=>{ff.rageStacks=Math.min(2,(ff.rageStacks||0)+1);});}
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
       let skillHeal=0;
       if((f.skill1==='gs_폭식'||f.skill2==='gs_폭식')&&rng()<0.30){
-        skillHeal=Math.floor(fd*0.30);
-        f.curHp=Math.min(f.maxHp,f.curHp+skillHeal);
+        skillHeal=Math.floor(fd*0.30);f.curHp=Math.min(f.maxHp,f.curHp+skillHeal);
       }
       // 스킬: 피라냐 폭식 - 공격 후 20% 확률로 데미지의 50% 회복
       if((f.skill1==='pr_폭식'||f.skill2==='pr_폭식')&&rng()<0.20){
-        const ph=Math.floor(fd*0.50);skillHeal+=ph;
-        f.curHp=Math.min(f.maxHp,f.curHp+ph);
+        const ph=Math.floor(fd*0.50);skillHeal+=ph;f.curHp=Math.min(f.maxHp,f.curHp+ph);
+      }
+      // 스킬: 흡혈 - 15% 확률로 데미지 20% 회복
+      if((f.skill1==='cm_흡혈'||f.skill2==='cm_흡혈')&&rng()<0.15){
+        const vh=Math.floor(fd*0.20);skillHeal+=vh;f.curHp=Math.min(f.maxHp,f.curHp+vh);
       }
       // 스킬: 혈흔의 냄새 - 적 처치 시 스택 증가
       if(tgt.curHp<=0&&(f.skill1==='pr_혈흔의냄새'||f.skill2==='pr_혈흔의냄새')){
