@@ -462,6 +462,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishOpenShop()"><span class="xl-rico">🛒</span><span class="xl-rlbl">상점</span></button>
     <button class="xl-rbtn" onclick="openSkillGacha()"><span class="xl-rico">🎲</span><span class="xl-rlbl">스킬가챠</span></button>
+    <button class="xl-rbtn" onclick="openSkillInventory()"><span class="xl-rico">✨</span><span class="xl-rlbl">스킬</span></button>
     <button class="xl-rbtn" id="f-evo-btn" onclick="fishEvolve()" style="opacity:.4"><span class="xl-rico">⬆️</span><span class="xl-rlbl">진화</span></button>
     <button class="xl-rbtn" onclick="openBattlePick()"><span class="xl-rico">⚔️</span><span class="xl-rlbl" id="btpick-ribbon-lbl">출전 선택</span></button>
     <div class="xl-rsep"></div>
@@ -615,6 +616,18 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
+
+<!-- 보유 스킬 인벤토리 모달 -->
+<div class="xl-dlg-ov" id="skill-inventory-modal">
+  <div class="xl-dlg" style="min-width:300px;max-width:360px;max-height:85dvh;display:flex;flex-direction:column">
+    <div class="xl-dlg-title" style="background:#1A0A3D;color:#FFD700;flex-shrink:0">✨ 보유 스킬 <button class="xl-dlg-x" onclick="hideDlg('skill-inventory-modal')" style="color:#FFD700">✕</button></div>
+    <div style="padding:10px 12px 6px;border-bottom:1px solid #E8E8E8;flex-shrink:0;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:10px;color:#555">보유 스킬 <strong id="ski-total">0</strong>종 <strong id="ski-count">0</strong>개</span>
+      <button onclick="hideDlg('skill-inventory-modal');openSkillGacha()" style="background:#4F46E5;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">🎲 가챠 뽑기</button>
+    </div>
+    <div id="ski-list" style="flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+</div>
 
 <!-- 스킬 가챠 모달 -->
 <div class="xl-dlg-ov" id="skill-gacha-modal">
@@ -3108,6 +3121,54 @@ function fishRenderInfo(){
   fishCheckEvoReady(); fishUpdateStatus(); fishRenderInfoMobile();
 }
 
+// ─── 보유 스킬 인벤토리 ───
+function openSkillInventory(){
+  const inv=FG.skillInventory||{};
+  const rarityOrder=['전설','영웅','희귀','일반'];
+  // 보유 스킬만 필터, 등급순 정렬
+  const owned=Object.entries(inv)
+    .filter(([,cnt])=>cnt>0)
+    .map(([id,cnt])=>({id,cnt,sk:FISH_SKILLS[id]}))
+    .filter(x=>x.sk)
+    .sort((a,b)=>rarityOrder.indexOf(a.sk.rarity)-rarityOrder.indexOf(b.sk.rarity));
+  const totalKinds=owned.length;
+  const totalCount=owned.reduce((s,x)=>s+x.cnt,0);
+  document.getElementById('ski-total').textContent=totalKinds;
+  document.getElementById('ski-count').textContent=totalCount;
+  const listDiv=document.getElementById('ski-list');
+  if(owned.length===0){
+    listDiv.innerHTML=`<div style="text-align:center;padding:30px 0;color:#999;font-size:11px">
+      보유 스킬이 없습니다<br>
+      <span style="font-size:10px">🎲 가챠 뽑기로 스킬을 획득하세요!</span>
+    </div>`;
+  } else {
+    // 등급별 섹션 렌더
+    let html='';
+    for(const rar of rarityOrder){
+      const group=owned.filter(x=>x.sk.rarity===rar);
+      if(!group.length) continue;
+      const cfg=SKILL_RARITY[rar];
+      html+=`<div style="font-size:9px;font-weight:700;color:${cfg.fg};background:${cfg.bg};border:1px solid ${cfg.border};border-radius:4px;padding:3px 7px;margin-bottom:2px">${cfg.label} (${group.length}종)</div>`;
+      for(const {id,cnt,sk} of group){
+        const speciesLabel=sk.species==='common'?'공용':sk.species;
+        html+=`<div style="background:#FAFAFA;border:1px solid ${cfg.border};border-left:3px solid ${cfg.fg};border-radius:4px;padding:7px 10px;display:flex;align-items:center;gap:8px">
+          <div style="font-size:22px;flex-shrink:0">${sk.icon}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">
+              <span style="font-size:12px;font-weight:800;color:#222">${sk.name}</span>
+              <span style="background:${cfg.bg};color:${cfg.fg};border:1px solid ${cfg.border};font-size:8px;font-weight:700;padding:1px 5px;border-radius:8px">${rar}</span>
+              <span style="font-size:9px;color:#888">${speciesLabel}</span>
+            </div>
+            <div style="font-size:9px;color:#666;line-height:1.4">${sk.desc}</div>
+          </div>
+          <div style="flex-shrink:0;background:${cfg.fg};color:#fff;font-size:13px;font-weight:900;min-width:28px;height:28px;border-radius:14px;display:flex;align-items:center;justify-content:center;padding:0 6px">×${cnt}</div>
+        </div>`;
+      }
+    }
+    listDiv.innerHTML=html;
+  }
+  document.getElementById('skill-inventory-modal').classList.add('on');
+}
 // ─── 스킬 가챠 ───
 function openSkillGacha(){
   document.getElementById('gacha-money-display').textContent=FG.money.toLocaleString();
