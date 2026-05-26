@@ -1861,9 +1861,12 @@ const F_GRADES={
 };
 // 물고기 스킬 정의
 const FISH_SKILLS={
-  'gs_폭식':      {name:'폭식',      species:'goldfish',slot:1,desc:'공격 후 30% 확률, 데미지의 30% HP 회복'},
-  'gs_칼로리소모': {name:'칼로리소모',species:'goldfish',slot:1,desc:'5초마다 35% 확률, 포만감-15 → HP+8% 회복'},
-  'gs_과식':      {name:'과식',      species:'goldfish',slot:1,desc:'포만감 91%+ 조건, 4초마다 25% 확률, 스탯 일시 강화'},
+  'gs_폭식':       {name:'폭식',      species:'goldfish',slot:1,icon:'💚',desc:'공격 후 30% 확률, 데미지의 30% HP 회복'},
+  'gs_칼로리소모':  {name:'칼로리소모',species:'goldfish',slot:1,icon:'🔥',desc:'5초마다 35% 확률, 포만감-15 → HP+8% 회복'},
+  'gs_과식':       {name:'과식',      species:'goldfish',slot:1,icon:'⚡',desc:'포만감 91%+ 조건, 4초마다 25% 확률, 스탯 일시 강화'},
+  'gu_선제일격':   {name:'선제일격',  species:'guppy',   slot:1,icon:'⚡',desc:'배틀 시작 시 AGI가 적 평균보다 높으면 선제 공격 (atkCd=0)'},
+  'gu_민첩한유영': {name:'민첩한유영',species:'guppy',   slot:1,icon:'💨',desc:'수조 패시브: 수입 발생 시 AGI×0.5원 추가 획득'},
+  'gu_황금비늘':   {name:'황금비늘',  species:'guppy',   slot:1,icon:'✨',desc:'배틀 승리 시 생존 구피 LUK×5원 보너스'},
 };
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -2715,7 +2718,13 @@ function fishTick(){
     if(f.hp<=0){fishDieOne(f);return;}
     // 수입 (30초마다)
     f._incAcc=(f._incAcc||0)+elapsed;
-    if(f._incAcc>=30){f._incAcc=0;inc+=fIncome(f);}
+    if(f._incAcc>=30){
+      f._incAcc=0;
+      let fishInc=fIncome(f);
+      // 스킬: 민첩한유영 - AGI×0.5원 추가
+      if(f.skill1==='gu_민첩한유영'||f.skill2==='gu_민첩한유영'){fishInc+=Math.floor(fStage(f).agi*0.5);}
+      inc+=fishInc;
+    }
     // XP (10초마다)
     if(f.fullness>30){f._xpAcc=(f._xpAcc||0)+elapsed;if(f._xpAcc>=10){f._xpAcc=0;f.xp+=s.xpRate;}}
   });
@@ -3000,7 +3009,7 @@ function showFishDetail(idx){
     const renderSlot=(skId,slotLabel)=>{
       const sk=FISH_SKILLS[skId];
       if(sk) return `<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:3px;padding:6px;font-size:10px;color:#3730A3">
-        <div style="font-weight:700;margin-bottom:2px">${slotLabel}: ${skId==='gs_폭식'?'💚':skId==='gs_칼로리소모'?'🔥':'⚡'} ${sk.name}</div>
+        <div style="font-weight:700;margin-bottom:2px">${slotLabel}: ${sk.icon||'⚡'} ${sk.name}</div>
         <div style="font-size:9px;color:#6366F1">${sk.desc}</div>
       </div>`;
       return `<div style="background:#E8E8E8;border:1px dashed #B4B4B4;border-radius:3px;padding:6px;text-align:center;font-size:10px;color:#999">${slotLabel}<br><span style="font-size:9px">없음</span></div>`;
@@ -4541,7 +4550,7 @@ function adminSkillOnFishChange(){
   // 해당 어종에 맞는 스킬만 필터링
   const available=Object.entries(FISH_SKILLS).filter(([,sk])=>sk.species===fishType);
   sel1.innerHTML=`<option value="">없음 (삭제)</option>`+
-    available.map(([id,sk])=>`<option value="${id}">${id==='gs_폭식'?'💚':id==='gs_칼로리소모'?'🔥':'⚡'} ${sk.name} — ${sk.desc}</option>`).join('');
+    available.map(([id,sk])=>`<option value="${id}">${sk.icon||'⚡'} ${sk.name} — ${sk.desc}</option>`).join('');
   sel1.disabled=available.length===0;
   const sk1=f.skill1||'';
   sel1.value=sk1;
@@ -5009,8 +5018,12 @@ function onBattleActions(payload){
 // ── 공격 이벤트 사전 계산 (순수 함수) ───────────────────────
 function calcBattleEvents(p1Fish,p2Fish,rng){
   const events=[];
-  const p1=p1Fish.map(f=>({...f,curHp:f.hp,atkCd:Math.floor(rng()*135)}));
-  const p2=p2Fish.map(f=>({...f,curHp:f.hp,atkCd:Math.floor(rng()*135)}));
+  // 스킬: 선제일격 조건 계산
+  const p2AvgAgi=(p2Fish.reduce((s,f)=>s+f.agi,0)/p2Fish.length)||0;
+  const p1AvgAgi=(p1Fish.reduce((s,f)=>s+f.agi,0)/p1Fish.length)||0;
+  const hasPre=(f,oppAvg)=>(f.skill1==='gu_선제일격'||f.skill2==='gu_선제일격')&&f.agi>oppAvg;
+  const p1=p1Fish.map(f=>({...f,curHp:f.hp,atkCd:hasPre(f,p2AvgAgi)?0:Math.floor(rng()*135)}));
+  const p2=p2Fish.map(f=>({...f,curHp:f.hp,atkCd:hasPre(f,p1AvgAgi)?0:Math.floor(rng()*135)}));
   const MAX=7200; // 최대 약 3.6분 (30ms * 7200 = 216초)
   for(let t=0;t<MAX;t++){
     const a1=p1.some(f=>f.curHp>0);
@@ -5575,6 +5588,12 @@ function btShowResult(myAlive,oppAlive){
       const r=BATTLE_GRADE_REWARD[f.grade]||50;
       totalReward+=r;
       rewardLines.push(`  ${f.name} (${f.grade}) → +${r.toLocaleString()}원`);
+    });
+    // 스킬: 황금비늘 - 생존 구피 LUK×5원
+    btFishes.filter(f=>f.side==='my'&&!f.isDead&&(f.skill1==='gu_황금비늘'||f.skill2==='gu_황금비늘')).forEach(f=>{
+      const bonus=f.luk*5;
+      totalReward+=bonus;
+      rewardLines.push(`  💛 ${f.name} 황금비늘 → +${bonus.toLocaleString()}원`);
     });
     FG.money+=totalReward;
   }
