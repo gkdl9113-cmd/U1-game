@@ -1570,7 +1570,7 @@ function applyFishData(d){
       fishCalcOfflineAutoFeed(elapsed);
     }
   }
-  FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._incAcc=0;f._xpAcc=0;});
+  FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._hpFrac=0;f._incAcc=0;f._xpAcc=0;});
   FG.auxFishes.forEach(f=>{f._fullAcc=0;f._incAcc=0;});
   FG.lastTick=Date.now();
   FG.lastAutoFeed=Date.now();
@@ -2530,13 +2530,18 @@ function fishTick(){
     f._fullAcc=(f._fullAcc||0)+elapsed;
     const fullRate=f.fullness>=100?Math.max(1,Math.floor(s.foodRate/2)):Math.max(2,s.foodRate);
     if(f._fullAcc>=fullRate){f._fullAcc=0;f.fullness=Math.max(0,f.fullness-1);}
-    // HP 변화
+    // HP 변화 (퍼센트 기반 소수점 누적)
     f._hpAcc=(f._hpAcc||0)+elapsed;
     if(f.fullness<20&&f._hpAcc>=5){
       f._hpAcc=0;f.hp=Math.max(0,f.hp-1);
-    } else if(f.hp<f.maxHp&&f._hpAcc>=10){
-      f._hpAcc=0;
-      f.hp=Math.min(f.maxHp, f.hp+(f.fullness>=100?Math.max(5,Math.round(f.maxHp*0.01)):f.fullness>60?Math.max(1,Math.round(f.maxHp*0.003)):0));
+    } else if(f.hp<f.maxHp&&f.fullness>20){
+      const rate=f.fullness>=100?(f.maxHp*0.002):(f.fullness>60?(f.maxHp*0.0006):0);
+      if(rate>0){
+        f._hpFrac=(f._hpFrac||0)+rate*elapsed;
+        const heal=Math.floor(f._hpFrac);
+        if(heal>0){f._hpFrac-=heal;f.hp=Math.min(f.maxHp,f.hp+heal);}
+      }
+      if(f._hpAcc>=10) f._hpAcc=0;
     }
     if(f.hp<=0){fishDieOne(f);return;}
     // 수입 (30초마다)
@@ -3151,7 +3156,7 @@ function fishLoad(){
       }
     }
     // 틱 누적값 리셋 (저장된 내부 타이머값 제거)
-    FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._incAcc=0;f._xpAcc=0;});
+    FG.fishes.forEach(f=>{f._fullAcc=0;f._hpAcc=0;f._hpFrac=0;f._incAcc=0;f._xpAcc=0;});
     FG.auxFishes.forEach(f=>{f._fullAcc=0;f._incAcc=0;});
     FG.lastTick=Date.now();
     FG.lastAutoFeed=Date.now(); // 로그인 직후 즉시 발동 방지
