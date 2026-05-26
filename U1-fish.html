@@ -1866,7 +1866,7 @@ const FISH_SKILLS={
   'gs_과식':       {name:'과식',      species:'goldfish',slot:1,icon:'⚡',desc:'포만감 91%+ 조건, 4초마다 25% 확률, 스탯 일시 강화'},
   'gu_선제일격':   {name:'선제일격',  species:'guppy',   slot:1,icon:'⚡',desc:'배틀 시작 시 AGI가 적 평균보다 높으면 선제 공격 (atkCd=0)'},
   'gu_민첩한유영': {name:'민첩한유영',species:'guppy',   slot:1,icon:'💨',desc:'수조 패시브: 수입 발생 시 AGI×0.5원 추가 획득'},
-  'gu_황금비늘':   {name:'황금비늘',  species:'guppy',   slot:1,icon:'✨',desc:'배틀 승리 시 생존 구피 LUK×5원 보너스'},
+  'gu_황금비늘':   {name:'황금비늘',  species:'guppy',   slot:1,icon:'✨',desc:'배틀 패시브: AGI 기반 회피율 추가 (agi/800 → agi/400)'},
 };
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -5037,7 +5037,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if(!targets.length) return;
       const tgt=targets[Math.floor(rng()*targets.length)];
       const ti=p2.indexOf(tgt);
-      const dodge=rng()<tgt.agi/800;
+      const dodge=rng()<tgt.agi/800*((tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1);
       if(dodge){events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;}
       const crit=rng()<f.luk/200;
       const dmg=Math.max(1,Math.floor(f.atk*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
@@ -5060,7 +5060,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if(!targets.length) return;
       const tgt=targets[Math.floor(rng()*targets.length)];
       const ti=p1.indexOf(tgt);
-      const dodge=rng()<tgt.agi/800;
+      const dodge=rng()<tgt.agi/800*((tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1);
       if(dodge){events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;}
       const crit=rng()<f.luk/200;
       const dmg=Math.max(1,Math.floor(f.atk*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
@@ -5588,12 +5588,6 @@ function btShowResult(myAlive,oppAlive){
       const r=BATTLE_GRADE_REWARD[f.grade]||50;
       totalReward+=r;
       rewardLines.push(`  ${f.name} (${f.grade}) → +${r.toLocaleString()}원`);
-    });
-    // 스킬: 황금비늘 - 생존 구피 LUK×5원
-    btFishes.filter(f=>f.side==='my'&&!f.isDead&&(f.skill1==='gu_황금비늘'||f.skill2==='gu_황금비늘')).forEach(f=>{
-      const bonus=f.luk*5;
-      totalReward+=bonus;
-      rewardLines.push(`  💛 ${f.name} 황금비늘 → +${bonus.toLocaleString()}원`);
     });
     FG.money+=totalReward;
   }
