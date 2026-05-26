@@ -1993,9 +1993,9 @@ const F_SHOP=[
    catchProb:0.85, gaugeWidth:0.33, gaugeSpeed:55,
    specialZoneWidth:0.05,
    requiresBait:true,
-   grades:[{grade:'영웅',w:699},{grade:'전설',w:300},{grade:'영물',w:1}],
-   gradesSpecial:[{grade:'전설',w:990},{grade:'영물',w:10}],
-   desc:'🐢 전설 물고기를 미끼로 영물 도전'},
+   grades:[{grade:'고급',w:399},{grade:'영웅',w:500},{grade:'전설',w:100},{grade:'영물',w:1}],
+   gradesSpecial:[{grade:'영웅',w:690},{grade:'전설',w:300},{grade:'영물',w:10}],
+   desc:'🐢 심연의 거북을 미끼로 영물 도전'},
 ];
 const LOTTERY_PRIZES=[
   {grade:'1등',amount:1000,prob:0.005,bg:'#FFD700',fg:'#7F4F00'},
@@ -2237,10 +2237,10 @@ function fishingOpenBaitSelect(){
   const allFish=[
     ...FG.fishes.map(f=>({f,src:'main'})),
     ...FG.auxFishes.map(f=>({f,src:'aux'}))
-  ].filter(({f})=>!f.isDead&&fStage(f).grade==='전설');
+  ].filter(({f})=>!f.isDead&&f.type==='turtle'&&fStage(f).grade==='전설');
   const listEl=document.getElementById('bait-list');
   if(!allFish.length){
-    listEl.innerHTML=`<div style="text-align:center;padding:20px;color:#999;font-size:11px">보유한 전설 물고기가 없습니다.<br>전설 물고기를 먼저 키워주세요.</div>`;
+    listEl.innerHTML=`<div style="text-align:center;padding:20px;color:#999;font-size:11px">보유한 심연의 거북이 없습니다.<br>거북이를 전설까지 진화시켜 주세요.</div>`;
     document.getElementById('bait-confirm-btn').disabled=true;
   } else {
     listEl.innerHTML=allFish.map(({f,src},i)=>{
