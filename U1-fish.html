@@ -3461,9 +3461,12 @@ function fishOpenShop(){
     const disabled=FG.money<item.price;
     const btnStyle=`background:${disabled?'#E8E8E8':'#217346'};color:${disabled?'#999':'#fff'};border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:${disabled?'default':'pointer'};font-family:inherit;white-space:nowrap`;
     if(item.type==='rod'){
+      const totalW=item.grades.reduce((s,g)=>s+g.w,0);
       const gradesHtml=item.grades.map(g=>{
         const gd=F_GRADES[g.grade]||{bg:'#E8E8E8',fg:'#555'};
-        return `<span style="display:inline-block;background:${gd.bg};color:${gd.fg};font-size:9px;font-weight:700;padding:1px 5px;margin:1px 2px 0 0;border-radius:2px">${g.grade} ${g.w}%</span>`;
+        const pct=g.w/totalW*100;
+        const pctStr=pct<1?pct.toFixed(1):Math.round(pct);
+        return `<span style="display:inline-block;background:${gd.bg};color:${gd.fg};font-size:9px;font-weight:700;padding:1px 5px;margin:1px 2px 0 0;border-radius:2px">${g.grade} ${pctStr}%</span>`;
       }).join('');
       return `<div style="padding:7px 0;border-bottom:1px solid #F0F0F0">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
