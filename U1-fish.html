@@ -1277,7 +1277,7 @@ function connectSupabase(){
     if(!battleState) return;
     onBattleForfeit(payload);
   })
-  // battle_pos 위치동기화 제거 (로컬 물리와 충돌로 버벅임 원인)
+  .on('broadcast',{event:'battle_state'},({payload})=>onBattleState(payload))
   .on('broadcast',{event:'battle_hit'},({payload})=>{
     if(!battleState) return;
     if(payload.fromId!==currentGame?.opponentId) return;
@@ -4965,25 +4965,66 @@ function btApplyEvents(){
 }
 
 // ── 매 프레임 ─────────────────────────────────────────────
-let _btSeed=0;       // RNG 시드 (P1/P2 공유 — 결정론적 이벤트)
-let _btLocalStart=0; // 틱 클럭 기준 (각 플레이어 로컬 시계 — 시계 차이 영향 없음)
+let _btSeed=0;       // RNG 시드
+let _btLocalStart=0; // 틱 클럭 기준 (P1 로컬 시계)
 function btFrame(){
-  const now=Date.now();
-  // seed 기준으로 현재 예상 틱 계산 → P2도 P1과 동일한 틱 위치 유지
-  const expectedTick=Math.floor((now-_btLocalStart)/30);
-  const stepsNeeded=Math.max(0,expectedTick-btTick);
-  // 최대 8틱 따라잡기 (지연이 크면 한 번에 정렬)
-  const steps=Math.min(Math.max(1,stepsNeeded),8);
-  for(let _s=0;_s<steps;_s++) btPhysicsStep();
-  // 위치 브로드캐스트 (20틱마다)
-  const W=btCanvas.width,H=btCanvas.height;
-  btDraw(W,H);
-  // 종료 체크
+  if(btImP1){
+    // ── P1: 시뮬레이션 실행 + P2에게 상태 브로드캐스트 ──────────
+    const now=Date.now();
+    const expectedTick=Math.floor((now-_btLocalStart)/30);
+    const stepsNeeded=Math.max(0,expectedTick-btTick);
+    const steps=Math.min(Math.max(1,stepsNeeded),8);
+    for(let _s=0;_s<steps;_s++) btPhysicsStep();
+    const W=btCanvas.width,H=btCanvas.height;
+    btDraw(W,H);
+    // P2에게 매 틱 상태 전송 (P1 단독 시뮬레이션)
+    if(currentGame){
+      sbSend('battle_state',{
+        targetId:currentGame.opponentId,fromId:myId,
+        fishes:btFishes.map(f=>({
+          curHp:f.curHp,isDead:f.isDead,
+          x:f.x,y:f.y,vx:f.vx||0,vy:f.vy||0,
+          hitFlash:f.hitFlash,hitType:f.hitType,
+          floatTxt:f.floatTxt,healTxt:f.healTxt,
+          buffMult:f.buffMult||1,phase:f.phase,
+        }))
+      });
+    }
+    // 종료 체크
+    const myAlive=btFishes.filter(f=>f.side==='my'&&!f.isDead).length;
+    const oppAlive=btFishes.filter(f=>f.side==='opp'&&!f.isDead).length;
+    if(myAlive===0||oppAlive===0){
+      clearInterval(btInterval);btInterval=null;
+      btDraw(W,H);
+      setTimeout(()=>btShowResult(myAlive,oppAlive),800);
+    }
+  } else {
+    // ── P2: 렌더링만 (상태는 battle_state 브로드캐스트로 수신) ──
+    if(btCanvas&&btCtx&&btFishes.length) btDraw(btCanvas.width,btCanvas.height);
+  }
+}
+
+// P1에서 받은 배틀 상태를 P2에 적용
+function onBattleState(payload){
+  if(btImP1) return;
+  if(!battleState||payload.fromId!==currentGame?.opponentId) return;
+  if(!btFishes.length) return;
+  payload.fishes.forEach((fs,i)=>{
+    const f=btFishes[i]; if(!f) return;
+    f.curHp=fs.curHp; f.isDead=fs.isDead;
+    f.x=fs.x; f.y=fs.y; f.vx=fs.vx||0; f.vy=fs.vy||0;
+    f.hitFlash=fs.hitFlash||0; f.hitType=fs.hitType||'';
+    f.floatTxt=fs.floatTxt||null; f.healTxt=fs.healTxt||null;
+    f.buffMult=fs.buffMult||1; f.phase=fs.phase||'orbit';
+  });
+  renderBtHpPanels();
+  // 종료 체크 (btInterval이 이미 null이면 중복 처리 방지)
+  if(btInterval===null) return;
   const myAlive=btFishes.filter(f=>f.side==='my'&&!f.isDead).length;
   const oppAlive=btFishes.filter(f=>f.side==='opp'&&!f.isDead).length;
   if(myAlive===0||oppAlive===0){
     clearInterval(btInterval);btInterval=null;
-    btDraw(W,H);
+    if(btCanvas) btDraw(btCanvas.width,btCanvas.height);
     setTimeout(()=>btShowResult(myAlive,oppAlive),800);
   }
 }
