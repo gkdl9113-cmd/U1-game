@@ -2501,7 +2501,7 @@ function fishTick(){
       f._hpAcc=0;f.hp=Math.max(0,f.hp-1);
     } else if(f.hp<f.maxHp&&f._hpAcc>=10){
       f._hpAcc=0;
-      f.hp=Math.min(f.maxHp, f.hp+(f.fullness>=100?5:f.fullness>60?1:0));
+      f.hp=Math.min(f.maxHp, f.hp+(f.fullness>=100?Math.max(5,Math.round(f.maxHp*0.01)):f.fullness>60?Math.max(1,Math.round(f.maxHp*0.003)):0));
     }
     if(f.hp<=0){fishDieOne(f);return;}
     // 수입 (30초마다)
