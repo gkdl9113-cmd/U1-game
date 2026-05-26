@@ -761,9 +761,11 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
         <span style="font-size:9px;color:#888;padding:1px 6px;background:#E8F5ED;border:1px solid #C6EFCE">타이밍 게이지</span>
       </div>
       <div id="fishing-gauge-bar" style="height:30px;background:#E8E8E8;border:1px solid #C8C8C8;position:relative;overflow:hidden">
-        <div id="fishing-gauge-zone" style="position:absolute;top:0;bottom:0;background:#C6EFCE;border-left:1px solid #70AD47;border-right:1px solid #70AD47"></div>
-        <div id="fishing-gauge-needle" style="position:absolute;top:0;bottom:0;width:3px;background:#217346;left:50%;transform:translateX(-50%)"></div>
+        <div id="fishing-gauge-zone" style="position:absolute;top:0;bottom:0;background:#C6EFCE;border-left:1px solid #70AD47;border-right:1px solid #70AD47;z-index:1"></div>
+        <div id="fishing-gauge-special" style="position:absolute;top:0;bottom:0;background:rgba(255,200,0,0.75);border-left:2px solid #FF8C00;border-right:2px solid #FF8C00;display:none;z-index:2"></div>
+        <div id="fishing-gauge-needle" style="position:absolute;top:0;bottom:0;width:3px;background:#217346;left:50%;transform:translateX(-50%);z-index:3"></div>
       </div>
+      <div id="fishing-gauge-hint" style="display:none;font-size:9px;color:#B8860B;font-weight:700;text-align:center;margin-top:2px">✨ 황금 구간 = 영웅/전설 등장!</div>
       <div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px;color:#888"><span>0%</span><span>100%</span></div>
     </div>
     <!-- 낚시찌 숨김 처리 (엑셀 모드에서 미사용) -->
@@ -1555,7 +1557,7 @@ function applyFishData(d){
   if(!FG.fishes||FG.fishes.length===0) FG.fishes=[newFish(1)];
   FG.money=d.money??100;FG.food=d.food??5;FG.autoFeeders=d.autoFeeders||[];
   FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
-  FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0},d.rods||{});
+  FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0},d.rods||{});
   FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
   FG.auxMax=d.auxMax||1;
   FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{}};
@@ -1951,6 +1953,12 @@ const F_SHOP=[
    catchProb:0.75, gaugeWidth:0.52, gaugeSpeed:62,
    grades:[{grade:'일반',w:50},{grade:'중급',w:25},{grade:'고급',w:15},{grade:'희귀',w:10}],
    desc:'성공률 75%'},
+  {id:'rod5',name:'미스릴 낚시대', price:50000, type:'rod',
+   catchProb:0.80, gaugeWidth:0.40, gaugeSpeed:65,
+   specialZoneWidth:0.05,
+   grades:[{grade:'일반',w:40},{grade:'중급',w:30},{grade:'고급',w:20},{grade:'희귀',w:10}],
+   gradesSpecial:[{grade:'고급',w:40},{grade:'희귀',w:54},{grade:'영웅',w:5},{grade:'전설',w:1}],
+   desc:'✨ 황금 구간에서만 영웅/전설'},
 ];
 const LOTTERY_PRIZES=[
   {grade:'1등',amount:1000,prob:0.005,bg:'#FFD700',fg:'#7F4F00'},
@@ -1968,7 +1976,7 @@ const FG={
   auxMax:1,            // 보조 수족관 최대 크기 (1~3)
   money:100,food:5,autoFeeders:[],  // [{targetIdx:null/idx, acc:0}]
   tankLevel:0,tankMax:1,
-  rods:{rod1:0,rod2:0,rod3:0,rod4:0}, // 낚싯대 인벤토리
+  rods:{rod1:0,rod2:0,rod3:0,rod4:0,rod5:0}, // 낚싯대 인벤토리
   paused:false,pausedAt:null,
   lastTick:Date.now(),lastAutoFeed:0,
   fishPos:null,
@@ -2109,6 +2117,7 @@ const FMG={
   biteTimer:null, biteWindowTimer:null,
   gaugePos:0, gaugeDir:1, gaugeZoneStart:0, gaugeZoneWidth:0.3,
   gaugeSpeed:1, gaugeRaf:null, gaugeLastTime:null,
+  specialZoneStart:-1, specialZoneWidth:0,
   // 찌 애니메이션
   bobRaf:null, bobState:'idle', bobT:0, bobSink:0, bobLastTs:null, bobBlink:0,
 };
@@ -2230,6 +2239,19 @@ function fishingStartGauge(){
   FMG.gaugeLastTime=null;
   const zone=document.getElementById('fishing-gauge-zone');
   if(zone){zone.style.left=(FMG.gaugeZoneStart*100)+'%';zone.style.width=(FMG.gaugeZoneWidth*100)+'%';}
+  // 미스릴 낚시대: 황금 존 설정
+  const specialEl=document.getElementById('fishing-gauge-special');
+  const hintEl=document.getElementById('fishing-gauge-hint');
+  if(rod.specialZoneWidth){
+    FMG.specialZoneWidth=rod.specialZoneWidth;
+    FMG.specialZoneStart=0.02+Math.random()*(0.96-rod.specialZoneWidth);
+    if(specialEl){specialEl.style.left=(FMG.specialZoneStart*100)+'%';specialEl.style.width=(FMG.specialZoneWidth*100)+'%';specialEl.style.display='';}
+    if(hintEl) hintEl.style.display='';
+  } else {
+    FMG.specialZoneStart=-1;FMG.specialZoneWidth=0;
+    if(specialEl) specialEl.style.display='none';
+    if(hintEl) hintEl.style.display='none';
+  }
   const gw=document.getElementById('fishing-gauge-wrap');if(gw)gw.style.display='';
   const ba=document.getElementById('fishing-bite-alert');if(ba)ba.style.display='none';
   _fishingSetFormula('=FISHING.GAUGE("초록 구간에서 클릭!")');
@@ -2258,18 +2280,24 @@ function fishingGaugeClick(){
   if(FMG.state!=='gauge')return;
   cancelAnimationFrame(FMG.gaugeRaf);FMG.gaugeRaf=null;
   document.getElementById('fishing-gauge-wrap').style.display='none';
-  const inZone=FMG.gaugePos>=FMG.gaugeZoneStart&&FMG.gaugePos<=(FMG.gaugeZoneStart+FMG.gaugeZoneWidth);
-  if(!inZone){_fishingShowResult(false,'타이밍 실패! 물고기가 빠져나갔습니다 🐟💨');return;}
   const rod=F_SHOP.find(r=>r.id===FMG.rodId);
+  // 황금 존 판정 (미스릴 낚시대)
+  const inSpecial=FMG.specialZoneStart>=0&&
+    FMG.gaugePos>=FMG.specialZoneStart&&
+    FMG.gaugePos<=(FMG.specialZoneStart+FMG.specialZoneWidth);
+  const inZone=FMG.gaugePos>=FMG.gaugeZoneStart&&FMG.gaugePos<=(FMG.gaugeZoneStart+FMG.gaugeZoneWidth);
+  if(!inSpecial&&!inZone){_fishingShowResult(false,'타이밍 실패! 물고기가 빠져나갔습니다 🐟💨');return;}
+  const gradeTable=inSpecial?(rod.gradesSpecial||rod.grades):rod.grades;
   if(Math.random()<rod.catchProb){
-    const {type:picked,stage:pickedStage}=pickSpeciesByGrade(rod.grades);
+    const {type:picked,stage:pickedStage}=pickSpeciesByGrade(gradeTable);
     const caught=newFish(pickedStage,picked);
     updateFishCodex(picked,pickedStage);
     FG.auxFishes.push(caught);
     fishRenderAux();fishRenderInfo();fishQuickSave();
     const cs=fStage(caught);
     document.getElementById('frow-sp').textContent=cs.name;
-    _fishingShowResult(true,`🎉 ${cs.name} 낚았습니다!`,cs.grade);
+    const msg=inSpecial?`✨ ${cs.name} 낚았습니다! (영물 구간!)`:`🎉 ${cs.name} 낚았습니다!`;
+    _fishingShowResult(true,msg,cs.grade);
   } else {
     _fishingShowResult(false,'아깝다! 물고기가 빠져나갔습니다 🐟💨');
   }
@@ -3141,7 +3169,7 @@ function fishLoad(){
     if(FG.fishes.length===0) FG.fishes=[newFish(1)];
     FG.money=d.money??100;FG.food=d.food??5;FG.autoFeeders=d.autoFeeders||[];
     FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
-    FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0},d.rods||{});
+    FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0},d.rods||{});
     FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
     FG.auxMax=d.auxMax||1;
     if(d.battlePickIds&&d.battlePickIds.length){
