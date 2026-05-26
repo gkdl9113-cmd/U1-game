@@ -4635,8 +4635,8 @@ function onBattleActions(payload){
 // ── 공격 이벤트 사전 계산 (순수 함수) ───────────────────────
 function calcBattleEvents(p1Fish,p2Fish,rng){
   const events=[];
-  const p1=p1Fish.map(f=>({...f,curHp:f.hp,atkCd:Math.floor(rng()*90)}));
-  const p2=p2Fish.map(f=>({...f,curHp:f.hp,atkCd:Math.floor(rng()*90)}));
+  const p1=p1Fish.map(f=>({...f,curHp:f.hp,atkCd:Math.floor(rng()*135)}));
+  const p2=p2Fish.map(f=>({...f,curHp:f.hp,atkCd:Math.floor(rng()*135)}));
   const MAX=7200; // 최대 약 3.6분 (30ms * 7200 = 216초)
   for(let t=0;t<MAX;t++){
     const a1=p1.some(f=>f.curHp>0);
@@ -4651,7 +4651,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const tgt=targets[Math.floor(rng()*targets.length)];
       const ti=p2.indexOf(tgt);
       const dodge=rng()<tgt.agi/800;
-      if(dodge){events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(30,180-f.agi*3);return;}
+      if(dodge){events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;}
       const crit=rng()<f.luk/200;
       const dmg=Math.max(1,Math.floor(f.atk*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
       const fd=crit?dmg*2:dmg;
@@ -4663,7 +4663,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
         f.curHp=Math.min(f.maxHp,f.curHp+skillHeal);
       }
       events.push({t,side:1,ai:i,ti,dmg:fd,crit,dodge:false,hpAfter:tgt.curHp,skillHeal,atkHpAfter:f.curHp});
-      f.atkCd=Math.max(30,180-f.agi*3); // AGI 높을수록 빠른 공격
+      f.atkCd=Math.max(45,270-f.agi*4.5); // AGI 높을수록 빠른 공격
     });
     // p2 공격 체크
     p2.forEach((f,i)=>{
@@ -4674,7 +4674,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const tgt=targets[Math.floor(rng()*targets.length)];
       const ti=p1.indexOf(tgt);
       const dodge=rng()<tgt.agi/800;
-      if(dodge){events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(30,180-f.agi*3);return;}
+      if(dodge){events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;}
       const crit=rng()<f.luk/200;
       const dmg=Math.max(1,Math.floor(f.atk*0.7-tgt.def*0.3+(rng()-0.5)*f.atk*0.15));
       const fd=crit?dmg*2:dmg;
@@ -4686,7 +4686,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
         f.curHp=Math.min(f.maxHp,f.curHp+skillHeal);
       }
       events.push({t,side:2,ai:i,ti,dmg:fd,crit,dodge:false,hpAfter:tgt.curHp,skillHeal,atkHpAfter:f.curHp});
-      f.atkCd=Math.max(30,180-f.agi*3);
+      f.atkCd=Math.max(45,270-f.agi*4.5);
     });
   }
   return events;
@@ -4853,7 +4853,7 @@ function btPhysicsStep(){
     let nearest=enemies[0],minD=Infinity;
     enemies.forEach(e=>{const d=Math.hypot(e.x-f.x,e.y-f.y);if(d<minD){minD=d;nearest=e;}});
     const bm=f.buffMult||1;
-    const spd=0.005+f.agi*bm*0.00007;
+    const spd=0.003+f.agi*bm*0.000045;
     const collR=0.09;
     // ── 페이즈 타이머 ──────────────────────────────────────
     f.phaseTimer--;
