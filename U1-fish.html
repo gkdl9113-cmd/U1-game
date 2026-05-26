@@ -1990,10 +1990,10 @@ const F_SHOP=[
    gradesSpecial:[{grade:'고급',w:40},{grade:'희귀',w:54},{grade:'영웅',w:5},{grade:'전설',w:1}],
    desc:'✨ 황금 구간에서만 영웅/전설'},
   {id:'rod6',name:'운철 낚시대', price:500000, type:'rod',
-   catchProb:0.85, gaugeWidth:0.33, gaugeSpeed:55,
+   catchProb:0.601, catchProbSpecial:1.0, gaugeWidth:0.33, gaugeSpeed:55,
    specialZoneWidth:0.05,
    requiresBait:true,
-   grades:[{grade:'영웅',w:899},{grade:'전설',w:100},{grade:'영물',w:1}],
+   grades:[{grade:'영웅',w:832},{grade:'전설',w:166},{grade:'영물',w:2}],
    gradesSpecial:[{grade:'영웅',w:690},{grade:'전설',w:300},{grade:'영물',w:10}],
    desc:'🐢 심연의 거북을 미끼로 영물 도전'},
 ];
@@ -2406,7 +2406,8 @@ function fishingGaugeClick(){
   const inZone=FMG.gaugePos>=FMG.gaugeZoneStart&&FMG.gaugePos<=(FMG.gaugeZoneStart+FMG.gaugeZoneWidth);
   if(!inSpecial&&!inZone){_fishingShowResult(false,'타이밍 실패! 물고기가 빠져나갔습니다 🐟💨');return;}
   const gradeTable=inSpecial?(rod.gradesSpecial||rod.grades):rod.grades;
-  if(Math.random()<rod.catchProb){
+  const effectiveCatchProb=inSpecial&&rod.catchProbSpecial!=null?rod.catchProbSpecial:rod.catchProb;
+  if(Math.random()<effectiveCatchProb){
     const {type:picked,stage:pickedStage}=pickSpeciesByGrade(gradeTable);
     const caught=newFish(pickedStage,picked);
     updateFishCodex(picked,pickedStage);
