@@ -4589,28 +4589,36 @@ function adminSkillOnFishChange(){
   if(!f){document.getElementById('adm-skill-preview').innerHTML='';sel1.innerHTML='<option value="">없음</option>';return;}
   const s=fStage(f);
   const fishType=f.type||'goldfish';
-  // 해당 어종에 맞는 스킬만 필터링
-  const available=Object.entries(FISH_SKILLS).filter(([,sk])=>sk.species===fishType||sk.species==='common');
+  // 전용스킬 (해당 어종만)
+  const speciesSkills=Object.entries(FISH_SKILLS).filter(([,sk])=>sk.species===fishType);
   sel1.innerHTML=`<option value="">없음 (삭제)</option>`+
-    available.map(([id,sk])=>`<option value="${id}">${sk.icon||'⚡'} ${sk.name} — ${sk.desc}</option>`).join('');
-  sel1.disabled=available.length===0;
+    speciesSkills.map(([id,sk])=>`<option value="${id}">${sk.icon||'⚡'} ${sk.name} — ${sk.desc}</option>`).join('');
+  sel1.disabled=false;
   const sk1=f.skill1||'';
   sel1.value=sk1;
+  // 공용스킬
+  const sel2=document.getElementById('adm-skill-slot2');
+  const commonSkills=Object.entries(FISH_SKILLS).filter(([,sk])=>sk.species==='common');
+  sel2.innerHTML=`<option value="">없음 (삭제)</option>`+
+    commonSkills.map(([id,sk])=>`<option value="${id}">${sk.icon||'⚡'} ${sk.name} — ${sk.desc}</option>`).join('');
+  sel2.disabled=false;
+  const sk2=f.skill2||'';
+  sel2.value=sk2;
   const skInfo=FISH_SKILLS[sk1];
   const gd=F_GRADES[s.grade]||F_GRADES['일반'];
   document.getElementById('adm-skill-preview').innerHTML=
     `<span style="padding:1px 5px;border-radius:3px;background:${gd.bg};color:${gd.fg};font-size:10px;font-weight:700">${s.grade}</span> `+
     `<strong style="color:#E2E8F0">${s.name}</strong> `+
     `<span style="color:#7A9BBF">HP ${f.hp}/${f.maxHp} | 포만감 ${Math.round(f.fullness||0)}%</span><br>`+
-    (available.length===0
-      ? `<span style="color:#FB7185">이 어종에 사용 가능한 스킬이 없습니다</span>`
-      : `<span style="color:#60A5FA">현재 슬롯1: ${skInfo?`<strong style="color:#FBBF24">${skInfo.name}</strong> — ${skInfo.desc}`:'없음'}</span>`);
+    `<span style="color:#60A5FA">전용: ${skInfo?`<strong style="color:#FBBF24">${skInfo.name}</strong>`:'없음'}</span> `+
+    `<span style="color:#86EFAC">공용: ${FISH_SKILLS[sk2]?`<strong style="color:#FBBF24">${FISH_SKILLS[sk2].name}</strong>`:'없음'}</span>`;
 }
 
 async function adminConfirmSkill(){
   if(!_admSkillTarget) return;
   const idx=parseInt(document.getElementById('adm-skill-fish-sel').value);
   const sk1=document.getElementById('adm-skill-slot1').value||null;
+  const sk2=document.getElementById('adm-skill-slot2').value||null;
   if(idx<0){alert('물고기를 선택하세요');return;}
 
   // Load current data from DB instead of stale _admSkillTarget.fish_data
@@ -4621,17 +4629,18 @@ async function adminConfirmSkill(){
   const currentFishes=currentRecord.fish_data.fishes||[];
   if(idx>=currentFishes.length){alert('물고기를 선택하세요');return;}
 
-  currentFishes[idx].skill1=sk1||undefined;
-  if(!sk1) delete currentFishes[idx].skill1;
+  if(sk1){currentFishes[idx].skill1=sk1;}else{delete currentFishes[idx].skill1;}
+  if(sk2){currentFishes[idx].skill2=sk2;}else{delete currentFishes[idx].skill2;}
   const newData={...currentRecord.fish_data,fishes:currentFishes,lastSave:serverNow()};
   const{error}=await _sb.from('fish_accounts')
     .update({fish_data:newData,updated_at:new Date().toISOString()})
     .eq('username',_admSkillTarget.username).eq('server',_admSkillTarget.server);
   if(error){alert('저장 실패: '+error.message);return;}
   hideDlg('adm-skill-modal');
-  const skName=sk1?(FISH_SKILLS[sk1]?.name||sk1):'없음';
+  const sk1Name=sk1?(FISH_SKILLS[sk1]?.name||sk1):'없음';
+  const sk2Name=sk2?(FISH_SKILLS[sk2]?.name||sk2):'없음';
   document.getElementById('adm-status').textContent=
-    `✅ ${_admSkillTarget.username} #${idx+1} 물고기 스킬1 → ${skName}`;
+    `✅ ${_admSkillTarget.username} #${idx+1} 전용:${sk1Name} / 공용:${sk2Name}`;
   sbSend('data_reload',{targetName:_admSkillTarget.username,fromAdmin:ADMIN_USERNAME});
   adminLoadUsers();
 }
