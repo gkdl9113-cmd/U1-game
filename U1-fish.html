@@ -2897,13 +2897,13 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*1.35,fy+size*.65);
     c.closePath();c.fill();
   } else if(type==='electric'){
-    // 전기뱀장어: 긴 뱀같은 S자 꼬리
+    // 전기뱀장어: 가늘고 긴 꼬리 (채찍 같은 뱀장어 꼬리)
     c.beginPath();
-    c.moveTo(fx-dir*size*.7,fy);
-    c.lineTo(fx-dir*size*1.25,fy-size*.5);
-    c.lineTo(fx-dir*size*1.6,fy-size*.3);
-    c.lineTo(fx-dir*size*1.55,fy+size*.3);
-    c.lineTo(fx-dir*size*1.2,fy+size*.55);
+    c.moveTo(fx-dir*size*1.4,fy-size*.08);
+    c.lineTo(fx-dir*size*2.2,fy-size*.04);
+    c.lineTo(fx-dir*size*2.6,fy);
+    c.lineTo(fx-dir*size*2.2,fy+size*.04);
+    c.lineTo(fx-dir*size*1.4,fy+size*.08);
     c.closePath();c.fill();
   } else {
     // 금붕어 기본 꼬리
@@ -2912,8 +2912,8 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
   }
   // 몸통
-  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:type==='piranha'?size*1.05:type==='tropical'?size*.95:type==='electric'?size*1.1:size;
-  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:type==='piranha'?size*.55:type==='tropical'?size*.6:type==='electric'?size*.65:size*.58;
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:type==='piranha'?size*1.05:type==='tropical'?size*.95:type==='electric'?size*1.45:size;
+  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:type==='piranha'?size*.55:type==='tropical'?size*.6:type==='electric'?size*.28:size*.58;
   const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);
   g.addColorStop(0,s.fin);g.addColorStop(1,s.color);
   c.fillStyle=g;c.beginPath();c.ellipse(fx,fy,bodyRx,bodyRy,0,0,Math.PI*2);c.fill();
@@ -2964,20 +2964,22 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
       c.beginPath();c.arc(fx+spot.x,fy+spot.y,size*.12,0,Math.PI*2);c.fill();
     });
   }
-  // 전기뱀장어 번쩍거리는 전기선 무늬 (지그재그)
+  // 전기뱀장어 번쩍거리는 전기선 무늬 (몸통 따라 수평 지그재그)
   if(type==='electric'){
-    c.strokeStyle='rgba(255,255,255,0.4)';c.lineWidth=1.8;
+    c.strokeStyle='rgba(255,255,255,0.45)';c.lineWidth=1.4;
     c.beginPath();
-    c.moveTo(fx+dir*size*.05,fy-bodyRy*.7);
-    c.lineTo(fx+dir*size*.25,fy-bodyRy*.4);
-    c.lineTo(fx+dir*size*.05,fy);
-    c.lineTo(fx+dir*size*.25,fy+bodyRy*.4);
-    c.lineTo(fx+dir*size*.05,fy+bodyRy*.7);
+    c.moveTo(fx-dir*bodyRx*.7,fy);
+    c.lineTo(fx-dir*bodyRx*.4,fy-bodyRy*.5);
+    c.lineTo(fx-dir*bodyRx*.1,fy);
+    c.lineTo(fx+dir*bodyRx*.2,fy-bodyRy*.5);
+    c.lineTo(fx+dir*bodyRx*.5,fy);
     c.stroke();
   }
-  // 눈
-  c.fillStyle='#fff';c.beginPath();c.arc(fx+dir*bodyRx*.48,fy-bodyRy*.15,size*.17,0,Math.PI*2);c.fill();
-  c.fillStyle='#111';c.beginPath();c.arc(fx+dir*bodyRx*.54,fy-bodyRy*.15,size*.09,0,Math.PI*2);c.fill();
+  // 눈 (전기뱀장어는 가는 몸에 맞게 작은 눈)
+  const eyeR=type==='electric'?size*.1:size*.17;
+  const eyePupilR=type==='electric'?size*.055:size*.09;
+  c.fillStyle='#fff';c.beginPath();c.arc(fx+dir*bodyRx*.48,fy-bodyRy*.15,eyeR,0,Math.PI*2);c.fill();
+  c.fillStyle='#111';c.beginPath();c.arc(fx+dir*bodyRx*.54,fy-bodyRy*.15,eyePupilR,0,Math.PI*2);c.fill();
 }
 
 function fishDraw(){
@@ -3310,15 +3312,15 @@ function drawMinifish(type,s,has){
   } else if(type==='mandarin'){
     svg+=`<path d="M ${fx-dir*size*0.8},${fy} L ${fx-dir*size*1.35},${fy-size*0.65} L ${fx-dir*size*1.5},${fy-size*0.25} L ${fx-dir*size*1.55},${fy} L ${fx-dir*size*1.5},${fy+size*0.25} L ${fx-dir*size*1.35},${fy+size*0.65} Z" fill="${finColor}"/>`;
   } else if(type==='electric'){
-    svg+=`<path d="M ${fx-dir*size*0.7},${fy} L ${fx-dir*size*1.25},${fy-size*0.5} L ${fx-dir*size*1.6},${fy-size*0.3} L ${fx-dir*size*1.55},${fy+size*0.3} L ${fx-dir*size*1.2},${fy+size*0.55} Z" fill="${finColor}"/>`;
+    svg+=`<path d="M ${fx-dir*size*1.4},${fy-size*0.08} L ${fx-dir*size*2.2},${fy-size*0.04} L ${fx-dir*size*2.6},${fy} L ${fx-dir*size*2.2},${fy+size*0.04} L ${fx-dir*size*1.4},${fy+size*0.08} Z" fill="${finColor}"/>`;
   } else {
     // 기본 금붕어 꼬리
     svg+=`<path d="M ${fx-dir*size*0.8},${fy} L ${fx-dir*size*1.4},${fy-size*0.5} L ${fx-dir*size*1.4},${fy+size*0.5} Z" fill="${finColor}"/>`;
   }
 
   // 몸통
-  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*0.88:type==='piranha'?size*1.05:type==='tropical'?size*0.95:type==='electric'?size*1.1:size;
-  const bodyRy=type==='snakehead'?size*0.42:type==='guppy'?size*0.62:type==='piranha'?size*0.55:type==='tropical'?size*0.6:type==='electric'?size*0.65:size*0.58;
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*0.88:type==='piranha'?size*1.05:type==='tropical'?size*0.95:type==='electric'?size*1.45:size;
+  const bodyRy=type==='snakehead'?size*0.42:type==='guppy'?size*0.62:type==='piranha'?size*0.55:type==='tropical'?size*0.6:type==='electric'?size*0.28:size*0.58;
   svg+=`<ellipse cx="${fx}" cy="${fy}" rx="${bodyRx}" ry="${bodyRy}" fill="url(#grad_${type}_${s.grade})" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`;
 
   // 구피 등지느러미
@@ -3357,14 +3359,16 @@ function drawMinifish(type,s,has){
     svg+=`<circle cx="${fx+dir*size*0.35}" cy="${fy+size*0.25}" r="${size*0.12}" fill="rgba(0,0,0,0.15)"/>`;
   }
 
-  // 전기뱀장어 번쩍 지그재그선
+  // 전기뱀장어 수평 지그재그선 (몸통 따라)
   if(type==='electric'){
-    svg+=`<path d="M ${fx+dir*size*0.05},${fy-bodyRy*0.7} L ${fx+dir*size*0.25},${fy-bodyRy*0.4} L ${fx+dir*size*0.05},${fy} L ${fx+dir*size*0.25},${fy+bodyRy*0.4} L ${fx+dir*size*0.05},${fy+bodyRy*0.7}" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" fill="none"/>`;
+    svg+=`<path d="M ${fx-dir*bodyRx*0.7},${fy} L ${fx-dir*bodyRx*0.4},${fy-bodyRy*0.5} L ${fx-dir*bodyRx*0.1},${fy} L ${fx+dir*bodyRx*0.2},${fy-bodyRy*0.5} L ${fx+dir*bodyRx*0.5},${fy}" stroke="rgba(255,255,255,0.45)" stroke-width="1.4" fill="none"/>`;
   }
 
-  // 눈
-  svg+=`<circle cx="${fx+dir*bodyRx*0.48}" cy="${fy-bodyRy*0.15}" r="${size*0.17}" fill="#fff" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>`;
-  svg+=`<circle cx="${fx+dir*bodyRx*0.54}" cy="${fy-bodyRy*0.15}" r="${size*0.09}" fill="#111"/>`;
+  // 눈 (전기뱀장어는 가는 몸에 맞게 작은 눈)
+  const eyeR=type==='electric'?size*0.1:size*0.17;
+  const eyePupilR=type==='electric'?size*0.055:size*0.09;
+  svg+=`<circle cx="${fx+dir*bodyRx*0.48}" cy="${fy-bodyRy*0.15}" r="${eyeR}" fill="#fff" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>`;
+  svg+=`<circle cx="${fx+dir*bodyRx*0.54}" cy="${fy-bodyRy*0.15}" r="${eyePupilR}" fill="#111"/>`;
   svg+=`</svg>`;
   return svg;
 }
