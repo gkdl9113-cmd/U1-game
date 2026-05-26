@@ -1892,6 +1892,9 @@ const FISH_SKILLS={
   'cm_흡혈':       {name:'흡혈',      species:'common',   slot:1,icon:'🩸',desc:'배틀 패시브: 공격 시 15% 확률로 데미지 20% 회복'},
   'cm_강인함':     {name:'강인함',    species:'common',   slot:1,icon:'🪨',desc:'배틀 패시브: 한 번에 받는 피해가 최대 HP 20% 초과 시 초과분 50% 감소'},
   'cm_도망가기':   {name:'도망가기',  species:'common',   slot:1,icon:'🏃',desc:'배틀 패시브: 치명상 1회 무효화, HP 10%로 생존 (배틀당 1회)'},
+  'sn_위압감':     {name:'위압감',    species:'snakehead',slot:1,icon:'😤',desc:'배틀 패시브: 배틀 시작 시 적 전체 ATK -10%'},
+  'sn_제압':       {name:'제압',      species:'snakehead',slot:1,icon:'⬇️',desc:'배틀 패시브: 공격마다 확정으로 적 atkCd +10 (공격 지연)'},
+  'sn_압도':       {name:'압도',      species:'snakehead',slot:1,icon:'💪',desc:'배틀 패시브: 대상 HP가 자신 최대 HP의 50% 이하 시 ATK +20%'},
   'tu_장수의기운': {name:'장수의기운',species:'turtle',   slot:1,icon:'🐢',desc:'수조 패시브: 수족관 전체 HP 자동 회복 속도 +50%'},
   'tu_수축':       {name:'수축',      species:'turtle',   slot:1,icon:'🛡️',desc:'배틀 패시브: HP 35% 이하 시 받는 피해 60% 감소'},
   'tu_가시방어':   {name:'가시방어',  species:'turtle',   slot:1,icon:'🌵',desc:'배틀 패시브: 피격 시 받은 피해의 25%를 공격자에게 반사'},
@@ -5083,6 +5086,9 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
   // 스킬: 선봉 - 배틀 시작 시 atkCd -60
   p1.forEach(f=>{if(f.skill1==='cm_선봉'||f.skill2==='cm_선봉') f.atkCd=Math.max(0,f.atkCd-60);});
   p2.forEach(f=>{if(f.skill1==='cm_선봉'||f.skill2==='cm_선봉') f.atkCd=Math.max(0,f.atkCd-60);});
+  // 스킬: 위압감 - 배틀 시작 시 적 전체 ATK -10%
+  if(p1.some(f=>f.skill1==='sn_위압감'||f.skill2==='sn_위압감')) p2.forEach(f=>{f.atk=Math.floor(f.atk*0.9);});
+  if(p2.some(f=>f.skill1==='sn_위압감'||f.skill2==='sn_위압감')) p1.forEach(f=>{f.atk=Math.floor(f.atk*0.9);});
   const MAX=7200; // 최대 약 3.6분 (30ms * 7200 = 216초)
   for(let t=0;t<MAX;t++){
     const a1=p1.some(f=>f.curHp>0);
@@ -5109,11 +5115,13 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const bloodMult1=1+(f.bloodStacks||0)*0.08;
       // 스킬: 결사항전 - HP 25% 이하 시 ATK +50%
       const desperateAtk1=(f.skill1==='cm_결사항전'||f.skill2==='cm_결사항전')&&f.curHp<=f.maxHp*0.25?1.5:1;
+      // 스킬: 압도 - 대상 HP가 자신 최대 HP의 50% 이하 시 ATK +20%
+      const압도1=(f.skill1==='sn_압도'||f.skill2==='sn_압도')&&tgt.curHp<=f.maxHp*0.5?1.2:1;
       // 스킬: 분노 - 아군 처치 시 ATK +15% 누적
       const rageMult1=1+(f.rageStacks||0)*0.15;
       // 스킬: 결사항전 - 피격 대상 HP 25% 이하 시 DEF +50%
       const desperateDef1=(tgt.skill1==='cm_결사항전'||tgt.skill2==='cm_결사항전')&&tgt.curHp<=tgt.maxHp*0.25?1.5:1;
-      const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*desperateAtk1*rageMult1*0.7-tgt.def*desperateDef1*0.3+(rng()-0.5)*f.atk*0.15));
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*desperateAtk1*rageMult1*압도1*0.7-tgt.def*desperateDef1*0.3+(rng()-0.5)*f.atk*0.15));
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
@@ -5138,6 +5146,8 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){tgt.atkCd=0;}
       // 스킬: 감전 - 25% 확률로 적 atkCd +40
       if((f.skill1==='el_감전'||f.skill2==='el_감전')&&tgt.curHp>0&&rng()<0.25){tgt.atkCd+=40;}
+      // 스킬: 제압 - 공격마다 확정 적 atkCd +10
+      if((f.skill1==='sn_제압'||f.skill2==='sn_제압')&&tgt.curHp>0){tgt.atkCd+=10;}
       // 스킬: 분노 - 아군(p2) 처치 시 생존 p2 분노 스택 증가
       if(tgt.curHp<=0){p2.filter(ff=>ff.curHp>0&&(ff.skill1==='cm_분노'||ff.skill2==='cm_분노')).forEach(ff=>{ff.rageStacks=Math.min(2,(ff.rageStacks||0)+1);});}
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
@@ -5196,11 +5206,13 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const bloodMult2=1+(f.bloodStacks||0)*0.08;
       // 스킬: 결사항전 - HP 25% 이하 시 ATK +50%
       const desperateAtk2=(f.skill1==='cm_결사항전'||f.skill2==='cm_결사항전')&&f.curHp<=f.maxHp*0.25?1.5:1;
+      // 스킬: 압도 - 대상 HP가 자신 최대 HP의 50% 이하 시 ATK +20%
+      const압도2=(f.skill1==='sn_압도'||f.skill2==='sn_압도')&&tgt.curHp<=f.maxHp*0.5?1.2:1;
       // 스킬: 분노 - 아군 처치 시 ATK +15% 누적
       const rageMult2=1+(f.rageStacks||0)*0.15;
       // 스킬: 결사항전 - 피격 대상 HP 25% 이하 시 DEF +50%
       const desperateDef2=(tgt.skill1==='cm_결사항전'||tgt.skill2==='cm_결사항전')&&tgt.curHp<=tgt.maxHp*0.25?1.5:1;
-      const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*desperateAtk2*rageMult2*0.7-tgt.def*desperateDef2*0.3+(rng()-0.5)*f.atk*0.15));
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*desperateAtk2*rageMult2*압도2*0.7-tgt.def*desperateDef2*0.3+(rng()-0.5)*f.atk*0.15));
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
@@ -5225,6 +5237,8 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){tgt.atkCd=0;}
       // 스킬: 감전 - 25% 확률로 적 atkCd +40
       if((f.skill1==='el_감전'||f.skill2==='el_감전')&&tgt.curHp>0&&rng()<0.25){tgt.atkCd+=40;}
+      // 스킬: 제압 - 공격마다 확정 적 atkCd +10
+      if((f.skill1==='sn_제압'||f.skill2==='sn_제압')&&tgt.curHp>0){tgt.atkCd+=10;}
       // 스킬: 분노 - 아군(p1) 처치 시 생존 p1 분노 스택 증가
       if(tgt.curHp<=0){p1.filter(ff=>ff.curHp>0&&(ff.skill1==='cm_분노'||ff.skill2==='cm_분노')).forEach(ff=>{ff.rageStacks=Math.min(2,(ff.rageStacks||0)+1);});}
       // 스킬: 폭식 - 공격 후 30% 확률로 데미지의 30% 회복
