@@ -634,8 +634,8 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
         <div style="color:#999;font-size:11px;text-align:center">🎲<br>뽑기 버튼을 눌러보세요!</div>
       </div>
       <div style="display:flex;gap:6px">
-        <button id="gacha-btn-1" onclick="doSkillGacha(1)" style="flex:1;background:#4F46E5;color:#fff;border:none;padding:10px 6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.5">🎲 1회<br><span style="font-size:10px;opacity:.85">500원</span></button>
-        <button id="gacha-btn-10" onclick="doSkillGacha(10)" style="flex:1;background:#7C3AED;color:#fff;border:none;padding:10px 6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.5">🎲 10회<br><span style="font-size:10px;opacity:.85">4,500원</span></button>
+        <button id="gacha-btn-1" onclick="doSkillGacha(1)" style="flex:1;background:#4F46E5;color:#fff;border:none;padding:10px 6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.5">🎲 1회<br><span style="font-size:10px;opacity:.85">5,000원</span></button>
+        <button id="gacha-btn-10" onclick="doSkillGacha(10)" style="flex:1;background:#7C3AED;color:#fff;border:none;padding:10px 6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.5">🎲 10회<br><span style="font-size:10px;opacity:.85">48,000원</span></button>
       </div>
     </div>
   </div>
@@ -1967,7 +1967,7 @@ const SKILL_RARITY={
   '영웅':{bg:'#FFE8D0',fg:'#C05000',border:'#FFB070',label:'🟠 영웅'},
   '전설':{bg:'#FFF8DC',fg:'#8B6914',border:'#FFD700',label:'🟡 전설'},
 };
-const SKILL_GACHA_COST=500;
+const SKILL_GACHA_COST=5000;
 
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -3119,7 +3119,7 @@ function _gachaUpdateBtns(){
   const b1=document.getElementById('gacha-btn-1');
   const b10=document.getElementById('gacha-btn-10');
   const can1=FG.money>=SKILL_GACHA_COST;
-  const can10=FG.money>=SKILL_GACHA_COST*9;
+  const can10=FG.money>=48000;
   b1.disabled=!can1;b1.style.opacity=can1?'1':'0.5';
   b10.disabled=!can10;b10.style.opacity=can10?'1':'0.5';
 }
@@ -3131,7 +3131,7 @@ function _drawOneSkill(){
   return pool[Math.floor(Math.random()*pool.length)][0];
 }
 function doSkillGacha(times){
-  const cost=times===1?SKILL_GACHA_COST:Math.floor(SKILL_GACHA_COST*times*.9);
+  const cost=times===1?SKILL_GACHA_COST:48000;
   if(FG.money<cost){u1Toast('💰 돈이 부족합니다!','#C00000');return;}
   FG.money-=cost;
   document.getElementById('f-money').textContent=FG.money;
