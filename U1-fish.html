@@ -4718,8 +4718,8 @@ function btApplyEvents(){
       // 회피
       target.floatTxt={txt:'회피!',age:0,x:target.x,y:target.y-0.06,color:'#4F46E5'};
     } else if(!evt.dodge) {
-      // 명중
-      target.curHp=evt.hpAfter;
+      // 명중: 상대적 데미지 적용 (절대값 덮어쓰기 방지 - 칼로리소모 등 별도 회복 보존)
+      target.curHp=Math.max(0,target.curHp-evt.dmg);
       if(target.curHp<=0){
         target.curHp=0;
         target.isDead=true;
@@ -4732,9 +4732,9 @@ function btApplyEvents(){
       target.floatTxt={txt:dmgTxt,age:0,x:target.x,y:target.y-0.06,color:evt.crit?'#FF6B35':'#EF4444'};
     }
 
-    // 스킬: 폭식 (흡수) - target 상태와 관계없이 항상 적용
-    if(evt.skillHeal>0&&evt.atkHpAfter!=null&&!evt.dodge){
-      attacker.curHp=evt.atkHpAfter;
+    // 스킬: 폭식 (흡수) - 상대적 회복 적용 (절대값 덮어쓰기 방지)
+    if(evt.skillHeal>0&&!evt.dodge){
+      attacker.curHp=Math.min(attacker.maxHp,attacker.curHp+evt.skillHeal);
       attacker.healTxt={txt:`💚+${evt.skillHeal}`,age:0,x:attacker.x,y:attacker.y-0.06,color:'#16A34A'};
     }
   });
@@ -4868,8 +4868,8 @@ function btPhysicsStep(){
     if(f.healTxt&&f.healTxt.age>26) f.healTxt=null;
   });
 
-  // HP 패널 업데이트
-  if(btTick%5===0) renderBtHpPanels();
+  // HP 패널 업데이트 (매 틱 갱신 — 회복/피해 지연 없음)
+  renderBtHpPanels();
 }
 
 // ── 캔버스 그리기 ─────────────────────────────────────────
