@@ -2596,35 +2596,32 @@ function fishingGaugeClick(){
   if(FMG.baitFish){
     const baitType=FMG.baitFish.f.type;
     const bt=BAIT_YW_TABLE[baitType];
-    const probs=bt?(inSpecial?bt.special:bt.normal):null;
+    const baseProbsByZone=inSpecial?{mainProb:0,otherProb:0.005}:{mainProb:0,otherProb:0.001};
+    const probs=bt?(inSpecial?bt.special:bt.normal):baseProbsByZone;
     FMG.baitFish=null;
-    if(probs){
-      const roll=Math.random();
-      if(roll<probs.mainProb){
-        const caught=newFish(bt.main.stage,bt.main.type);
-        updateFishCodex(bt.main.type,bt.main.stage);
+    const roll=Math.random();
+    if(bt&&roll<probs.mainProb){
+      const caught=newFish(bt.main.stage,bt.main.type);
+      updateFishCodex(bt.main.type,bt.main.stage);
+      FG.auxFishes.push(caught);fishRenderAux();fishRenderInfo();fishQuickSave();
+      const cs=fStage(caught);
+      document.getElementById('frow-sp').textContent=cs.name;
+      _fishingShowResult(true,`✨ ${cs.name} 낚았습니다!${inSpecial?' (황금 구간!)':''}`,cs.grade);
+    } else if(roll<probs.mainProb+probs.otherProb){
+      const otherPool=_baitOtherYwPool(bt?.main?.type||'');
+      if(otherPool.length){
+        const op=otherPool[Math.floor(Math.random()*otherPool.length)];
+        const caught=newFish(op.stage,op.type);
+        updateFishCodex(op.type,op.stage);
         FG.auxFishes.push(caught);fishRenderAux();fishRenderInfo();fishQuickSave();
         const cs=fStage(caught);
         document.getElementById('frow-sp').textContent=cs.name;
-        _fishingShowResult(true,`✨ ${cs.name} 낚았습니다!${inSpecial?' (황금 구간!)':''}`,cs.grade);
-      } else if(roll<probs.mainProb+probs.otherProb){
-        const otherPool=_baitOtherYwPool(bt.main.type);
-        if(otherPool.length){
-          const op=otherPool[Math.floor(Math.random()*otherPool.length)];
-          const caught=newFish(op.stage,op.type);
-          updateFishCodex(op.type,op.stage);
-          FG.auxFishes.push(caught);fishRenderAux();fishRenderInfo();fishQuickSave();
-          const cs=fStage(caught);
-          document.getElementById('frow-sp').textContent=cs.name;
-          _fishingShowResult(true,`✨ ${cs.name} 낚았습니다! (이변!)`,cs.grade);
-        } else {
-          _fishingShowResult(false,'아깝다! 영물을 놓쳤습니다 🐟💨');
-        }
+        _fishingShowResult(true,`✨ ${cs.name} 낚았습니다! (이변!)`,cs.grade);
       } else {
         _fishingShowResult(false,'아깝다! 영물을 놓쳤습니다 🐟💨');
       }
     } else {
-      _fishingShowResult(false,'이 미끼에 해당하는 영물이 아직 없습니다 🐟💨');
+      _fishingShowResult(false,'아깝다! 영물을 놓쳤습니다 🐟💨');
     }
     return;
   }
