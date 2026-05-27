@@ -987,6 +987,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
         <div style="font-size:10px;color:#888;margin-bottom:2px">현재 잭팟</div>
         <div id="numlt-pool" style="font-size:26px;font-weight:900;color:#7B2D8B">---</div>
         <div style="font-size:9px;color:#AAA;margin-top:2px">구매마다 1,000원 누적</div>
+        <div id="numlt-accum-rate" style="font-size:9px;color:#9C6AB5;margin-top:2px"></div>
       </div>
       <div style="margin-bottom:12px">
         <div style="font-size:11px;color:#555;margin-bottom:6px;font-weight:700">행운의 숫자를 입력하세요 (0 ~ 333)</div>
@@ -1083,6 +1084,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="adm-card"><div class="adm-card-label">접속 중</div><div class="adm-card-val red" id="adm-online-count2">0</div></div>
     <div style="flex:1"></div>
     <button onclick="adminResetLottery()" style="background:#1A3D2A;color:#4ADE80;border:1px solid #2D6A4A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🎰 복권 초기화</button>
+    <button onclick="adminOpenJackpotSettings()" style="background:#2D1060;color:#C084FC;border:1px solid #6D28D9;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">⚙️ 잭팟 설정</button>
     <button onclick="adminResetJackpot()" style="background:#1A3D5C;color:#60A5FA;border:1px solid #2D6A9A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🎯 잭팟 초기화</button>
     <button onclick="adminResetServer()"style="background:#3D0000;color:#FB7185;border:1px solid #7F0000;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🗑️ 서버 초기화</button>
   </div>
@@ -1115,6 +1117,26 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div class="adm-btn-row">
         <button class="adm-btn secondary" onclick="hideDlg('adm-edit-modal')">취소</button>
         <button class="adm-btn primary" onclick="adminSaveEdit()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 잭팟 설정 모달 -->
+<div class="xl-dlg-ov" id="adm-jackpot-modal">
+  <div class="adm-modal-dark" style="min-width:300px;max-width:360px">
+    <div class="adm-modal-hdr">⚙️ 잭팟 설정 <button onclick="hideDlg('adm-jackpot-modal')" style="background:none;border:none;color:#7A9BBF;cursor:pointer;font-size:16px;padding:0">✕</button></div>
+    <div class="adm-modal-body">
+      <div style="font-size:11px;color:#A0C4E8;margin-bottom:12px">현재 잭팟: <strong id="adm-jk-pool" style="color:#FACC15">---</strong></div>
+      <div class="adm-form-row">
+        <label>적립 속도</label>
+        <input class="adm-form-inp" id="adm-jk-rate" type="number" min="0" max="10000" placeholder="원/분" style="width:80px">
+        <span style="font-size:10px;color:#7A9BBF">원/분</span>
+      </div>
+      <div style="font-size:9px;color:#4A6A8A;margin-top:6px">* 누군가 잭팟 창을 열 때 경과 시간만큼 자동 적립됩니다</div>
+      <div class="adm-btn-row" style="margin-top:14px">
+        <button class="adm-btn secondary" onclick="hideDlg('adm-jackpot-modal')">취소</button>
+        <button class="adm-btn green primary" onclick="adminSaveJackpotSettings()">저장</button>
       </div>
     </div>
   </div>
@@ -4704,6 +4726,7 @@ const NUMLT_USERNAME='__JACKPOT__';
 const NUMLT_START=10000;
 const NUMLT_PRICE=1000;
 const NUMLT_MAX=333;
+const NUMLT_ACCUM_RATE_DEFAULT=10; // 원/분 기본값
 
 async function getJackpotData(){
   const{data}=await _sb.from('fish_accounts').select('fish_data')
@@ -4711,23 +4734,43 @@ async function getJackpotData(){
   return data?.fish_data||null;
 }
 
+// 자동 적립 적용 후 저장, 업데이트된 jd 반환
+async function _jackpotApplyAccum(jd){
+  const now=Date.now();
+  const lastAccum=jd.lastAccum||now;
+  const rate=jd.accumRate??NUMLT_ACCUM_RATE_DEFAULT;
+  const elapsedMin=(now-lastAccum)/60000;
+  const add=Math.floor(elapsedMin*rate);
+  if(add<=0) return jd;
+  const newJd={...jd,pool:jd.pool+add,lastAccum:now};
+  await _sb.from('fish_accounts').update({
+    fish_data:newJd,updated_at:new Date().toISOString()
+  }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
+  return newJd;
+}
+
 async function ensureJackpot(){
-  const jd=await getJackpotData();
-  if(jd) return jd;
-  const target=Math.floor(Math.random()*(NUMLT_MAX+1));
-  const init={pool:NUMLT_START,target,round:1};
-  await _sb.from('fish_accounts').upsert({
-    username:NUMLT_USERNAME,server:ACTIVE_SERVER,
-    password_hash:'__JACKPOT__',fish_data:init,
-    updated_at:new Date().toISOString()
-  },{onConflict:'username,server'});
-  return init;
+  let jd=await getJackpotData();
+  if(!jd){
+    const target=Math.floor(Math.random()*(NUMLT_MAX+1));
+    jd={pool:NUMLT_START,target,round:1,lastAccum:Date.now(),accumRate:NUMLT_ACCUM_RATE_DEFAULT};
+    await _sb.from('fish_accounts').upsert({
+      username:NUMLT_USERNAME,server:ACTIVE_SERVER,
+      password_hash:'__JACKPOT__',fish_data:jd,
+      updated_at:new Date().toISOString()
+    },{onConflict:'username,server'});
+    return jd;
+  }
+  return await _jackpotApplyAccum(jd);
 }
 
 async function openNumberLottery(){
   if(FG.money<NUMLT_PRICE){u1Toast('숫자 복권 구매에 1,000원이 필요합니다','#C00000');return;}
   const jd=await ensureJackpot();
+  const rate=jd.accumRate??NUMLT_ACCUM_RATE_DEFAULT;
   document.getElementById('numlt-pool').textContent=jd.pool.toLocaleString()+'원';
+  const rateEl=document.getElementById('numlt-accum-rate');
+  if(rateEl) rateEl.textContent=`+${rate}원/분 자동 적립 중`;
   document.getElementById('numlt-input').value='';
   document.getElementById('numlt-result').style.display='none';
   const buyBtn=document.querySelector('#numlt-modal .xl-dlg-btn.ok');
@@ -4748,18 +4791,20 @@ async function buyNumberLottery(){
 
   FG.money-=NUMLT_PRICE;fishRenderInfo();
 
-  const jd=await getJackpotData();
+  let jd=await getJackpotData();
   if(!jd){u1Toast('잭팟 데이터를 불러오지 못했습니다','#C00000');FG.money+=NUMLT_PRICE;fishRenderInfo();if(buyBtn){buyBtn.disabled=false;buyBtn.style.opacity='1';}return;}
+  jd=await _jackpotApplyAccum(jd);
 
   const newTarget=Math.floor(Math.random()*(NUMLT_MAX+1));
   const won=(num===jd.target);
   const resultEl=document.getElementById('numlt-result');
 
+  const keepFields={lastAccum:jd.lastAccum||Date.now(),accumRate:jd.accumRate??NUMLT_ACCUM_RATE_DEFAULT};
   if(won){
     FG.money+=jd.pool;fishRenderInfo();fishQuickSave();
     const newPool=NUMLT_START;
     await _sb.from('fish_accounts').update({
-      fish_data:{pool:newPool,target:newTarget,round:(jd.round||1)+1},
+      fish_data:{pool:newPool,target:newTarget,round:(jd.round||1)+1,...keepFields,lastAccum:Date.now()},
       updated_at:new Date().toISOString()
     }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
     resultEl.style.cssText='display:block;text-align:center;padding:14px;border-radius:6px;background:#FFD700;color:#7F4F00;font-size:15px;font-weight:900;margin-bottom:10px';
@@ -4769,7 +4814,7 @@ async function buyNumberLottery(){
   } else {
     const newPool=jd.pool+NUMLT_PRICE;
     await _sb.from('fish_accounts').update({
-      fish_data:{pool:newPool,target:newTarget,round:(jd.round||1)+1},
+      fish_data:{pool:newPool,target:newTarget,round:(jd.round||1)+1,...keepFields},
       updated_at:new Date().toISOString()
     }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
     fishQuickSave();
@@ -5645,6 +5690,26 @@ async function adminSaveEdit(){
   // 접속 중인 플레이어에게 실시간 동기화 신호 전송
   sbSend('data_reload',{targetName:username,fromAdmin:ADMIN_USERNAME});
   adminLoadUsers();
+}
+
+async function adminOpenJackpotSettings(){
+  const jd=await getJackpotData();
+  document.getElementById('adm-jk-pool').textContent=jd?(jd.pool.toLocaleString()+'원'):'없음';
+  document.getElementById('adm-jk-rate').value=jd?.accumRate??NUMLT_ACCUM_RATE_DEFAULT;
+  document.getElementById('adm-jackpot-modal').classList.add('on');
+}
+async function adminSaveJackpotSettings(){
+  const rate=parseInt(document.getElementById('adm-jk-rate').value);
+  if(isNaN(rate)||rate<0){alert('0 이상의 숫자를 입력하세요');return;}
+  const jd=await getJackpotData();
+  if(!jd){alert('잭팟 데이터가 없습니다');return;}
+  const{error}=await _sb.from('fish_accounts').update({
+    fish_data:{...jd,accumRate:rate,lastAccum:Date.now()},
+    updated_at:new Date().toISOString()
+  }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
+  if(error){alert('저장 실패: '+error.message);return;}
+  hideDlg('adm-jackpot-modal');
+  u1Toast(`✅ 잭팟 적립 속도 ${rate}원/분으로 변경`,'#217346');
 }
 
 async function adminResetLottery(){
