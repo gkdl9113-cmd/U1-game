@@ -925,6 +925,14 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
+<!-- 물고기 레이스 복권 -->
+<div class="xl-dlg-ov" id="fish-race-modal">
+  <div class="xl-dlg" style="max-width:360px;width:calc(100vw - 16px);max-height:90dvh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="xl-dlg-title" style="background:#1A237E;color:#FFD700">🏁 물고기 레이스 <button class="xl-dlg-x" onclick="fishRaceClose()">✕</button></div>
+    <div style="flex:1;overflow-y:auto;padding:10px" id="fish-race-content"></div>
+  </div>
+</div>
+
 <!-- 복권 메뉴 -->
 <div class="xl-dlg-ov" id="lottery-menu-modal">
   <div class="xl-dlg" style="min-width:260px;max-width:300px">
@@ -937,6 +945,10 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <button onclick="hideDlg('lottery-menu-modal');openNumberLottery()" style="background:#7B2D8B;color:#fff;border:none;border-radius:6px;padding:14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left">
         🎯 숫자 복권
         <div style="font-size:10px;font-weight:400;color:#CE93D8;margin-top:3px">1,000원 · 잭팟 도전! 확률 0.3%</div>
+      </button>
+      <button onclick="hideDlg('lottery-menu-modal');openFishRace()" style="background:#1A237E;color:#FFD700;border:none;border-radius:6px;padding:14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left">
+        🏁 물고기 레이스
+        <div style="font-size:10px;font-weight:400;color:#90CAF9;margin-top:3px">1,500원 · 순위 예측 레이스</div>
       </button>
       <button onclick="hideDlg('lottery-menu-modal')" style="background:#E8E8E8;color:#333;border:none;border-radius:4px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">닫기</button>
     </div>
@@ -4638,6 +4650,240 @@ async function buyNumberLottery(){
     document.getElementById('numlt-pool').textContent=newPool.toLocaleString()+'원';
     if(buyBtn){buyBtn.disabled=false;buyBtn.style.opacity='1';}
   }
+}
+
+// ── 물고기 레이스 복권 ─────────────────────────────────────
+const RACE_COST=1500;
+const _RACE_TYPES=['goldfish','guppy','snakehead','tropical','piranha','clownfish','mandarin','electric','turtle'];
+
+function _racePrizePool(grade){
+  const targets={일반:['일반'],중급:['중급'],고급:['고급']};
+  const ok=targets[grade]||['일반'];
+  const pool=[];
+  for(const type of Object.keys(F_SPECIES)){
+    const sp=F_SPECIES[type];
+    for(let i=1;i<=5;i++){if(sp[i]&&ok.includes(sp[i].grade))pool.push({type,stage:i});}
+  }
+  return pool;
+}
+
+let _racePh=null,_raceFs=[],_racePick=[null,null,null],_raceRes=[],_raceRaf=null;
+
+function openFishRace(){
+  if(FG.money<RACE_COST){u1Toast(`레이스 참여에 ${RACE_COST.toLocaleString()}원이 필요합니다`,'#C00000');return;}
+  _raceFs=[];
+  for(let i=0;i<6;i++){
+    const type=_RACE_TYPES[Math.floor(Math.random()*_RACE_TYPES.length)];
+    const stage=Math.floor(Math.random()*5)+1;
+    const sp=F_SPECIES[type]||F_SPECIES.goldfish;
+    const s=sp[stage]||sp[1];
+    _raceFs.push({type,stage,s,baseSpd:0.55+Math.random()*0.9,y:0,finished:false,wobble:0,wobbleX:0});
+  }
+  _racePick=[null,null,null];_raceRes=[];_racePh='bet';
+  document.getElementById('fish-race-modal').classList.add('on');
+  _raceDrawBet();
+}
+function fishRaceClose(){
+  if(_raceRaf){cancelAnimationFrame(_raceRaf);_raceRaf=null;}
+  document.getElementById('fish-race-modal').classList.remove('on');
+  _racePh=null;
+}
+function fishRacePick(li,ri){
+  _racePick=_racePick.map((p,i)=>(p===li&&i!==ri)?null:p);
+  _racePick[ri]=(_racePick[ri]===li)?null:li;
+  _raceDrawBet();
+}
+
+function _raceDrawBet(){
+  const el=document.getElementById('fish-race-content');
+  const RN=['1등','2등','3등'];
+  let fishHtml='';
+  for(let i=0;i<6;i++){
+    const f=_raceFs[i];
+    const myRanks=_racePick.map((p,ri)=>p===i?ri:-1).filter(ri=>ri>=0);
+    const badges=myRanks.map(ri=>`<span style="background:${['#FFD700','#C0C0C0','#CD7F32'][ri]};color:#333;font-size:8px;font-weight:900;padding:1px 4px;border-radius:10px">${RN[ri]}</span>`).join('');
+    const sel=myRanks.length>0;
+    fishHtml+=`<div style="border:2px solid ${sel?'#1A237E':'#DDD'};border-radius:6px;padding:6px 4px;background:${sel?'#EEF2FF':'#fff'};text-align:center">
+      <div style="font-size:10px;font-weight:900;color:#1A237E;margin-bottom:2px;min-height:16px">${i+1}번 ${badges}</div>
+      ${drawMinifish(f.type,f.s,true)}
+      <div style="font-size:8px;color:#666;margin-top:2px;margin-bottom:4px">${f.s.name}</div>
+      <div style="display:flex;gap:2px">
+        ${[0,1,2].map(ri=>{const isSel=_racePick[ri]===i;return`<button onclick="fishRacePick(${i},${ri})" style="flex:1;background:${isSel?['#FFD700','#C0C0C0','#CD7F32'][ri]:'#F0F0F0'};color:${isSel?'#333':'#777'};border:none;border-radius:3px;padding:2px 0;font-size:8px;font-weight:700;cursor:pointer;font-family:inherit">${RN[ri]}</button>`;}).join('')}
+      </div>
+    </div>`;
+  }
+  const allPicked=_racePick.every(p=>p!==null);
+  const summary=_racePick.map((p,ri)=>p!==null?`${RN[ri]}: ${p+1}번`:`${RN[ri]}: ?`).join(' / ');
+  el.innerHTML=`
+    <div style="background:#1A237E;color:#FFD700;font-size:11px;font-weight:700;padding:6px 8px;border-radius:4px;margin-bottom:8px;text-align:center">🏁 ${RACE_COST.toLocaleString()}원 · 순위를 예측하세요</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px">${fishHtml}</div>
+    <div style="text-align:center;font-size:10px;color:#555;margin-bottom:8px;background:#F5F5F5;padding:5px;border-radius:4px">${summary}</div>
+    <div style="display:flex;gap:6px">
+      <button onclick="fishRaceStart()" style="flex:2;background:${allPicked?'#1A237E':'#9E9E9E'};color:#FFD700;border:none;border-radius:6px;padding:12px;font-size:13px;font-weight:900;cursor:${allPicked?'pointer':'default'};font-family:inherit"${allPicked?'':' disabled'}>🏁 레이스 시작!</button>
+      <button onclick="fishRaceClose()" style="flex:1;background:#E0E0E0;color:#333;border:none;border-radius:6px;padding:12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">닫기</button>
+    </div>
+    <div style="margin-top:6px;font-size:9px;color:#999;text-align:center">3개 맞춤→고급 / 2개→중급 / 1개→일반 물고기 / 꽝</div>`;
+}
+
+function fishRaceStart(){
+  if(_racePick.some(p=>p===null)){u1Toast('1등 2등 3등을 모두 선택해주세요','#C00000');return;}
+  FG.money-=RACE_COST;fishRenderInfo();fishQuickSave();
+  _racePh='race';
+  _raceFs.forEach(f=>{f.y=0;f.finished=false;f.wobble=0;f.wobbleX=0;});
+  _raceRes=[];
+  const el=document.getElementById('fish-race-content');
+  el.innerHTML=`<div style="background:#1A237E;color:#FFD700;font-size:11px;font-weight:700;padding:5px 8px;border-radius:4px;margin-bottom:8px;text-align:center">🏁 레이스 진행중...</div><canvas id="race-canvas" width="300" height="440" style="display:block;margin:0 auto;border:1px solid #BDBDBD;border-radius:2px"></canvas>`;
+  _raceRaf=requestAnimationFrame(_raceFrame);
+}
+
+function _raceFrame(){
+  const canvas=document.getElementById('race-canvas');
+  if(!canvas||_racePh!=='race')return;
+  const c=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const ML=22,MT=22,FY=H-38,LW=(W-ML)/6;
+
+  c.fillStyle='#FFFFFF';c.fillRect(0,0,W,H);
+
+  // 열 헤더 배경
+  for(let i=0;i<6;i++){
+    c.fillStyle=i%2===0?'#E8EAF6':'#C5CAE9';
+    c.fillRect(ML+i*LW,0,LW,MT);
+  }
+  c.fillStyle='#E8EAF6';c.fillRect(0,0,ML,H);
+
+  // 수직 레인선
+  c.strokeStyle='#C8C8C8';c.lineWidth=0.5;
+  for(let i=0;i<=6;i++){const x=ML+i*LW;c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
+
+  // 수평 그리드 + 행 번호
+  c.font='8px sans-serif';c.textAlign='right';
+  let row=1;
+  for(let y=MT;y<FY;y+=40){
+    c.strokeStyle='#D0D7DE';c.lineWidth=0.5;
+    c.beginPath();c.moveTo(ML,y);c.lineTo(W,y);c.stroke();
+    c.fillStyle='#595959';c.fillText(row++,ML-2,y+4);
+  }
+
+  // 열 번호
+  c.fillStyle='#1A237E';c.font='bold 10px sans-serif';c.textAlign='center';
+  for(let i=0;i<6;i++)c.fillText(`${i+1}번`,ML+(i+0.5)*LW,MT-6);
+
+  // 피니시 라인
+  c.strokeStyle='#C62828';c.lineWidth=2;c.setLineDash([5,3]);
+  c.beginPath();c.moveTo(ML,FY);c.lineTo(W,FY);c.stroke();
+  c.setLineDash([]);
+  c.fillStyle='#C62828';c.font='bold 8px sans-serif';c.textAlign='left';
+  c.fillText('FINISH',ML+2,FY-3);
+
+  // 물고기 이동
+  const SPD=2.8;
+  _raceFs.forEach((f,i)=>{
+    if(!f.finished){
+      f.wobble+=0.12;f.wobbleX=Math.sin(f.wobble)*1.5;
+      f.y+=SPD*f.baseSpd;
+      if(f.y>=FY-MT){f.y=FY-MT;f.finished=true;_raceRes.push(i);}
+    }
+  });
+
+  // 물고기 그리기
+  _raceFs.forEach((f,i)=>{
+    const cx=ML+(i+0.5)*LW+(f.finished?0:f.wobbleX);
+    const cy=MT+f.y;
+    _drawRaceFish(c,cx,cy,f.s.color,f.s.fin);
+  });
+
+  // 상위 3 메달
+  const medals=['🥇','🥈','🥉'];
+  _raceRes.slice(0,3).forEach((li,ri)=>{
+    const f=_raceFs[li];
+    const cx=ML+(li+0.5)*LW;
+    const cy=MT+f.y;
+    c.font='13px serif';c.textAlign='center';
+    c.fillText(medals[ri],cx,cy-14);
+  });
+
+  if(_raceRes.length>=3){setTimeout(()=>_raceShowResult(),900);return;}
+  _raceRaf=requestAnimationFrame(_raceFrame);
+}
+
+function _drawRaceFish(c,x,y,bc,fc){
+  c.save();c.translate(x,y);c.rotate(Math.PI/2);
+  const sz=8;
+  c.fillStyle=fc;
+  c.beginPath();c.moveTo(-sz*0.8,0);c.lineTo(-sz*1.5,-sz*0.5);c.lineTo(-sz*1.5,sz*0.5);c.closePath();c.fill();
+  c.fillStyle=bc;
+  c.beginPath();c.ellipse(0,0,sz,sz*0.55,0,0,Math.PI*2);c.fill();
+  c.strokeStyle='rgba(0,0,0,0.18)';c.lineWidth=0.5;c.stroke();
+  c.fillStyle='#fff';c.beginPath();c.arc(sz*0.55,-sz*0.15,sz*0.17,0,Math.PI*2);c.fill();
+  c.fillStyle='#111';c.beginPath();c.arc(sz*0.6,-sz*0.15,sz*0.09,0,Math.PI*2);c.fill();
+  c.restore();
+}
+
+function _raceShowResult(){
+  if(_raceRaf){cancelAnimationFrame(_raceRaf);_raceRaf=null;}
+  _racePh='result';
+  const RN=['1등','2등','3등'];
+  let correct=0;
+  for(let ri=0;ri<3;ri++)if(_racePick[ri]===_raceRes[ri])correct++;
+
+  let prizeGrade=null,prizeMsg='';
+  if(correct===3){prizeGrade='고급';prizeMsg='🏆 3개 적중! 고급 물고기 획득!';}
+  else if(correct===2){prizeGrade='중급';prizeMsg='🎖️ 2개 적중! 중급 물고기 획득!';}
+  else if(correct===1){prizeGrade='일반';prizeMsg='🎗️ 1개 적중! 일반 물고기 획득!';}
+  else{prizeMsg='😢 꽝! 다음 기회를!';}
+
+  let prizeFish=null;
+  if(prizeGrade){
+    const pool=_racePrizePool(prizeGrade);
+    if(pool.length){
+      const pk=pool[Math.floor(Math.random()*pool.length)];
+      prizeFish=newFish(pk.stage,pk.type);
+      updateFishCodex(pk.type,pk.stage);
+      FG.auxFishes.push(prizeFish);
+      fishRenderAux();fishQuickSave();
+    }
+  }
+
+  const medals=['🥇','🥈','🥉'];
+  let rows='';
+  for(let ri=0;ri<3;ri++){
+    const actual=_raceRes[ri],pred=_racePick[ri],hit=pred===actual;
+    rows+=`<tr style="background:${hit?'#E8F5E9':'#fff'}">
+      <td style="padding:5px;border:1px solid #E0E0E0;text-align:center;font-weight:700">${medals[ri]} ${RN[ri]}</td>
+      <td style="padding:5px;border:1px solid #E0E0E0;text-align:center">${pred+1}번</td>
+      <td style="padding:5px;border:1px solid #E0E0E0;text-align:center;font-weight:700;color:#1A237E">${actual+1}번</td>
+      <td style="padding:5px;border:1px solid #E0E0E0;text-align:center">${hit?'✅':'❌'}</td>
+    </tr>`;
+  }
+
+  const pf=prizeFish?fStage(prizeFish):null;
+  const prizeHtml=pf?`<div style="display:flex;align-items:center;gap:8px;padding:8px;background:#F1F8E9;border:1px solid #AED581;border-radius:6px;margin-bottom:8px">
+    <div style="flex-shrink:0">${drawMinifish(prizeFish.type,pf,true)}</div>
+    <div><div style="font-size:12px;font-weight:900;color:#33691E">획득!</div>
+      <div style="font-size:11px;font-weight:700">${pf.name}</div>
+      <div style="font-size:10px;color:${GRADE_CLR[pf.grade]||'#555'};font-weight:700">${pf.grade} · ${pf.species}</div>
+    </div></div>`:'';
+
+  const msgBg=correct===3?'#FFD700':correct>=1?'#E8EAF6':'#F5F5F5';
+  const msgClr=correct===3?'#7F4F00':correct>=1?'#1A237E':'#999';
+
+  document.getElementById('fish-race-content').innerHTML=`
+    <div style="text-align:center;padding:10px;background:${msgBg};border-radius:6px;margin-bottom:8px;font-size:13px;font-weight:900;color:${msgClr}">${prizeMsg}</div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px">
+      <thead><tr style="background:#1A237E;color:#FFD700">
+        <th style="padding:5px;border:1px solid #3949AB">순위</th>
+        <th style="padding:5px;border:1px solid #3949AB">예측</th>
+        <th style="padding:5px;border:1px solid #3949AB">실제</th>
+        <th style="padding:5px;border:1px solid #3949AB">결과</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    ${prizeHtml}
+    <div style="display:flex;gap:6px">
+      <button onclick="openFishRace()" style="flex:2;background:#1A237E;color:#FFD700;border:none;border-radius:6px;padding:10px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit">🔄 다시 하기 (${RACE_COST.toLocaleString()}원)</button>
+      <button onclick="fishRaceClose()" style="flex:1;background:#E0E0E0;color:#333;border:none;border-radius:6px;padding:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">닫기</button>
+    </div>`;
 }
 
 // ══════════════════════════════════════════════════════════
