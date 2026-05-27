@@ -1313,7 +1313,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.47';
+const BUILD = 'v2.48';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1687,6 +1687,8 @@ function enterFishWorldWithData(dbData){
       FG._ro.observe(FG.cvs.parentElement);
     }
     fishStartLoops(); fishRenderInfo();
+    // 앱 재시작 시 화면 잠금 중 저장된 오프라인 시간 처리
+    {const _sAt=parseInt(localStorage.getItem('_tabHiddenAt')||'0');if(_sAt) _applyOfflineElapsed(_sAt);}
     // 로드 후 모든 물고기 사망 상태이면 구매 팝업 표시
     setTimeout(()=>{
       if(aliveFishes().length===0&&FG.fishes.length>0){
@@ -2394,35 +2396,31 @@ function fishExitConfirm(){
   show('s-entry');
 }
 // 탭 숨김/복귀: 숨겨진 시간만큼 오프라인 계산 적용 (브라우저 throttle 보완)
-let _tabHiddenAt=0;
+// _tabHiddenAt은 localStorage에도 저장 → 화면 잠금 후 앱 강제종료 시도 대응
+let _tabHiddenAt=parseInt(localStorage.getItem('_tabHiddenAt')||'0');
+function _applyOfflineElapsed(hiddenAt){
+  const elapsed=(serverNow()-hiddenAt)/1000;
+  _tabHiddenAt=0;localStorage.removeItem('_tabHiddenAt');
+  if(elapsed>30){
+    const cappedElapsed=Math.min(elapsed,14400);
+    fishCalcOfflineAutoFeed(cappedElapsed);
+    fishCalcOffline(cappedElapsed);
+    fishCalcOfflineRod(cappedElapsed);
+    FG.lastTick=serverNow();
+    fishRenderInfo();
+    const mins=Math.floor(elapsed/60),secs=Math.floor(elapsed%60);
+    document.getElementById('f-status').textContent=`⏰ ${mins}분 ${secs}초 자리 비움 처리 완료`;
+    setTimeout(()=>fishUpdateStatus(),3000);
+    FG.fishes.forEach(f=>{if(!f.isDead&&f.hp<=0) fishDieOne(f);});
+  }
+}
 document.addEventListener('visibilitychange',()=>{
   const fishActive=!!FG.tickInterval;
   if(document.hidden){
-    // 숨겨지는 시점 기록
-    if(fishActive) _tabHiddenAt=serverNow();
+    if(fishActive){_tabHiddenAt=serverNow();localStorage.setItem('_tabHiddenAt',_tabHiddenAt);}
   } else {
-    // 복귀: 숨겨진 동안 시간 계산 후 오프라인 처리
-    if(_tabHiddenAt&&fishActive){
-      const elapsed=(serverNow()-_tabHiddenAt)/1000;
-      _tabHiddenAt=0;
-      if(elapsed>30){ // 30초 이상 숨겨졌을 때만 처리
-        const cappedElapsed=Math.min(elapsed,14400); // 최대 4시간
-        fishCalcOfflineAutoFeed(cappedElapsed); // 자동먹이통 먼저
-        fishCalcOffline(cappedElapsed);        // 포만감/수입
-        fishCalcOfflineRod(cappedElapsed);      // 낚시대
-        FG.lastTick=serverNow();                 // tick 기준 리셋
-        fishRenderInfo();
-        const mins=Math.floor(elapsed/60);
-        const secs=Math.floor(elapsed%60);
-        document.getElementById('f-status').textContent=
-          `⏰ ${mins}분 ${secs}초 자리 비움 처리 완료`;
-        setTimeout(()=>fishUpdateStatus(),3000);
-        // 물고기 죽음 체크
-        FG.fishes.forEach(f=>{
-          if(!f.isDead&&f.hp<=0) fishDieOne(f);
-        });
-      }
-    }
+    const savedAt=_tabHiddenAt||parseInt(localStorage.getItem('_tabHiddenAt')||'0');
+    if(savedAt&&fishActive) _applyOfflineElapsed(savedAt);
   }
 });
 
@@ -2827,6 +2825,11 @@ document.addEventListener('keydown',function(e){
     else if(st==='result') fishingTryAgain();
   }
 });
+// 낚시 게이지 touchstart: 모바일 300ms 딜레이 제거
+document.getElementById('fishing-area').addEventListener('touchstart',(e)=>{
+  e.preventDefault(); // click 이벤트 중복 방지 + 즉시 반응
+  fishingAreaClick();
+},{passive:false});
 
 function _fishingSetMsg(txt,sub){
   const t=document.getElementById('fishing-msg-txt');if(t){t.textContent=txt;t.style.color='#1F3864';}
@@ -6182,6 +6185,8 @@ async function adminEnterGame(){
       FG._ro.observe(FG.cvs.parentElement);
     }
     fishStartLoops(); fishRenderInfo();
+    // 앱 재시작 시 화면 잠금 중 저장된 오프라인 시간 처리
+    {const _sAt=parseInt(localStorage.getItem('_tabHiddenAt')||'0');if(_sAt) _applyOfflineElapsed(_sAt);}
     // 로드 후 모든 물고기 사망 상태이면 구매 팝업 표시
     setTimeout(()=>{
       if(aliveFishes().length===0&&FG.fishes.length>0){
