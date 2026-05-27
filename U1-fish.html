@@ -2563,6 +2563,8 @@ function fishingGaugeClick(){
     const caught=newFish(pickedStage,picked);
     updateFishCodex(picked,pickedStage);
     FG.auxFishes.push(caught);
+    const _spRates={rod1:0,rod2:0,rod3:0.001,rod4:0.01,rod5:0.025,rod6:0.05};
+    if(Math.random()<(_spRates[FMG.rodId]||0)){FG.spFood++;u1Toast('🍖 특수먹이 획득!','#5D4037');}
     fishRenderAux();fishRenderInfo();fishQuickSave();
     const cs=fStage(caught);
     document.getElementById('frow-sp').textContent=cs.name;
