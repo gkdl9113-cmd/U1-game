@@ -674,7 +674,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-dlg-body" style="padding:14px">
       <div style="text-align:center;margin-bottom:12px;padding:8px;background:#E0F2F1;border-radius:6px">
         <div style="font-size:13px;font-weight:800;color:#004D40" id="yw-alloc-title">🎉 레벨업!</div>
-        <div style="font-size:12px;color:#00695C;margin-top:3px">배분 가능: <strong id="yw-alloc-pts" style="color:#C05000;font-size:15px">50</strong> pts</div>
+        <div style="font-size:12px;color:#00695C;margin-top:3px">배분 가능: <strong id="yw-alloc-pts" style="color:#C05000;font-size:15px">5</strong> pts</div>
       </div>
       <div id="yw-alloc-rows" style="display:flex;flex-direction:column;gap:6px"></div>
       <div style="font-size:9px;color:#888;margin-top:8px;text-align:center">포인트를 원하는 스탯에 배분하세요. 배분 후 취소 불가.</div>
@@ -3341,7 +3341,7 @@ function ywLevelUp(idx){
   FG.money-=cost;
   f.xp=Math.max(0,f.xp-ywXpNeed(f));
   f.level=lv+1;
-  f.statPoints=(f.statPoints||0)+50;
+  f.statPoints=(f.statPoints||0)+5;
   showFishDetail(idx);
   saveFishDataToDB();
   u1Toast(`🐢 Lv.${f.level} 달성! 스탯 50포인트 획득!`,'#004D40');
