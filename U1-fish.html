@@ -4013,7 +4013,7 @@ function fishRenderAux(){
         <td style="border:1px solid #D0D0D0;padding:2px 5px;text-align:center">
           <div style="display:flex;gap:3px;justify-content:center">
             <button onclick="fishAuxToMain(${i})" ${mainFull?'disabled':''} style="${btnStyle}">→메인</button>
-            <button onclick="fishAuxRelease(${i})" style="background:#C05000;color:#fff;border:none;padding:2px 6px;border-radius:2px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit">방생</button>
+            <button onclick="fishAuxSell(${i})" style="background:#C05000;color:#fff;border:none;padding:2px 6px;border-radius:2px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit">💰${Math.round(getFishSellPrice(f)*0.5).toLocaleString()}원</button>
           </div>
         </td>
       </tr>`;
@@ -4053,14 +4053,16 @@ function _fishingResetIfAuxFree(){
   _fishingSetState('낚싯대 선택 대기');
   fishingRenderRodBtns();
 }
-function fishAuxRelease(idx){
+function fishAuxSell(idx){
   const f=FG.auxFishes[idx]; if(!f) return;
   const s=fStage(f);
+  const price=Math.round(getFishSellPrice(f)*0.5);
   FG.auxFishes.splice(idx,1);
+  FG.money+=price;
   fishRenderAux();
   fishRenderInfo();
   fishQuickSave();
-  u1Toast(`🌊 ${s.name} 방생했습니다`,'#1F3864');
+  u1Toast(`💰 ${s.name} ${price.toLocaleString()}원에 판매했습니다`,'#217346');
   _fishingResetIfAuxFree();
 }
 function fishAuxToMain(idx){
