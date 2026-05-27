@@ -1313,7 +1313,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.50';
+const BUILD = 'v2.51';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -3054,7 +3054,7 @@ function fishTick(){
     // HP 변화 (퍼센트 기반 소수점 누적)
     f._hpAcc=(f._hpAcc||0)+elapsed;
     if(f.fullness<20&&f._hpAcc>=5){
-      f._hpAcc=0;f.hp=Math.max(0,f.hp-1);
+      f._hpAcc=0;f.hp=Math.max(0,f.hp-Math.max(1,Math.ceil(f.hp*0.05)));
     } else if(f.hp<f.maxHp&&f.fullness>20){
       // 스킬: 장수의 기운 - 수족관 전체 HP 회복 속도 +50%
       const turtleAura=FG.fishes.some(lf=>!lf.isDead&&(lf.skill1==='tu_장수의기운'||lf.skill2==='tu_장수의기운'));
