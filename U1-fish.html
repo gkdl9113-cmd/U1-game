@@ -1019,7 +1019,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   <div class="xl-dlg" style="max-width:340px;max-height:80dvh;overflow:hidden;display:flex;flex-direction:column">
     <div class="xl-dlg-title">🐢 미끼 선택 <button class="xl-dlg-x" onclick="fishingCancelBait()">✕</button></div>
     <div style="padding:10px 14px 6px;font-size:10px;color:#555;border-bottom:1px solid #E0E0E0">
-      전설 물고기를 미끼로 소모합니다. 낚시 시작 즉시 소모됩니다.
+      5단계 물고기를 미끼로 소모합니다. 낚시 시작 즉시 소모됩니다.
     </div>
     <div id="bait-list" style="flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px"></div>
     <div style="padding:10px 14px;border-top:1px solid #E0E0E0;display:flex;gap:8px">
@@ -1979,7 +1979,9 @@ const F_GRADES={
   '희귀':{label:'희귀',bg:'#E8D5F5',fg:'#6A0DAD'},
   '영웅':{label:'영웅',bg:'#FFE5CC',fg:'#C05000'},
   '전설':{label:'전설',bg:'#FFF3CD',fg:'#8B6914'},
-  '영물':{label:'영물',bg:'#D4F0EB',fg:'#00574B'},
+  '하급영물':{label:'하급영물',bg:'#E0F2F1',fg:'#00695C'},
+  '중급영물':{label:'중급영물',bg:'#B2DFDB',fg:'#004D40'},
+  '상급영물':{label:'상급영물',bg:'#FFF8E1',fg:'#BF6000'},
 };
 // 물고기 스킬 정의
 const FISH_SKILLS={
@@ -2097,7 +2099,7 @@ const F_SPECIES={
   ],
   // 용궁 거북이: 영물 단독, 운철 낚시대 전용 획득
   yongwang:[null,
-    {name:'용궁 거북이',species:'용궁 거북이',grade:'영물',color:'#004D40',fin:'#FFD700',hp:8000,atk:600,def:1800,agi:120,luk:400,xpRate:15,xpNeed:9999,evoCost:0,foodRate:6},
+    {name:'용궁 거북이',species:'용궁 거북이',grade:'중급영물',color:'#004D40',fin:'#FFD700',hp:8000,atk:600,def:1800,agi:120,luk:400,xpRate:15,xpNeed:9999,evoCost:0,foodRate:6},
   ],
   // 거북이: HP/DEF 특화 탱커, 낮은 AGI, 높은 행운 (호수 전용)
   // 등급: 중급→고급→희귀→영웅→전설
@@ -2155,10 +2157,15 @@ const F_SHOP=[
    catchProb:0.601, catchProbSpecial:1.0, gaugeWidth:0.33, gaugeSpeed:55,
    specialZoneWidth:0.05,
    requiresBait:true,
-   grades:[{grade:'영웅',w:832},{grade:'전설',w:166},{grade:'영물',w:2}],
-   gradesSpecial:[{grade:'영웅',w:690},{grade:'전설',w:300},{grade:'영물',w:10}],
+   grades:[{grade:'영웅',w:832},{grade:'전설',w:166},{grade:'하급영물',w:1.2},{grade:'중급영물',w:0.6},{grade:'상급영물',w:0.2}],
+   gradesSpecial:[{grade:'영웅',w:690},{grade:'전설',w:300},{grade:'하급영물',w:6},{grade:'중급영물',w:3},{grade:'상급영물',w:1}],
    desc:'🐢 심연의 거북을 미끼로 영물 도전'},
 ];
+// 미끼 어종 → 영물 확률표 (normal=일반구간, special=황금구간)
+const BAIT_YW_TABLE={
+  turtle:{main:{type:'yongwang',stage:1},normal:{mainProb:0.02,otherProb:0.002},special:{mainProb:0.07,otherProb:0.007}},
+  // goldfish: 금붕어 영물 추가 시 구현
+};
 const LOTTERY_PRIZES=[
   {grade:'1등',amount:1000,prob:0.005,bg:'#FFD700',fg:'#7F4F00'},
   {grade:'2등',amount:700, prob:0.025,bg:'#C0C0C0',fg:'#333'},
@@ -2417,10 +2424,10 @@ function fishingOpenBaitSelect(){
   const allFish=[
     ...FG.fishes.map(f=>({f,src:'main'})),
     ...FG.auxFishes.map(f=>({f,src:'aux'}))
-  ].filter(({f})=>!f.isDead&&fStage(f).grade==='전설');
+  ].filter(({f})=>!f.isDead&&f.stage===5&&f.type!=='yongwang');
   const listEl=document.getElementById('bait-list');
   if(!allFish.length){
-    listEl.innerHTML=`<div style="text-align:center;padding:20px;color:#999;font-size:11px">보유한 전설 물고기가 없습니다.<br>전설 등급까지 진화시켜 주세요.</div>`;
+    listEl.innerHTML=`<div style="text-align:center;padding:20px;color:#999;font-size:11px">보유한 5단계 물고기가 없습니다.<br>물고기를 최대 단계까지 진화시켜 주세요.</div>`;
     document.getElementById('bait-confirm-btn').disabled=true;
   } else {
     listEl.innerHTML=allFish.map(({f,src},i)=>{
@@ -2585,6 +2592,42 @@ function fishingGaugeClick(){
     FMG.gaugePos<=(FMG.specialZoneStart+FMG.specialZoneWidth);
   const inZone=FMG.gaugePos>=FMG.gaugeZoneStart&&FMG.gaugePos<=(FMG.gaugeZoneStart+FMG.gaugeZoneWidth);
   if(!inSpecial&&!inZone){_fishingShowResult(false,'타이밍 실패! 물고기가 빠져나갔습니다 🐟💨');return;}
+  // 미끼 사용 시 영물 전용 확률 로직
+  if(FMG.baitFish){
+    const baitType=FMG.baitFish.f.type;
+    const bt=BAIT_YW_TABLE[baitType];
+    const probs=bt?(inSpecial?bt.special:bt.normal):null;
+    FMG.baitFish=null;
+    if(probs){
+      const roll=Math.random();
+      if(roll<probs.mainProb){
+        const caught=newFish(bt.main.stage,bt.main.type);
+        updateFishCodex(bt.main.type,bt.main.stage);
+        FG.auxFishes.push(caught);fishRenderAux();fishRenderInfo();fishQuickSave();
+        const cs=fStage(caught);
+        document.getElementById('frow-sp').textContent=cs.name;
+        _fishingShowResult(true,`✨ ${cs.name} 낚았습니다!${inSpecial?' (황금 구간!)':''}`,cs.grade);
+      } else if(roll<probs.mainProb+probs.otherProb){
+        const otherPool=_baitOtherYwPool(bt.main.type);
+        if(otherPool.length){
+          const op=otherPool[Math.floor(Math.random()*otherPool.length)];
+          const caught=newFish(op.stage,op.type);
+          updateFishCodex(op.type,op.stage);
+          FG.auxFishes.push(caught);fishRenderAux();fishRenderInfo();fishQuickSave();
+          const cs=fStage(caught);
+          document.getElementById('frow-sp').textContent=cs.name;
+          _fishingShowResult(true,`✨ ${cs.name} 낚았습니다! (이변!)`,cs.grade);
+        } else {
+          _fishingShowResult(false,'아깝다! 영물을 놓쳤습니다 🐟💨');
+        }
+      } else {
+        _fishingShowResult(false,'아깝다! 영물을 놓쳤습니다 🐟💨');
+      }
+    } else {
+      _fishingShowResult(false,'이 미끼에 해당하는 영물이 아직 없습니다 🐟💨');
+    }
+    return;
+  }
   const gradeTable=inSpecial?(rod.gradesSpecial||rod.grades):rod.grades;
   const effectiveCatchProb=inSpecial&&rod.catchProbSpecial!=null?rod.catchProbSpecial:rod.catchProb;
   if(Math.random()<effectiveCatchProb){
@@ -4283,7 +4326,7 @@ const BTPICK_SPECIES=[
   {key:'turtle',    label:'거북이'},
   {key:'yongwang',  label:'용궁 거북이'},
 ];
-const GRADE_CLR={'일반':'#555','중급':'#1565C0','고급':'#558B2F','희귀':'#7B1FA2','영웅':'#E65100','전설':'#B71C1C','영물':'#00574B'};
+const GRADE_CLR={'일반':'#555','중급':'#1565C0','고급':'#558B2F','희귀':'#7B1FA2','영웅':'#E65100','전설':'#B71C1C','하급영물':'#00695C','중급영물':'#004D40','상급영물':'#BF6000'};
 
 function openBattlePick(){
   if(!FG.battlePick) FG.battlePick=[];
@@ -5722,6 +5765,18 @@ function mulberry32(seed){
 
 // 시드 RNG
 // 등급 기반 어종 결정: grades 배열 → 등급 선택 → 해당 등급 1단계 어종 중 랜덤
+function _baitOtherYwPool(excludeType){
+  const pool=[];
+  for(const type of Object.keys(F_SPECIES)){
+    if(type===excludeType)continue;
+    const sp=F_SPECIES[type];
+    for(let i=1;i<=5;i++){
+      if(sp[i]&&(sp[i].grade||'').includes('영물'))pool.push({type,stage:i});
+    }
+  }
+  return pool;
+}
+
 function pickSpeciesByGrade(gradesTable, rngFn){
   const rng=rngFn||Math.random;
   const table=gradesTable||[{grade:'일반',w:100}];
