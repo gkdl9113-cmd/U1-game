@@ -5448,12 +5448,12 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       // 스킬: 결사항전 - HP 25% 이하 시 ATK +50%
       const desperateAtk1=(f.skill1==='cm_결사항전'||f.skill2==='cm_결사항전')&&f.curHp<=f.maxHp*0.25?1.5:1;
       // 스킬: 압도 - 대상 HP가 자신 최대 HP의 50% 이하 시 ATK +20%
-      const압도1=(f.skill1==='sn_압도'||f.skill2==='sn_압도')&&tgt.curHp<=f.maxHp*0.5?1.2:1;
+      const ando1=(f.skill1==='sn_압도'||f.skill2==='sn_압도')&&tgt.curHp<=f.maxHp*0.5?1.2:1;
       // 스킬: 분노 - 아군 처치 시 ATK +15% 누적
       const rageMult1=1+(f.rageStacks||0)*0.15;
       // 스킬: 결사항전 - 피격 대상 HP 25% 이하 시 DEF +50%
       const desperateDef1=(tgt.skill1==='cm_결사항전'||tgt.skill2==='cm_결사항전')&&tgt.curHp<=tgt.maxHp*0.25?1.5:1;
-      const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*desperateAtk1*rageMult1*압도1*0.7-tgt.def*desperateDef1*0.3+(rng()-0.5)*f.atk*0.15));
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*desperateAtk1*rageMult1*ando1*0.7-tgt.def*desperateDef1*0.3+(rng()-0.5)*f.atk*0.15));
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
@@ -5539,12 +5539,12 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       // 스킬: 결사항전 - HP 25% 이하 시 ATK +50%
       const desperateAtk2=(f.skill1==='cm_결사항전'||f.skill2==='cm_결사항전')&&f.curHp<=f.maxHp*0.25?1.5:1;
       // 스킬: 압도 - 대상 HP가 자신 최대 HP의 50% 이하 시 ATK +20%
-      const압도2=(f.skill1==='sn_압도'||f.skill2==='sn_압도')&&tgt.curHp<=f.maxHp*0.5?1.2:1;
+      const ando2=(f.skill1==='sn_압도'||f.skill2==='sn_압도')&&tgt.curHp<=f.maxHp*0.5?1.2:1;
       // 스킬: 분노 - 아군 처치 시 ATK +15% 누적
       const rageMult2=1+(f.rageStacks||0)*0.15;
       // 스킬: 결사항전 - 피격 대상 HP 25% 이하 시 DEF +50%
       const desperateDef2=(tgt.skill1==='cm_결사항전'||tgt.skill2==='cm_결사항전')&&tgt.curHp<=tgt.maxHp*0.25?1.5:1;
-      const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*desperateAtk2*rageMult2*압도2*0.7-tgt.def*desperateDef2*0.3+(rng()-0.5)*f.atk*0.15));
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*desperateAtk2*rageMult2*ando2*0.7-tgt.def*desperateDef2*0.3+(rng()-0.5)*f.atk*0.15));
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
