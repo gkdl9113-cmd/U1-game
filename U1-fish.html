@@ -1657,7 +1657,7 @@ function applyFishData(d){
     FG.fishes=[{id:'legacy',stage:d.stage||1,hp:d.hp||50,maxHp:d.maxHp||50,fullness:d.fullness||80,xp:d.xp||0,isDead:false}];
   }
   if(!FG.fishes||FG.fishes.length===0) FG.fishes=[newFish(1)];
-  FG.money=d.money??100;FG.food=d.food??5;FG.autoFeeders=d.autoFeeders||[];
+  FG.money=d.money??100;FG.food=d.food??5;FG.spFood=d.spFood??0;FG.autoFeeders=d.autoFeeders||[];
   FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
   FG.skillInventory=d.skillInventory||{};
@@ -1701,7 +1701,7 @@ async function saveFishDataToDB(){
   }));
   const data={
     fishes:cleanFishes,auxFishes:cleanAux,auxMax:FG.auxMax,
-    money:FG.money,food:FG.food,autoFeeders:FG.autoFeeders,
+    money:FG.money,food:FG.food,spFood:FG.spFood,autoFeeders:FG.autoFeeders,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,fishCodex:FG.fishCodex,
     skillInventory:FG.skillInventory,
@@ -2144,7 +2144,7 @@ const FG={
   battlePick:[],       // 출전 선택 물고기 (max 3, max 1 전설) — FG.fishes의 참조
   auxFishes:[],        // 보조 수족관: 낚시로 잡은 임시 물고기 (먹이 못줌, 2.5배 소모)
   auxMax:1,            // 보조 수족관 최대 크기 (1~3)
-  money:100,food:5,autoFeeders:[],  // [{targetIdx:null/idx, acc:0}]
+  money:100,food:5,spFood:0,autoFeeders:[],  // [{targetIdx:null/idx, acc:0}]
   tankLevel:0,tankMax:1,
   rods:{rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0}, // 낚싯대 인벤토리
   skillInventory:{}, // {skillId: count}
@@ -3317,6 +3317,20 @@ const YW_PER_PT={hp:100,atk:10,def:20,agi:3,luk:5};
 function ywXpNeed(f){return(f.level||1)*500;}
 function ywGoldCost(f){return(f.level||1)*10000;}
 
+function ywFeedSpecial(idx){
+  const f=FG.fishes[idx];if(!f||f.type!=='yongwang'||f.isDead) return;
+  if(FG.spFood<=0){u1Toast('특수먹이가 없습니다','#C00000');return;}
+  const lv=f.level||1;
+  if(lv>=YW_MAX_LV){u1Toast('이미 최대 레벨입니다','#888');return;}
+  FG.spFood--;
+  f.xp=(f.xp||0)+500;
+  const xpNeed=ywXpNeed(f);
+  const pct=Math.min(100,Math.floor(f.xp/xpNeed*100));
+  u1Toast(`🍖 특수먹이 급여 → XP +500 (${Math.floor(f.xp)}/${xpNeed}, ${pct}%)  남은 특수먹이: ${FG.spFood}개`,'#004D40');
+  showFishDetail(idx);
+  fishQuickSave();
+}
+
 function ywLevelUp(idx){
   const f=FG.fishes[idx];if(!f||f.type!=='yongwang') return;
   const lv=f.level||1;
@@ -3546,6 +3560,7 @@ function showFishDetail(idx){
       :`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px">
           <span style="color:#004D40;font-weight:700">🐢 Lv.${ywLv} → ${ywLv+1}</span>
           <span style="color:#555">⭐ ${Math.floor(f.xp)}/${xpNeedYw}</span>
+          <button onclick="ywFeedSpecial(${idx})" style="background:${FG.spFood>0?'#5D4037':'#9E9E9E'};color:#FFE0B2;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:${FG.spFood>0?'pointer':'default'};font-family:inherit">🍖 특수먹이 (${FG.spFood}개)</button>
           ${canUp
             ?`<button onclick="ywLevelUp(${idx})" style="background:#004D40;color:#FFD700;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">⬆️ 레벨업 (💰${ywGoldCost(f).toLocaleString()}원)</button>`
             :`<span style="color:#888;font-size:9px">비용 💰${ywGoldCost(f).toLocaleString()}원</span>`}
@@ -3826,7 +3841,7 @@ function fishSave(isDisconnect){
   const cleanFishes=FG.fishes.map(f=>{const s=fStage(f);return{id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',name:s.name,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:f.isDead||false,skill1:f.skill1||undefined,skill2:f.skill2||undefined,...(f.type==='yongwang'?{level:f.level||1,statPoints:f.statPoints||0,bonusAtk:f.bonusAtk||0,bonusDef:f.bonusDef||0,bonusAgi:f.bonusAgi||0,bonusLuk:f.bonusLuk||0}:{})};});
   const cleanAux=FG.auxFishes.map(f=>{const s=fStage(f);return{id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',name:s.name,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:false};});
   const data={fishes:cleanFishes,auxFishes:cleanAux,auxMax:FG.auxMax,
-    money:FG.money,food:FG.food,autoFeeders:FG.autoFeeders,
+    money:FG.money,food:FG.food,spFood:FG.spFood,autoFeeders:FG.autoFeeders,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,skillInventory:FG.skillInventory,
     battlePickIds:(FG.battlePick||[]).map(f=>f.id),
