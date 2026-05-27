@@ -2131,9 +2131,10 @@ const STAGE_INCOME={
 };
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
 const F_SHOP=[
-  {id:'food10', name:'먹이 10개',     price:50,  desc:'포만감 +15씩',      type:'food',qty:10},
-  {id:'food30', name:'먹이 30개',     price:130, desc:'소량 할인',          type:'food',qty:30},
-  {id:'food100',name:'먹이 100개',    price:400, desc:'대량 할인',          type:'food',qty:100},
+  {id:'food10',  name:'먹이 10개',    price:50,   desc:'포만감 +15씩',      type:'food',qty:10},
+  {id:'food30',  name:'먹이 30개',    price:130,  desc:'소량 할인',          type:'food',qty:30},
+  {id:'food100', name:'먹이 100개',   price:400,  desc:'대량 할인',          type:'food',qty:100},
+  {id:'food1000',name:'먹이 1000개',  price:3500, desc:'초대량 할인',        type:'food',qty:1000},
   // 자동먹이통: 상점에서 동적으로 구매 (fishOpenShop 참조)
   {id:'rod1',name:'나무 낚시대', price:150, type:'rod',
    catchProb:0.30, gaugeWidth:0.22, gaugeSpeed:130,
@@ -5255,6 +5256,7 @@ const ADM_GIVE_SPECIES=[
   {key:'electric', label:'전기뱀장어'},
   {key:'turtle',   label:'거북이'},
   {key:'yongwang', label:'용궁 거북이'},
+  {key:'yeongeum', label:'영금어'},
 ];
 let _admGiveType='goldfish';
 let _admGiveStage=1;
