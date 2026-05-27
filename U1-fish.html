@@ -1694,7 +1694,7 @@ function applyFishData(d){
   FG.skillInventory=d.skillInventory||{};
   FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
   FG.auxMax=d.auxMax||1;
-  FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{}};
+  FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{}};
   if(d.battlePickIds&&d.battlePickIds.length){
     FG.battlePick=d.battlePickIds.map(id=>FG.fishes.find(f=>f.id===id)).filter(f=>f&&!f.isDead);
     const lbl=document.getElementById('btpick-ribbon-lbl');
@@ -1722,7 +1722,7 @@ async function saveFishDataToDB(){
     stage:f.stage,hp:f.hp,maxHp:f.maxHp,
     fullness:f.fullness,xp:f.xp,isDead:f.isDead||false,
     skill1:f.skill1||undefined,skill2:f.skill2||undefined,
-    ...(f.type==='yongwang'?{level:f.level||1,statPoints:f.statPoints||0,bonusAtk:f.bonusAtk||0,bonusDef:f.bonusDef||0,bonusAgi:f.bonusAgi||0,bonusLuk:f.bonusLuk||0}:{})
+    ...(_isYwFish(f)?{level:f.level||1,statPoints:f.statPoints||0,bonusAtk:f.bonusAtk||0,bonusDef:f.bonusDef||0,bonusAgi:f.bonusAgi||0,bonusLuk:f.bonusLuk||0}:{})
   }));
   const cleanAux=FG.auxFishes.map(f=>({
     id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',
@@ -2101,6 +2101,9 @@ const F_SPECIES={
   yongwang:[null,
     {name:'용궁 거북이',species:'용궁 거북이',grade:'중급영물',color:'#004D40',fin:'#FFD700',hp:8000,atk:600,def:1800,agi:120,luk:400,xpRate:15,xpNeed:9999,evoCost:0,foodRate:6},
   ],
+  yeongeum:[null,
+    {name:'영금어',species:'영금어',grade:'하급영물',color:'#FFD700',fin:'#FF4500',hp:5500,atk:550,def:450,agi:320,luk:220,xpRate:12,xpNeed:9999,evoCost:0,foodRate:7},
+  ],
   // 거북이: HP/DEF 특화 탱커, 낮은 AGI, 높은 행운 (호수 전용)
   // 등급: 중급→고급→희귀→영웅→전설
   turtle:[null,
@@ -2124,6 +2127,7 @@ const STAGE_INCOME={
   electric:[0,10,28,65,150,350],
   turtle:[0,12,35,85,200,450],
   yongwang:[0,2000],
+  yeongeum:[0,1500],
 };
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
 const F_SHOP=[
@@ -2164,7 +2168,7 @@ const F_SHOP=[
 // 미끼 어종 → 영물 확률표 (normal=일반구간, special=황금구간)
 const BAIT_YW_TABLE={
   turtle:{main:{type:'yongwang',stage:1},normal:{mainProb:0.02,otherProb:0.002},special:{mainProb:0.07,otherProb:0.007}},
-  // goldfish: 금붕어 영물 추가 시 구현
+  goldfish:{main:{type:'yeongeum',stage:1},normal:{mainProb:0.03,otherProb:0.003},special:{mainProb:0.10,otherProb:0.007}},
 };
 const LOTTERY_PRIZES=[
   {grade:'1등',amount:1000,prob:0.005,bg:'#FFD700',fg:'#7F4F00'},
@@ -2189,15 +2193,16 @@ const FG={
   fishPos:null,
   tickInterval:null,swimInterval:null,saveInterval:null,
   cvs:null,ctx:null,
-  fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{}}, // 도감: {type:{stage:bool}}
+  fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{}}, // 도감: {type:{stage:bool}}
 };
 function fGet(i){return FG.fishes[i];}
 function fStage(f){const sp=F_SPECIES[f.type||'goldfish']||F_SPECIES.goldfish;return sp[f.stage]||sp[1];}
 function fishStage(){const f=FG.fishes.find(x=>!x.isDead);return f?fStage(f):F_STAGES[1];}
+function _isYwFish(f){return f.type==='yongwang'||f.type==='yeongeum';}
 function newFish(stage=1,type='goldfish'){
   const s=(F_SPECIES[type]||F_SPECIES.goldfish)[stage];
   const base={id:'f'+Date.now()+Math.random().toString(36).slice(2),type,stage,hp:s.hp,maxHp:s.hp,fullness:80,xp:0,isDead:false};
-  if(type==='yongwang') Object.assign(base,{level:1,statPoints:0,bonusAtk:0,bonusDef:0,bonusAgi:0,bonusLuk:0});
+  if(_isYwFish({type})) Object.assign(base,{level:1,statPoints:0,bonusAtk:0,bonusDef:0,bonusAgi:0,bonusLuk:0});
   return base;
 }
 function fIncome(f){return(STAGE_INCOME[f.type||'goldfish']||STAGE_INCOME.goldfish)[f.stage]||2;}
@@ -2424,7 +2429,7 @@ function fishingOpenBaitSelect(){
   const allFish=[
     ...FG.fishes.map(f=>({f,src:'main'})),
     ...FG.auxFishes.map(f=>({f,src:'aux'}))
-  ].filter(({f})=>!f.isDead&&f.stage===5&&f.type!=='yongwang');
+  ].filter(({f})=>!f.isDead&&f.stage===5&&!_isYwFish(f));
   const listEl=document.getElementById('bait-list');
   if(!allFish.length){
     listEl.innerHTML=`<div style="text-align:center;padding:20px;color:#999;font-size:11px">보유한 5단계 물고기가 없습니다.<br>물고기를 최대 단계까지 진화시켜 주세요.</div>`;
@@ -2885,7 +2890,7 @@ function fishCalcOffline(seconds){
     // HP 오프라인 감소 없음 — 복귀 후 실시간 틱이 정상 처리
     const inc=Math.floor(ticks/30)*(STAGE_INCOME[f.stage]||2);
     totalOff+=inc;
-    if(f.type!=='yongwang') f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
+    if(!_isYwFish(f)) f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
   });
   FG.money+=totalOff;
   if(totalOff>0){
@@ -2962,7 +2967,7 @@ function fishTick(){
       inc+=fishInc;
     }
     // XP (10초마다)
-    if(f.type!=='yongwang'&&f.fullness>30){f._xpAcc=(f._xpAcc||0)+elapsed;if(f._xpAcc>=10){f._xpAcc=0;let xpMult=1;if((f.skill1==='tr_학습가속'||f.skill2==='tr_학습가속')&&f.fullness>=70)xpMult*=1.5;if(f.skill1==='cm_부지런함'||f.skill2==='cm_부지런함')xpMult*=1.2;f.xp+=s.xpRate*xpMult;}}
+    if(!_isYwFish(f)&&f.fullness>30){f._xpAcc=(f._xpAcc||0)+elapsed;if(f._xpAcc>=10){f._xpAcc=0;let xpMult=1;if((f.skill1==='tr_학습가속'||f.skill2==='tr_학습가속')&&f.fullness>=70)xpMult*=1.5;if(f.skill1==='cm_부지런함'||f.skill2==='cm_부지런함')xpMult*=1.2;f.xp+=s.xpRate*xpMult;}}
     // 스킬: 회복의 기운 - 10초마다 최대 HP 0.5% 회복
     if(f.skill1==='cm_회복의기운'||f.skill2==='cm_회복의기운'){f._healAcc=(f._healAcc||0)+elapsed;if(f._healAcc>=10){f._healAcc=0;f.hp=Math.min(f.maxHp,f.hp+Math.max(1,Math.floor(f.maxHp*0.005)));}}
   });
@@ -3389,7 +3394,7 @@ function ywXpNeed(f){return(f.level||1)*500;}
 function ywGoldCost(f){return(f.level||1)*50000;}
 
 function ywFeedSpecial(idx){
-  const f=FG.fishes[idx];if(!f||f.type!=='yongwang'||f.isDead) return;
+  const f=FG.fishes[idx];if(!f||!_isYwFish(f)||f.isDead) return;
   if(FG.spFood<=0){u1Toast('특수먹이가 없습니다','#C00000');return;}
   const lv=f.level||1;
   if(lv>=YW_MAX_LV){u1Toast('이미 최대 레벨입니다','#888');return;}
@@ -3403,7 +3408,7 @@ function ywFeedSpecial(idx){
 }
 
 function ywLevelUp(idx){
-  const f=FG.fishes[idx];if(!f||f.type!=='yongwang') return;
+  const f=FG.fishes[idx];if(!f||!_isYwFish(f)) return;
   const lv=f.level||1;
   if(lv>=YW_MAX_LV){u1Toast('최대 레벨입니다','#888');return;}
   if(f.xp<ywXpNeed(f)){u1Toast('XP가 부족합니다','#C00000');return;}
@@ -3421,7 +3426,7 @@ function ywLevelUp(idx){
 
 let _ywAllocIdx=-1,_ywAllocPend={hp:0,atk:0,def:0,agi:0,luk:0},_ywAllocTotalPts=0;
 function ywOpenStatAlloc(idx){
-  const f=FG.fishes[idx];if(!f||f.type!=='yongwang') return;
+  const f=FG.fishes[idx];if(!f||!_isYwFish(f)) return;
   if((f.statPoints||0)<=0){u1Toast('배분할 포인트가 없습니다','#888');return;}
   _ywAllocIdx=idx;
   _ywAllocPend={hp:0,atk:0,def:0,agi:0,luk:0};
@@ -3561,7 +3566,7 @@ function showFishDetail(idx){
   const f=FG.fishes[idx]; if(!f) return;
   _fdIdx=idx;
   const s=fStage(f);
-  const isYw=f.type==='yongwang';
+  const isYw=_isYwFish(f);
   const ywLv=f.level||1;
   document.getElementById('fd-title').textContent=(f.isDead?'💀':'🐟')+' #'+(idx+1)+' '+s.name+(isYw?` Lv.${ywLv}`:'');
   const gd=F_GRADES[s.grade]||F_GRADES['일반'];
@@ -3901,7 +3906,7 @@ function fishDraw(){
     c.font=`bold ${Math.max(8,size*.55)}px '맑은 고딕',sans-serif`;
     c.textAlign='center';
     c.fillStyle=gd.bg==='#E8E8E8'?'rgba(80,80,80,0.75)':'rgba(30,30,30,0.7)';
-    const fishLabel=(fish.type==='yongwang')?`#${idx+1} ${fs.name} Lv.${fish.level||1}`:`#${idx+1} ${fs.name}`;
+    const fishLabel=_isYwFish(fish)?`#${idx+1} ${fs.name} Lv.${fish.level||1}`:`#${idx+1} ${fs.name}`;
     c.fillText(fishLabel,fx,fy-size*1.1);
   });
   c.fillStyle='rgba(33,115,70,0.75)';c.font='bold 10px monospace';c.textAlign='right';
@@ -3909,7 +3914,7 @@ function fishDraw(){
 }
 
 function fishSave(isDisconnect){
-  const cleanFishes=FG.fishes.map(f=>{const s=fStage(f);return{id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',name:s.name,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:f.isDead||false,skill1:f.skill1||undefined,skill2:f.skill2||undefined,...(f.type==='yongwang'?{level:f.level||1,statPoints:f.statPoints||0,bonusAtk:f.bonusAtk||0,bonusDef:f.bonusDef||0,bonusAgi:f.bonusAgi||0,bonusLuk:f.bonusLuk||0}:{})};});
+  const cleanFishes=FG.fishes.map(f=>{const s=fStage(f);return{id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',name:s.name,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:f.isDead||false,skill1:f.skill1||undefined,skill2:f.skill2||undefined,...(_isYwFish(f)?{level:f.level||1,statPoints:f.statPoints||0,bonusAtk:f.bonusAtk||0,bonusDef:f.bonusDef||0,bonusAgi:f.bonusAgi||0,bonusLuk:f.bonusLuk||0}:{})};});
   const cleanAux=FG.auxFishes.map(f=>{const s=fStage(f);return{id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',name:s.name,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:false};});
   const data={fishes:cleanFishes,auxFishes:cleanAux,auxMax:FG.auxMax,
     money:FG.money,food:FG.food,spFood:FG.spFood,autoFeeders:FG.autoFeeders,
@@ -4281,8 +4286,8 @@ function drawMinifish(type,s,has){
 }
 
 function renderFishCodex(){
-  const types=['goldfish','snakehead','guppy','tropical','piranha','clownfish','mandarin','electric','turtle','yongwang'];
-  const typeNames={goldfish:'금붕어',snakehead:'가물치',guppy:'구피',tropical:'열대어',piranha:'피라냐',clownfish:'흰동가리',mandarin:'쏘가리',electric:'전기뱀장어',turtle:'거북이',yongwang:'용궁 거북이'};
+  const types=['goldfish','snakehead','guppy','tropical','piranha','clownfish','mandarin','electric','turtle','yongwang','yeongeum'];
+  const typeNames={goldfish:'금붕어',snakehead:'가물치',guppy:'구피',tropical:'열대어',piranha:'피라냐',clownfish:'흰동가리',mandarin:'쏘가리',electric:'전기뱀장어',turtle:'거북이',yongwang:'용궁 거북이',yeongeum:'영금어'};
   let total=0,collected=0;
   let html='';
   types.forEach(type=>{
@@ -4322,6 +4327,7 @@ const BTPICK_SPECIES=[
   {key:'electric',  label:'전기뱀장어'},
   {key:'turtle',    label:'거북이'},
   {key:'yongwang',  label:'용궁 거북이'},
+  {key:'yeongeum',  label:'영금어'},
 ];
 const GRADE_CLR={'일반':'#555','중급':'#1565C0','고급':'#558B2F','희귀':'#7B1FA2','영웅':'#E65100','전설':'#B71C1C','하급영물':'#00695C','중급영물':'#004D40','상급영물':'#BF6000'};
 
@@ -4350,7 +4356,7 @@ function renderBattlePickGrid(){
     const isSel=selIds.has(f.id);
     const blocked=!isSel&&selCount>=3;
     const gd=GRADE_CLR[s.grade]||'#333';
-    const ywLvTxt=f.type==='yongwang'?` <span style="color:#004D40;font-weight:900">Lv.${f.level||1}</span>`:'';
+    const ywLvTxt=_isYwFish(f)?` <span style="color:#004D40;font-weight:900">Lv.${f.level||1}</span>`:'';
     return `<div onclick="toggleBattlePickFish('${f.id}')"
       style="display:flex;align-items:center;gap:8px;padding:7px 8px;border:2px solid ${isSel?'#217346':s.color+'99'};border-radius:5px;background:${isSel?'#D1FAE5':'#fff'};cursor:${blocked?'default':'pointer'};opacity:${blocked?'0.38':'1'}">
       ${drawMinifish(f.type||'goldfish',s,true)}
@@ -5822,7 +5828,7 @@ function startBattleGame(){
   const _btSource=_pickAlive.length>0?_pickAlive:_randPick;
   btMyFishData=_btSource.map(f=>{
     const s=fStage(f);
-    const isYwF=f.type==='yongwang';
+    const isYwF=_isYwFish(f);
     return{origIdx:FG.fishes.indexOf(f),name:s.name,grade:s.grade,type:f.type||'goldfish',
       stage:f.stage,hp:f.hp,maxHp:f.maxHp,
       atk:isYwF?s.atk+(f.bonusAtk||0)*YW_PER_PT.atk:s.atk,
@@ -6494,7 +6500,7 @@ function btDraw(W,H){
     c.font=`bold ${Math.max(8,size*.52)}px 'Malgun Gothic',sans-serif`;
     c.fillText(playerName,fx,labelY);
     c.font=`${Math.max(7,size*.44)}px 'Malgun Gothic',sans-serif`;
-    const btFishLabel=(f.type==='yongwang')?`${f.name} Lv.${f.level||1}`:f.name;
+    const btFishLabel=_isYwFish(f)?`${f.name} Lv.${f.level||1}`:f.name;
     c.fillText(btFishLabel,fx,labelY+size*.52);
 
     // 플로팅 데미지 텍스트
