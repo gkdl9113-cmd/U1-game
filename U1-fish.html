@@ -1313,7 +1313,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.43';
+const BUILD = 'v2.46';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1744,7 +1744,7 @@ function applyFishData(d){
   FG.skillInventory=d.skillInventory||{};
   FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
   FG.auxMax=d.auxMax||1;
-  FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{}};
+  FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{}};
   if(d.battlePickIds&&d.battlePickIds.length){
     FG.battlePick=d.battlePickIds.map(id=>FG.fishes.find(f=>f.id===id)).filter(f=>f&&!f.isDead);
     const lbl=document.getElementById('btpick-ribbon-lbl');
@@ -2041,7 +2041,7 @@ const FISH_SKILLS={
   'gu_선제일격':    {name:'선제일격',    species:'guppy',    slot:1,icon:'⚡',rarity:'희귀',desc:'배틀 시작 시 AGI가 적 평균보다 높으면 선제 공격 (atkCd=0)'},
   'gu_민첩한유영':  {name:'황금비늘',    species:'guppy',    slot:1,icon:'💨',rarity:'희귀',desc:'수조 패시브: 수입 발생 시 AGI×0.5원 추가 획득'},
   'gu_황금비늘':    {name:'민첩한유영',  species:'guppy',    slot:1,icon:'✨',rarity:'영웅',desc:'배틀 패시브: AGI 기반 회피율 추가 (agi/800 → agi/400)'},
-  'tr_화려한섬광':  {name:'화려한섬광',  species:'tropical', slot:1,icon:'✨',rarity:'전설',desc:'배틀 패시브: 크리티컬 확률 2배 (LUK/200 → LUK/100)'},
+  'tr_화려한섬광':  {name:'화려한섬광',  species:'tropical', slot:1,icon:'✨',rarity:'전설',desc:'배틀 패시브: 크리티컬 확률 2배 (LUK/500 → LUK/250)'},
   'tr_학습가속':    {name:'학습가속',    species:'tropical', slot:1,icon:'📚',rarity:'희귀',desc:'수조 패시브: 포만감 70%+ 시 XP 획득 +50%'},
   'tr_무리의식':    {name:'무리의식',    species:'tropical', slot:1,icon:'🐠',rarity:'희귀',desc:'수조 패시브: 수족관에 열대어 2마리+ 시 수입 +20%'},
   'pr_폭식':        {name:'폭식',        species:'piranha',  slot:1,icon:'🩸',rarity:'영웅',desc:'배틀 패시브: 공격 후 20% 확률, 데미지의 50% HP 회복'},
@@ -2072,6 +2072,15 @@ const FISH_SKILLS={
   'tu_장수의기운':  {name:'장수의기운',  species:'turtle',   slot:1,icon:'🐢',rarity:'희귀',desc:'수조 패시브: 수족관 전체 HP 자동 회복 속도 +50%'},
   'tu_수축':        {name:'수축',        species:'turtle',   slot:1,icon:'🛡️',rarity:'영웅',desc:'배틀 패시브: HP 35% 이하 시 받는 피해 60% 감소'},
   'tu_가시방어':    {name:'가시방어',    species:'turtle',   slot:1,icon:'🌵',rarity:'희귀',desc:'배틀 패시브: 피격 시 받은 피해의 25%를 공격자에게 반사'},
+  // 영물 전용 스킬
+  'yg_황금기운':    {name:'황금기운',    species:'yeongeum', slot:1,icon:'✨',rarity:'영웅',desc:'수조 패시브: 수입 발생 시 자신의 LUK×1.5원 추가 획득'},
+  'yg_영금의가호':  {name:'영금의가호',  species:'yeongeum', slot:1,icon:'🌟',rarity:'전설',desc:'배틀 패시브: 배틀 시작 시 아군 전체 ATK +20%'},
+  'yk_용왕의방패':  {name:'용왕의방패',  species:'yongwang', slot:1,icon:'🛡️',rarity:'전설',desc:'배틀 패시브: 한 번에 받는 피해가 DEF×0.4 초과 시 초과분 75% 감소'},
+  'yk_불굴':        {name:'불굴',        species:'yongwang', slot:1,icon:'💪',rarity:'영웅',desc:'배틀 패시브: HP 40% 이하 시 받는 피해 40% 감소'},
+  'ee_전격관통':    {name:'전격관통',    species:'eelyw',    slot:1,icon:'⚡',rarity:'영웅',desc:'배틀 패시브: 공격 시 적 DEF 35% 무시'},
+  'ee_전기충격':    {name:'전기충격',    species:'eelyw',    slot:1,icon:'🌩️',rarity:'전설',desc:'배틀 패시브: 공격 시 30% 확률로 적 atkCd +100 및 ATK -20%'},
+  'hl_용의숨결':    {name:'용의숨결',    species:'haelyong', slot:1,icon:'🔥',rarity:'영웅',desc:'배틀 패시브: 배틀 시작 시 적 전체 ATK·DEF -15%'},
+  'hl_왕의분노':    {name:'왕의분노',    species:'haelyong', slot:1,icon:'😡',rarity:'전설',desc:'배틀 패시브: HP 50% 이하 시 ATK·DEF +40%'},
 };
 const SKILL_RARITY={
   '일반':{bg:'#E8E8E8',fg:'#555555',border:'#BBBBBB',label:'⚪ 일반'},
@@ -2154,6 +2163,14 @@ const F_SPECIES={
   yeongeum:[null,
     {name:'영금어',species:'영금어',grade:'하급영물',color:'#1B0050',fin:'#FFD700',hp:5500,atk:550,def:450,agi:320,luk:220,xpRate:12,xpNeed:9999,evoCost:0,foodRate:7},
   ],
+  // 번개뱀장어: AGI/ATK 특화 고속 전격 딜러, 중급영물
+  eelyw:[null,
+    {name:'번개뱀장어',species:'번개뱀장어',grade:'중급영물',color:'#0D1040',fin:'#00E5FF',hp:6500,atk:950,def:450,agi:500,luk:180,xpRate:15,xpNeed:9999,evoCost:0,foodRate:8},
+  ],
+  // 해룡: 상급영물, ATK/DEF 압도적, 기타확률로만 획득 가능
+  haelyong:[null,
+    {name:'해룡',species:'해룡',grade:'상급영물',color:'#1A0000',fin:'#FF6B00',hp:14000,atk:1600,def:1400,agi:180,luk:400,xpRate:18,xpNeed:9999,evoCost:0,foodRate:5},
+  ],
   // 거북이: HP/DEF 특화 탱커, 낮은 AGI, 높은 행운 (호수 전용)
   // 등급: 중급→고급→희귀→영웅→전설
   turtle:[null,
@@ -2178,6 +2195,8 @@ const STAGE_INCOME={
   turtle:[0,12,35,85,200,450],
   yongwang:[0,2000],
   yeongeum:[0,1500],
+  eelyw:[0,2200],
+  haelyong:[0,3500],
 };
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
 const F_SHOP=[
@@ -2220,6 +2239,7 @@ const F_SHOP=[
 const BAIT_YW_TABLE={
   turtle:{main:{type:'yongwang',stage:1},normal:{mainProb:0.01,otherProb:0.005},special:{mainProb:0.05,otherProb:0.010}},
   goldfish:{main:{type:'yeongeum',stage:1},normal:{mainProb:0.03,otherProb:0.003},special:{mainProb:0.10,otherProb:0.007}},
+  electric:{main:{type:'eelyw',stage:1},normal:{mainProb:0.01,otherProb:0.005},special:{mainProb:0.05,otherProb:0.010}},
 };
 const LOTTERY_PRIZES=[
   {rank:1,grade:'1등',amount:100000,count:1, bg:'#FFD700',fg:'#7F4F00'},
@@ -2288,12 +2308,12 @@ const FG={
   fishPos:null,
   tickInterval:null,swimInterval:null,saveInterval:null,
   cvs:null,ctx:null,
-  fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{}}, // 도감: {type:{stage:bool}}
+  fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{}}, // 도감: {type:{stage:bool}}
 };
 function fGet(i){return FG.fishes[i];}
 function fStage(f){const sp=F_SPECIES[f.type||'goldfish']||F_SPECIES.goldfish;return sp[f.stage]||sp[1];}
 function fishStage(){const f=FG.fishes.find(x=>!x.isDead);return f?fStage(f):F_STAGES[1];}
-function _isYwFish(f){return f.type==='yongwang'||f.type==='yeongeum';}
+function _isYwFish(f){return f.type==='yongwang'||f.type==='yeongeum'||f.type==='eelyw'||f.type==='haelyong';}
 function newFish(stage=1,type='goldfish'){
   const s=(F_SPECIES[type]||F_SPECIES.goldfish)[stage];
   const base={id:'f'+Date.now()+Math.random().toString(36).slice(2),type,stage,hp:s.hp,maxHp:s.hp,fullness:80,xp:0,isDead:false};
@@ -3059,6 +3079,8 @@ function fishTick(){
       if(luckyAura) fishInc+=Math.floor(fStage(luckyAura).luk*0.2);
       // 스킬: 황금손 - 수입 +10%
       if(f.skill1==='cm_황금손'||f.skill2==='cm_황금손') fishInc=Math.floor(fishInc*1.1);
+      // 스킬: 황금기운 - 자신의 LUK×1.5원 추가 수입
+      if(f.skill1==='yg_황금기운'||f.skill2==='yg_황금기운') fishInc+=Math.floor(fStage(f).luk*1.5);
       inc+=fishInc;
     }
     // XP (10초마다)
@@ -3844,8 +3866,19 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*2.2,fy+size*.04);
     c.lineTo(fx-dir*size*1.4,fy+size*.08);
     c.closePath();c.fill();
-  } else if(type==='turtle'||type==='yongwang'){
-    // 거북이/용궁 거북이: 짧은 꼬리 + 4발 (발은 몸통 뒤에 그림)
+  } else if(type==='eelyw'){
+    // 번개뱀장어: 갈라진 번개 꼬리 (위아래 두 갈래)
+    c.beginPath();
+    c.moveTo(fx-dir*size*1.38,fy-size*.06);
+    c.lineTo(fx-dir*size*2.05,fy-size*.52);
+    c.lineTo(fx-dir*size*1.72,fy-size*.1);
+    c.lineTo(fx-dir*size*2.5,fy);
+    c.lineTo(fx-dir*size*1.72,fy+size*.1);
+    c.lineTo(fx-dir*size*2.05,fy+size*.52);
+    c.lineTo(fx-dir*size*1.38,fy+size*.06);
+    c.closePath();c.fill();
+  } else if(type==='turtle'||type==='yongwang'||type==='haelyong'){
+    // 거북이/용궁 거북이/해룡: 짧은 꼬리 + 4발 (발은 몸통 뒤에 그림)
     c.beginPath();
     c.moveTo(fx-dir*size*.82,fy);
     c.lineTo(fx-dir*size*1.1,fy-size*.18);
@@ -3875,8 +3908,8 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
   }
   // 몸통
-  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:type==='piranha'?size*1.05:type==='tropical'?size*.95:type==='electric'?size*1.45:(type==='turtle'||type==='yongwang')?size*.92:type==='yeongeum'?size*.88:size;
-  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:type==='piranha'?size*.55:type==='tropical'?size*.6:type==='electric'?size*.28:(type==='turtle'||type==='yongwang')?size*.72:type==='yeongeum'?size*.60:size*.58;
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:type==='piranha'?size*1.05:type==='tropical'?size*.95:(type==='electric'||type==='eelyw')?size*1.45:(type==='turtle'||type==='yongwang'||type==='haelyong')?size*.92:type==='yeongeum'?size*.88:size;
+  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:type==='piranha'?size*.55:type==='tropical'?size*.6:(type==='electric'||type==='eelyw')?size*.28:(type==='turtle'||type==='yongwang'||type==='haelyong')?size*.72:type==='yeongeum'?size*.60:size*.58;
   const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);
   g.addColorStop(0,s.fin);g.addColorStop(1,s.color);
   c.fillStyle=g;c.beginPath();c.ellipse(fx,fy,bodyRx,bodyRy,0,0,Math.PI*2);c.fill();
@@ -3938,8 +3971,19 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx+dir*bodyRx*.5,fy);
     c.stroke();
   }
-  // 거북이/용궁 거북이 등딱지 무늬 + 앞발 + 머리
-  if(type==='turtle'||type==='yongwang'){
+  // 번개뱀장어 번개 무늬 (강화 지그재그)
+  if(type==='eelyw'){
+    c.strokeStyle='rgba(0,229,255,0.7)';c.lineWidth=2.0;
+    c.beginPath();
+    c.moveTo(fx-dir*bodyRx*.75,fy);
+    c.lineTo(fx-dir*bodyRx*.45,fy-bodyRy*.65);
+    c.lineTo(fx-dir*bodyRx*.15,fy+bodyRy*.2);
+    c.lineTo(fx+dir*bodyRx*.15,fy-bodyRy*.65);
+    c.lineTo(fx+dir*bodyRx*.45,fy);
+    c.stroke();
+  }
+  // 거북이/용궁 거북이/해룡 등딱지 무늬 + 앞발 + 머리
+  if(type==='turtle'||type==='yongwang'||type==='haelyong'){
     // 등딱지 중앙 육각 패턴
     c.strokeStyle='rgba(0,0,0,0.18)';c.lineWidth=1.2;
     c.beginPath();c.ellipse(fx,fy,bodyRx*.55,bodyRy*.55,0,0,Math.PI*2);c.stroke();
@@ -3978,6 +4022,45 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     // 머리 황금 테두리
     c.strokeStyle=s.fin;c.lineWidth=1.3;c.beginPath();c.arc(hx,fy,size*.28,0,Math.PI*2);c.stroke();
   }
+  // 해룡 영물 장식 (상급영물)
+  if(type==='haelyong'){
+    const hx=fx+dir*(bodyRx+size*.28);
+    // 붉은 불꽃 글로우 오라
+    const hlGlow=c.createRadialGradient(fx,fy,size*.4,fx,fy,size*2.5);
+    hlGlow.addColorStop(0,'rgba(255,80,0,0.25)');hlGlow.addColorStop(1,'rgba(255,80,0,0)');
+    c.fillStyle=hlGlow;c.beginPath();c.arc(fx,fy,size*2.5,0,Math.PI*2);c.fill();
+    // 등딱지 붉은 황금 격자선 덧그리기
+    c.strokeStyle='rgba(255,107,0,0.65)';c.lineWidth=1.8;
+    c.beginPath();c.ellipse(fx,fy,bodyRx*.55,bodyRy*.55,0,0,Math.PI*2);c.stroke();
+    c.beginPath();c.moveTo(fx,fy-bodyRy*.55);c.lineTo(fx,fy+bodyRy*.55);c.stroke();
+    c.beginPath();c.moveTo(fx-bodyRx*.48,fy-bodyRy*.28);c.lineTo(fx+bodyRx*.48,fy-bodyRy*.28);c.stroke();
+    c.beginPath();c.moveTo(fx-bodyRx*.48,fy+bodyRy*.28);c.lineTo(fx+bodyRx*.48,fy+bodyRy*.28);c.stroke();
+    // 등 용 가시 5개 (크고 날카로움)
+    c.fillStyle=s.fin;
+    [-1.5,-0.75,0,0.75,1.5].forEach(di=>{
+      const sx=fx+di*bodyRx*.28;
+      c.beginPath();c.moveTo(sx-size*.09,fy-bodyRy*.92);c.lineTo(sx,fy-bodyRy*1.58);c.lineTo(sx+size*.09,fy-bodyRy*.92);c.closePath();c.fill();
+    });
+    // 머리 용 뿔 (길고 위협적)
+    c.beginPath();c.moveTo(hx-size*.11,fy-size*.3);c.lineTo(hx+dir*size*.07,fy-size*.80);c.lineTo(hx+size*.11,fy-size*.3);c.closePath();c.fill();
+    // 머리 붉은 테두리
+    c.strokeStyle=s.fin;c.lineWidth=1.8;c.beginPath();c.arc(hx,fy,size*.28,0,Math.PI*2);c.stroke();
+  }
+  // 번개뱀장어 영물 효과 (시안 글로우 오라)
+  if(type==='eelyw'){
+    const eelGlow=c.createRadialGradient(fx,fy,size*.3,fx,fy,size*2.0);
+    eelGlow.addColorStop(0,'rgba(0,229,255,0.22)');eelGlow.addColorStop(1,'rgba(0,229,255,0)');
+    c.fillStyle=eelGlow;c.beginPath();c.arc(fx,fy,size*2.0,0,Math.PI*2);c.fill();
+    // 등지느러미: 뾰족한 번개 가시 2개
+    c.fillStyle=s.fin+'cc';
+    c.beginPath();
+    c.moveTo(fx-dir*size*.1,fy-bodyRy);
+    c.lineTo(fx+dir*size*.15,fy-bodyRy*1.70);
+    c.lineTo(fx+dir*size*.3,fy-bodyRy*1.25);
+    c.lineTo(fx+dir*size*.48,fy-bodyRy*1.62);
+    c.lineTo(fx+dir*size*.6,fy-bodyRy);
+    c.closePath();c.fill();
+  }
   // 영금어 특수 효과
   if(type==='yeongeum'){
     // 보라빛 글로우 오라
@@ -3998,17 +4081,17 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.beginPath();c.arc(fx+dir*size*.18,fy-bodyRy*.22,size*.30,Math.PI*.65,Math.PI*1.55);c.stroke();
     c.beginPath();c.arc(fx-dir*size*.18,fy+bodyRy*.1,size*.22,Math.PI*.65,Math.PI*1.55);c.stroke();
   }
-  // 눈 (전기뱀장어는 작은 눈, 거북이는 머리 위치에)
-  const eyeR=type==='electric'?size*.1:(type==='turtle'||type==='yongwang')?size*.13:size*.17;
-  const eyePupilR=type==='electric'?size*.055:(type==='turtle'||type==='yongwang')?size*.07:size*.09;
-  const eyeX=(type==='turtle'||type==='yongwang')?fx+dir*(bodyRx+size*.22):fx+dir*bodyRx*.48;
-  const eyeY=(type==='turtle'||type==='yongwang')?fy-size*.12:fy-bodyRy*.15;
+  // 눈 (전기뱀장어/번개뱀장어는 작은 눈, 거북이/용왕/해룡은 머리 위치에)
+  const eyeR=(type==='electric'||type==='eelyw')?size*.1:(type==='turtle'||type==='yongwang'||type==='haelyong')?size*.13:size*.17;
+  const eyePupilR=(type==='electric'||type==='eelyw')?size*.055:(type==='turtle'||type==='yongwang'||type==='haelyong')?size*.07:size*.09;
+  const eyeX=(type==='turtle'||type==='yongwang'||type==='haelyong')?fx+dir*(bodyRx+size*.22):fx+dir*bodyRx*.48;
+  const eyeY=(type==='turtle'||type==='yongwang'||type==='haelyong')?fy-size*.12:fy-bodyRy*.15;
   c.fillStyle='#fff';c.beginPath();c.arc(eyeX,eyeY,eyeR,0,Math.PI*2);c.fill();
-  // 영물 눈동자 (영금어=보라, 용궁거북이=황금)
-  c.fillStyle=type==='yeongeum'?'#7B00D4':type==='yongwang'?'#C8A000':'#111';
+  // 영물 눈동자 (영금어=보라, 용궁거북이=황금, 번개뱀장어=시안, 해룡=주황적)
+  c.fillStyle=type==='yeongeum'?'#7B00D4':type==='yongwang'?'#C8A000':type==='eelyw'?'#00B4CC':type==='haelyong'?'#FF4500':'#111';
   c.beginPath();c.arc(eyeX+dir*size*.04,eyeY,eyePupilR,0,Math.PI*2);c.fill();
-  if(type==='yeongeum'||type==='yongwang'){
-    c.strokeStyle=type==='yongwang'?'rgba(0,210,170,0.7)':'rgba(255,215,0,0.6)';c.lineWidth=.8;
+  if(type==='yeongeum'||type==='yongwang'||type==='eelyw'||type==='haelyong'){
+    c.strokeStyle=type==='yongwang'?'rgba(0,210,170,0.7)':type==='eelyw'?'rgba(0,229,255,0.75)':type==='haelyong'?'rgba(255,107,0,0.75)':'rgba(255,215,0,0.6)';c.lineWidth=.8;
     c.beginPath();c.arc(eyeX,eyeY,eyeR,0,Math.PI*2);c.stroke();
   }
 }
@@ -4359,6 +4442,8 @@ function drawMinifish(type,s,has){
       </radialGradient>
       ${type==='yeongeum'?`<radialGradient id="glow_yeongeum_${s.grade}" cx="50%" cy="50%"><stop offset="0%" style="stop-color:rgb(180,100,255);stop-opacity:0.18"/><stop offset="100%" style="stop-color:rgb(180,100,255);stop-opacity:0"/></radialGradient>`:''}
       ${type==='yongwang'?`<radialGradient id="glow_yongwang_${s.grade}" cx="50%" cy="50%"><stop offset="0%" style="stop-color:rgb(0,200,160);stop-opacity:0.22"/><stop offset="100%" style="stop-color:rgb(0,200,160);stop-opacity:0"/></radialGradient>`:''}
+      ${type==='eelyw'?`<radialGradient id="glow_eelyw_${s.grade}" cx="50%" cy="50%"><stop offset="0%" style="stop-color:rgb(0,229,255);stop-opacity:0.22"/><stop offset="100%" style="stop-color:rgb(0,229,255);stop-opacity:0"/></radialGradient>`:''}
+      ${type==='haelyong'?`<radialGradient id="glow_haelyong_${s.grade}" cx="50%" cy="50%"><stop offset="0%" style="stop-color:rgb(255,80,0);stop-opacity:0.25"/><stop offset="100%" style="stop-color:rgb(255,80,0);stop-opacity:0"/></radialGradient>`:''}
     </defs>`;
 
   // 꼬리 (타입별로 다름)
@@ -4376,8 +4461,10 @@ function drawMinifish(type,s,has){
     svg+=`<path d="M ${fx-dir*size*0.8},${fy} L ${fx-dir*size*1.35},${fy-size*0.65} L ${fx-dir*size*1.5},${fy-size*0.25} L ${fx-dir*size*1.55},${fy} L ${fx-dir*size*1.5},${fy+size*0.25} L ${fx-dir*size*1.35},${fy+size*0.65} Z" fill="${finColor}"/>`;
   } else if(type==='electric'){
     svg+=`<path d="M ${fx-dir*size*1.4},${fy-size*0.08} L ${fx-dir*size*2.2},${fy-size*0.04} L ${fx-dir*size*2.6},${fy} L ${fx-dir*size*2.2},${fy+size*0.04} L ${fx-dir*size*1.4},${fy+size*0.08} Z" fill="${finColor}"/>`;
-  } else if(type==='turtle'||type==='yongwang'){
-    // 거북이/용궁 거북이: 짧은 꼬리 + 뒷발
+  } else if(type==='eelyw'){
+    svg+=`<path d="M ${fx-dir*size*1.38},${fy-size*0.06} L ${fx-dir*size*2.05},${fy-size*0.52} L ${fx-dir*size*1.72},${fy-size*0.1} L ${fx-dir*size*2.5},${fy} L ${fx-dir*size*1.72},${fy+size*0.1} L ${fx-dir*size*2.05},${fy+size*0.52} L ${fx-dir*size*1.38},${fy+size*0.06} Z" fill="${finColor}"/>`;
+  } else if(type==='turtle'||type==='yongwang'||type==='haelyong'){
+    // 거북이/용궁 거북이/해룡: 짧은 꼬리 + 뒷발
     svg+=`<path d="M ${fx-dir*size*0.82},${fy} L ${fx-dir*size*1.1},${fy-size*0.18} L ${fx-dir*size*1.1},${fy+size*0.18} Z" fill="${finColor}"/>`;
     svg+=`<ellipse cx="${fx-dir*size*0.38}" cy="${fy-size*0.78}" rx="${size*0.22}" ry="${size*0.11}" fill="${finColor}"/>`;
     svg+=`<ellipse cx="${fx-dir*size*0.38}" cy="${fy+size*0.78}" rx="${size*0.22}" ry="${size*0.11}" fill="${finColor}"/>`;
@@ -4391,8 +4478,8 @@ function drawMinifish(type,s,has){
   }
 
   // 몸통
-  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*0.88:type==='piranha'?size*1.05:type==='tropical'?size*0.95:type==='electric'?size*1.45:type==='turtle'?size*0.92:type==='yeongeum'?size*0.88:size;
-  const bodyRy=type==='snakehead'?size*0.42:type==='guppy'?size*0.62:type==='piranha'?size*0.55:type==='tropical'?size*0.6:type==='electric'?size*0.28:type==='turtle'?size*0.72:type==='yeongeum'?size*0.60:size*0.58;
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*0.88:type==='piranha'?size*1.05:type==='tropical'?size*0.95:(type==='electric'||type==='eelyw')?size*1.45:(type==='turtle'||type==='haelyong')?size*0.92:type==='yeongeum'?size*0.88:size;
+  const bodyRy=type==='snakehead'?size*0.42:type==='guppy'?size*0.62:type==='piranha'?size*0.55:type==='tropical'?size*0.6:(type==='electric'||type==='eelyw')?size*0.28:(type==='turtle'||type==='haelyong')?size*0.72:type==='yeongeum'?size*0.60:size*0.58;
   svg+=`<ellipse cx="${fx}" cy="${fy}" rx="${bodyRx}" ry="${bodyRy}" fill="url(#grad_${type}_${s.grade})" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`;
 
   // 구피 등지느러미
@@ -4435,9 +4522,13 @@ function drawMinifish(type,s,has){
   if(type==='electric'){
     svg+=`<path d="M ${fx-dir*bodyRx*0.7},${fy} L ${fx-dir*bodyRx*0.4},${fy-bodyRy*0.5} L ${fx-dir*bodyRx*0.1},${fy} L ${fx+dir*bodyRx*0.2},${fy-bodyRy*0.5} L ${fx+dir*bodyRx*0.5},${fy}" stroke="rgba(255,255,255,0.45)" stroke-width="1.4" fill="none"/>`;
   }
+  // 번개뱀장어 강화 번개 무늬
+  if(type==='eelyw'){
+    svg+=`<path d="M ${fx-dir*bodyRx*0.75},${fy} L ${fx-dir*bodyRx*0.45},${fy-bodyRy*0.65} L ${fx-dir*bodyRx*0.15},${fy+bodyRy*0.2} L ${fx+dir*bodyRx*0.15},${fy-bodyRy*0.65} L ${fx+dir*bodyRx*0.45},${fy}" stroke="rgba(0,229,255,0.7)" stroke-width="2.0" fill="none"/>`;
+  }
 
-  // 거북이/용궁 거북이 등딱지 무늬 + 앞발 + 머리
-  if(type==='turtle'||type==='yongwang'){
+  // 거북이/용궁 거북이/해룡 등딱지 무늬 + 앞발 + 머리
+  if(type==='turtle'||type==='yongwang'||type==='haelyong'){
     svg+=`<ellipse cx="${fx}" cy="${fy}" rx="${bodyRx*0.55}" ry="${bodyRy*0.55}" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1.2"/>`;
     svg+=`<line x1="${fx}" y1="${fy-bodyRy*0.55}" x2="${fx}" y2="${fy+bodyRy*0.55}" stroke="rgba(0,0,0,0.18)" stroke-width="1.2"/>`;
     svg+=`<line x1="${fx-bodyRx*0.48}" y1="${fy-bodyRy*0.28}" x2="${fx+bodyRx*0.48}" y2="${fy-bodyRy*0.28}" stroke="rgba(0,0,0,0.18)" stroke-width="1.2"/>`;
@@ -4463,26 +4554,46 @@ function drawMinifish(type,s,has){
     svg+=`<circle cx="${hx}" cy="${fy}" r="${size*0.28}" fill="none" stroke="${finColor}" stroke-width="1.5" opacity="0.8"/>`;
   }
 
+  // 해룡 영물 장식 (상급영물)
+  if(type==='haelyong'){
+    const hx=fx+dir*(bodyRx+size*0.28);
+    svg+=`<circle cx="${fx}" cy="${fy}" r="${size*2.5}" fill="url(#glow_haelyong_${s.grade})"/>`;
+    svg+=`<ellipse cx="${fx}" cy="${fy}" rx="${bodyRx*0.55}" ry="${bodyRy*0.55}" fill="none" stroke="rgba(255,107,0,0.65)" stroke-width="1.8"/>`;
+    svg+=`<line x1="${fx}" y1="${fy-bodyRy*0.55}" x2="${fx}" y2="${fy+bodyRy*0.55}" stroke="rgba(255,107,0,0.65)" stroke-width="1.8"/>`;
+    svg+=`<line x1="${fx-bodyRx*0.48}" y1="${fy-bodyRy*0.28}" x2="${fx+bodyRx*0.48}" y2="${fy-bodyRy*0.28}" stroke="rgba(255,107,0,0.65)" stroke-width="1.8"/>`;
+    svg+=`<line x1="${fx-bodyRx*0.48}" y1="${fy+bodyRy*0.28}" x2="${fx+bodyRx*0.48}" y2="${fy+bodyRy*0.28}" stroke="rgba(255,107,0,0.65)" stroke-width="1.8"/>`;
+    [-1.5,-0.75,0,0.75,1.5].forEach(di=>{
+      const sx=fx+di*bodyRx*0.28;
+      svg+=`<path d="M ${sx-size*0.09},${fy-bodyRy*0.92} L ${sx},${fy-bodyRy*1.58} L ${sx+size*0.09},${fy-bodyRy*0.92} Z" fill="${finColor}"/>`;
+    });
+    svg+=`<path d="M ${hx-size*0.11},${fy-size*0.3} L ${hx+dir*size*0.07},${fy-size*0.80} L ${hx+size*0.11},${fy-size*0.3} Z" fill="${finColor}"/>`;
+    svg+=`<circle cx="${hx}" cy="${fy}" r="${size*0.28}" fill="none" stroke="${finColor}" stroke-width="1.8" opacity="0.85"/>`;
+  }
+  // 번개뱀장어 영물 효과 (시안 글로우 + 등지느러미 번개 가시)
+  if(type==='eelyw'){
+    svg+=`<circle cx="${fx}" cy="${fy}" r="${size*2.0}" fill="url(#glow_eelyw_${s.grade})"/>`;
+    svg+=`<path d="M ${fx-dir*size*0.1},${fy-bodyRy} L ${fx+dir*size*0.15},${fy-bodyRy*1.70} L ${fx+dir*size*0.3},${fy-bodyRy*1.25} L ${fx+dir*size*0.48},${fy-bodyRy*1.62} L ${fx+dir*size*0.6},${fy-bodyRy} Z" fill="${finColor}" opacity="0.8"/>`;
+  }
   // 영금어 등지느러미 + 비늘
   if(type==='yeongeum'){
     svg+=`<path d="M ${fx-dir*size*0.28},${fy-bodyRy} L ${fx+dir*size*0.02},${fy-bodyRy*1.68} L ${fx+dir*size*0.2},${fy-bodyRy*1.28} L ${fx+dir*size*0.38},${fy-bodyRy*1.58} L ${fx+dir*size*0.52},${fy-bodyRy} Z" fill="${finColor}" opacity="0.8"/>`;
     svg+=`<path d="M ${fx+dir*size*0.48},${fy-bodyRy*0.22} A ${size*0.30},${size*0.30} 0 0,0 ${fx+dir*size*0.18},${fy-bodyRy*0.72}" stroke="rgba(255,215,0,0.45)" stroke-width="1.3" fill="none"/>`;
     svg+=`<circle cx="${fx}" cy="${fy}" r="${size*1.7}" fill="url(#glow_yeongeum_${s.grade})" opacity="1"/>`;
   }
-  // 눈 (전기뱀장어는 작은 눈, 거북이/용왕은 머리 위치)
-  const eyeR=type==='electric'?size*0.1:(type==='turtle'||type==='yongwang')?size*0.13:size*0.17;
-  const eyePupilR=type==='electric'?size*0.055:(type==='turtle'||type==='yongwang')?size*0.07:size*0.09;
-  const eyeX=(type==='turtle'||type==='yongwang')?fx+dir*(bodyRx+size*0.22):fx+dir*bodyRx*0.48;
-  const eyeY=(type==='turtle'||type==='yongwang')?fy-size*0.12:fy-bodyRy*0.15;
-  svg+=`<circle cx="${eyeX}" cy="${eyeY}" r="${eyeR}" fill="#fff" stroke="${type==='yeongeum'?'rgba(255,215,0,0.7)':type==='yongwang'?'rgba(0,210,170,0.7)':'rgba(0,0,0,0.2)'}" stroke-width="${(type==='yeongeum'||type==='yongwang')?0.9:0.5}"/>`;
-  svg+=`<circle cx="${eyeX+dir*size*0.04}" cy="${eyeY}" r="${eyePupilR}" fill="${type==='yeongeum'?'#7B00D4':type==='yongwang'?'#C8A000':'#111'}"/>`;
+  // 눈 (전기뱀장어/번개뱀장어는 작은 눈, 거북이/용왕/해룡은 머리 위치)
+  const eyeR=(type==='electric'||type==='eelyw')?size*0.1:(type==='turtle'||type==='yongwang'||type==='haelyong')?size*0.13:size*0.17;
+  const eyePupilR=(type==='electric'||type==='eelyw')?size*0.055:(type==='turtle'||type==='yongwang'||type==='haelyong')?size*0.07:size*0.09;
+  const eyeX=(type==='turtle'||type==='yongwang'||type==='haelyong')?fx+dir*(bodyRx+size*0.22):fx+dir*bodyRx*0.48;
+  const eyeY=(type==='turtle'||type==='yongwang'||type==='haelyong')?fy-size*0.12:fy-bodyRy*0.15;
+  svg+=`<circle cx="${eyeX}" cy="${eyeY}" r="${eyeR}" fill="#fff" stroke="${type==='yeongeum'?'rgba(255,215,0,0.7)':type==='yongwang'?'rgba(0,210,170,0.7)':type==='eelyw'?'rgba(0,229,255,0.75)':type==='haelyong'?'rgba(255,107,0,0.75)':'rgba(0,0,0,0.2)'}" stroke-width="${(type==='yeongeum'||type==='yongwang'||type==='eelyw'||type==='haelyong')?0.9:0.5}"/>`;
+  svg+=`<circle cx="${eyeX+dir*size*0.04}" cy="${eyeY}" r="${eyePupilR}" fill="${type==='yeongeum'?'#7B00D4':type==='yongwang'?'#C8A000':type==='eelyw'?'#00B4CC':type==='haelyong'?'#FF4500':'#111'}"/>`;
   svg+=`</svg>`;
   return svg;
 }
 
 function renderFishCodex(){
-  const types=['goldfish','snakehead','guppy','tropical','piranha','clownfish','mandarin','electric','turtle','yongwang','yeongeum'];
-  const typeNames={goldfish:'금붕어',snakehead:'가물치',guppy:'구피',tropical:'열대어',piranha:'피라냐',clownfish:'흰동가리',mandarin:'쏘가리',electric:'전기뱀장어',turtle:'거북이',yongwang:'용궁 거북이',yeongeum:'영금어'};
+  const types=['goldfish','snakehead','guppy','tropical','piranha','clownfish','mandarin','electric','turtle','yongwang','yeongeum','eelyw','haelyong'];
+  const typeNames={goldfish:'금붕어',snakehead:'가물치',guppy:'구피',tropical:'열대어',piranha:'피라냐',clownfish:'흰동가리',mandarin:'쏘가리',electric:'전기뱀장어',turtle:'거북이',yongwang:'용궁 거북이',yeongeum:'영금어',eelyw:'번개뱀장어',haelyong:'해룡'};
   let total=0,collected=0;
   let html='';
   types.forEach(type=>{
@@ -4523,6 +4634,8 @@ const BTPICK_SPECIES=[
   {key:'turtle',    label:'거북이'},
   {key:'yongwang',  label:'용궁 거북이'},
   {key:'yeongeum',  label:'영금어'},
+  {key:'eelyw',     label:'번개뱀장어'},
+  {key:'haelyong',  label:'해룡'},
 ];
 const GRADE_CLR={'일반':'#555','중급':'#1565C0','고급':'#558B2F','희귀':'#7B1FA2','영웅':'#E65100','전설':'#B71C1C','하급영물':'#00695C','중급영물':'#004D40','상급영물':'#BF6000'};
 
@@ -5657,6 +5770,8 @@ const ADM_GIVE_SPECIES=[
   {key:'turtle',   label:'거북이'},
   {key:'yongwang', label:'용궁 거북이'},
   {key:'yeongeum', label:'영금어'},
+  {key:'eelyw',   label:'번개뱀장어'},
+  {key:'haelyong',label:'해룡'},
 ];
 let _admGiveType='goldfish';
 let _admGiveStage=1;
@@ -6351,6 +6466,12 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
   // 스킬: 위압감 - 배틀 시작 시 적 전체 ATK -10%
   if(p1.some(f=>f.skill1==='sn_위압감'||f.skill2==='sn_위압감')) p2.forEach(f=>{f.atk=Math.floor(f.atk*0.9);});
   if(p2.some(f=>f.skill1==='sn_위압감'||f.skill2==='sn_위압감')) p1.forEach(f=>{f.atk=Math.floor(f.atk*0.9);});
+  // 스킬: 영금의가호 - 배틀 시작 시 아군 전체 ATK +20%
+  if(p1.some(f=>f.skill1==='yg_영금의가호'||f.skill2==='yg_영금의가호')) p1.forEach(f=>{f.atk=Math.floor(f.atk*1.2);});
+  if(p2.some(f=>f.skill1==='yg_영금의가호'||f.skill2==='yg_영금의가호')) p2.forEach(f=>{f.atk=Math.floor(f.atk*1.2);});
+  // 스킬: 용의숨결 - 배틀 시작 시 적 전체 ATK·DEF -15%
+  if(p1.some(f=>f.skill1==='hl_용의숨결'||f.skill2==='hl_용의숨결')) p2.forEach(f=>{f.atk=Math.floor(f.atk*0.85);f.def=Math.floor(f.def*0.85);});
+  if(p2.some(f=>f.skill1==='hl_용의숨결'||f.skill2==='hl_용의숨결')) p1.forEach(f=>{f.atk=Math.floor(f.atk*0.85);f.def=Math.floor(f.def*0.85);});
   const MAX=7200; // 최대 약 3.6분 (30ms * 7200 = 216초)
   for(let t=0;t<MAX;t++){
     const a1=p1.some(f=>f.curHp>0);
@@ -6370,7 +6491,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
         if(tgt.skill1==='el_번개반격'||tgt.skill2==='el_번개반격') tgt.atkCd=0;
         events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;
       }
-      const crit=rng()<f.luk/200*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
+      const crit=rng()<Math.min(1,f.luk/500)*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
       // 스킬: 포식자의 영역 - 아군 피라냐 2마리+ 시 공격력 +20%
       const domainMult1=(f.skill1==='pr_포식자의영역'||f.skill2==='pr_포식자의영역')&&p1.filter(ff=>ff.type==='piranha'&&ff.curHp>0).length>=2?1.2:1;
       // 스킬: 혈흔의 냄새 - 처치 누적 공격력 +8%
@@ -6383,7 +6504,13 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const rageMult1=1+(f.rageStacks||0)*0.15;
       // 스킬: 결사항전 - 피격 대상 HP 25% 이하 시 DEF +50%
       const desperateDef1=(tgt.skill1==='cm_결사항전'||tgt.skill2==='cm_결사항전')&&tgt.curHp<=tgt.maxHp*0.25?1.5:1;
-      const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*desperateAtk1*rageMult1*ando1*0.7-tgt.def*desperateDef1*0.3+(rng()-0.5)*f.atk*0.15));
+      // 스킬: 전격관통 - 공격 시 적 DEF 35% 무시
+      const penMult1=(f.skill1==='ee_전격관통'||f.skill2==='ee_전격관통')?0.65:1;
+      // 스킬: 왕의분노 - HP 50% 이하 시 ATK +40%
+      const rageKingAtk1=(f.skill1==='hl_왕의분노'||f.skill2==='hl_왕의분노')&&f.curHp<=f.maxHp*0.5?1.4:1;
+      // 스킬: 왕의분노 - 피격 대상 HP 50% 이하 시 DEF +40%
+      const rageKingDef1=(tgt.skill1==='hl_왕의분노'||tgt.skill2==='hl_왕의분노')&&tgt.curHp<=tgt.maxHp*0.5?1.4:1;
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*desperateAtk1*rageMult1*ando1*rageKingAtk1*0.7-tgt.def*desperateDef1*penMult1*rageKingDef1*0.3+(rng()-0.5)*f.atk*0.15));
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
@@ -6399,6 +6526,10 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((tgt.skill1==='tu_수축'||tgt.skill2==='tu_수축')&&tgt.curHp<=tgt.maxHp*0.35){
         fd=Math.max(1,Math.floor(fd*0.4));
       }
+      // 스킬: 용왕의방패 - 한 번에 받는 피해가 DEF×0.4 초과 시 초과분 75% 감소
+      if(tgt.skill1==='yk_용왕의방패'||tgt.skill2==='yk_용왕의방패'){const shield=Math.floor(tgt.def*0.4);if(fd>shield)fd=Math.floor(shield+(fd-shield)*0.25);}
+      // 스킬: 불굴 - HP 40% 이하 시 받는 피해 40% 감소
+      if((tgt.skill1==='yk_불굴'||tgt.skill2==='yk_불굴')&&tgt.curHp<=tgt.maxHp*0.4){fd=Math.max(1,Math.floor(fd*0.6));}
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 도망가기 - 치명상 1회 무효화, HP 10%로 생존
       if(tgt.curHp<=0&&!tgt.deathSaved&&(tgt.skill1==='cm_도망가기'||tgt.skill2==='cm_도망가기')){
@@ -6408,6 +6539,8 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){tgt.atkCd=0;}
       // 스킬: 감전 - 25% 확률로 적 atkCd +40
       if((f.skill1==='el_감전'||f.skill2==='el_감전')&&tgt.curHp>0&&rng()<0.25){tgt.atkCd+=40;}
+      // 스킬: 전기충격 - 30% 확률로 적 atkCd +100 및 ATK -20%
+      if((f.skill1==='ee_전기충격'||f.skill2==='ee_전기충격')&&tgt.curHp>0&&rng()<0.30){tgt.atkCd+=100;if(!tgt.shockDebuffed){tgt.atk=Math.floor(tgt.atk*0.8);tgt.shockDebuffed=true;}}
       // 스킬: 제압 - 공격마다 확정 적 atkCd +10
       if((f.skill1==='sn_제압'||f.skill2==='sn_제압')&&tgt.curHp>0){tgt.atkCd+=10;}
       // 스킬: 분노 - 아군(p2) 처치 시 생존 p2 분노 스택 증가
@@ -6461,7 +6594,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
         if(tgt.skill1==='el_번개반격'||tgt.skill2==='el_번개반격') tgt.atkCd=0;
         events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;
       }
-      const crit=rng()<f.luk/200*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
+      const crit=rng()<Math.min(1,f.luk/500)*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
       // 스킬: 포식자의 영역 - 아군 피라냐 2마리+ 시 공격력 +20%
       const domainMult2=(f.skill1==='pr_포식자의영역'||f.skill2==='pr_포식자의영역')&&p2.filter(ff=>ff.type==='piranha'&&ff.curHp>0).length>=2?1.2:1;
       // 스킬: 혈흔의 냄새 - 처치 누적 공격력 +8%
@@ -6474,7 +6607,13 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       const rageMult2=1+(f.rageStacks||0)*0.15;
       // 스킬: 결사항전 - 피격 대상 HP 25% 이하 시 DEF +50%
       const desperateDef2=(tgt.skill1==='cm_결사항전'||tgt.skill2==='cm_결사항전')&&tgt.curHp<=tgt.maxHp*0.25?1.5:1;
-      const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*desperateAtk2*rageMult2*ando2*0.7-tgt.def*desperateDef2*0.3+(rng()-0.5)*f.atk*0.15));
+      // 스킬: 전격관통 - 공격 시 적 DEF 35% 무시
+      const penMult2=(f.skill1==='ee_전격관통'||f.skill2==='ee_전격관통')?0.65:1;
+      // 스킬: 왕의분노 - HP 50% 이하 시 ATK +40%
+      const rageKingAtk2=(f.skill1==='hl_왕의분노'||f.skill2==='hl_왕의분노')&&f.curHp<=f.maxHp*0.5?1.4:1;
+      // 스킬: 왕의분노 - 피격 대상 HP 50% 이하 시 DEF +40%
+      const rageKingDef2=(tgt.skill1==='hl_왕의분노'||tgt.skill2==='hl_왕의분노')&&tgt.curHp<=tgt.maxHp*0.5?1.4:1;
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*desperateAtk2*rageMult2*ando2*rageKingAtk2*0.7-tgt.def*desperateDef2*penMult2*rageKingDef2*0.3+(rng()-0.5)*f.atk*0.15));
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
@@ -6490,6 +6629,10 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((tgt.skill1==='tu_수축'||tgt.skill2==='tu_수축')&&tgt.curHp<=tgt.maxHp*0.35){
         fd=Math.max(1,Math.floor(fd*0.4));
       }
+      // 스킬: 용왕의방패 - 한 번에 받는 피해가 DEF×0.4 초과 시 초과분 75% 감소
+      if(tgt.skill1==='yk_용왕의방패'||tgt.skill2==='yk_용왕의방패'){const shield=Math.floor(tgt.def*0.4);if(fd>shield)fd=Math.floor(shield+(fd-shield)*0.25);}
+      // 스킬: 불굴 - HP 40% 이하 시 받는 피해 40% 감소
+      if((tgt.skill1==='yk_불굴'||tgt.skill2==='yk_불굴')&&tgt.curHp<=tgt.maxHp*0.4){fd=Math.max(1,Math.floor(fd*0.6));}
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 도망가기 - 치명상 1회 무효화, HP 10%로 생존
       if(tgt.curHp<=0&&!tgt.deathSaved&&(tgt.skill1==='cm_도망가기'||tgt.skill2==='cm_도망가기')){
@@ -6499,6 +6642,8 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
       if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){tgt.atkCd=0;}
       // 스킬: 감전 - 25% 확률로 적 atkCd +40
       if((f.skill1==='el_감전'||f.skill2==='el_감전')&&tgt.curHp>0&&rng()<0.25){tgt.atkCd+=40;}
+      // 스킬: 전기충격 - 30% 확률로 적 atkCd +100 및 ATK -20%
+      if((f.skill1==='ee_전기충격'||f.skill2==='ee_전기충격')&&tgt.curHp>0&&rng()<0.30){tgt.atkCd+=100;if(!tgt.shockDebuffed){tgt.atk=Math.floor(tgt.atk*0.8);tgt.shockDebuffed=true;}}
       // 스킬: 제압 - 공격마다 확정 적 atkCd +10
       if((f.skill1==='sn_제압'||f.skill2==='sn_제압')&&tgt.curHp>0){tgt.atkCd+=10;}
       // 스킬: 분노 - 아군(p1) 처치 시 생존 p1 분노 스택 증가
@@ -6908,10 +7053,10 @@ function btDraw(W,H){
     c.strokeStyle=f.side==='my'?'rgba(31,73,125,0.7)':'rgba(192,0,0,0.7)';
     c.lineWidth=1.5;c.stroke();
     // 눈 (거북이는 머리 위치에)
-    const btEyeR=ftype==='electric'?size*.1:(ftype==='turtle'||ftype==='yongwang')?size*.13:size*.17;
-    const btEyePR=ftype==='electric'?size*.055:(ftype==='turtle'||ftype==='yongwang')?size*.07:size*.09;
-    const btEyeX=(ftype==='turtle'||ftype==='yongwang')?fx+dir*(size*.92+size*.22):fx+dir*size*.5;
-    const btEyeY=(ftype==='turtle'||ftype==='yongwang')?fy-size*.12:fy-size*.1;
+    const btEyeR=(ftype==='electric'||ftype==='eelyw')?size*.1:(ftype==='turtle'||ftype==='yongwang'||ftype==='haelyong')?size*.13:size*.17;
+    const btEyePR=(ftype==='electric'||ftype==='eelyw')?size*.055:(ftype==='turtle'||ftype==='yongwang'||ftype==='haelyong')?size*.07:size*.09;
+    const btEyeX=(ftype==='turtle'||ftype==='yongwang'||ftype==='haelyong')?fx+dir*(size*.92+size*.22):fx+dir*size*.5;
+    const btEyeY=(ftype==='turtle'||ftype==='yongwang'||ftype==='haelyong')?fy-size*.12:fy-size*.1;
     c.fillStyle='#fff';c.beginPath();c.arc(btEyeX,btEyeY,btEyeR,0,Math.PI*2);c.fill();
     c.fillStyle='#111';c.beginPath();c.arc(btEyeX+dir*size*.04,btEyeY,btEyePR,0,Math.PI*2);c.fill();
     // HP바 (물고기 위)
