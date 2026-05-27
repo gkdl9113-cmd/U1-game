@@ -2417,10 +2417,10 @@ function fishingOpenBaitSelect(){
   const allFish=[
     ...FG.fishes.map(f=>({f,src:'main'})),
     ...FG.auxFishes.map(f=>({f,src:'aux'}))
-  ].filter(({f})=>!f.isDead&&f.type==='turtle'&&fStage(f).grade==='전설');
+  ].filter(({f})=>!f.isDead&&fStage(f).grade==='전설');
   const listEl=document.getElementById('bait-list');
   if(!allFish.length){
-    listEl.innerHTML=`<div style="text-align:center;padding:20px;color:#999;font-size:11px">보유한 심연의 거북이 없습니다.<br>거북이를 전설까지 진화시켜 주세요.</div>`;
+    listEl.innerHTML=`<div style="text-align:center;padding:20px;color:#999;font-size:11px">보유한 전설 물고기가 없습니다.<br>전설 등급까지 진화시켜 주세요.</div>`;
     document.getElementById('bait-confirm-btn').disabled=true;
   } else {
     listEl.innerHTML=allFish.map(({f,src},i)=>{
