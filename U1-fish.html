@@ -2814,7 +2814,7 @@ function fishCalcOffline(seconds){
     // HP 오프라인 감소 없음 — 복귀 후 실시간 틱이 정상 처리
     const inc=Math.floor(ticks/30)*(STAGE_INCOME[f.stage]||2);
     totalOff+=inc;
-    f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
+    if(f.type!=='yongwang') f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
   });
   FG.money+=totalOff;
   if(totalOff>0){
@@ -2891,7 +2891,7 @@ function fishTick(){
       inc+=fishInc;
     }
     // XP (10초마다)
-    if(f.fullness>30){f._xpAcc=(f._xpAcc||0)+elapsed;if(f._xpAcc>=10){f._xpAcc=0;let xpMult=1;if((f.skill1==='tr_학습가속'||f.skill2==='tr_학습가속')&&f.fullness>=70)xpMult*=1.5;if(f.skill1==='cm_부지런함'||f.skill2==='cm_부지런함')xpMult*=1.2;f.xp+=s.xpRate*xpMult;}}
+    if(f.type!=='yongwang'&&f.fullness>30){f._xpAcc=(f._xpAcc||0)+elapsed;if(f._xpAcc>=10){f._xpAcc=0;let xpMult=1;if((f.skill1==='tr_학습가속'||f.skill2==='tr_학습가속')&&f.fullness>=70)xpMult*=1.5;if(f.skill1==='cm_부지런함'||f.skill2==='cm_부지런함')xpMult*=1.2;f.xp+=s.xpRate*xpMult;}}
     // 스킬: 회복의 기운 - 10초마다 최대 HP 0.5% 회복
     if(f.skill1==='cm_회복의기운'||f.skill2==='cm_회복의기운'){f._healAcc=(f._healAcc||0)+elapsed;if(f._healAcc>=10){f._healAcc=0;f.hp=Math.min(f.maxHp,f.hp+Math.max(1,Math.floor(f.maxHp*0.005)));}}
   });
@@ -3315,7 +3315,7 @@ function closeLegendOverlay(){
 const YW_MAX_LV=50;
 const YW_PER_PT={hp:100,atk:10,def:20,agi:3,luk:5};
 function ywXpNeed(f){return(f.level||1)*500;}
-function ywGoldCost(f){return(f.level||1)*10000;}
+function ywGoldCost(f){return(f.level||1)*50000;}
 
 function ywFeedSpecial(idx){
   const f=FG.fishes[idx];if(!f||f.type!=='yongwang'||f.isDead) return;
