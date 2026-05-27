@@ -4849,10 +4849,11 @@ function _raceShowResult(){
   let rows='';
   for(let ri=0;ri<3;ri++){
     const actual=_raceRes[ri],pred=_racePick[ri],hit=pred===actual;
+    const fa=_raceFs[actual];
     rows+=`<tr style="background:${hit?'#E8F5E9':'#fff'}">
       <td style="padding:5px;border:1px solid #E0E0E0;text-align:center;font-weight:700">${medals[ri]} ${RN[ri]}</td>
       <td style="padding:5px;border:1px solid #E0E0E0;text-align:center">${pred+1}번</td>
-      <td style="padding:5px;border:1px solid #E0E0E0;text-align:center;font-weight:700;color:#1A237E">${actual+1}번</td>
+      <td style="padding:5px;border:1px solid #E0E0E0;text-align:center;font-weight:700;color:#1A237E">${actual+1}번<div style="font-size:9px;color:#555;font-weight:400">${fa.s.name}</div></td>
       <td style="padding:5px;border:1px solid #E0E0E0;text-align:center">${hit?'✅':'❌'}</td>
     </tr>`;
   }
