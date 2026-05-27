@@ -1082,6 +1082,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="adm-card"><div class="adm-card-label">U1</div><div class="adm-card-val yellow" id="adm-u1-count">-</div></div>
     <div class="adm-card"><div class="adm-card-label">접속 중</div><div class="adm-card-val red" id="adm-online-count2">0</div></div>
     <div style="flex:1"></div>
+    <button onclick="adminResetLottery()" style="background:#1A3D2A;color:#4ADE80;border:1px solid #2D6A4A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🎰 복권 초기화</button>
     <button onclick="adminResetJackpot()" style="background:#1A3D5C;color:#60A5FA;border:1px solid #2D6A9A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🎯 잭팟 초기화</button>
     <button onclick="adminResetServer()"style="background:#3D0000;color:#FB7185;border:1px solid #7F0000;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🗑️ 서버 초기화</button>
   </div>
@@ -5644,6 +5645,18 @@ async function adminSaveEdit(){
   // 접속 중인 플레이어에게 실시간 동기화 신호 전송
   sbSend('data_reload',{targetName:username,fromAdmin:ADMIN_USERNAME});
   adminLoadUsers();
+}
+
+async function adminResetLottery(){
+  if(!confirm('행운복권 풀을 150장으로 초기화하시겠습니까?')) return;
+  const init=_lotteryInitPool();
+  const{error}=await _sb.from('fish_accounts').upsert({
+    username:LOTTERY_USERNAME,server:ACTIVE_SERVER,
+    password_hash:'__LOTTERY__',fish_data:init,
+    updated_at:new Date().toISOString()
+  },{onConflict:'username,server'});
+  if(error){alert('초기화 실패: '+error.message);return;}
+  alert(`복권 초기화 완료! (150장, 라운드 ${init.round})`);
 }
 
 async function adminResetJackpot(){
