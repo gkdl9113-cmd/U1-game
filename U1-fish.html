@@ -3299,8 +3299,12 @@ function openSkillAssign(fishIdx,slot){
   document.getElementById('sk-assign-label').textContent=slot===1?'⚔️ 전용스킬 슬롯':'🌐 공용스킬 슬롯';
   const curDiv=document.getElementById('sk-assign-current');
   if(curSk){
+    const curCfg=SKILL_RARITY[curSk.rarity]||SKILL_RARITY['일반'];
     curDiv.innerHTML=`<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:4px;padding:8px;font-size:10px">
-      <div style="font-weight:700;color:#3730A3;margin-bottom:2px">현재: ${curSk.icon} ${curSk.name}</div>
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
+        <span style="font-weight:700;color:#3730A3">${curSk.icon} ${curSk.name}</span>
+        <span style="background:${curCfg.bg};color:${curCfg.fg};border:1px solid ${curCfg.border};border-radius:8px;padding:0 5px;font-size:8px;font-weight:700">${curCfg.label}</span>
+      </div>
       <div style="color:#6366F1;font-size:9px;margin-bottom:5px">${curSk.desc}</div>
       <button onclick="skillAssignRemove()" style="background:#C05000;color:#fff;border:none;padding:2px 8px;border-radius:3px;font-size:10px;cursor:pointer;font-family:inherit">🗑️ 제거 (인벤토리 반환)</button>
     </div>`;
@@ -3316,9 +3320,13 @@ function openSkillAssign(fishIdx,slot){
   }else{
     listDiv.innerHTML=owned.map(([id,sk])=>{
       const cnt=FG.skillInventory[id]||0;
-      return `<div onclick="skillAssignConfirm('${id}')" style="background:#F8F9FF;border:1px solid #C7D2FE;border-radius:4px;padding:7px;cursor:pointer;font-size:10px" onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='#F8F9FF'">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
-          <span style="font-weight:700;color:#3730A3">${sk.icon} ${sk.name}</span>
+      const cfg=SKILL_RARITY[sk.rarity]||SKILL_RARITY['일반'];
+      return `<div onclick="skillAssignConfirm('${id}')" style="background:#F8F9FF;border:1px solid ${cfg.border};border-radius:4px;padding:7px;cursor:pointer;font-size:10px" onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='#F8F9FF'">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <div style="display:flex;align-items:center;gap:4px">
+            <span style="font-weight:700;color:#3730A3">${sk.icon} ${sk.name}</span>
+            <span style="background:${cfg.bg};color:${cfg.fg};border:1px solid ${cfg.border};border-radius:8px;padding:0 5px;font-size:8px;font-weight:700">${cfg.label}</span>
+          </div>
           <span style="background:#4F46E5;color:#fff;border-radius:10px;padding:0 6px;font-size:9px">×${cnt}</span>
         </div>
         <div style="color:#6366F1;font-size:9px">${sk.desc}</div>
@@ -3375,11 +3383,17 @@ function showFishDetail(idx){
   if(fdSkills){
     const renderSlot=(skId,slotLabel,slotNum)=>{
       const sk=FISH_SKILLS[skId];
-      if(sk) return `<div onclick="openSkillAssign(${idx},${slotNum})" style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:3px;padding:6px;font-size:10px;color:#3730A3;cursor:pointer" onmouseover="this.style.background='#E0E7FF'" onmouseout="this.style.background='#EEF2FF'">
-        <div style="font-weight:700;margin-bottom:2px">${slotLabel}: ${sk.icon||'⚡'} ${sk.name}</div>
-        <div style="font-size:9px;color:#6366F1">${sk.desc}</div>
-        <div style="font-size:8px;color:#A5B4FC;margin-top:2px">탭하여 변경</div>
-      </div>`;
+      if(sk){
+        const cfg=SKILL_RARITY[sk.rarity]||SKILL_RARITY['일반'];
+        return `<div onclick="openSkillAssign(${idx},${slotNum})" style="background:#EEF2FF;border:1px solid ${cfg.border};border-radius:3px;padding:6px;font-size:10px;color:#3730A3;cursor:pointer" onmouseover="this.style.background='#E0E7FF'" onmouseout="this.style.background='#EEF2FF'">
+          <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px">
+            <span style="font-weight:700">${slotLabel}: ${sk.icon||'⚡'} ${sk.name}</span>
+            <span style="background:${cfg.bg};color:${cfg.fg};border:1px solid ${cfg.border};border-radius:8px;padding:0 5px;font-size:8px;font-weight:700">${cfg.label}</span>
+          </div>
+          <div style="font-size:9px;color:#6366F1">${sk.desc}</div>
+          <div style="font-size:8px;color:#A5B4FC;margin-top:2px">탭하여 변경</div>
+        </div>`;
+      }
       return `<div onclick="openSkillAssign(${idx},${slotNum})" style="background:#F0F0FF;border:1px dashed #A5B4FC;border-radius:3px;padding:6px;text-align:center;font-size:10px;color:#888;cursor:pointer" onmouseover="this.style.background='#E8E8FF'" onmouseout="this.style.background='#F0F0FF'">${slotLabel}<br><span style="font-size:9px;color:#A5B4FC">+ 스킬 장착</span></div>`;
     };
     fdSkills.innerHTML=renderSlot(f.skill1,'전용스킬',1)+renderSlot(f.skill2,'공용스킬',2);
