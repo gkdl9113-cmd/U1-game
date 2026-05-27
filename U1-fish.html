@@ -958,7 +958,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 
 <!-- 복권 -->
 <div class="xl-dlg-ov" id="lottery-modal">
-  <div class="xl-dlg" id="lottery-dlg" style="min-width:310px;max-width:360px;max-height:90dvh;display:flex;flex-direction:column">
+  <div class="xl-dlg" id="lottery-dlg" style="width:calc(100vw - 16px);max-width:460px;max-height:92dvh;display:flex;flex-direction:column">
     <div class="xl-dlg-title" style="background:#1F3864">🎰 행운복권발행시스템.xlsx <button class="xl-dlg-x" onclick="closeLotteryModal()">✕</button></div>
     <div class="xl-dlg-body" style="overflow-y:auto;flex:1;padding:14px">
 
@@ -982,10 +982,12 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 
       <!-- Phase 2: 스크래치 -->
       <div id="lottery-scratch-phase" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <span id="lottery-no" style="font-size:10px;color:#888">복권번호: ------</span>
           <span id="lottery-cost-info" style="font-size:10px;color:#888">구입가: 500원</span>
         </div>
+        <!-- 현재 풀 현황 -->
+        <div id="lottery-scratch-pool" style="background:#F8F8FF;border:1px solid #D0D8FF;border-radius:4px;padding:5px 10px;margin-bottom:8px;font-size:9px;color:#555;display:flex;flex-wrap:wrap;gap:3px 8px"></div>
         <div id="lottery-cells" style="margin-bottom:10px"></div>
         <div id="lottery-result" style="display:none;text-align:center;font-size:13px;font-weight:800;padding:10px;border-radius:4px;margin-bottom:8px"></div>
         <div style="display:flex;gap:6px">
@@ -1311,7 +1313,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.40';
+const BUILD = 'v2.41';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -2261,7 +2263,7 @@ function _lotteryRenderPoolStatus(remaining){
     const color=p.rank===1?'#B8860B':p.rank===2?'#555':p.rank===3?'#7B3F00':p.rank===4?'#1F3864':p.rank===5?'#1A5C35':'#888';
     return `<span style="color:${color};font-weight:700">${p.grade} <span style="color:#333">${left}장</span></span>`;
   }).join('<span style="color:#CCC">|</span>');
-  ['lottery-pool-status','lottery-pool-status2'].forEach(id=>{
+  ['lottery-pool-status','lottery-pool-status2','lottery-scratch-pool'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.innerHTML=html;
   });
@@ -4766,8 +4768,8 @@ async function buyLotteryBatch(count){
   const no=String(Math.floor(Math.random()*9e5+1e5));
   document.getElementById('lottery-no').textContent='복권번호: '+no+(resetMsg?'  🔄 풀 리셋!':'');
   document.getElementById('lottery-cost-info').textContent=`구입가: ${totalCost.toLocaleString()}원 (${count}장)`;
-  const dlg=document.getElementById('lottery-dlg');
-  if(dlg)dlg.style.maxWidth=count>=8?'400px':'360px';
+  // 스크래치 화면에 구매 전 풀 현황 표시 (preDraw = 내 뽑기 전 상태)
+  _lotteryRenderPoolStatus(ld.remaining);
   if(count===1){_lotteryRender1(results[0]);}
   else{_lotteryRenderMulti(results,count);}
 }
@@ -4811,9 +4813,9 @@ function _lotteryRenderMulti(results,count){
     return {prize,cells,revealed:0,done:false};
   });
   ltBatch=ltMultiCards.map(c=>({prize:c.prize,done:false}));ltBatchRevealed=0;
-  const cols=count<=4?2:3;
-  const cellH=count<=4?'33px':'27px';
-  const fs=count<=4?'8px':'7px';
+  const cols=2; // 항상 2열 (모바일 가독성)
+  const cellH=count<=4?'46px':'40px';
+  const fs='9px';
   const wrap=document.getElementById('lottery-cells');
   wrap.style.cssText=`display:grid;grid-template-columns:repeat(${cols},1fr);gap:4px`;
   wrap.innerHTML='';
@@ -4832,7 +4834,7 @@ function _lotteryRenderMulti(results,count){
     card.cells.forEach((d,idx)=>{
       const cell=document.createElement('div');
       cell.id=`lt-cell-${ci}-${idx}`;
-      cell.style.cssText=`background:#C0C0C0;height:${cellH};display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;text-align:center;user-select:none`;
+      cell.style.cssText=`background:#C0C0C0;height:${cellH};display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;text-align:center;user-select:none`;
       cell.textContent='🔒';
       cell.onclick=()=>lotteryRevealMultiCell(ci,idx);
       ig.appendChild(cell);
@@ -4858,7 +4860,7 @@ function lotteryRevealMultiCell(ci,idx){
   const cell=document.getElementById(`lt-cell-${ci}-${idx}`);
   if(cell){
     cell.style.background=d.prize.bg;cell.style.color=d.prize.fg;
-    cell.style.cursor='default';cell.style.fontSize=ltMode<=4?'7px':'6px';cell.style.fontWeight='800';
+    cell.style.cursor='default';cell.style.fontSize=ltMode<=4?'9px':'8px';cell.style.fontWeight='800';
     if(d.real)cell.style.outline='2px solid #FFD700';
     cell.textContent=_ltFmt(d.prize.amount);
   }
@@ -4874,7 +4876,7 @@ function _lotteryFinishCard(ci){
   const btn=document.getElementById(`lt-btn-${ci}`);if(btn)btn.style.display='none';
   const rb=document.getElementById(`lt-result-${ci}`);const p=card.prize;
   if(rb){
-    rb.style.cssText=`display:block;text-align:center;font-size:${ltMode<=4?'9px':'7px'};font-weight:800;padding:2px;background:${p.amount>0?p.bg:'#E0E0E0'};color:${p.amount>0?p.fg:'#888'}`;
+    rb.style.cssText=`display:block;text-align:center;font-size:11px;font-weight:800;padding:4px 2px;background:${p.amount>0?p.bg:'#E0E0E0'};color:${p.amount>0?p.fg:'#888'}`;
     rb.textContent=p.amount>0?`🎉 ${p.grade} +${_ltFmt(p.amount)}`:'꽝';
   }
   const cardEl=document.getElementById(`lt-card-${ci}`);
