@@ -4290,48 +4290,29 @@ function renderBattlePickGrid(){
   const selIds=new Set(sel.map(f=>f.id));
   const selCount=sel.length;
   document.getElementById('btpick-count').textContent=`선택: ${selCount}/3`;
-  const stgLabels=['1단','2단','3단','4단','5단'];
-  let html=`<table style="border-collapse:collapse;width:100%;table-layout:fixed">
-    <colgroup><col style="width:44px">${'<col>'.repeat(5)}</colgroup>
-    <tr><th style="font-size:9px;color:#999;font-weight:500;padding:2px 0;text-align:left"></th>`;
-  stgLabels.forEach(l=>{html+=`<th style="font-size:9px;color:#999;font-weight:500;text-align:center;padding:2px 0">${l}</th>`;});
-  html+='</tr>';
-  BTPICK_SPECIES.forEach(sp=>{
-    html+=`<tr><td style="font-size:9px;color:#444;font-weight:700;padding:3px 2px;white-space:nowrap">${sp.label}</td>`;
-    for(let stage=1;stage<=5;stage++){
-      const sd=F_SPECIES[sp.key]?.[stage];
-      if(!sd){html+='<td style="padding:2px"></td>';continue;}
-      const fish=FG.fishes.find(f=>f.type===sp.key&&f.stage===stage&&!f.isDead);
-      const deadFish=!fish&&FG.fishes.find(f=>f.type===sp.key&&f.stage===stage&&f.isDead);
-      if(!fish&&!deadFish){
-        html+=`<td style="padding:2px">
-          <div class="btpick-cell-wrap unowned" title="${sd.name}(미보유)">
-            <span style="font-size:13px;color:#CCC">?</span>
-          </div></td>`;
-        continue;
-      }
-      if(deadFish){
-        html+=`<td style="padding:2px">
-          <div class="btpick-cell-wrap dead" title="${sd.name}(사망)">
-            ${drawMinifish(sp.key,sd,true)}
-            <div style="font-size:7px;color:#999;margin-top:-2px">💀사망</div>
-          </div></td>`;
-        continue;
-      }
-      const isSel=selIds.has(fish.id);
-      const canSel=!isSel&&selCount<3;
-      const cls='btpick-cell-wrap owned'+(isSel?' sel':canSel?'':' blocked');
-      html+=`<td style="padding:2px">
-        <div class="${cls}" onclick="toggleBattlePickFish('${fish.id}')" title="${sd.name} (${sd.grade})" style="border-color:${isSel?'#217346':sd.color+'88'}">
-          ${drawMinifish(sp.key,sd,true)}
-          ${isSel?`<div style="position:absolute;top:1px;right:2px;font-size:9px;font-weight:900;color:#217346">✓</div>`:''}
-          <div style="font-size:7.5px;color:${GRADE_CLR[sd.grade]||'#333'};font-weight:700;text-align:center;line-height:1.1;padding:0 1px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sd.name}</div>
-        </div></td>`;
-    }
-    html+='</tr>';
-  });
-  html+='</table>';
-  document.getElementById('btpick-grid').innerHTML=html;
+  const alive=FG.fishes.map((f,i)=>({f,i})).filter(({f})=>!f.isDead);
+  if(!alive.length){
+    document.getElementById('btpick-grid').innerHTML='<div style="text-align:center;color:#888;padding:24px">살아있는 물고기가 없습니다</div>';
+    return;
+  }
+  const items=alive.map(({f,i})=>{
+    const s=fStage(f);
+    const isSel=selIds.has(f.id);
+    const blocked=!isSel&&selCount>=3;
+    const gd=GRADE_CLR[s.grade]||'#333';
+    const ywLvTxt=f.type==='yongwang'?` <span style="color:#004D40;font-weight:900">Lv.${f.level||1}</span>`:'';
+    return `<div onclick="toggleBattlePickFish('${f.id}')"
+      style="display:flex;align-items:center;gap:8px;padding:7px 8px;border:2px solid ${isSel?'#217346':s.color+'99'};border-radius:5px;background:${isSel?'#D1FAE5':'#fff'};cursor:${blocked?'default':'pointer'};opacity:${blocked?'0.38':'1'}">
+      ${drawMinifish(f.type||'goldfish',s,true)}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;font-weight:800;color:#222">#${i+1} ${s.name}${ywLvTxt}</div>
+        <div style="font-size:9px;color:${gd};font-weight:700;margin-top:1px">${s.grade} · ${s.species}</div>
+        <div style="font-size:9px;color:#888;margin-top:1px">HP ${f.hp}/${f.maxHp} · 포만감 ${Math.floor(f.fullness||0)}%</div>
+      </div>
+      ${isSel?'<span style="font-size:18px;color:#217346;flex-shrink:0;font-weight:900">✓</span>':''}
+    </div>`;
+  }).join('');
+  document.getElementById('btpick-grid').innerHTML=`<div style="display:flex;flex-direction:column;gap:5px">${items}</div>`;
 }
 function toggleBattlePickFish(fishId){
   if(!FG.battlePick) FG.battlePick=[];
