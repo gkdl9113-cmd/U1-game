@@ -4686,7 +4686,7 @@ function lotteryResult(){
   if(buyBtn){
     const canBuy=FG.money>=300;
     buyBtn.style.display='';
-    buyBtn.textContent='🎰 추가구매 (300원)';
+    buyBtn.textContent=`🎰 추가구매 (${LOTTERY_PRICE}원)`;
     buyBtn.disabled=!canBuy;
     buyBtn.style.opacity=canBuy?'1':'0.5';
   }
