@@ -5748,11 +5748,7 @@ function btFrame(){
   }
   if(btImP1){
     // ── P1: 시뮬레이션 실행 + P2에게 상태 브로드캐스트 ──────────
-    const now=Date.now();
-    const expectedTick=Math.floor((now-_btLocalStart)/30);
-    const stepsNeeded=Math.max(0,expectedTick-btTick);
-    const steps=Math.min(Math.max(1,stepsNeeded),8);
-    for(let _s=0;_s<steps;_s++) btPhysicsStep();
+    btPhysicsStep(); // 프레임당 1 스텝 고정 (캐치업 제거 — 속도 일정 유지)
     const W=btCanvas.width,H=btCanvas.height;
     btDraw(W,H);
     // P2에게 매 틱 상태 전송 (P1 단독 시뮬레이션)
@@ -5823,7 +5819,7 @@ function btPhysicsStep(){
     let nearest=enemies[0],minD=Infinity;
     enemies.forEach(e=>{const d=Math.hypot(e.x-f.x,e.y-f.y);if(d<minD){minD=d;nearest=e;}});
     const bm=f.buffMult||1;
-    const spd=0.003+f.agi*bm*0.000045;
+    const spd=0.0015+f.agi*bm*0.000025;
     const collR=0.09;
     // ── 페이즈 타이머 ──────────────────────────────────────
     f.phaseTimer--;
