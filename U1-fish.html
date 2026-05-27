@@ -1313,7 +1313,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.48';
+const BUILD = 'v2.49';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1506,7 +1506,7 @@ function connectSupabase(){
       _intentionalDisconnect=true;
       if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
       currentUsername=''; myName='';
-      sessionStorage.removeItem('u1_sess_uid');sessionStorage.removeItem('u1_sess_hash');
+      sessionStorage.removeItem('u1_sess_uid');sessionStorage.removeItem('u1_sess_hash');sessionStorage.removeItem('_u1_ch_once');
       const pwEl=document.getElementById('e-pw');if(pwEl)pwEl.value='';
       eStatus('다른 기기에서 접속되어 로그아웃되었습니다.','#C00000');
       show('s-entry');
@@ -1516,6 +1516,7 @@ function connectSupabase(){
     if(status==='SUBSCRIBED'){
       const isFirstConnect=!_chConnectedOnce;
       _chConnectedOnce=true;
+      sessionStorage.setItem('_u1_ch_once','1');
       _reconnectDelay=3000; // 성공 시 지연 리셋
       eStatus('● 온라인','#217346'); eOnline(true);
       if(isFirstConnect) u1Toast('✅ U1 수족관 연결 완료!','#217346');
@@ -1539,7 +1540,8 @@ function connectSupabase(){
     }
   });
 }
-let _chConnectedOnce=false;
+// sessionStorage에 저장 → 모바일 페이지 재로드 시에도 "첫 연결" 판정 방지
+let _chConnectedOnce=sessionStorage.getItem('_u1_ch_once')==='1';
 
 async function reloadFishDataFromDB(fishName){
   if(!_sb||!currentUsername) return;
