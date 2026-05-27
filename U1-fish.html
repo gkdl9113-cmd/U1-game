@@ -5374,9 +5374,9 @@ function onBothBattleReady(myFish,oppFish){
     const seed=Date.now();
     const rng=mulberry32(seed);
     const events=calcBattleEvents(myFish,oppFish,rng);
-    btEvents=events; // P1도 events 저장
+    btEvents=events;
     sbSend('battle_actions',{targetId:currentGame.opponentId,fromId:myId,
-      seed,events,myFish,oppFish});
+      seed,myFish,oppFish}); // events 제외 — P2는 battle_state 브로드캐스트로 동기화
     initRealtimeBattle(myFish,oppFish,seed,true);
   }
   // p2는 battle_actions 수신 대기
@@ -5385,8 +5385,7 @@ function onBothBattleReady(myFish,oppFish){
 function onBattleActions(payload){
   if(!battleState){u1Toast('[5]actions무시:battleState없음','#C00000');return;}
   if(payload.fromId!==currentGame?.opponentId){u1Toast('[5]actions무시:id불일치','#C00000');return;}
-  btEvents=payload.events||[]; // P2도 events 저장
-  u1Toast(`[5]actions수신 events:${btEvents.length}`,'#217346');
+  u1Toast(`[5]actions수신 seed:${payload.seed}`,'#217346');
   // p2 관점: payload.myFish = 도전자(상대), payload.oppFish = 나
   initRealtimeBattle(payload.oppFish,payload.myFish,payload.seed,false);
 }
