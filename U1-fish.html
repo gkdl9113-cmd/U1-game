@@ -4143,7 +4143,7 @@ function fishOpenShop(){
       <button onclick="fishBuy('${item.id}')" ${disabled?'disabled':''} style="${btnStyle}">${item.price}원</button></div>`;
   }).join('');
   // 자동먹이통 구매 (가격 체증)
-  const maxFeeders=FG.tankMax; // 수조 크기 = 최대 먹이통 수
+  const maxFeeders=12;
   if(FG.autoFeeders.length<maxFeeders){
     const fPrice=600*(FG.autoFeeders.length+1);
     const fCan=FG.money>=fPrice;
