@@ -5842,6 +5842,7 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
   const p1Bt=p1Data.map((f,i)=>{const fish=mkFish(f,i,p1Data.length,imP1?'my':'opp');fish.isP1=true;return fish;});
   const p2Bt=p2Data.map((f,i)=>{const fish=mkFish(f,i,p2Data.length,imP1?'opp':'my');fish.isP1=false;return fish;});
   btFishes=[...p1Bt,...p2Bt];
+  _btMaxEventTick=btEvents.length?Math.max(...btEvents.map(e=>e.t)):0;
 
   // VS 배너 표시
   const vsBanner=document.getElementById('bt-vs-banner');
@@ -5930,6 +5931,7 @@ function btApplyEvents(){
 // ── 매 프레임 ─────────────────────────────────────────────
 let _btSeed=0;       // RNG 시드
 let _btLocalStart=0; // 틱 클럭 기준 (P1 로컬 시계)
+let _btMaxEventTick=0; // 마지막 이벤트 틱 (이벤트 소진 감지용)
 function btFrame(){
   // 캔버스가 0×0이면 재측정 (레이아웃 race condition 복구)
   if(btCanvas&&(!btCanvas.width||!btCanvas.height)){
@@ -5956,6 +5958,17 @@ function btFrame(){
           buffMult:f.buffMult||1,phase:f.phase,
         }))
       });
+    }
+    // 이벤트 소진 후 200틱 경과 시 HP 비율로 강제 종료 (무한 선회 방지)
+    if(btTick>_btMaxEventTick+200){
+      const myLiving=btFishes.filter(f=>f.side==='my'&&!f.isDead);
+      const oppLiving=btFishes.filter(f=>f.side==='opp'&&!f.isDead);
+      if(myLiving.length&&oppLiving.length){
+        const myHpPct=myLiving.reduce((s,f)=>s+f.curHp/f.maxHp,0)/myLiving.length;
+        const oppHpPct=oppLiving.reduce((s,f)=>s+f.curHp/f.maxHp,0)/oppLiving.length;
+        if(myHpPct<=oppHpPct) myLiving.forEach(f=>{f.curHp=0;f.isDead=true;});
+        else oppLiving.forEach(f=>{f.curHp=0;f.isDead=true;});
+      }
     }
     // 종료 체크
     const myAlive=btFishes.filter(f=>f.side==='my'&&!f.isDead).length;
