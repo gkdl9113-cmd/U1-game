@@ -3092,8 +3092,8 @@ function evolveOneFish(f){
 
 function fishRenderInfo(){
   // 리본 - 돈/먹이
-  document.getElementById('f-money').textContent=FG.money;
-  document.getElementById('f-food-count').textContent=FG.food;
+  document.getElementById('f-money').textContent=FG.money.toLocaleString();
+  document.getElementById('f-food-count').textContent=FG.food.toLocaleString();
   // 수식창
   const alive=aliveFishes();
   const rep=alive[0];
@@ -3228,7 +3228,7 @@ function doSkillGacha(times){
   const cost=times===1?SKILL_GACHA_COST:48000;
   if(FG.money<cost){u1Toast('💰 돈이 부족합니다!','#C00000');return;}
   FG.money-=cost;
-  document.getElementById('f-money').textContent=FG.money;
+  document.getElementById('f-money').textContent=FG.money.toLocaleString();
   document.getElementById('gacha-money-display').textContent=FG.money.toLocaleString();
   const results=[];
   let legendId=null;
