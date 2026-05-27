@@ -470,6 +470,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishingEnter()"><span class="xl-rico">🎣</span><span class="xl-rlbl" id="f-rod-lbl">낚시</span></button>
     <button class="xl-rbtn" onclick="showMiniGameMenu()"><span class="xl-rico">⚔️</span><span class="xl-rlbl">미니게임</span></button>
+    <button class="xl-rbtn" onclick="openLotteryMenu()"><span class="xl-rico">🎰</span><span class="xl-rlbl">복권</span></button>
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishSave()"><span class="xl-rico">💾</span><span class="xl-rlbl">저장</span></button>
     <button class="xl-rbtn" onclick="reloadFishDataFromDB()" title="DB에서 최신 데이터 불러오기"><span class="xl-rico">🔄</span><span class="xl-rlbl">동기화</span></button>
@@ -920,6 +921,24 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-notify-btns">
       <button class="xl-notify-btn" onclick="rejectChallenge()">거절</button>
       <button class="xl-notify-btn ok" onclick="acceptChallenge()">수락</button>
+    </div>
+  </div>
+</div>
+
+<!-- 복권 메뉴 -->
+<div class="xl-dlg-ov" id="lottery-menu-modal">
+  <div class="xl-dlg" style="min-width:260px;max-width:300px">
+    <div class="xl-dlg-title" style="background:#1F3864;color:#FFD700">🎰 복권 <button class="xl-dlg-x" onclick="hideDlg('lottery-menu-modal')">✕</button></div>
+    <div class="xl-dlg-body" style="padding:14px;display:flex;flex-direction:column;gap:10px">
+      <button onclick="hideDlg('lottery-menu-modal');buyLottery()" style="background:#1F3864;color:#FFD700;border:none;border-radius:6px;padding:14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left">
+        🎰 행운 복권
+        <div style="font-size:10px;font-weight:400;color:#90CAF9;margin-top:3px">300원 · 1~5등 또는 꽝</div>
+      </button>
+      <button onclick="hideDlg('lottery-menu-modal');openNumberLottery()" style="background:#7B2D8B;color:#fff;border:none;border-radius:6px;padding:14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left">
+        🎯 숫자 복권
+        <div style="font-size:10px;font-weight:400;color:#CE93D8;margin-top:3px">1,000원 · 잭팟 도전! 확률 0.3%</div>
+      </button>
+      <button onclick="hideDlg('lottery-menu-modal')" style="background:#E8E8E8;color:#333;border:none;border-radius:4px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">닫기</button>
     </div>
   </div>
 </div>
@@ -4492,6 +4511,7 @@ function fishBuy(id){
 }
 
 // ── 복권 ─────────────────────────────────────────────────
+function openLotteryMenu(){document.getElementById('lottery-menu-modal').classList.add('on');}
 let ltPrize=null,ltCells=[],ltRevealed=0;
 function buyLottery(){
   if(FG.money<300){document.getElementById('f-status').textContent='복권 300원 필요!';return;}
