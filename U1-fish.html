@@ -5905,8 +5905,12 @@ function btApplyEvents(){
       // 명중: 상대적 데미지 적용 (절대값 덮어쓰기 방지 - 칼로리소모 등 별도 회복 보존)
       target.curHp=Math.max(0,target.curHp-evt.dmg);
       if(target.curHp<=0){
-        target.curHp=0;
-        target.isDead=true;
+        if(!target.deathSaved&&(target.skill1==='cm_도망가기'||target.skill2==='cm_도망가기')){
+          target.curHp=Math.max(1,Math.floor(target.maxHp*0.1));target.deathSaved=true;
+          target.floatTxt={txt:'🏃도망!',age:0,x:target.x,y:target.y-0.08,color:'#FFD700'};
+        } else {
+          target.curHp=0;target.isDead=true;
+        }
       }
       // 시각 효과
       target.hitFlash=evt.crit?12:8;
