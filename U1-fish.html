@@ -1130,8 +1130,8 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div style="font-size:11px;color:#A0C4E8;margin-bottom:12px">현재 잭팟: <strong id="adm-jk-pool" style="color:#FACC15">---</strong></div>
       <div class="adm-form-row">
         <label>적립 속도</label>
-        <input class="adm-form-inp" id="adm-jk-rate" type="number" min="0" max="10000" placeholder="원/분" style="width:80px">
-        <span style="font-size:10px;color:#7A9BBF">원/분</span>
+        <input class="adm-form-inp" id="adm-jk-rate" type="number" min="0" max="10000" placeholder="원/시간" style="width:80px">
+        <span style="font-size:10px;color:#7A9BBF">원/시간</span>
       </div>
       <div style="font-size:9px;color:#4A6A8A;margin-top:6px">* 누군가 잭팟 창을 열 때 경과 시간만큼 자동 적립됩니다</div>
       <div class="adm-btn-row" style="margin-top:14px">
@@ -4726,7 +4726,7 @@ const NUMLT_USERNAME='__JACKPOT__';
 const NUMLT_START=10000;
 const NUMLT_PRICE=1000;
 const NUMLT_MAX=333;
-const NUMLT_ACCUM_RATE_DEFAULT=10; // 원/분 기본값
+const NUMLT_ACCUM_RATE_DEFAULT=600; // 원/시간 기본값 (10원/시간 → 600원/시간)
 
 async function getJackpotData(){
   const{data}=await _sb.from('fish_accounts').select('fish_data')
@@ -4739,8 +4739,8 @@ async function _jackpotApplyAccum(jd){
   const now=Date.now();
   const lastAccum=jd.lastAccum||now;
   const rate=jd.accumRate??NUMLT_ACCUM_RATE_DEFAULT;
-  const elapsedMin=(now-lastAccum)/60000;
-  const add=Math.floor(elapsedMin*rate);
+  const elapsedHour=(now-lastAccum)/3600000;
+  const add=Math.floor(elapsedHour*rate);
   if(add<=0) return jd;
   const newJd={...jd,pool:jd.pool+add,lastAccum:now};
   await _sb.from('fish_accounts').update({
@@ -4770,7 +4770,7 @@ async function openNumberLottery(){
   const rate=jd.accumRate??NUMLT_ACCUM_RATE_DEFAULT;
   document.getElementById('numlt-pool').textContent=jd.pool.toLocaleString()+'원';
   const rateEl=document.getElementById('numlt-accum-rate');
-  if(rateEl) rateEl.textContent=`+${rate}원/분 자동 적립 중`;
+  if(rateEl) rateEl.textContent=`+${rate.toLocaleString()}원/시간 자동 적립 중`;
   document.getElementById('numlt-input').value='';
   document.getElementById('numlt-result').style.display='none';
   const buyBtn=document.querySelector('#numlt-modal .xl-dlg-btn.ok');
@@ -5709,7 +5709,7 @@ async function adminSaveJackpotSettings(){
   }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
   if(error){alert('저장 실패: '+error.message);return;}
   hideDlg('adm-jackpot-modal');
-  u1Toast(`✅ 잭팟 적립 속도 ${rate}원/분으로 변경`,'#217346');
+  u1Toast(`✅ 잭팟 적립 속도 ${rate}원/시간으로 변경`,'#217346');
 }
 
 async function adminResetLottery(){
