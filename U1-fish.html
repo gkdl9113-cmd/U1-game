@@ -938,9 +938,10 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   <div class="xl-dlg" style="min-width:260px;max-width:300px">
     <div class="xl-dlg-title" style="background:#1F3864;color:#FFD700">🎰 복권 <button class="xl-dlg-x" onclick="hideDlg('lottery-menu-modal')">✕</button></div>
     <div class="xl-dlg-body" style="padding:14px;display:flex;flex-direction:column;gap:10px">
-      <button onclick="hideDlg('lottery-menu-modal');buyLottery()" style="background:#1F3864;color:#FFD700;border:none;border-radius:6px;padding:14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left">
+      <button onclick="hideDlg('lottery-menu-modal');buyLottery()" style="background:#1F3864;color:#FFD700;border:none;border-radius:6px;padding:14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left;width:100%">
         🎰 행운 복권
-        <div style="font-size:10px;font-weight:400;color:#90CAF9;margin-top:3px">300원 · 1~5등 또는 꽝</div>
+        <div style="font-size:10px;font-weight:400;color:#90CAF9;margin-top:3px">500원 · 서버 공유 150장 풀 · 1등 10만원</div>
+        <div id="lottery-pool-status" style="margin-top:5px;font-size:9px;color:#A0C4E8;display:flex;flex-wrap:wrap;gap:3px 8px"></div>
       </button>
       <button onclick="hideDlg('lottery-menu-modal');openNumberLottery()" style="background:#7B2D8B;color:#fff;border:none;border-radius:6px;padding:14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left">
         🎯 숫자 복권
@@ -957,17 +958,20 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 
 <!-- 복권 -->
 <div class="xl-dlg-ov" id="lottery-modal">
-  <div class="xl-dlg" style="min-width:310px">
+  <div class="xl-dlg" style="min-width:310px;max-height:90dvh;display:flex;flex-direction:column">
     <div class="xl-dlg-title" style="background:#1F3864">🎰 행운복권발행시스템.xlsx <button class="xl-dlg-x" onclick="hideDlg('lottery-modal')">✕</button></div>
-    <div class="xl-dlg-body" style="padding:14px">
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:#888;margin-bottom:10px">
-        <span id="lottery-no">복권번호: ------</span><span>구입가: 300원</span>
+    <div class="xl-dlg-body" style="overflow-y:auto;flex:1;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span id="lottery-no" style="font-size:10px;color:#888">복권번호: ------</span>
+        <span style="font-size:10px;color:#888">구입가: 500원</span>
       </div>
+      <!-- 잔여 상금 현황 -->
+      <div id="lottery-pool-status2" style="background:#F8F8FF;border:1px solid #D0D8FF;border-radius:4px;padding:6px 10px;margin-bottom:10px;font-size:9px;color:#555;display:flex;flex-wrap:wrap;gap:4px 10px"></div>
       <div id="lottery-cells" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px"></div>
       <div id="lottery-result" style="display:none;text-align:center;font-size:13px;font-weight:800;padding:10px;border-radius:4px;margin-bottom:8px"></div>
       <div style="display:flex;gap:6px">
         <button class="xl-dlg-btn" style="flex:1" onclick="lotteryRevealAll()">전체 긁기</button>
-        <button class="xl-dlg-btn ok" style="flex:1" id="lottery-buy-btn" onclick="lotteryBuyAgain()" style="display:none">🎰 추가구매 (300원)</button>
+        <button class="xl-dlg-btn ok" style="flex:1" id="lottery-buy-btn" onclick="lotteryBuyAgain()" style="display:none">🎰 추가구매 (500원)</button>
         <button class="xl-dlg-btn" style="flex:1" onclick="hideDlg('lottery-modal')">닫기</button>
       </div>
     </div>
@@ -2172,13 +2176,52 @@ const BAIT_YW_TABLE={
   goldfish:{main:{type:'yeongeum',stage:1},normal:{mainProb:0.03,otherProb:0.003},special:{mainProb:0.10,otherProb:0.007}},
 };
 const LOTTERY_PRIZES=[
-  {grade:'1등',amount:1000,prob:0.005,bg:'#FFD700',fg:'#7F4F00'},
-  {grade:'2등',amount:700, prob:0.025,bg:'#C0C0C0',fg:'#333'},
-  {grade:'3등',amount:500, prob:0.05, bg:'#CD7F32',fg:'#fff'},
-  {grade:'4등',amount:350, prob:0.15, bg:'#4472C4',fg:'#fff'},
-  {grade:'5등',amount:300, prob:0.25, bg:'#217346',fg:'#fff'},
-  {grade:'꽝', amount:0,   prob:0.52, bg:'#9E9E9E',fg:'#fff'},
+  {rank:1,grade:'1등',amount:100000,count:1, bg:'#FFD700',fg:'#7F4F00'},
+  {rank:2,grade:'2등',amount:20000, count:4, bg:'#C0C0C0',fg:'#333'},
+  {rank:3,grade:'3등',amount:5000,  count:10,bg:'#CD7F32',fg:'#fff'},
+  {rank:4,grade:'4등',amount:1000,  count:20,bg:'#4472C4',fg:'#fff'},
+  {rank:5,grade:'5등',amount:300,   count:50,bg:'#217346',fg:'#fff'},
+  {rank:0,grade:'꽝', amount:0,     count:65,bg:'#9E9E9E',fg:'#fff'},
 ];
+const LOTTERY_TOTAL=150;
+const LOTTERY_PRICE=500;
+const LOTTERY_USERNAME='__LOTTERY__';
+// 1~3등 모두 소진되면 리셋
+function _lotteryNeedsReset(remaining){
+  return [1,2,3].every(r=>remaining[r]===0);
+}
+function _lotteryInitPool(){
+  const r={};LOTTERY_PRIZES.forEach(p=>r[p.rank]=p.count);
+  return {remaining:r,round:1};
+}
+async function _lotteryGetPool(){
+  const{data}=await _sb.from('fish_accounts').select('fish_data')
+    .eq('username',LOTTERY_USERNAME).eq('server',ACTIVE_SERVER).single();
+  return data?.fish_data||null;
+}
+async function _lotteryEnsurePool(){
+  let ld=await _lotteryGetPool();
+  if(!ld){
+    ld=_lotteryInitPool();
+    await _sb.from('fish_accounts').upsert({
+      username:LOTTERY_USERNAME,server:ACTIVE_SERVER,
+      password_hash:'__LOTTERY__',fish_data:ld,
+      updated_at:new Date().toISOString()
+    },{onConflict:'username,server'});
+  }
+  return ld;
+}
+function _lotteryRenderPoolStatus(remaining){
+  const html=LOTTERY_PRIZES.map(p=>{
+    const left=remaining[p.rank]??p.count;
+    const color=p.rank===1?'#B8860B':p.rank===2?'#555':p.rank===3?'#7B3F00':p.rank===4?'#1F3864':p.rank===5?'#1A5C35':'#888';
+    return `<span style="color:${color};font-weight:700">${p.grade} <span style="color:#333">${left}장</span></span>`;
+  }).join('<span style="color:#CCC">|</span>');
+  ['lottery-pool-status','lottery-pool-status2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=html;
+  });
+}
 
 const FG={
   fishes:[],           // [{id,stage,hp,maxHp,fullness,xp,isDead}]
@@ -4558,16 +4601,45 @@ function fishBuy(id){
 }
 
 // ── 복권 ─────────────────────────────────────────────────
-function openLotteryMenu(){document.getElementById('lottery-menu-modal').classList.add('on');}
+async function openLotteryMenu(){
+  document.getElementById('lottery-menu-modal').classList.add('on');
+  // 풀 상태 비동기 로드해서 메뉴에 표시
+  const ld=await _lotteryGetPool();
+  if(ld) _lotteryRenderPoolStatus(ld.remaining);
+}
 let ltPrize=null,ltCells=[],ltRevealed=0;
-function buyLottery(){
-  if(FG.money<300){document.getElementById('f-status').textContent='복권 300원 필요!';return;}
-  FG.money-=300;
-  let r=Math.random(),cum=0;
-  for(const p of LOTTERY_PRIZES){cum+=p.prob;if(r<cum){ltPrize=p;break;}}
-  if(!ltPrize)ltPrize=LOTTERY_PRIZES[LOTTERY_PRIZES.length-1];
+async function buyLottery(){
+  if(FG.money<LOTTERY_PRICE){u1Toast(`복권 ${LOTTERY_PRICE}원 필요!`,'#C00000');return;}
+  // 구매 버튼 비활성화 (중복 방지)
+  const menuBtn=document.querySelector('#lottery-menu-modal button');
+  if(menuBtn)menuBtn.disabled=true;
+  let ld=await _lotteryEnsurePool();
+  if(!ld){u1Toast('복권 데이터를 불러오지 못했습니다','#C00000');if(menuBtn)menuBtn.disabled=false;return;}
+  // 잔여 티켓 풀에서 뽑기
+  const pool=[];
+  LOTTERY_PRIZES.forEach(p=>{
+    const left=ld.remaining[p.rank]??0;
+    for(let i=0;i<left;i++)pool.push(p);
+  });
+  if(pool.length===0){ld=_lotteryInitPool();} // 안전장치
+  const pickedIdx=Math.floor(Math.random()*pool.length);
+  ltPrize=pool[pickedIdx];
+  // 잔여 차감
+  const newRemaining={...ld.remaining};
+  newRemaining[ltPrize.rank]=Math.max(0,(newRemaining[ltPrize.rank]??0)-1);
+  // 1~3등 모두 소진 시 리셋
+  const shouldReset=_lotteryNeedsReset(newRemaining);
+  const newLd=shouldReset?{..._lotteryInitPool(),round:(ld.round||1)+1}:{remaining:newRemaining,round:ld.round||1};
+  await _sb.from('fish_accounts').update({
+    fish_data:newLd,updated_at:new Date().toISOString()
+  }).eq('username',LOTTERY_USERNAME).eq('server',ACTIVE_SERVER);
+  FG.money-=LOTTERY_PRICE;fishRenderInfo();fishQuickSave();
+  if(menuBtn)menuBtn.disabled=false;
+  // 화면 구성
+  const displayRemaining=shouldReset?newLd.remaining:newRemaining;
+  _lotteryRenderPoolStatus(displayRemaining);
   const no=String(Math.floor(Math.random()*9e5+1e5));
-  document.getElementById('lottery-no').textContent='복권번호: '+no;
+  document.getElementById('lottery-no').textContent='복권번호: '+no+(shouldReset?'  🔄 풀 리셋!':'');
   const decoys=LOTTERY_PRIZES.filter(p=>p!==ltPrize);
   const data=[];
   for(let i=0;i<3;i++) data.push({prize:ltPrize,real:true});
@@ -4584,7 +4656,6 @@ function buyLottery(){
   document.getElementById('lottery-result').style.display='none';
   const bb=document.getElementById('lottery-buy-btn');if(bb)bb.style.display='none';
   document.getElementById('lottery-modal').classList.add('on');
-  fishRenderInfo();
 }
 function lotteryReveal(idx,el,d){
   if(ltCells[idx].done)return;
