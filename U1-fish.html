@@ -1343,7 +1343,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.65';
+const BUILD = 'v2.66';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -5533,7 +5533,7 @@ function _racePrizePool(grade){
 }
 
 let _racePh=null,_raceFs=[],_racePick=[null,null,null],_raceRes=[],_raceRaf=null;
-let _raceBetFish=null,_raceBetAmt=0;
+let _raceBetAmt=0;
 
 function openFishRace(){
   if(FG.money<RACE_COST){u1Toast(`레이스 참여에 ${RACE_COST.toLocaleString()}원이 필요합니다`,'#C00000');return;}
@@ -5545,7 +5545,7 @@ function openFishRace(){
     const s=sp[stage]||sp[1];
     _raceFs.push({type,stage,s,baseSpd:0.55+Math.random()*0.9,y:0,finished:false,wobble:0,wobbleX:0});
   }
-  _racePick=[null,null,null];_raceRes=[];_raceBetFish=null;_raceBetAmt=0;_racePh='bet';
+  _racePick=[null,null,null];_raceRes=[];_raceBetAmt=0;_racePh='bet';
   document.getElementById('fish-race-modal').classList.add('on');
   _raceDrawBet();
 }
@@ -5557,10 +5557,24 @@ function fishRaceClose(){
 function fishRacePick(li,ri){
   _racePick=_racePick.map((p,i)=>(p===li&&i!==ri)?null:p);
   _racePick[ri]=(_racePick[ri]===li)?null:li;
+  // 배팅 입력값 유지하며 순위 선택만 갱신
+  const cur=parseInt(document.getElementById('race-bet-inp')?.value)||0;
+  _raceBetAmt=Math.max(0,cur);
   _raceDrawBet();
+  // 입력값 복원
+  const inp=document.getElementById('race-bet-inp');
+  if(inp&&_raceBetAmt>0) inp.value=_raceBetAmt;
 }
-function fishRaceBetFish(fi){_raceBetFish=(_raceBetFish===fi)?null:fi;if(_raceBetFish===null)_raceBetAmt=0;_raceDrawBet();}
-function fishRaceBetAmt(amt){_raceBetAmt=(_raceBetAmt===amt)?0:amt;_raceDrawBet();}
+function _raceBetUpdate(){
+  const v=Math.max(0,parseInt(document.getElementById('race-bet-inp')?.value)||0);
+  _raceBetAmt=v;
+  const prev=document.getElementById('race-bet-preview');
+  if(prev) prev.innerHTML=v>0
+    ?`꽝→0원 · 1개→<b>+${v.toLocaleString()}원</b> · 2개→<b>+${(v*2).toLocaleString()}원</b> · 3개→<b>+${(v*5).toLocaleString()}원</b>`
+    :'배팅 없으면 적중 수에 따라 물고기 획득';
+  const btn=document.getElementById('race-start-btn');
+  if(btn){const t=RACE_COST+v;btn.textContent=`🏁 시작 (${t.toLocaleString()}원)`;}
+}
 
 function _raceDrawBet(){
   const el=document.getElementById('fish-race-content');
@@ -5582,32 +5596,35 @@ function _raceDrawBet(){
   }
   const allPicked=_racePick.every(p=>p!==null);
   const summary=_racePick.map((p,ri)=>p!==null?`${RN[ri]}: ${p+1}번`:`${RN[ri]}: ?`).join(' / ');
-  const betFishBtns=Array.from({length:6},(_,i)=>`<button onclick="fishRaceBetFish(${i})" style="flex:1;background:${_raceBetFish===i?'#E65100':'#F5F5F5'};color:${_raceBetFish===i?'#fff':'#555'};border:1px solid ${_raceBetFish===i?'#E65100':'#CCC'};border-radius:4px;padding:4px 0;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">${i+1}번</button>`).join('');
-  const betAmts=[1000,5000,10000,30000,50000];
-  const betAmtBtns=_raceBetFish!==null?`<div style="font-size:9px;color:#777;margin:5px 0 4px">배팅 금액</div>
-    <div style="display:flex;gap:3px;flex-wrap:wrap">${betAmts.map(a=>`<button onclick="fishRaceBetAmt(${a})" style="flex:1;min-width:38px;background:${_raceBetAmt===a?'#E65100':'#F5F5F5'};color:${_raceBetAmt===a?'#fff':'#555'};border:1px solid ${_raceBetAmt===a?'#E65100':'#CCC'};border-radius:4px;padding:4px 0;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit">${a>=10000?(a/10000)+'만':a.toLocaleString()}</button>`).join('')}</div>
-    ${_raceBetAmt>0?`<div style="font-size:9px;color:#BF360C;font-weight:700;margin-top:5px;text-align:center">적중 시 +${(_raceBetAmt*5).toLocaleString()}원 획득 (×5 배당)</div>`:'<div style="font-size:9px;color:#999;margin-top:4px;text-align:center">금액을 선택하세요</div>'}`:
-    '<div style="font-size:9px;color:#999;text-align:center">1등으로 예상하는 번호를 선택하세요</div>';
-  const totalCost=RACE_COST+(_raceBetFish!==null?_raceBetAmt:0);
+  const prevTxt=_raceBetAmt>0
+    ?`꽝→0원 · 1개→<b>+${_raceBetAmt.toLocaleString()}원</b> · 2개→<b>+${(_raceBetAmt*2).toLocaleString()}원</b> · 3개→<b>+${(_raceBetAmt*5).toLocaleString()}원</b>`
+    :'배팅 없으면 적중 수에 따라 물고기 획득';
+  const totalCost=RACE_COST+_raceBetAmt;
   el.innerHTML=`
     <div style="background:#1A237E;color:#FFD700;font-size:11px;font-weight:700;padding:6px 8px;border-radius:4px;margin-bottom:8px;text-align:center">🏁 수수료 ${RACE_COST.toLocaleString()}원 · 순위를 예측하세요</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px">${fishHtml}</div>
     <div style="text-align:center;font-size:10px;color:#555;margin-bottom:8px;background:#F5F5F5;padding:5px;border-radius:4px">${summary}</div>
     <div style="background:#FFF8E1;border:1px solid #FFB300;border-radius:6px;padding:8px;margin-bottom:8px">
-      <div style="font-size:10px;font-weight:700;color:#E65100;margin-bottom:6px">💰 배팅 (선택) · 1등 적중 시 ×5 배당</div>
-      <div style="display:flex;gap:3px;margin-bottom:2px">${betFishBtns}</div>
-      ${betAmtBtns}
+      <div style="font-size:10px;font-weight:700;color:#E65100;margin-bottom:6px">💰 배팅 금액 (선택 · 배팅 시 물고기 보상 없음)</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <input id="race-bet-inp" type="number" min="0" placeholder="0" value="${_raceBetAmt||''}"
+          style="flex:1;padding:6px 8px;border:2px solid #FFB300;border-radius:4px;font-size:13px;font-family:inherit;text-align:right;outline:none"
+          oninput="_raceBetUpdate()" onfocus="this.select()">
+        <span style="font-size:11px;color:#555;flex-shrink:0">원</span>
+      </div>
+      <div id="race-bet-preview" style="font-size:9px;color:#777;text-align:center;line-height:1.6">${prevTxt}</div>
     </div>
     <div style="display:flex;gap:6px">
-      <button onclick="fishRaceStart()" style="flex:2;background:${allPicked?'#1A237E':'#9E9E9E'};color:#FFD700;border:none;border-radius:6px;padding:10px;font-size:12px;font-weight:900;cursor:${allPicked?'pointer':'default'};font-family:inherit"${allPicked?'':' disabled'}>🏁 시작 (${totalCost.toLocaleString()}원)</button>
+      <button id="race-start-btn" onclick="fishRaceStart()" style="flex:2;background:${allPicked?'#1A237E':'#9E9E9E'};color:#FFD700;border:none;border-radius:6px;padding:10px;font-size:12px;font-weight:900;cursor:${allPicked?'pointer':'default'};font-family:inherit"${allPicked?'':' disabled'}>🏁 시작 (${totalCost.toLocaleString()}원)</button>
       <button onclick="fishRaceClose()" style="flex:1;background:#E0E0E0;color:#333;border:none;border-radius:6px;padding:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">닫기</button>
     </div>
-    <div style="margin-top:6px;font-size:9px;color:#999;text-align:center">순위예측: 3개→고급 / 2개→중급 / 1개→일반 물고기 / 꽝</div>`;
+    <div style="margin-top:6px;font-size:9px;color:#999;text-align:center">배팅 없음: 3개→고급 / 2개→중급 / 1개→일반 물고기</div>`;
 }
 
 function fishRaceStart(){
   if(_racePick.some(p=>p===null)){u1Toast('1등 2등 3등을 모두 선택해주세요','#C00000');return;}
-  const totalCost=RACE_COST+(_raceBetFish!==null?_raceBetAmt:0);
+  _raceBetAmt=Math.max(0,parseInt(document.getElementById('race-bet-inp')?.value)||0);
+  const totalCost=RACE_COST+_raceBetAmt;
   if(FG.money<totalCost){u1Toast(`돈이 부족합니다 (${totalCost.toLocaleString()}원 필요)`,'#C00000');return;}
   FG.money-=totalCost;fishRenderInfo();fishQuickSave();
   _racePh='race';
@@ -5709,35 +5726,50 @@ function _raceShowResult(){
   let correct=0;
   for(let ri=0;ri<3;ri++)if(_racePick[ri]===_raceRes[ri])correct++;
 
-  let prizeGrade=null,prizeMsg='';
-  if(correct===3){prizeGrade='고급';prizeMsg='🏆 3개 적중! 고급 물고기 획득!';}
-  else if(correct===2){prizeGrade='중급';prizeMsg='🎖️ 2개 적중! 중급 물고기 획득!';}
-  else if(correct===1){prizeGrade='일반';prizeMsg='🎗️ 1개 적중! 일반 물고기 획득!';}
-  else{prizeMsg='😢 꽝! 다음 기회를!';}
+  const hasBet=_raceBetAmt>0;
+  let prizeMsg='',betHtml='',prizeHtml='';
 
-  let prizeFish=null;
-  if(prizeGrade){
-    const pool=_racePrizePool(prizeGrade);
-    if(pool.length){
-      const pk=pool[Math.floor(Math.random()*pool.length)];
-      prizeFish=newFish(pk.stage,pk.type);
-      updateFishCodex(pk.type,pk.stage);
-      FG.auxFishes.push(prizeFish);
-      fishRenderAux();
-    }
-  }
-  // 배팅 정산
-  let betWin=false,betHtml='';
-  if(_raceBetFish!==null&&_raceBetAmt>0){
-    if(_raceRes[0]===_raceBetFish){
-      betWin=true;
-      const gain=_raceBetAmt*5;
+  if(hasBet){
+    // 배팅 모드: 적중 수에 따라 ×0/×1/×2/×5 정산, 물고기 보상 없음
+    const mult=[0,1,2,5][correct];
+    const gain=_raceBetAmt*mult;
+    if(correct===3) prizeMsg='🏆 3개 적중! 배팅금 ×5!';
+    else if(correct===2) prizeMsg='🎖️ 2개 적중! 배팅금 ×2!';
+    else if(correct===1) prizeMsg='🎗️ 1개 적중! 수수료만 소모';
+    else prizeMsg='😢 꽝! 다음 기회를!';
+    if(gain>0){
       FG.money+=gain;
-      betHtml=`<div style="background:#E8F5E9;border:1px solid #81C784;border-radius:6px;padding:8px;margin-bottom:8px;text-align:center;font-size:12px;font-weight:700;color:#1B5E20">💰 배팅 적중! +${gain.toLocaleString()}원 (×5)</div>`;
-      u1Toast(`💰 배팅 적중! +${gain.toLocaleString()}원`,'#1B5E20');
+      const dispMult=mult===1?'×1 (환불)':'×'+mult;
+      betHtml=`<div style="background:#E8F5E9;border:1px solid #81C784;border-radius:6px;padding:8px;margin-bottom:8px;text-align:center;font-size:12px;font-weight:700;color:#1B5E20">💰 +${gain.toLocaleString()}원 (${dispMult})</div>`;
+      u1Toast(`💰 배팅 +${gain.toLocaleString()}원 (${dispMult})`,'#1B5E20');
     } else {
-      betHtml=`<div style="background:#FFEBEE;border:1px solid #EF9A9A;border-radius:6px;padding:8px;margin-bottom:8px;text-align:center;font-size:12px;font-weight:700;color:#B71C1C">💸 배팅 실패 (-${_raceBetAmt.toLocaleString()}원) · ${_raceBetFish+1}번 ${['1등','2등','3등'][_raceRes.indexOf(_raceBetFish)]||'미입상'}</div>`;
+      betHtml=`<div style="background:#FFEBEE;border:1px solid #EF9A9A;border-radius:6px;padding:8px;margin-bottom:8px;text-align:center;font-size:12px;font-weight:700;color:#B71C1C">💸 꽝! 배팅금 -${_raceBetAmt.toLocaleString()}원 손실</div>`;
     }
+  } else {
+    // 물고기 보상 모드
+    let prizeGrade=null;
+    if(correct===3){prizeGrade='고급';prizeMsg='🏆 3개 적중! 고급 물고기 획득!';}
+    else if(correct===2){prizeGrade='중급';prizeMsg='🎖️ 2개 적중! 중급 물고기 획득!';}
+    else if(correct===1){prizeGrade='일반';prizeMsg='🎗️ 1개 적중! 일반 물고기 획득!';}
+    else{prizeMsg='😢 꽝! 다음 기회를!';}
+    let prizeFish=null;
+    if(prizeGrade){
+      const pool=_racePrizePool(prizeGrade);
+      if(pool.length){
+        const pk=pool[Math.floor(Math.random()*pool.length)];
+        prizeFish=newFish(pk.stage,pk.type);
+        updateFishCodex(pk.type,pk.stage);
+        FG.auxFishes.push(prizeFish);
+        fishRenderAux();
+      }
+    }
+    const pf=prizeFish?fStage(prizeFish):null;
+    prizeHtml=pf?`<div style="display:flex;align-items:center;gap:8px;padding:8px;background:#F1F8E9;border:1px solid #AED581;border-radius:6px;margin-bottom:8px">
+      <div style="flex-shrink:0">${drawMinifish(prizeFish.type,pf,true)}</div>
+      <div><div style="font-size:12px;font-weight:900;color:#33691E">획득!</div>
+        <div style="font-size:11px;font-weight:700">${pf.name}</div>
+        <div style="font-size:10px;color:${GRADE_CLR[pf.grade]||'#555'};font-weight:700">${pf.grade} · ${pf.species}</div>
+      </div></div>`:'';
   }
   fishRenderInfo();fishQuickSave();
 
@@ -5753,14 +5785,6 @@ function _raceShowResult(){
       <td style="padding:5px;border:1px solid #E0E0E0;text-align:center">${hit?'✅':'❌'}</td>
     </tr>`;
   }
-
-  const pf=prizeFish?fStage(prizeFish):null;
-  const prizeHtml=pf?`<div style="display:flex;align-items:center;gap:8px;padding:8px;background:#F1F8E9;border:1px solid #AED581;border-radius:6px;margin-bottom:8px">
-    <div style="flex-shrink:0">${drawMinifish(prizeFish.type,pf,true)}</div>
-    <div><div style="font-size:12px;font-weight:900;color:#33691E">획득!</div>
-      <div style="font-size:11px;font-weight:700">${pf.name}</div>
-      <div style="font-size:10px;color:${GRADE_CLR[pf.grade]||'#555'};font-weight:700">${pf.grade} · ${pf.species}</div>
-    </div></div>`:'';
 
   const msgBg=correct===3?'#FFD700':correct>=1?'#E8EAF6':'#F5F5F5';
   const msgClr=correct===3?'#7F4F00':correct>=1?'#1A237E':'#999';
