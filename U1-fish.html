@@ -1560,21 +1560,18 @@ function connectSupabase(){
   })
   .on('broadcast',{event:'new_login'},({payload})=>{
     if(payload.name!==myName||payload.sessionId===myId) return;
-    // joinedAt 비교: 상대가 더 최근에 접속했으면 내가 나감 (구버전 호환: joinedAt 없으면 항상 나감)
     const iShouldLeave=!payload.joinedAt||(payload.joinedAt>=_myJoinedAt);
     if(!iShouldLeave) return;
-    fishSave();
-    u1Toast('⚠️ 다른 기기에서 접속하여 자동 로그아웃됩니다.','#C00000');
-    setTimeout(()=>{
-      fishStopLoops(); showMobileFloatBtns(false);
-      _intentionalDisconnect=true;
-      if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
-      currentUsername=''; myName='';
-      sessionStorage.removeItem('u1_sess_uid');sessionStorage.removeItem('u1_sess_hash');sessionStorage.removeItem('_u1_ch_once');
-      const pwEl=document.getElementById('e-pw');if(pwEl)pwEl.value='';
-      eStatus('다른 기기에서 접속되어 로그아웃되었습니다.','#C00000');
-      show('s-entry');
-    },2000);
+    _kickLogout();
+  })
+  .on('presence',{event:'sync'},()=>{
+    // presence 재동기화 시 중복 로그인 감지 (탭 복귀·재연결 포함)
+    if(!_ch||!myName||!_myJoinedAt) return;
+    const state=_ch.presenceState();
+    const entries=state[currentUsername];
+    if(!Array.isArray(entries)) return;
+    const newer=entries.find(p=>p.userId!==myId&&p.joinedAt>_myJoinedAt);
+    if(newer) _kickLogout();
   })
   .subscribe(async(status)=>{
     if(status==='SUBSCRIBED'){
@@ -1628,6 +1625,21 @@ async function reloadFishDataFromDB(fishName){
   }
 }
 
+function _kickLogout(){
+  if(!currentUsername) return; // 이미 처리됨
+  fishSave();
+  u1Toast('⚠️ 다른 기기에서 접속하여 자동 로그아웃됩니다.','#C00000');
+  setTimeout(()=>{
+    fishStopLoops(); showMobileFloatBtns(false);
+    _intentionalDisconnect=true;
+    if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
+    currentUsername=''; myName='';
+    sessionStorage.removeItem('u1_sess_uid');sessionStorage.removeItem('u1_sess_hash');sessionStorage.removeItem('_u1_ch_once');
+    const pwEl=document.getElementById('e-pw');if(pwEl)pwEl.value='';
+    eStatus('다른 기기에서 접속되어 로그아웃되었습니다.','#C00000');
+    show('s-entry');
+  },2000);
+}
 function reconnectChannel(){
   if(_ch){try{_sb.removeChannel(_ch);}catch(e){}_ch=null;}
   // _chConnectedOnce 리셋 안 함 → 재연결 시 "연결 완료" 토스트 미표시
