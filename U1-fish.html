@@ -1404,7 +1404,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.87';
+const BUILD = 'v2.88';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1612,6 +1612,7 @@ function connectSupabase(){
     if(idx>=0){
       const o=st.others[idx];
       o.tx=payload.x;o.ty=payload.y;o.fish=payload.fish_json;o.nickname=payload.nickname;o._ts=now;o.kills=payload.kills||0;
+      if(o._dead) o.fish.hp=0;
     } else {
       st.others.push({user_id:payload.user_id,nickname:payload.nickname,fish:payload.fish_json,
         x:payload.x,y:payload.y,tx:payload.x,ty:payload.y,_ts:now,kills:payload.kills||0});
@@ -1639,7 +1640,7 @@ function connectSupabase(){
       const o=st.others.find(o=>o.user_id===payload.target);
       if(o){
         o.fish.hp=payload.new_hp;
-        if(payload.new_hp<=0) st.others=st.others.filter(x=>x.user_id!==payload.target);
+        if(payload.new_hp<=0) o._dead=true;
         else st.flash={x:payload.target_x||o.x,y:payload.target_y||o.y,ts:Date.now()};
       }
     }
@@ -1742,14 +1743,16 @@ function reconnectChannel(){
 function onPresenceSync(){
   if(!_ch) return;
   const state=_ch.presenceState();
-  // p.name(실제 닉네임) 기준으로 중복 제거
   const seen=new Set();
-  lobbyPlayers=Object.values(state).flat()
+  const fresh=Object.values(state).flat()
     .map(p=>({id:p.userId||'', name:p.name||'?', inGame:p.inGame||false}))
     .filter(p=>{
       if(!p.name||seen.has(p.name)) return false;
       seen.add(p.name); return true;
     });
+  // 일시 disconnect 중인 플레이어(leave 디바운스 활성)는 유지 → 접속자 수 깜빡임 방지
+  const keepGone=lobbyPlayers.filter(p=>_leaveDebounce[p.name]&&!seen.has(p.name));
+  lobbyPlayers=[...fresh,...keepGone];
   fwUpdateSidebar();
 }
 
@@ -7933,7 +7936,7 @@ const PLAZA_ALLOWED_GRADES_1=['일반','중급','고급','희귀'];
 const PLAZA_ALLOWED_GRADES_2=['영웅','전설'];
 const PLAZA_ATK_RANGE=12;
 const PLAZA_ATK_COOL=1500;
-const PLAZA_BCAST_INT=30;
+const PLAZA_BCAST_INT=200;
 const PLAZA_INC_INT=30000;
 const PLAZA_INC_MULT=1.5;
 const PLAZA_BOSS_INT=3600000;              // 1시간마다 보스 출현
@@ -8109,6 +8112,7 @@ function _plzLoop(n,ts){
     // 플레이어 공격
     if(!attacked){
       for(const o of st.others){
+        if(o._dead) continue;
         const dx=st.myX-o.x,dy=st.myY-o.y;
         if(Math.sqrt(dx*dx+dy*dy)<PLAZA_ATK_RANGE){
           _plzAttack(n,myFish,o);st.atkTs=now;break;
@@ -8180,7 +8184,7 @@ function _plzAttack(n,myFish,other){
     dmg,crit,new_hp:newHp,target_x:other.x,target_y:other.y,plaza_id:n
   }});
   if(newHp<=0){
-    _plzS[n].others=_plzS[n].others.filter(o=>o.user_id!==other.user_id);
+    other._dead=true;
     const banned=isBattleBlocked(currentUsername,other.user_id);
     if(!banned){
       const kills=other.kills||0;
