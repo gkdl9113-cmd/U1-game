@@ -2392,30 +2392,30 @@ function _lotteryRenderPoolStatus(remaining){
 const ACHIEVEMENTS=[
   // 낚시
   {id:'fish_first',   cat:'낚시', icon:'🎣', name:'첫 낚시!',       desc:'물고기를 처음 낚았습니다',                    reward:{money:1000,     spFood:0}, trigger:'fish',       check:()=>FG.totalFished>=1},
-  {id:'fish_10',      cat:'낚시', icon:'🎣', name:'낚시 마니아',     desc:'물고기 10마리 낚기',                          reward:{money:1000,     spFood:0}, trigger:'fish',       check:()=>FG.totalFished>=10},
+  {id:'fish_10',      cat:'낚시', icon:'🎣', name:'낚시 마니아',     desc:'물고기 10마리 낚기',                          reward:{money:1000,     spFood:0}, trigger:'fish',       check:()=>FG.totalFished>=10,   prog:()=>({c:FG.totalFished,m:10})},
   {id:'fish_rare',    cat:'낚시', icon:'🔵', name:'희귀한 발견',     desc:'희귀 등급 이상 물고기를 낚았습니다',          reward:{money:50000,    spFood:0}, trigger:'fish',       check:(e)=>e&&['희귀','영웅','전설','영물'].includes(e.grade)},
-  {id:'fish_50',      cat:'낚시', icon:'🎣', name:'베테랑 낚시꾼',   desc:'물고기 50마리 낚기',                          reward:{money:50000,    spFood:0}, trigger:'fish',       check:()=>FG.totalFished>=50},
+  {id:'fish_50',      cat:'낚시', icon:'🎣', name:'베테랑 낚시꾼',   desc:'물고기 50마리 낚기',                          reward:{money:50000,    spFood:0}, trigger:'fish',       check:()=>FG.totalFished>=50,   prog:()=>({c:FG.totalFished,m:50})},
   {id:'fish_legend',  cat:'낚시', icon:'🟡', name:'전설의 낚시꾼',   desc:'전설 등급 물고기를 낚았습니다',               reward:{money:500000,   spFood:0}, trigger:'fish',       check:(e)=>e&&['전설','영물'].includes(e.grade)},
   {id:'fish_yw',      cat:'낚시', icon:'✨', name:'영물 발견!',       desc:'영물을 낚시로 획득했습니다',                  reward:{money:0,        spFood:1}, trigger:'fish',       check:(e)=>e&&e.isYw},
   // 진화
   {id:'evo_first',    cat:'진화', icon:'⬆️', name:'첫 진화',         desc:'물고기를 처음 진화시켰습니다',                reward:{money:1000,     spFood:0}, trigger:'evo',        check:()=>FG.totalEvos>=1},
   {id:'evo_max',      cat:'진화', icon:'⭐', name:'최강 물고기',      desc:'물고기를 5단계로 진화시켰습니다',             reward:{money:50000,    spFood:0}, trigger:'evo',        check:(e)=>e&&e.stage>=5},
-  {id:'evo_10',       cat:'진화', icon:'⬆️', name:'진화의 달인',      desc:'진화 10회 달성',                              reward:{money:50000,    spFood:0}, trigger:'evo',        check:()=>FG.totalEvos>=10},
+  {id:'evo_10',       cat:'진화', icon:'⬆️', name:'진화의 달인',      desc:'진화 10회 달성',                              reward:{money:50000,    spFood:0}, trigger:'evo',        check:()=>FG.totalEvos>=10,     prog:()=>({c:FG.totalEvos,m:10})},
   // 배틀
   {id:'bt_first',     cat:'배틀', icon:'⚔️', name:'첫 승리!',         desc:'배틀에서 처음 승리했습니다',                  reward:{money:1000,     spFood:0}, trigger:'btwin',      check:()=>FG.btWins>=1},
-  {id:'bt_5',         cat:'배틀', icon:'⚔️', name:'전투 베테랑',       desc:'배틀 5회 승리',                               reward:{money:50000,    spFood:0}, trigger:'btwin',      check:()=>FG.btWins>=5},
-  {id:'bt_20',        cat:'배틀', icon:'🏆', name:'배틀 마스터',       desc:'배틀 20회 승리',                              reward:{money:500000,   spFood:0}, trigger:'btwin',      check:()=>FG.btWins>=20},
+  {id:'bt_5',         cat:'배틀', icon:'⚔️', name:'전투 베테랑',       desc:'배틀 5회 승리',                               reward:{money:50000,    spFood:0}, trigger:'btwin',      check:()=>FG.btWins>=5,         prog:()=>({c:FG.btWins,m:5})},
+  {id:'bt_20',        cat:'배틀', icon:'🏆', name:'배틀 마스터',       desc:'배틀 20회 승리',                              reward:{money:500000,   spFood:0}, trigger:'btwin',      check:()=>FG.btWins>=20,        prog:()=>({c:FG.btWins,m:20})},
   // 도감
-  {id:'codex_5',      cat:'도감', icon:'📖', name:'수집가',            desc:'5종 이상의 물고기를 도감에 등록했습니다',     reward:{money:50000,    spFood:0}, trigger:'codex',      check:()=>_codexSpeciesCount()>=5},
-  {id:'codex_all',    cat:'도감', icon:'📖', name:'도감 마스터',       desc:'모든 물고기 종류를 도감에 등록했습니다',      reward:{money:1000000,  spFood:0}, trigger:'codex',      check:()=>_codexSpeciesCount()>=13},
+  {id:'codex_5',      cat:'도감', icon:'📖', name:'수집가',            desc:'5종 이상의 물고기를 도감에 등록했습니다',     reward:{money:50000,    spFood:0}, trigger:'codex',      check:()=>_codexSpeciesCount()>=5,  prog:()=>({c:_codexSpeciesCount(),m:5})},
+  {id:'codex_all',    cat:'도감', icon:'📖', name:'도감 마스터',       desc:'모든 물고기 종류를 도감에 등록했습니다',      reward:{money:1000000,  spFood:0}, trigger:'codex',      check:()=>_codexSpeciesCount()>=13, prog:()=>({c:_codexSpeciesCount(),m:13})},
   // 재산
   {id:'money_1k',     cat:'재산', icon:'💰', name:'첫 1,000원',        desc:'재산 1,000원 달성',                           reward:{money:1000,     spFood:0}, trigger:'money',      check:()=>FG.money>=1000},
-  {id:'money_10k',    cat:'재산', icon:'💰', name:'부자의 시작',       desc:'재산 10,000원 달성',                          reward:{money:50000,    spFood:0}, trigger:'money',      check:()=>FG.money>=10000},
-  {id:'money_100k',   cat:'재산', icon:'💰', name:'큰 부자',           desc:'재산 100,000원 달성',                         reward:{money:500000,   spFood:0}, trigger:'money',      check:()=>FG.money>=100000},
+  {id:'money_10k',    cat:'재산', icon:'💰', name:'부자의 시작',       desc:'재산 10,000원 달성',                          reward:{money:500000,   spFood:0}, trigger:'money',      check:()=>FG.money>=10000},
+  {id:'money_100k',   cat:'재산', icon:'💰', name:'큰 부자',           desc:'재산 100,000원 달성',                         reward:{money:5000000,  spFood:0}, trigger:'money',      check:()=>FG.money>=100000},
   // 영물
   {id:'yw_first',     cat:'영물', icon:'🐢', name:'첫 영물',           desc:'처음으로 영물을 메인 수조에 보유했습니다',    reward:{money:0,        spFood:1}, trigger:'yw',         check:()=>FG.fishes.some(f=>_isYwFish(f)&&!f.isDead)},
-  {id:'yw_lv10',      cat:'영물', icon:'🐢', name:'영물 성장',         desc:'영물이 레벨 10에 도달했습니다',               reward:{money:0,        spFood:1}, trigger:'ywlevel',    check:(e)=>e&&e.level>=10},
-  {id:'yw_lv30',      cat:'영물', icon:'🐢', name:'영물 각성',         desc:'영물이 레벨 30에 도달했습니다',               reward:{money:1000000,  spFood:0}, trigger:'ywlevel',    check:(e)=>e&&e.level>=30},
+  {id:'yw_lv10',      cat:'영물', icon:'🐢', name:'영물 성장',         desc:'영물이 레벨 10에 도달했습니다',               reward:{money:0,        spFood:1}, trigger:'ywlevel',    check:(e)=>e&&e.level>=10, prog:()=>{const lv=Math.max(0,...FG.fishes.filter(f=>_isYwFish(f)).map(f=>f.level||1));return{c:Math.min(lv,10),m:10};}},
+  {id:'yw_lv30',      cat:'영물', icon:'🐢', name:'영물 각성',         desc:'영물이 레벨 30에 도달했습니다',               reward:{money:1000000,  spFood:0}, trigger:'ywlevel',    check:(e)=>e&&e.level>=30, prog:()=>{const lv=Math.max(0,...FG.fishes.filter(f=>_isYwFish(f)).map(f=>f.level||1));return{c:Math.min(lv,30),m:30};}},
   // 기타
   {id:'expand_aux',   cat:'기타', icon:'🏠', name:'수족관 확장',       desc:'보조 수족관을 확장했습니다',                  reward:{money:1000,     spFood:0}, trigger:'expand',     check:()=>FG.auxMax>=2},
   {id:'spfood_first', cat:'기타', icon:'🍖', name:'특수먹이 첫 사용', desc:'처음으로 특수먹이를 사용했습니다',            reward:{money:500000,   spFood:0}, trigger:'spfood_use', check:()=>true},
@@ -2508,7 +2508,7 @@ function renderAchievements(){
             <div style="font-size:9px;color:#777;margin-top:1px">${a.desc}</div>
             ${rStr?`<div style="font-size:9px;color:#7B4800;margin-top:1px">보상: ${rStr}</div>`:''}
           </div>
-          <span style="font-size:9px;font-weight:700;flex-shrink:0;color:${unlocked?'#217346':'#999'}">${unlocked?'✅':'미달성'}</span>
+          <span style="font-size:9px;font-weight:700;flex-shrink:0;color:${unlocked?'#217346':'#999'}">${unlocked?'✅':(!unlocked&&a.prog?`${Math.min(a.prog().c,a.prog().m)}/${a.prog().m}`:'미달성')}</span>
         </div>`;
       }).join('')}
     </div>`;
