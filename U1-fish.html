@@ -523,6 +523,10 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div style="background:#1A237E;color:#FFD700;padding:6px 10px;display:flex;align-items:center;gap:8px;flex-shrink:0">
       <span id="plaza-header-name" style="font-weight:900;font-size:13px">🏟️ 1번 광장</span>
       <span id="plaza-header-badge" style="font-size:9px;background:rgba(255,255,255,0.15);padding:2px 6px;border-radius:10px;color:#90CAF9">희귀 이하 입장</span>
+      <div id="plaza-tab-btns" style="display:none;gap:3px">
+        <button id="plaza-tab-1" onclick="switchPlazaView(1)" style="background:rgba(255,255,255,0.25);color:#FFD700;border:none;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit">1번</button>
+        <button id="plaza-tab-2" onclick="switchPlazaView(2)" style="background:rgba(255,255,255,0.1);color:rgba(255,215,0,0.5);border:none;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit">2번</button>
+      </div>
       <span style="flex:1"></span>
       <span id="plaza-inc-preview" style="font-size:10px;color:#FFD700;font-weight:700"></span>
       <button onclick="closePlaza()" style="background:#C62828;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">나가기</button>
@@ -1389,7 +1393,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.84';
+const BUILD = 'v2.85';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1590,47 +1594,48 @@ function connectSupabase(){
     if(newer) _kickLogout();
   })
   .on('broadcast',{event:'plaza_pos'},({payload})=>{
-    if(!FG.plazaFishId||payload.plaza_id!==_plzId||payload.user_id===currentUsername) return;
-    const now=Date.now();
-    const idx=_plzOthers.findIndex(o=>o.user_id===payload.user_id);
+    const pid=payload.plaza_id;
+    if(!pid||!FG.plazaFishIds||!FG.plazaFishIds[pid]||payload.user_id===currentUsername) return;
+    const st=_plzS[pid];const now=Date.now();
+    const idx=st.others.findIndex(o=>o.user_id===payload.user_id);
     if(idx>=0){
-      // 기존 플레이어 — 렌더 위치(x,y)는 유지하고 목표(tx,ty)만 갱신 (lerp 보간용)
-      const o=_plzOthers[idx];
-      o.tx=payload.x; o.ty=payload.y; o.fish=payload.fish_json; o.nickname=payload.nickname; o._ts=now;
+      const o=st.others[idx];
+      o.tx=payload.x;o.ty=payload.y;o.fish=payload.fish_json;o.nickname=payload.nickname;o._ts=now;
     } else {
-      // 신규 플레이어 — 처음엔 즉시 스냅
-      _plzOthers.push({user_id:payload.user_id,nickname:payload.nickname,fish:payload.fish_json,
+      st.others.push({user_id:payload.user_id,nickname:payload.nickname,fish:payload.fish_json,
         x:payload.x,y:payload.y,tx:payload.x,ty:payload.y,_ts:now});
     }
-    // 신규 입장자에게 즉시 내 위치 회신
     if(payload.join){
-      const myFish=FG.fishes.find(f=>f.id===FG.plazaFishId);
+      const myFish=FG.fishes.find(f=>f.id===FG.plazaFishIds[pid]);
       if(myFish&&_ch) _ch.send({type:'broadcast',event:'plaza_pos',payload:{
         user_id:currentUsername,nickname:myName||currentUsername,
-        x:_plzMyX,y:_plzMyY,fish_json:myFish,plaza_id:_plzId,ts:now
+        x:st.myX,y:st.myY,fish_json:myFish,plaza_id:pid,ts:now
       }});
     }
   })
   .on('broadcast',{event:'plaza_atk'},({payload})=>{
-    if(!FG.plazaFishId||payload.plaza_id!==_plzId) return;
+    const pid=payload.plaza_id;
+    if(!pid||!FG.plazaFishIds||!FG.plazaFishIds[pid]) return;
+    const st=_plzS[pid];
     if(payload.target===currentUsername){
-      const myFish=FG.fishes.find(f=>f.id===FG.plazaFishId);
+      const myFish=FG.fishes.find(f=>f.id===FG.plazaFishIds[pid]);
       if(!myFish) return;
       myFish.hp=Math.max(0,payload.new_hp);
-      _plzFlash={x:_plzMyX,y:_plzMyY,ts:Date.now()};
+      st.flash={x:st.myX,y:st.myY,ts:Date.now()};
       u1Toast(`⚔️ ${payload.attacker} 공격! -${payload.dmg}${payload.crit?'💥':''}`,'#C62828');
-      if(myFish.hp<=0) _plzDefeated();
+      if(myFish.hp<=0) _plzDefeated(pid);
     } else {
-      const o=_plzOthers.find(o=>o.user_id===payload.target);
+      const o=st.others.find(o=>o.user_id===payload.target);
       if(o){
         o.fish.hp=payload.new_hp;
-        if(payload.new_hp<=0) _plzOthers=_plzOthers.filter(x=>x.user_id!==payload.target);
-        else _plzFlash={x:payload.target_x||o.x,y:payload.target_y||o.y,ts:Date.now()};
+        if(payload.new_hp<=0) st.others=st.others.filter(x=>x.user_id!==payload.target);
+        else st.flash={x:payload.target_x||o.x,y:payload.target_y||o.y,ts:Date.now()};
       }
     }
   })
   .on('broadcast',{event:'plaza_leave'},({payload})=>{
-    if(payload.plaza_id===_plzId) _plzOthers=_plzOthers.filter(o=>o.user_id!==payload.user_id);
+    const pid=payload.plaza_id;
+    if(_plzS[pid]) _plzS[pid].others=_plzS[pid].others.filter(o=>o.user_id!==payload.user_id);
   })
   .subscribe(async(status)=>{
     if(status==='SUBSCRIBED'){
@@ -1883,7 +1888,7 @@ function applyFishData(d){
   FG.skillInventory=d.skillInventory||{};
   FG.achievements=d.achievements||{};
   FG.btWins=d.btWins||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;
-  FG.plazaFishId=d.plazaFishId||null;
+  FG.plazaFishIds=d.plazaFishIds||(d.plazaFishId?{1:d.plazaFishId,2:null}:{1:null,2:null});
   setTimeout(()=>{_retroCheckAchievements();migrateAchievementRewards();},1500);
   FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
   FG.auxMax=d.auxMax||1;
@@ -1931,7 +1936,7 @@ async function saveFishDataToDB(){
     rods:FG.rods,fishCodex:FG.fishCodex,
     skillInventory:FG.skillInventory,
     achievements:FG.achievements,btWins:FG.btWins,totalFished:FG.totalFished,totalEvos:FG.totalEvos,
-    plazaFishId:FG.plazaFishId||null,
+    plazaFishIds:{1:FG.plazaFishIds[1]||null,2:FG.plazaFishIds[2]||null},
     battlePickIds:(FG.battlePick||[]).map(f=>f.id),
     lastSave:serverNow()
   };
@@ -2702,28 +2707,31 @@ document.addEventListener('visibilitychange',()=>{
   if(document.hidden){
     if(fishActive){_tabHiddenAt=serverNow();localStorage.setItem('_tabHiddenAt',_tabHiddenAt);}
     // 광장: RAF는 브라우저가 자동 중단 — 숨김 시각만 기록
-    if(FG.plazaFishId) _plzHiddenAt=Date.now();
+    if(FG.plazaFishIds[1]) _plzS[1].hiddenAt=Date.now();
+    if(FG.plazaFishIds[2]) _plzS[2].hiddenAt=Date.now();
   } else {
     const savedAt=_tabHiddenAt||parseInt(localStorage.getItem('_tabHiddenAt')||'0');
     if(savedAt&&fishActive) _applyOfflineElapsed(savedAt);
     // 광장: 복귀 시 경과 시간만큼 수입 보상 후 루프 재시작
-    if(FG.plazaFishId){
-      if(_plzHiddenAt>0){
-        const awayMs=Date.now()-_plzHiddenAt;
+    [1,2].forEach(pid=>{
+      if(!FG.plazaFishIds[pid]) return;
+      const st=_plzS[pid];
+      if(st.hiddenAt>0){
+        const awayMs=Date.now()-st.hiddenAt;
         const ticks=Math.floor(awayMs/PLAZA_INC_INT);
         if(ticks>0){
-          const myFish=FG.fishes.find(f=>f.id===FG.plazaFishId);
+          const myFish=FG.fishes.find(f=>f.id===FG.plazaFishIds[pid]);
           if(myFish){
             const inc=Math.floor(fIncome(myFish)*PLAZA_INC_MULT)*ticks;
             FG.money+=inc;checkAchievements('money');
             fishRenderInfo();fishQuickSave();
-            u1Toast(`🏟️ 광장 오프라인 수익 +${inc.toLocaleString()}원 (${ticks}틱)`,'#1B5E20');
+            u1Toast(`🏟️ ${pid}번 광장 오프라인 수익 +${inc.toLocaleString()}원 (${ticks}틱)`,'#1B5E20');
           }
         }
-        _plzIncTs=Date.now();_plzHiddenAt=0;
+        st.incTs=Date.now();st.hiddenAt=0;
       }
-      if(!_plzRaf) _plzRaf=requestAnimationFrame(_plzLoop);
-    }
+      if(!st.raf) st.raf=requestAnimationFrame(ts=>_plzLoop(pid,ts));
+    });
   }
 });
 
@@ -3364,7 +3372,7 @@ function fishTick(){
   let inc=0;
   FG.fishes.forEach(f=>{
     if(f.isDead) return;
-    if(f.id===FG.plazaFishId) return; // 광장 출전 중 — 수입/포만감/HP 모두 plaza 루프에서 처리
+    if(FG.plazaFishIds[1]===f.id||FG.plazaFishIds[2]===f.id) return; // 광장 출전 중
     const s=fStage(f);
     // 포만감 감소 (MAX일 때 2배 속도)
     f._fullAcc=(f._fullAcc||0)+elapsed;
@@ -3641,13 +3649,14 @@ function fishRenderInfo(){
       const bg=f.isDead?'#FFF0F0':'#fff';
       const bdTop=i>0?'border-top:1px solid #E8E8E8;':'';
       const canEvo=!f.isDead&&f.stage<5&&f.xp>=s.xpNeed&&FG.money>=s.evoCost;
+      const plzId=FG.plazaFishIds[1]===f.id?1:FG.plazaFishIds[2]===f.id?2:0;
       return `<div style="padding:6px 8px;background:${bg};${bdTop}cursor:pointer" onclick="showFishDetail(${i})">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <span style="font-size:10px;font-weight:800;color:${f.isDead?'#999':f.id===FG.plazaFishId?'#E65100':'#1F3864'}">${f.isDead?'💀':f.id===FG.plazaFishId?'🏟️':'🐟'} #${i+1} ${s.name}</span>
+          <span style="font-size:10px;font-weight:800;color:${f.isDead?'#999':plzId?'#E65100':'#1F3864'}">${f.isDead?'💀':plzId?'🏟️':'🐟'} #${i+1} ${s.name}</span>
           ${s.grade?`<span style="font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;background:${(F_GRADES[s.grade]||F_GRADES['일반']).bg};color:${(F_GRADES[s.grade]||F_GRADES['일반']).fg}">${s.grade}</span>`:''}
-          ${f.isDead||f.id===FG.plazaFishId?'':`<button onpointerdown="event.preventDefault()" onclick="event.stopPropagation();feedFishOne(${i})" style="background:#F59E0B;color:#fff;border:none;border-radius:3px;font-size:9px;padding:1px 5px;cursor:pointer;font-family:inherit">🍤</button>`}
+          ${f.isDead||plzId?'':`<button onpointerdown="event.preventDefault()" onclick="event.stopPropagation();feedFishOne(${i})" style="background:#F59E0B;color:#fff;border:none;border-radius:3px;font-size:9px;padding:1px 5px;cursor:pointer;font-family:inherit">🍤</button>`}
         </div>
-        ${f.isDead?'<div style="font-size:9px;color:#999;text-align:center">사망 (클릭하여 구매)</div>':f.id===FG.plazaFishId?`<div style="font-size:9px;color:#E65100;font-weight:700;text-align:center;padding:4px 0">🏟️ 광장 출전 중<br><span style="font-weight:400;color:#888">HP ${Math.ceil(f.hp)}/${f.maxHp}</span></div>`:`
+        ${f.isDead?'<div style="font-size:9px;color:#999;text-align:center">사망 (클릭하여 구매)</div>':plzId?`<div style="font-size:9px;color:#E65100;font-weight:700;text-align:center;padding:4px 0">🏟️ ${plzId}번 광장 출전 중<br><span style="font-weight:400;color:#888">HP ${Math.ceil(f.hp)}/${f.maxHp}</span></div>`:`
         <div style="font-size:9px;color:#888;display:flex;justify-content:space-between"><span>❤️</span><span>${Math.ceil(f.hp)}/${f.maxHp}</span></div>
         <div style="background:#F3F4F6;border-radius:2px;height:5px;margin-bottom:3px;overflow:hidden"><div style="width:${hpPct}%;height:100%;background:${hpC};border-radius:2px"></div></div>
         <div style="font-size:9px;color:#888;display:flex;justify-content:space-between"><span>🍤</span><span>${Math.floor(f.fullness)}/100</span></div>
@@ -4529,7 +4538,7 @@ function fishSave(isDisconnect){
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,skillInventory:FG.skillInventory,
     achievements:FG.achievements,btWins:FG.btWins,totalFished:FG.totalFished,totalEvos:FG.totalEvos,
-    plazaFishId:FG.plazaFishId||null,
+    plazaFishIds:{1:FG.plazaFishIds[1]||null,2:FG.plazaFishIds[2]||null},
     battlePickIds:(FG.battlePick||[]).map(f=>f.id),
     stoppedByDisconnect:isDisconnect||false,lastSave:serverNow()};
   localStorage.setItem('u1aquarium_v1',JSON.stringify(data));
@@ -7901,32 +7910,32 @@ const PLAZA_BCAST_INT=30;   // ms — 브로드캐스트 주기
 const PLAZA_INC_INT=30000;  // ms (30초마다 수입)
 const PLAZA_INC_MULT=1.5;
 
-let _plzRaf=null,_plzOthers=[],_plzMyX=50,_plzMyY=50;
-let _plzVx=0,_plzVy=0,_plzBcastTs=0,_plzAtkTs=0,_plzIncTs=0;
-let _plzFlash=null,_plzId=1,_plzHiddenAt=0,_plzPendingId=1,_plzLastFrameTs=0;
+function _plzMkState(){return{raf:null,others:[],myX:50,myY:50,vx:0,vy:0,bcastTs:0,atkTs:0,incTs:0,flash:null,lastFrameTs:0,hiddenAt:0};}
+const _plzS={1:_plzMkState(),2:_plzMkState()};
+let _plzPendingId=1,_plzViewId=1;
 
 function openPlaza(){
-  if(FG.plazaFishId){
-    // 이미 출전 중 — 광장 화면으로 복귀
-    _plzApplySplitLayout();
-    const cv=document.getElementById('plaza-canvas');
-    cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;
-    if(!_plzRaf) _plzRaf=requestAnimationFrame(_plzLoop);
-    return;
-  }
   document.getElementById('plaza-choose-modal').classList.add('on');
 }
 
 function openPlazaNum(n){
   hideDlg('plaza-choose-modal');
+  if(FG.plazaFishIds[n]){
+    // 이미 출전 중 — 해당 광장으로 뷰 전환
+    _plzViewId=n;
+    _plzApplySplitLayout();
+    _plzUpdateHeader();
+    return;
+  }
   _plzPendingId=n;
   const grades=n===2?PLAZA_ALLOWED_GRADES_2:PLAZA_ALLOWED_GRADES_1;
   const eligible=FG.fishes.filter(f=>{
-    if(f.isDead||f.id===FG.plazaFishId) return false;
+    if(f.isDead) return false;
+    if(f.id===FG.plazaFishIds[1]||f.id===FG.plazaFishIds[2]) return false;
     return grades.includes(fStage(f).grade);
   });
   const gradeLabel=n===2?'전설 이하 (2번 광장)':'희귀 이하 (1번 광장)';
-  if(eligible.length===0){u1Toast(`입장 가능한 물고기가 없습니다 (${gradeLabel})` ,'#C00000');return;}
+  if(eligible.length===0){u1Toast(`입장 가능한 물고기가 없습니다 (${gradeLabel})`,'#C00000');return;}
   const accentColor=n===2?'#4A148C':'#1A237E';
   const hoverColor=n===2?'#F3E5F5':'#E8EAF6';
   const html=eligible.map(f=>{
@@ -7944,111 +7953,126 @@ function openPlazaNum(n){
   document.getElementById('plaza-select-list').innerHTML=html;
 }
 
+function _plzUpdateHeader(){
+  const n=_plzViewId;
+  const hn=document.getElementById('plaza-header-name');
+  const hb=document.getElementById('plaza-header-badge');
+  if(n===2){if(hn)hn.textContent='🏆 2번 광장';if(hb)hb.textContent='전설 이하 입장';}
+  else{if(hn)hn.textContent='🏟️ 1번 광장';if(hb)hb.textContent='희귀 이하 입장';}
+  const tabDiv=document.getElementById('plaza-tab-btns');
+  if(tabDiv){
+    const both=FG.plazaFishIds[1]&&FG.plazaFishIds[2];
+    tabDiv.style.display=both?'flex':'none';
+    const t1=document.getElementById('plaza-tab-1');
+    const t2=document.getElementById('plaza-tab-2');
+    if(t1){t1.style.background=n===1?'rgba(255,255,255,0.35)':'rgba(255,255,255,0.1)';t1.style.color=n===1?'#FFD700':'rgba(255,215,0,0.5)';}
+    if(t2){t2.style.background=n===2?'rgba(255,255,255,0.35)':'rgba(255,255,255,0.1)';t2.style.color=n===2?'#FFD700':'rgba(255,215,0,0.5)';}
+  }
+}
+
+function switchPlazaView(n){
+  _plzViewId=n;
+  _plzUpdateHeader();
+  const cv=document.getElementById('plaza-canvas');
+  if(cv){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;}
+}
+
 function _plzEnter(fishId){
   hideDlg('plaza-select-modal');
-  FG.plazaFishId=fishId;
-  _plzId=_plzPendingId;
-  // 헤더 동적 업데이트
-  if(_plzId===2){
-    document.getElementById('plaza-header-name').textContent='🏆 2번 광장';
-    document.getElementById('plaza-header-badge').textContent='전설 이하 입장';
-  } else {
-    document.getElementById('plaza-header-name').textContent='🏟️ 1번 광장';
-    document.getElementById('plaza-header-badge').textContent='희귀 이하 입장';
-  }
-  _plzMyX=10+Math.random()*80;_plzMyY=10+Math.random()*80;
-  _plzVx=(Math.random()-0.5)*0.6;_plzVy=(Math.random()-0.5)*0.6;
-  _plzOthers=[];_plzBcastTs=0;_plzAtkTs=0;_plzIncTs=Date.now();_plzFlash=null;
-  _plzUpsert();
-  // 입장 브로드캐스트 — 기존 플레이어들이 즉시 내 위치를 회신해 줌
-  const _enterFish=FG.fishes.find(f=>f.id===fishId);
-  if(_enterFish&&_ch) _ch.send({type:'broadcast',event:'plaza_pos',payload:{
+  const n=_plzPendingId;
+  FG.plazaFishIds[n]=fishId;
+  _plzViewId=n;
+  const st=_plzS[n];
+  st.myX=10+Math.random()*80;st.myY=10+Math.random()*80;
+  st.vx=(Math.random()-0.5)*0.6;st.vy=(Math.random()-0.5)*0.6;
+  st.others=[];st.bcastTs=0;st.atkTs=0;st.incTs=Date.now();st.flash=null;st.lastFrameTs=0;
+  _plzUpsert(n);
+  const enterFish=FG.fishes.find(f=>f.id===fishId);
+  if(enterFish&&_ch) _ch.send({type:'broadcast',event:'plaza_pos',payload:{
     user_id:currentUsername,nickname:myName||currentUsername,
-    x:_plzMyX,y:_plzMyY,fish_json:_enterFish,plaza_id:_plzId,ts:Date.now(),join:true
+    x:st.myX,y:st.myY,fish_json:enterFish,plaza_id:n,ts:Date.now(),join:true
   }});
   _plzApplySplitLayout();
+  _plzUpdateHeader();
   const cv=document.getElementById('plaza-canvas');
   cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;
   fishRenderInfo();fishQuickSave();
-  _plzRaf=requestAnimationFrame(_plzLoop);
+  st.raf=requestAnimationFrame(ts=>_plzLoop(n,ts));
 }
 
-async function _plzUpsert(){
+async function _plzUpsert(n){
   if(!_sb||!currentUsername) return;
-  const fish=FG.fishes.find(f=>f.id===FG.plazaFishId);if(!fish) return;
+  const st=_plzS[n];
+  const fish=FG.fishes.find(f=>f.id===FG.plazaFishIds[n]);if(!fish) return;
   await _sb.from('plaza').upsert({
-    user_id:currentUsername,nickname:myName||currentUsername,
-    fish_json:fish,x:_plzMyX,y:_plzMyY,plaza_id:_plzId,
+    user_id:currentUsername+'_p'+n,nickname:myName||currentUsername,
+    fish_json:fish,x:st.myX,y:st.myY,plaza_id:n,
     updated_at:new Date().toISOString()
-  });
+  },{onConflict:'user_id'});
 }
 
-
-function _plzLoop(ts){
-  _plzRaf=null;
-  const dt=_plzLastFrameTs?Math.min(ts-_plzLastFrameTs,100):16;
-  _plzLastFrameTs=ts;
-  const cv=document.getElementById('plaza-canvas');
-  if(!cv||!FG.plazaFishId) return;
-  if(cv.width!==cv.offsetWidth||cv.height!==cv.offsetHeight){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;}
+function _plzLoop(n,ts){
+  const st=_plzS[n];
+  st.raf=null;
+  if(!FG.plazaFishIds[n]) return;
+  const dt=st.lastFrameTs?Math.min(ts-st.lastFrameTs,100):16;
+  st.lastFrameTs=ts;
+  const isViewed=(_plzViewId===n);
+  const cv=isViewed?document.getElementById('plaza-canvas'):null;
+  if(cv&&(cv.width!==cv.offsetWidth||cv.height!==cv.offsetHeight)){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;}
   const now=Date.now();
-  const myFish=FG.fishes.find(f=>f.id===FG.plazaFishId);
-  if(!myFish||myFish.isDead){_plzDefeated();return;}
+  const myFish=FG.fishes.find(f=>f.id===FG.plazaFishIds[n]);
+  if(!myFish||myFish.isDead){_plzDefeated(n);return;}
 
-  // 주기적 위치 브로드캐스트 + 오래된 플레이어 정리
-  if(now-_plzBcastTs>PLAZA_BCAST_INT){
-    _plzBcastTs=now;
+  if(now-st.bcastTs>PLAZA_BCAST_INT){
+    st.bcastTs=now;
     if(_ch) _ch.send({type:'broadcast',event:'plaza_pos',payload:{
       user_id:currentUsername,nickname:myName||currentUsername,
-      x:_plzMyX,y:_plzMyY,fish_json:myFish,plaza_id:_plzId,ts:now
+      x:st.myX,y:st.myY,fish_json:myFish,plaza_id:n,ts:now
     }});
-    _plzOthers=_plzOthers.filter(o=>now-(o._ts||0)<15000);
-    const ce=document.getElementById('plaza-fish-count');
-    if(ce) ce.textContent=`🐟 ${_plzOthers.length+1}마리 활동중`;
+    st.others=st.others.filter(o=>now-(o._ts||0)<15000);
+    if(isViewed){const ce=document.getElementById('plaza-fish-count');if(ce)ce.textContent=`🐟 ${st.others.length+1}마리 활동중`;}
   }
 
-  // 물고기 이동 (배회 AI)
-  _plzVx+=(Math.random()-0.5)*0.28;_plzVy+=(Math.random()-0.5)*0.28;
-  const spd=Math.sqrt(_plzVx*_plzVx+_plzVy*_plzVy);
-  if(spd>0.75){_plzVx*=0.75/spd;_plzVy*=0.75/spd;}
-  _plzMyX=Math.max(5,Math.min(95,_plzMyX+_plzVx));
-  _plzMyY=Math.max(5,Math.min(95,_plzMyY+_plzVy));
-  if(_plzMyX<=5||_plzMyX>=95) _plzVx*=-1;
-  if(_plzMyY<=5||_plzMyY>=95) _plzVy*=-1;
+  st.vx+=(Math.random()-0.5)*0.28;st.vy+=(Math.random()-0.5)*0.28;
+  const spd=Math.sqrt(st.vx*st.vx+st.vy*st.vy);
+  if(spd>0.75){st.vx*=0.75/spd;st.vy*=0.75/spd;}
+  st.myX=Math.max(5,Math.min(95,st.myX+st.vx));
+  st.myY=Math.max(5,Math.min(95,st.myY+st.vy));
+  if(st.myX<=5||st.myX>=95) st.vx*=-1;
+  if(st.myY<=5||st.myY>=95) st.vy*=-1;
 
-  // 공격 판정
-  if(now-_plzAtkTs>PLAZA_ATK_COOL){
-    for(const o of _plzOthers){
-      const dx=_plzMyX-o.x,dy=_plzMyY-o.y;
+  if(now-st.atkTs>PLAZA_ATK_COOL){
+    for(const o of st.others){
+      const dx=st.myX-o.x,dy=st.myY-o.y;
       if(Math.sqrt(dx*dx+dy*dy)<PLAZA_ATK_RANGE){
-        _plzAttack(myFish,o);_plzAtkTs=now;break;
+        _plzAttack(n,myFish,o);st.atkTs=now;break;
       }
     }
   }
 
-  // 수입 틱
-  if(now-_plzIncTs>=PLAZA_INC_INT){
-    _plzIncTs=now;
+  if(now-st.incTs>=PLAZA_INC_INT){
+    st.incTs=now;
     const inc=Math.floor(fIncome(myFish)*PLAZA_INC_MULT);
     FG.money+=inc;checkAchievements('money');
     fishRenderInfo();fishQuickSave();
-    u1Toast(`🏟️ 광장 수익 +${inc.toLocaleString()}원`,'#1B5E20');
+    u1Toast(`🏟️ ${n}번 광장 수익 +${inc.toLocaleString()}원`,'#1B5E20');
   }
 
-  // 상태바 업데이트
-  const hp=document.getElementById('plaza-my-hp');
-  if(hp){const p=Math.round(myFish.hp/myFish.maxHp*100);hp.textContent=`❤️ ${Math.ceil(myFish.hp)}/${myFish.maxHp} (${p}%)`;}
-  const ip=document.getElementById('plaza-inc-preview');
-  if(ip){const s=Math.ceil((PLAZA_INC_INT-(now-_plzIncTs))/1000);ip.textContent=`💰 ${Math.floor(fIncome(myFish)*PLAZA_INC_MULT)}원 (${s}초 후)`;}
+  if(isViewed){
+    const hp=document.getElementById('plaza-my-hp');
+    if(hp){const p=Math.round(myFish.hp/myFish.maxHp*100);hp.textContent=`❤️ ${Math.ceil(myFish.hp)}/${myFish.maxHp} (${p}%)`;}
+    const ip=document.getElementById('plaza-inc-preview');
+    if(ip){const s=Math.ceil((PLAZA_INC_INT-(now-st.incTs))/1000);ip.textContent=`💰 ${Math.floor(fIncome(myFish)*PLAZA_INC_MULT)}원 (${s}초 후)`;}
+  }
 
-  // 상대 위치 시간 기반 lerp (프레임레이트 무관)
   const lerpF=1-Math.exp(-dt/80);
-  _plzOthers.forEach(o=>{if(o.tx!==undefined){o.x+=(o.tx-o.x)*lerpF;o.y+=(o.ty-o.y)*lerpF;}});
-  _plzRender(cv,myFish);
-  _plzRaf=requestAnimationFrame(_plzLoop);
+  st.others.forEach(o=>{if(o.tx!==undefined){o.x+=(o.tx-o.x)*lerpF;o.y+=(o.ty-o.y)*lerpF;}});
+  if(cv) _plzRender(cv,myFish,n);
+  st.raf=requestAnimationFrame(ts=>_plzLoop(n,ts));
 }
 
-function _plzAttack(myFish,other){
+function _plzAttack(n,myFish,other){
   const myS=fStage(myFish),thS=fStage(other.fish);
   const raw=Math.max(1,(myS.atk||1)-Math.floor((thS.def||0)*0.5));
   const crit=Math.random()<(myS.luk||1)/100;
@@ -8056,47 +8080,42 @@ function _plzAttack(myFish,other){
   const theirMax=other.fish.maxHp||thS.maxHp||100;
   const newHp=Math.max(0,(other.fish.hp??theirMax)-dmg);
   other.fish.hp=newHp;
-  _plzFlash={x:other.x,y:other.y,ts:Date.now()};
+  _plzS[n].flash={x:other.x,y:other.y,ts:Date.now()};
   if(_ch) _ch.send({type:'broadcast',event:'plaza_atk',payload:{
     attacker:myName||currentUsername,target:other.user_id,
-    dmg,crit,new_hp:newHp,target_x:other.x,target_y:other.y,plaza_id:_plzId
+    dmg,crit,new_hp:newHp,target_x:other.x,target_y:other.y,plaza_id:n
   }});
   if(newHp<=0){
-    _plzOthers=_plzOthers.filter(o=>o.user_id!==other.user_id);
+    _plzS[n].others=_plzS[n].others.filter(o=>o.user_id!==other.user_id);
     const banned=isBattleBlocked(currentUsername,other.user_id);
     if(!banned){
-      const killReward=_plzId===2?50000:10000;
+      const killReward=n===2?50000:10000;
       FG.money+=killReward;checkAchievements('money');
       u1Toast(`⚔️ ${other.nickname}의 물고기를 쓰러뜨렸습니다! +${killReward.toLocaleString()}원`,'#E65100');
       fishRenderInfo();fishQuickSave();
     } else {
       u1Toast(`⚔️ ${other.nickname}의 물고기를 쓰러뜨렸습니다! (배틀 제한 — 보상 없음)`,'#888');
     }
-    if(_sb&&currentUsername) _sb.from('plaza').delete().eq('user_id',other.user_id);
+    if(_sb&&currentUsername) _sb.from('plaza').delete().eq('user_id',other.user_id+'_p'+n);
   }
 }
 
-function _plzRender(cv,myFish){
+function _plzRender(cv,myFish,n){
+  const st=_plzS[n];
   const c=cv.getContext('2d'),W=cv.width,H=cv.height;
   c.fillStyle='#E8F5E9';c.fillRect(0,0,W,H);
-  // 그리드
   c.strokeStyle='#C8E6C9';c.lineWidth=0.5;
   for(let x=0;x<W;x+=40){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
   for(let y=0;y<H;y+=40){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
-  // 테두리
   c.strokeStyle='#388E3C';c.lineWidth=2;c.strokeRect(1,1,W-2,H-2);
-  // 공격 범위 표시
-  const mx=_plzMyX/100*W,my=_plzMyY/100*H;
+  const mx=st.myX/100*W,my=st.myY/100*H;
   c.strokeStyle='rgba(255,152,0,0.18)';c.lineWidth=1;
   c.beginPath();c.arc(mx,my,PLAZA_ATK_RANGE/100*W,0,Math.PI*2);c.stroke();
-  // 피격 플래시
-  if(_plzFlash&&Date.now()-_plzFlash.ts<300){
-    const fx=_plzFlash.x/100*W,fy=_plzFlash.y/100*H;
+  if(st.flash&&Date.now()-st.flash.ts<300){
+    const fx=st.flash.x/100*W,fy=st.flash.y/100*H;
     c.fillStyle='rgba(255,50,50,0.4)';c.beginPath();c.arc(fx,fy,20,0,Math.PI*2);c.fill();
   }
-  // 다른 물고기
-  _plzOthers.forEach(o=>_plzDrawFish(c,o.x/100*W,o.y/100*H,o.fish,o.nickname,false));
-  // 내 물고기 (최상위)
+  st.others.forEach(o=>_plzDrawFish(c,o.x/100*W,o.y/100*H,o.fish,o.nickname,false));
   _plzDrawFish(c,mx,my,myFish,'나',true);
 }
 
@@ -8142,24 +8161,37 @@ function _plzRestoreLayout(){
   pv.style.right='0'; pv.style.display='none';
 }
 async function closePlaza(){
-  if(_plzRaf){cancelAnimationFrame(_plzRaf);_plzRaf=null;}
-  if(_ch) _ch.send({type:'broadcast',event:'plaza_leave',payload:{user_id:currentUsername,plaza_id:_plzId}});
-  if(_sb&&currentUsername) await _sb.from('plaza').delete().eq('user_id',currentUsername);
-  FG.plazaFishId=null;
-  _plzRestoreLayout();
+  const n=_plzViewId;
+  const st=_plzS[n];
+  if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
+  if(_ch) _ch.send({type:'broadcast',event:'plaza_leave',payload:{user_id:currentUsername,plaza_id:n}});
+  if(_sb&&currentUsername) await _sb.from('plaza').delete().eq('user_id',currentUsername+'_p'+n);
+  FG.plazaFishIds[n]=null;
+  if(!FG.plazaFishIds[1]&&!FG.plazaFishIds[2]){
+    _plzRestoreLayout();
+  } else {
+    _plzViewId=FG.plazaFishIds[1]?1:2;
+    _plzUpdateHeader();
+  }
   fishRenderInfo();fishQuickSave();
-  u1Toast('광장에서 나왔습니다','#555');
+  u1Toast(`${n}번 광장에서 나왔습니다`,'#555');
 }
 
-function _plzDefeated(){
-  if(_plzRaf){cancelAnimationFrame(_plzRaf);_plzRaf=null;}
-  const myFish=FG.fishes.find(f=>f.id===FG.plazaFishId);
+function _plzDefeated(n){
+  const st=_plzS[n];
+  if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
+  const myFish=FG.fishes.find(f=>f.id===FG.plazaFishIds[n]);
   if(myFish) myFish.hp=Math.max(1,Math.floor(myFish.maxHp*0.01));
-  if(_ch) _ch.send({type:'broadcast',event:'plaza_leave',payload:{user_id:currentUsername,plaza_id:_plzId}});
-  if(_sb&&currentUsername) _sb.from('plaza').delete().eq('user_id',currentUsername);
-  FG.plazaFishId=null;
-  _plzRestoreLayout();
-  u1Toast('💀 광장에서 패배! 물고기가 HP 1%로 수조에 돌아왔습니다','#C00000');
+  if(_ch) _ch.send({type:'broadcast',event:'plaza_leave',payload:{user_id:currentUsername,plaza_id:n}});
+  if(_sb&&currentUsername) _sb.from('plaza').delete().eq('user_id',currentUsername+'_p'+n);
+  FG.plazaFishIds[n]=null;
+  if(!FG.plazaFishIds[1]&&!FG.plazaFishIds[2]){
+    _plzRestoreLayout();
+  } else {
+    _plzViewId=FG.plazaFishIds[1]?1:2;
+    _plzUpdateHeader();
+  }
+  u1Toast(`💀 ${n}번 광장에서 패배! 물고기가 HP 1%로 수조에 돌아왔습니다`,'#C00000');
   fishRenderInfo();fishQuickSave();
 }
 </script>
