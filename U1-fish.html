@@ -2628,9 +2628,29 @@ document.addEventListener('visibilitychange',()=>{
   const fishActive=!!FG.tickInterval;
   if(document.hidden){
     if(fishActive){_tabHiddenAt=serverNow();localStorage.setItem('_tabHiddenAt',_tabHiddenAt);}
+    // 광장: RAF는 브라우저가 자동 중단 — 숨김 시각만 기록
+    if(FG.plazaFishId) _plzHiddenAt=Date.now();
   } else {
     const savedAt=_tabHiddenAt||parseInt(localStorage.getItem('_tabHiddenAt')||'0');
     if(savedAt&&fishActive) _applyOfflineElapsed(savedAt);
+    // 광장: 복귀 시 경과 시간만큼 수입 보상 후 루프 재시작
+    if(FG.plazaFishId){
+      if(_plzHiddenAt>0){
+        const awayMs=Date.now()-_plzHiddenAt;
+        const ticks=Math.floor(awayMs/PLAZA_INC_INT);
+        if(ticks>0){
+          const myFish=FG.fishes.find(f=>f.id===FG.plazaFishId);
+          if(myFish){
+            const inc=Math.floor(fIncome(myFish)*PLAZA_INC_MULT)*ticks;
+            FG.money+=inc;checkAchievements('money');
+            fishRenderInfo();fishQuickSave();
+            u1Toast(`🏟️ 광장 오프라인 수익 +${inc.toLocaleString()}원 (${ticks}틱)`,'#1B5E20');
+          }
+        }
+        _plzIncTs=Date.now();_plzHiddenAt=0;
+      }
+      if(!_plzRaf) _plzRaf=requestAnimationFrame(_plzLoop);
+    }
   }
 });
 
@@ -7809,7 +7829,7 @@ const PLAZA_INC_MULT=1.5;
 
 let _plzRaf=null,_plzOthers=[],_plzMyX=50,_plzMyY=50;
 let _plzVx=0,_plzVy=0,_plzFetchTs=0,_plzAtkTs=0,_plzIncTs=0;
-let _plzFlash=null,_plzId=1;
+let _plzFlash=null,_plzId=1,_plzHiddenAt=0;
 
 function openPlaza(){
   if(FG.plazaFishId){
