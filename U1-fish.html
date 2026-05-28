@@ -833,7 +833,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-ftext" id="fishing-ftext">=FISHING.CAST(낚싯대,확률,어종)</div>
   </div>
   <!-- 낚시 메인 영역 (엑셀 시트) -->
-  <div id="fishing-area" style="flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;cursor:default;user-select:none" onclick="fishingAreaClick()">
+  <div id="fishing-area" style="flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;cursor:default;user-select:none">
     <!-- 입질 알림 바 (엑셀 노란 경고 바) -->
     <div id="fishing-bite-alert" style="display:none;background:#FFEB9C;border-bottom:2px solid #C8850B;padding:5px 12px;flex-shrink:0;cursor:pointer">
       <span style="font-size:12px;font-weight:700;color:#9C3400">⚡ 입질! 지금 클릭하세요!</span>
@@ -1404,7 +1404,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.88';
+const BUILD = 'v2.89';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -3191,11 +3191,21 @@ document.addEventListener('keydown',function(e){
     else if(st==='result') fishingTryAgain();
   }
 });
-// 낚시 게이지 touchstart: 모바일 300ms 딜레이 제거
+// 낚시 영역 클릭/터치 처리
+let _fishAreaTouched=false;
 document.getElementById('fishing-area').addEventListener('touchstart',(e)=>{
-  e.preventDefault(); // click 이벤트 중복 방지 + 즉시 반응
+  // 버튼/링크 탭은 preventDefault 안 함 → 버튼 onclick이 정상 동작
+  if(e.target.closest('button,a')) return;
+  e.preventDefault();
+  _fishAreaTouched=true;
   fishingAreaClick();
 },{passive:false});
+// 데스크탑 click: touchstart로 이미 처리된 경우 스킵 (iOS 이중 발화 방지)
+document.getElementById('fishing-area').addEventListener('click',(e)=>{
+  if(e.target.closest('button,a')) return; // 버튼 click은 버튼이 직접 처리
+  if(_fishAreaTouched){_fishAreaTouched=false;return;}
+  fishingAreaClick();
+});
 
 function _fishingSetMsg(txt,sub){
   const t=document.getElementById('fishing-msg-txt');if(t){t.textContent=txt;t.style.color='#1F3864';}
