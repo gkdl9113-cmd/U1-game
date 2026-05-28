@@ -1373,7 +1373,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.78';
+const BUILD = 'v2.79';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -8025,7 +8025,9 @@ function _plzAttack(myFish,other){
   }});
   if(newHp<=0){
     _plzOthers=_plzOthers.filter(o=>o.user_id!==other.user_id);
-    u1Toast(`⚔️ ${other.nickname}의 물고기를 쓰러뜨렸습니다!`,'#E65100');
+    FG.money+=10000;checkAchievements('money');
+    u1Toast(`⚔️ ${other.nickname}의 물고기를 쓰러뜨렸습니다! +10,000원`,'#E65100');
+    fishRenderInfo();fishQuickSave();
     if(_sb&&currentUsername) _sb.from('plaza').delete().eq('user_id',other.user_id);
   }
 }
