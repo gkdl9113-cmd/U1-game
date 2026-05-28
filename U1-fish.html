@@ -5607,7 +5607,7 @@ function _raceDrawBet(){
     <div style="background:#FFF8E1;border:1px solid #FFB300;border-radius:6px;padding:8px;margin-bottom:8px">
       <div style="font-size:10px;font-weight:700;color:#E65100;margin-bottom:6px">💰 배팅 금액 (선택 · 배팅 시 물고기 보상 없음)</div>
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        <input id="race-bet-inp" type="number" min="0" placeholder="0" value="${_raceBetAmt||''}"
+        <input id="race-bet-inp" type="number" min="0" placeholder="0 (최소 2,000)" value="${_raceBetAmt||''}"
           style="flex:1;padding:6px 8px;border:2px solid #FFB300;border-radius:4px;font-size:13px;font-family:inherit;text-align:right;outline:none"
           oninput="_raceBetUpdate()" onfocus="this.select()">
         <span style="font-size:11px;color:#555;flex-shrink:0">원</span>
@@ -5618,12 +5618,13 @@ function _raceDrawBet(){
       <button id="race-start-btn" onclick="fishRaceStart()" style="flex:2;background:${allPicked?'#1A237E':'#9E9E9E'};color:#FFD700;border:none;border-radius:6px;padding:10px;font-size:12px;font-weight:900;cursor:${allPicked?'pointer':'default'};font-family:inherit"${allPicked?'':' disabled'}>🏁 시작 (${totalCost.toLocaleString()}원)</button>
       <button onclick="fishRaceClose()" style="flex:1;background:#E0E0E0;color:#333;border:none;border-radius:6px;padding:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">닫기</button>
     </div>
-    <div style="margin-top:6px;font-size:9px;color:#999;text-align:center">배팅 없음: 3개→고급 / 2개→중급 / 1개→일반 물고기</div>`;
+    <div style="margin-top:6px;font-size:9px;color:#999;text-align:center">배팅 없음: 3개→고급 / 2개→중급 / 1개→일반 물고기 · 배팅 최소 2,000원</div>`;
 }
 
 function fishRaceStart(){
   if(_racePick.some(p=>p===null)){u1Toast('1등 2등 3등을 모두 선택해주세요','#C00000');return;}
   _raceBetAmt=Math.max(0,parseInt(document.getElementById('race-bet-inp')?.value)||0);
+  if(_raceBetAmt>0&&_raceBetAmt<2000){u1Toast('최소 배팅금은 2,000원입니다','#C00000');return;}
   const totalCost=RACE_COST+_raceBetAmt;
   if(FG.money<totalCost){u1Toast(`돈이 부족합니다 (${totalCost.toLocaleString()}원 필요)`,'#C00000');return;}
   FG.money-=totalCost;fishRenderInfo();fishQuickSave();
