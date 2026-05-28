@@ -173,6 +173,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 .adm-badge.test{background:#1A5C35;color:#4ADE80}
 .adm-badge.u1{background:#7F6000;color:#FACC15}
 .adm-badge.admin{background:#7F0000;color:#FB7185}
+.adm-badge.banned{background:#4A0000;color:#FCA5A5}
 .adm-badge.online{background:#0F3A1A;color:#4ADE80}
 .adm-actions{display:flex;gap:5px;flex-shrink:0}
 .adm-act-btn{background:#2D4A6A;color:#E2E8F0;border:none;padding:5px 9px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:inherit;white-space:nowrap}
@@ -1313,7 +1314,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.55';
+const BUILD = 'v2.56';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1427,6 +1428,10 @@ function connectSupabase(){
   .on('broadcast',{event:'chat'},({payload})=>addChatMsg(payload))
   .on('broadcast',{event:'challenge'},({payload})=>{
     if(payload.targetId!==myId) return;
+    if(payload.game==='battle'&&BATTLE_BAN_LIST.has(payload.fromName)){
+      sbSend('challenge_reject',{targetId:payload.fromId,fromId:myId,fromName:myName});
+      return;
+    }
     pendingChallenge=payload;
     const _gname={omok:'오목',baseball:'숫자야구',battle:'수족관 대결'}[payload.game]||payload.game;
     document.getElementById('challenged-txt').textContent=
@@ -1764,6 +1769,7 @@ function applyFishData(d){
   FG.auxFishes.forEach(f=>{f._fullAcc=0;f._incAcc=0;});
   FG.lastTick=Date.now();
   FG.lastAutoFeed=Date.now();
+  loadBattleBanList();
 }
 
 let _dbSaving=false; // 중복 저장 방지
@@ -1941,6 +1947,7 @@ function sendChallenge(game){
   hideDlg('challenge-dlg');
   if(!challengeTarget) return;
   if(!_chConnectedOnce){u1Toast('서버 연결 중입니다. 잠시 후 다시 시도하세요.','#C00000');return;}
+  if(game==='battle'&&BATTLE_BAN_LIST.has(challengeTarget.name)){u1Toast(`🚫 ${challengeTarget.name}님은 배틀이 제한된 계정입니다.`,'#C00000');return;}
   sbSend('challenge',{targetId:challengeTarget.id,fromId:myId,fromName:myName,game,digits:4});
   u1Toast(challengeTarget.name+'님에게 도전 신청 전송!','#1F3864');
 }
@@ -1948,6 +1955,12 @@ function sendChallenge(game){
 function acceptChallenge(){
   u1Toast('[A]수락클릭','#217346');
   if(!pendingChallenge){u1Toast('[A]pendingChallenge없음','#C00000');return;}
+  if(pendingChallenge.game==='battle'&&BATTLE_BAN_LIST.has(pendingChallenge.fromName)){
+    sbSend('challenge_reject',{targetId:pendingChallenge.fromId,fromId:myId,fromName:myName});
+    pendingChallenge=null;
+    document.getElementById('challenged-notify').classList.remove('on');
+    u1Toast('배틀이 제한된 계정입니다.','#C00000');return;
+  }
   const{fromId,fromName,game,digits}=pendingChallenge;
   u1Toast(`[A]game:${game} from:${fromName}`,'#217346');
   sbSend('game_start',{targetId:fromId,fromId:myId,fromName:myName,game,youAre:1,digits:digits||4});
@@ -5168,6 +5181,34 @@ async function lotteryBuyAgain(){
 
 // ── 숫자 복권 (잭팟) ─────────────────────────────────────
 const NUMLT_USERNAME='__JACKPOT__';
+const BATTLEBAN_USERNAME='__BATTLEBAN__';
+let BATTLE_BAN_LIST=new Set();
+async function loadBattleBanList(){
+  try{
+    const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',BATTLEBAN_USERNAME).eq('server',ACTIVE_SERVER).single();
+    BATTLE_BAN_LIST=new Set(data?.fish_data?.banned||[]);
+  }catch(e){BATTLE_BAN_LIST=new Set();}
+}
+async function saveBattleBanList(){
+  await _sb.from('fish_accounts').upsert({
+    username:BATTLEBAN_USERNAME,server:ACTIVE_SERVER,
+    password_hash:'__BATTLEBAN__',
+    fish_data:{banned:[...BATTLE_BAN_LIST]},
+    updated_at:new Date().toISOString()
+  },{onConflict:'username,server'});
+}
+async function adminToggleBattleBan(username){
+  await loadBattleBanList();
+  if(BATTLE_BAN_LIST.has(username)){
+    BATTLE_BAN_LIST.delete(username);
+    u1Toast(`✅ ${username} 배틀 밴 해제`,'#217346');
+  } else {
+    BATTLE_BAN_LIST.add(username);
+    u1Toast(`🚫 ${username} 배틀 밴 적용`,'#C00000');
+  }
+  await saveBattleBanList();
+  adminLoadUsers();
+}
 const NUMLT_START=10000;
 const NUMLT_PRICE=1000;
 const NUMLT_MAX=333;
@@ -6039,7 +6080,7 @@ async function adminLoadUsers(){
   if(filter!=='ALL') query=query.eq('server',filter);
   const{data:rawData,error}=await query;
   if(error){document.getElementById('adm-status').textContent='오류: '+error.message;return;}
-  const data=rawData.filter(r=>r.username!==NUMLT_USERNAME); // 잭팟 시스템 행 제외
+  const data=rawData.filter(r=>r.username!==NUMLT_USERNAME&&r.username!==BATTLEBAN_USERNAME&&r.username!==LOTTERY_USERNAME);
   // 통계 계산
   const total=data.length;
   const test1=data.filter(r=>r.server==='TEST-1').length;
@@ -6072,6 +6113,7 @@ function adminRenderTable(rows){
     const isOnline=lobbyPlayers.some(p=>p.name===r.username);
     const avatarColor=COLORS[i%COLORS.length];
     const svrClass=r.server==='TEST-1'?'test':'u1';
+    const isBanned=BATTLE_BAN_LIST.has(r.username);
     return `<div class="adm-user-card ${isOnline?'is-online':''}">
       <div class="adm-user-avatar" style="background:${avatarColor}">${esc(r.username[0]||'?').toUpperCase()}</div>
       <div class="adm-user-info">
@@ -6080,6 +6122,7 @@ function adminRenderTable(rows){
           ${isAdmin?'<span class="adm-badge admin">👑 관리자</span>':''}
           <span class="adm-badge ${svrClass}">${r.server}</span>
           ${isOnline?'<span class="adm-badge online">● 접속 중</span>':''}
+          ${isBanned?'<span class="adm-badge banned">🚫 배틀밴</span>':''}
         </div>
         <div class="adm-user-stats">💰 ${money}원 &nbsp;🍤 먹이 ${food}개 &nbsp;먹이통 ${feeders}개</div>
         <div class="adm-user-fish">
@@ -6093,6 +6136,7 @@ function adminRenderTable(rows){
           <button class="adm-act-btn green" onclick="adminOpenGiveFish('${r.username}','${r.server}')">🐟 지급</button>
           <button class="adm-act-btn" onclick="adminOpenSkill('${r.username}','${r.server}')">🎯 스킬</button>
           <button class="adm-act-btn" onclick="adminOpenEdit('${r.username}','${r.server}')">✏️ 수정</button>
+          <button class="adm-act-btn" style="background:${isBanned?'#1A5C35':'#7F0000'};color:${isBanned?'#4ADE80':'#FB7185'}" onclick="adminToggleBattleBan('${r.username}')">🚫 ${isBanned?'밴 해제':'배틀밴'}</button>
         `}
       </div>
     </div>`;
