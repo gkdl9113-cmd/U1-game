@@ -1110,6 +1110,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <button onclick="adminResetLottery()" style="background:#1A3D2A;color:#4ADE80;border:1px solid #2D6A4A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🎰 복권 초기화</button>
     <button onclick="adminOpenJackpotSettings()" style="background:#2D1060;color:#C084FC;border:1px solid #6D28D9;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">⚙️ 잭팟 설정</button>
     <button onclick="adminResetJackpot()" style="background:#1A3D5C;color:#60A5FA;border:1px solid #2D6A9A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🎯 잭팟 초기화</button>
+    <button onclick="adminOpenBattleBan()" style="background:#3D1A00;color:#FB923C;border:1px solid #7F3D00;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🚫 배틀 제한</button>
     <button onclick="adminResetServer()"style="background:#3D0000;color:#FB7185;border:1px solid #7F0000;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🗑️ 서버 초기화</button>
   </div>
   <!-- 필터 바 -->
@@ -1142,6 +1143,23 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
         <button class="adm-btn secondary" onclick="hideDlg('adm-edit-modal')">취소</button>
         <button class="adm-btn primary" onclick="adminSaveEdit()">저장</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 배틀 제한 쌍 관리 모달 -->
+<div class="xl-dlg-ov" id="adm-battleban-modal">
+  <div class="adm-modal-dark" style="min-width:320px;max-width:400px">
+    <div class="adm-modal-hdr">🚫 배틀 상대 제한 <button onclick="hideDlg('adm-battleban-modal')" style="background:none;border:none;color:#7A9BBF;cursor:pointer;font-size:16px;padding:0">✕</button></div>
+    <div class="adm-modal-body">
+      <div style="font-size:10px;color:#7A9BBF;margin-bottom:10px">지정한 두 계정은 서로 배틀을 할 수 없습니다.</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <input id="adm-ban-a" class="adm-form-inp" placeholder="계정A" style="flex:1;font-size:11px">
+        <span style="color:#7A9BBF;align-self:center">↔</span>
+        <input id="adm-ban-b" class="adm-form-inp" placeholder="계정B" style="flex:1;font-size:11px">
+        <button onclick="adminAddBattlePair()" style="background:#7F3D00;color:#FB923C;border:none;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0">추가</button>
+      </div>
+      <div id="adm-ban-list" style="max-height:260px;overflow-y:auto"></div>
     </div>
   </div>
 </div>
@@ -1314,7 +1332,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.56';
+const BUILD = 'v2.57';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1428,7 +1446,7 @@ function connectSupabase(){
   .on('broadcast',{event:'chat'},({payload})=>addChatMsg(payload))
   .on('broadcast',{event:'challenge'},({payload})=>{
     if(payload.targetId!==myId) return;
-    if(payload.game==='battle'&&BATTLE_BAN_LIST.has(payload.fromName)){
+    if(payload.game==='battle'&&isBattleBlocked(myName,payload.fromName)){
       sbSend('challenge_reject',{targetId:payload.fromId,fromId:myId,fromName:myName});
       return;
     }
@@ -1947,7 +1965,7 @@ function sendChallenge(game){
   hideDlg('challenge-dlg');
   if(!challengeTarget) return;
   if(!_chConnectedOnce){u1Toast('서버 연결 중입니다. 잠시 후 다시 시도하세요.','#C00000');return;}
-  if(game==='battle'&&BATTLE_BAN_LIST.has(challengeTarget.name)){u1Toast(`🚫 ${challengeTarget.name}님은 배틀이 제한된 계정입니다.`,'#C00000');return;}
+  if(game==='battle'&&isBattleBlocked(myName,challengeTarget.name)){u1Toast(`🚫 해당 상대와의 배틀은 제한되어 있습니다.`,'#C00000');return;}
   sbSend('challenge',{targetId:challengeTarget.id,fromId:myId,fromName:myName,game,digits:4});
   u1Toast(challengeTarget.name+'님에게 도전 신청 전송!','#1F3864');
 }
@@ -1955,7 +1973,7 @@ function sendChallenge(game){
 function acceptChallenge(){
   u1Toast('[A]수락클릭','#217346');
   if(!pendingChallenge){u1Toast('[A]pendingChallenge없음','#C00000');return;}
-  if(pendingChallenge.game==='battle'&&BATTLE_BAN_LIST.has(pendingChallenge.fromName)){
+  if(pendingChallenge.game==='battle'&&isBattleBlocked(myName,pendingChallenge.fromName)){
     sbSend('challenge_reject',{targetId:pendingChallenge.fromId,fromId:myId,fromName:myName});
     pendingChallenge=null;
     document.getElementById('challenged-notify').classList.remove('on');
@@ -5182,32 +5200,56 @@ async function lotteryBuyAgain(){
 // ── 숫자 복권 (잭팟) ─────────────────────────────────────
 const NUMLT_USERNAME='__JACKPOT__';
 const BATTLEBAN_USERNAME='__BATTLEBAN__';
-let BATTLE_BAN_LIST=new Set();
+let BATTLE_BAN_PAIRS=[]; // [[userA, userB], ...]
 async function loadBattleBanList(){
   try{
     const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',BATTLEBAN_USERNAME).eq('server',ACTIVE_SERVER).single();
-    BATTLE_BAN_LIST=new Set(data?.fish_data?.banned||[]);
-  }catch(e){BATTLE_BAN_LIST=new Set();}
+    BATTLE_BAN_PAIRS=data?.fish_data?.pairs||[];
+  }catch(e){BATTLE_BAN_PAIRS=[];}
 }
 async function saveBattleBanList(){
   await _sb.from('fish_accounts').upsert({
     username:BATTLEBAN_USERNAME,server:ACTIVE_SERVER,
     password_hash:'__BATTLEBAN__',
-    fish_data:{banned:[...BATTLE_BAN_LIST]},
+    fish_data:{pairs:BATTLE_BAN_PAIRS},
     updated_at:new Date().toISOString()
   },{onConflict:'username,server'});
 }
-async function adminToggleBattleBan(username){
+function isBattleBlocked(a,b){
+  return BATTLE_BAN_PAIRS.some(p=>(p[0]===a&&p[1]===b)||(p[0]===b&&p[1]===a));
+}
+async function adminAddBattlePair(){
+  const a=document.getElementById('adm-ban-a').value.trim();
+  const b=document.getElementById('adm-ban-b').value.trim();
+  if(!a||!b||a===b){u1Toast('유효하지 않은 입력입니다','#C00000');return;}
+  if(isBattleBlocked(a,b)){u1Toast('이미 등록된 쌍입니다','#888');return;}
   await loadBattleBanList();
-  if(BATTLE_BAN_LIST.has(username)){
-    BATTLE_BAN_LIST.delete(username);
-    u1Toast(`✅ ${username} 배틀 밴 해제`,'#217346');
-  } else {
-    BATTLE_BAN_LIST.add(username);
-    u1Toast(`🚫 ${username} 배틀 밴 적용`,'#C00000');
-  }
+  BATTLE_BAN_PAIRS.push([a,b]);
   await saveBattleBanList();
-  adminLoadUsers();
+  u1Toast(`🚫 ${a} ↔ ${b} 배틀 제한 추가`,'#C00000');
+  adminRenderBattleBanModal();
+}
+async function adminRemoveBattlePair(idx){
+  await loadBattleBanList();
+  BATTLE_BAN_PAIRS.splice(idx,1);
+  await saveBattleBanList();
+  adminRenderBattleBanModal();
+}
+function adminRenderBattleBanModal(){
+  const list=document.getElementById('adm-ban-list');
+  if(!list) return;
+  list.innerHTML=BATTLE_BAN_PAIRS.length===0
+    ?'<div style="color:#4A6A8A;font-size:11px;text-align:center;padding:12px">제한된 쌍이 없습니다</div>'
+    :BATTLE_BAN_PAIRS.map((p,i)=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#1A2840;border-radius:5px;margin-bottom:4px">
+        <span style="flex:1;font-size:12px;color:#E2E8F0;font-weight:700">${esc(p[0])} ↔ ${esc(p[1])}</span>
+        <button onclick="adminRemoveBattlePair(${i})" style="background:#7F0000;color:#FB7185;border:none;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">삭제</button>
+      </div>`).join('');
+}
+async function adminOpenBattleBan(){
+  await loadBattleBanList();
+  adminRenderBattleBanModal();
+  document.getElementById('adm-battleban-modal').classList.add('on');
 }
 const NUMLT_START=10000;
 const NUMLT_PRICE=1000;
@@ -6113,7 +6155,6 @@ function adminRenderTable(rows){
     const isOnline=lobbyPlayers.some(p=>p.name===r.username);
     const avatarColor=COLORS[i%COLORS.length];
     const svrClass=r.server==='TEST-1'?'test':'u1';
-    const isBanned=BATTLE_BAN_LIST.has(r.username);
     return `<div class="adm-user-card ${isOnline?'is-online':''}">
       <div class="adm-user-avatar" style="background:${avatarColor}">${esc(r.username[0]||'?').toUpperCase()}</div>
       <div class="adm-user-info">
@@ -6122,7 +6163,6 @@ function adminRenderTable(rows){
           ${isAdmin?'<span class="adm-badge admin">👑 관리자</span>':''}
           <span class="adm-badge ${svrClass}">${r.server}</span>
           ${isOnline?'<span class="adm-badge online">● 접속 중</span>':''}
-          ${isBanned?'<span class="adm-badge banned">🚫 배틀밴</span>':''}
         </div>
         <div class="adm-user-stats">💰 ${money}원 &nbsp;🍤 먹이 ${food}개 &nbsp;먹이통 ${feeders}개</div>
         <div class="adm-user-fish">
@@ -6136,7 +6176,6 @@ function adminRenderTable(rows){
           <button class="adm-act-btn green" onclick="adminOpenGiveFish('${r.username}','${r.server}')">🐟 지급</button>
           <button class="adm-act-btn" onclick="adminOpenSkill('${r.username}','${r.server}')">🎯 스킬</button>
           <button class="adm-act-btn" onclick="adminOpenEdit('${r.username}','${r.server}')">✏️ 수정</button>
-          <button class="adm-act-btn" style="background:${isBanned?'#1A5C35':'#7F0000'};color:${isBanned?'#4ADE80':'#FB7185'}" onclick="adminToggleBattleBan('${r.username}')">🚫 ${isBanned?'밴 해제':'배틀밴'}</button>
         `}
       </div>
     </div>`;
