@@ -475,6 +475,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishSave()"><span class="xl-rico">💾</span><span class="xl-rlbl">저장</span></button>
     <button class="xl-rbtn" onclick="reloadFishDataFromDB()" title="DB에서 최신 데이터 불러오기"><span class="xl-rico">🔄</span><span class="xl-rlbl">동기화</span></button>
+    <button class="xl-rbtn" onclick="openAchievements()"><span class="xl-rico">🏅</span><span class="xl-rlbl">도전과제</span></button>
     <button id="adm-back-btn" class="xl-rbtn" onclick="backToAdmin()" style="display:none;color:#1F3864"><span class="xl-rico">⚙️</span><span class="xl-rlbl">관리자</span></button>
   </div>
   <div class="xl-fbar">
@@ -1066,6 +1067,16 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
+<!-- 도전과제 모달 -->
+<div class="xl-dlg-ov" id="achievements-modal">
+  <div class="xl-dlg" style="max-width:360px;max-height:82dvh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="xl-dlg-title">🏅 도전과제 <span id="achievements-progress" style="font-size:10px;margin-left:8px;opacity:.8"></span><button class="xl-dlg-x" onclick="hideDlg('achievements-modal')">✕</button></div>
+    <div style="flex:1;overflow-y:auto;padding:10px">
+      <div id="achievements-content"></div>
+    </div>
+  </div>
+</div>
+
 <!-- 출전 물고기 선택 모달 -->
 <div class="xl-dlg-ov" id="btpick-modal">
   <div class="xl-dlg" style="max-width:390px;width:calc(100vw - 16px);max-height:88dvh;overflow:hidden;display:flex;flex-direction:column">
@@ -1332,7 +1343,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.57';
+const BUILD = 'v2.58';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1769,6 +1780,8 @@ function applyFishData(d){
   FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
   FG.skillInventory=d.skillInventory||{};
+  FG.achievements=d.achievements||{};
+  FG.btWins=d.btWins||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;
   FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
   FG.auxMax=d.auxMax||1;
   FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{}};
@@ -1814,6 +1827,7 @@ async function saveFishDataToDB(){
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,fishCodex:FG.fishCodex,
     skillInventory:FG.skillInventory,
+    achievements:FG.achievements,btWins:FG.btWins,totalFished:FG.totalFished,totalEvos:FG.totalEvos,
     battlePickIds:(FG.battlePick||[]).map(f=>f.id),
     lastSave:serverNow()
   };
@@ -2329,6 +2343,99 @@ function _lotteryRenderPoolStatus(remaining){
     .forEach(({id,html})=>{const el=document.getElementById(id);if(el)el.innerHTML=html;});
 }
 
+// ── 도전과제 ─────────────────────────────────────────────
+const ACHIEVEMENTS=[
+  // 낚시
+  {id:'fish_first',   cat:'낚시', icon:'🎣', name:'첫 낚시!',       desc:'물고기를 처음 낚았습니다',                    reward:{money:0,  food:3, spFood:0}, trigger:'fish',       check:()=>FG.totalFished>=1},
+  {id:'fish_rare',    cat:'낚시', icon:'🔵', name:'희귀한 발견',     desc:'희귀 등급 이상 물고기를 낚았습니다',          reward:{money:100,food:0, spFood:0}, trigger:'fish',       check:(e)=>e&&['희귀','영웅','전설','영물'].includes(e.grade)},
+  {id:'fish_legend',  cat:'낚시', icon:'🟡', name:'전설의 낚시꾼',   desc:'전설 등급 물고기를 낚았습니다',               reward:{money:300,food:0, spFood:0}, trigger:'fish',       check:(e)=>e&&['전설','영물'].includes(e.grade)},
+  {id:'fish_10',      cat:'낚시', icon:'🎣', name:'낚시 마니아',     desc:'물고기 10마리 낚기',                          reward:{money:0,  food:5, spFood:0}, trigger:'fish',       check:()=>FG.totalFished>=10},
+  {id:'fish_50',      cat:'낚시', icon:'🎣', name:'베테랑 낚시꾼',   desc:'물고기 50마리 낚기',                          reward:{money:200,food:0, spFood:0}, trigger:'fish',       check:()=>FG.totalFished>=50},
+  {id:'fish_yw',      cat:'낚시', icon:'✨', name:'영물 발견!',       desc:'영물을 낚시로 획득했습니다',                  reward:{money:0,  food:0, spFood:1}, trigger:'fish',       check:(e)=>e&&e.isYw},
+  // 진화
+  {id:'evo_first',    cat:'진화', icon:'⬆️', name:'첫 진화',         desc:'물고기를 처음 진화시켰습니다',                reward:{money:0,  food:3, spFood:0}, trigger:'evo',        check:()=>FG.totalEvos>=1},
+  {id:'evo_max',      cat:'진화', icon:'⭐', name:'최강 물고기',      desc:'물고기를 5단계로 진화시켰습니다',             reward:{money:200,food:0, spFood:0}, trigger:'evo',        check:(e)=>e&&e.stage>=5},
+  {id:'evo_10',       cat:'진화', icon:'⬆️', name:'진화의 달인',      desc:'진화 10회 달성',                              reward:{money:0,  food:5, spFood:0}, trigger:'evo',        check:()=>FG.totalEvos>=10},
+  // 배틀
+  {id:'bt_first',     cat:'배틀', icon:'⚔️', name:'첫 승리!',         desc:'배틀에서 처음 승리했습니다',                  reward:{money:100,food:0, spFood:0}, trigger:'btwin',      check:()=>FG.btWins>=1},
+  {id:'bt_5',         cat:'배틀', icon:'⚔️', name:'전투 베테랑',       desc:'배틀 5회 승리',                               reward:{money:200,food:0, spFood:0}, trigger:'btwin',      check:()=>FG.btWins>=5},
+  {id:'bt_20',        cat:'배틀', icon:'🏆', name:'배틀 마스터',       desc:'배틀 20회 승리',                              reward:{money:0,  food:0, spFood:1}, trigger:'btwin',      check:()=>FG.btWins>=20},
+  // 도감
+  {id:'codex_5',      cat:'도감', icon:'📖', name:'수집가',            desc:'5종 이상의 물고기를 도감에 등록했습니다',     reward:{money:100,food:0, spFood:0}, trigger:'codex',      check:()=>_codexSpeciesCount()>=5},
+  {id:'codex_all',    cat:'도감', icon:'📖', name:'도감 마스터',       desc:'모든 물고기 종류를 도감에 등록했습니다',      reward:{money:0,  food:0, spFood:2}, trigger:'codex',      check:()=>_codexSpeciesCount()>=13},
+  // 재산
+  {id:'money_1k',     cat:'재산', icon:'💰', name:'첫 1,000원',        desc:'재산 1,000원 달성',                           reward:{money:0,  food:3, spFood:0}, trigger:'money',      check:()=>FG.money>=1000},
+  {id:'money_10k',    cat:'재산', icon:'💰', name:'부자의 시작',       desc:'재산 10,000원 달성',                          reward:{money:0,  food:5, spFood:0}, trigger:'money',      check:()=>FG.money>=10000},
+  {id:'money_100k',   cat:'재산', icon:'💰', name:'큰 부자',           desc:'재산 100,000원 달성',                         reward:{money:500,food:0, spFood:0}, trigger:'money',      check:()=>FG.money>=100000},
+  // 영물
+  {id:'yw_first',     cat:'영물', icon:'🐢', name:'첫 영물',           desc:'처음으로 영물을 메인 수조에 보유했습니다',    reward:{money:0,  food:5, spFood:0}, trigger:'yw',         check:()=>FG.fishes.some(f=>_isYwFish(f)&&!f.isDead)},
+  {id:'yw_lv10',      cat:'영물', icon:'🐢', name:'영물 성장',         desc:'영물이 레벨 10에 도달했습니다',               reward:{money:100,food:0, spFood:0}, trigger:'ywlevel',    check:(e)=>e&&e.level>=10},
+  {id:'yw_lv30',      cat:'영물', icon:'🐢', name:'영물 각성',         desc:'영물이 레벨 30에 도달했습니다',               reward:{money:0,  food:0, spFood:1}, trigger:'ywlevel',    check:(e)=>e&&e.level>=30},
+  // 기타
+  {id:'expand_aux',   cat:'기타', icon:'🏠', name:'수족관 확장',       desc:'보조 수족관을 확장했습니다',                  reward:{money:0,  food:3, spFood:0}, trigger:'expand',     check:()=>FG.auxMax>=2},
+  {id:'spfood_first', cat:'기타', icon:'🍖', name:'특수먹이 첫 사용', desc:'처음으로 특수먹이를 사용했습니다',            reward:{money:0,  food:3, spFood:0}, trigger:'spfood_use', check:()=>true},
+];
+
+function _codexSpeciesCount(){
+  return Object.values(FG.fishCodex).filter(v=>Object.keys(v).length>0).length;
+}
+
+function checkAchievements(trigger,extra){
+  let changed=false;
+  ACHIEVEMENTS.forEach(a=>{
+    if(a.trigger!==trigger) return;
+    if(FG.achievements[a.id]) return;
+    if(!a.check(extra)) return;
+    FG.achievements[a.id]={unlockedAt:serverNow()};
+    const r=a.reward;
+    if(r.money) FG.money+=r.money;
+    if(r.food)  FG.food+=r.food;
+    if(r.spFood) FG.spFood+=r.spFood;
+    const rStr=[r.money?`+${r.money}원`:'',r.food?`먹이 +${r.food}`:'',r.spFood?`특수먹이 +${r.spFood}`:''].filter(Boolean).join(' · ');
+    u1Toast(`🏅 도전과제: ${a.name}${rStr?' ('+rStr+')':''}`, '#1F497D');
+    fishRenderInfo();
+    changed=true;
+  });
+  if(changed) fishQuickSave();
+}
+
+function openAchievements(){
+  renderAchievements();
+  document.getElementById('achievements-modal')?.classList.add('on');
+}
+
+function renderAchievements(){
+  const el=document.getElementById('achievements-content');
+  if(!el) return;
+  const cats=[...new Set(ACHIEVEMENTS.map(a=>a.cat))];
+  const total=ACHIEVEMENTS.length;
+  const done=Object.keys(FG.achievements).length;
+  const progEl=document.getElementById('achievements-progress');
+  if(progEl) progEl.textContent=`${done}/${total}`;
+  el.innerHTML=cats.map(cat=>{
+    const items=ACHIEVEMENTS.filter(a=>a.cat===cat);
+    const catDone=items.filter(a=>FG.achievements[a.id]).length;
+    return `<div style="margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;color:#1F497D;background:#DEEAF1;padding:4px 8px;border-left:3px solid #1F497D;margin-bottom:4px">${cat} (${catDone}/${items.length})</div>
+      ${items.map(a=>{
+        const unlocked=FG.achievements[a.id];
+        const r=a.reward;
+        const rStr=[r.money?`+${r.money}원`:'',r.food?`먹이 +${r.food}`:'',r.spFood?`특수먹이 +${r.spFood}`:''].filter(Boolean).join(' · ');
+        const bg=unlocked?'#E2EFDA':'#F8F8F8';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:${bg};border:1px solid ${unlocked?'#70AD47':'#D0D0D0'};margin-bottom:3px;opacity:${unlocked?1:0.55}">
+          <span style="font-size:18px;flex-shrink:0">${unlocked?a.icon:'🔒'}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;font-weight:700;color:${unlocked?'#1A5C35':'#555'}">${a.name}</div>
+            <div style="font-size:9px;color:#777;margin-top:1px">${a.desc}</div>
+            ${rStr?`<div style="font-size:9px;color:#7B4800;margin-top:1px">보상: ${rStr}</div>`:''}
+          </div>
+          <span style="font-size:9px;font-weight:700;flex-shrink:0;color:${unlocked?'#217346':'#999'}">${unlocked?'✅':'미달성'}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
 const FG={
   fishes:[],           // [{id,stage,hp,maxHp,fullness,xp,isDead}]
   battlePick:[],       // 출전 선택 물고기 (max 3, max 1 전설) — FG.fishes의 참조
@@ -2338,6 +2445,8 @@ const FG={
   tankLevel:0,tankMax:1,
   rods:{rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0}, // 낚싯대 인벤토리
   skillInventory:{}, // {skillId: count}
+  achievements:{}, // {id: {unlockedAt: timestamp}}
+  btWins:0, totalFished:0, totalEvos:0,
   paused:false,pausedAt:null,
   lastTick:Date.now(),lastAutoFeed:0,
   fishPos:null,
@@ -2374,6 +2483,7 @@ function updateFishCodex(type,stage){
   const t=type||'goldfish';
   if(!FG.fishCodex[t]) FG.fishCodex[t]={};
   FG.fishCodex[t][stage]=true;
+  checkAchievements('codex');
 }
 
 
@@ -2742,7 +2852,9 @@ function _baitFallbackCatch(rod,inSpecial){
   const {type:picked,stage:pickedStage}=pickSpeciesByGrade(gradeTable);
   const caught=newFish(pickedStage,picked);
   updateFishCodex(picked,pickedStage);
-  FG.auxFishes.push(caught);_trySpFoodDrop();fishRenderAux();fishRenderInfo();fishQuickSave();
+  FG.auxFishes.push(caught);_trySpFoodDrop();fishRenderAux();fishRenderInfo();
+  FG.totalFished++;checkAchievements('fish',{grade:fStage(caught).grade,isYw:_isYwFish(caught)});
+  fishQuickSave();
   const cs=fStage(caught);
   document.getElementById('frow-sp').textContent=cs.name;
   _fishingShowResult(true,`🎣 ${cs.name} 낚았습니다!`,cs.grade);
@@ -2770,7 +2882,9 @@ function fishingGaugeClick(){
     if(bt&&roll<probs.mainProb){
       const caught=newFish(bt.main.stage,bt.main.type);
       updateFishCodex(bt.main.type,bt.main.stage);
-      FG.auxFishes.push(caught);_trySpFoodDrop();fishRenderAux();fishRenderInfo();fishQuickSave();
+      FG.auxFishes.push(caught);_trySpFoodDrop();fishRenderAux();fishRenderInfo();
+      FG.totalFished++;checkAchievements('fish',{grade:fStage(caught).grade,isYw:_isYwFish(caught)});
+      fishQuickSave();
       const cs=fStage(caught);
       document.getElementById('frow-sp').textContent=cs.name;
       _fishingShowResult(true,`✨ ${cs.name} 낚았습니다!${inSpecial?' (황금 구간!)':''}`,cs.grade);
@@ -2780,7 +2894,9 @@ function fishingGaugeClick(){
         const op=otherPool[Math.floor(Math.random()*otherPool.length)];
         const caught=newFish(op.stage,op.type);
         updateFishCodex(op.type,op.stage);
-        FG.auxFishes.push(caught);_trySpFoodDrop();fishRenderAux();fishRenderInfo();fishQuickSave();
+        FG.auxFishes.push(caught);_trySpFoodDrop();fishRenderAux();fishRenderInfo();
+        FG.totalFished++;checkAchievements('fish',{grade:fStage(caught).grade,isYw:_isYwFish(caught)});
+        fishQuickSave();
         const cs=fStage(caught);
         document.getElementById('frow-sp').textContent=cs.name;
         _fishingShowResult(true,`✨ ${cs.name} 낚았습니다! (이변!)`,cs.grade);
@@ -2799,7 +2915,9 @@ function fishingGaugeClick(){
     const caught=newFish(pickedStage,picked);
     updateFishCodex(picked,pickedStage);
     FG.auxFishes.push(caught);_trySpFoodDrop();
-    fishRenderAux();fishRenderInfo();fishQuickSave();
+    fishRenderAux();fishRenderInfo();
+    FG.totalFished++;checkAchievements('fish',{grade:fStage(caught).grade,isYw:_isYwFish(caught)});
+    fishQuickSave();
     const cs=fStage(caught);
     document.getElementById('frow-sp').textContent=cs.name;
     const msg=inSpecial?`✨ ${cs.name} 낚았습니다! (영물 구간!)`:`🎉 ${cs.name} 낚았습니다!`;
@@ -3139,6 +3257,7 @@ function fishTick(){
     if(f.skill1==='cm_회복의기운'||f.skill2==='cm_회복의기운'){f._healAcc=(f._healAcc||0)+elapsed;if(f._healAcc>=10){f._healAcc=0;f.hp=Math.min(f.maxHp,f.hp+Math.max(1,Math.floor(f.maxHp*0.005)));}}
   });
   FG.money+=inc;
+  if(inc>0) checkAchievements('money');
   // 보조 수족관 처리 (2.5배 소모, 수입, 0 시 자동 방생)
   if(FG.auxFishes.length>0){
     const auxRelease=[];
@@ -3325,8 +3444,10 @@ function evolveOneFish(f){
   if(f.xp<s.xpNeed){document.getElementById('f-status').textContent='XP 부족';return;}
   if(FG.money<s.evoCost){document.getElementById('f-status').textContent='돈 부족';return;}
   FG.money-=s.evoCost;f.xp=0;f.stage++;
+  FG.totalEvos++;
   updateFishCodex(f.type,f.stage);
   const ns=fStage(f);f.maxHp=ns.hp;f.hp=ns.hp;
+  checkAchievements('evo',{stage:f.stage});
   const idx=FG.fishes.indexOf(f);
   document.getElementById('f-status').textContent=`🎉 #${idx+1} 진화! ${ns.name}`;
   fishRenderInfo();fishQuickSave();
@@ -3567,6 +3688,7 @@ function ywFeedSpecial(idx){
   if(lv>=YW_MAX_LV){u1Toast('이미 최대 레벨입니다','#888');return;}
   FG.spFood--;
   f.xp=(f.xp||0)+500;
+  checkAchievements('spfood_use');
   const xpNeed=ywXpNeed(f);
   const pct=Math.min(100,Math.floor(f.xp/xpNeed*100));
   u1Toast(`🍖 특수먹이 급여 → XP +500 (${Math.floor(f.xp)}/${xpNeed}, ${pct}%)  남은 특수먹이: ${FG.spFood}개`,'#004D40');
@@ -3585,6 +3707,7 @@ function ywLevelUp(idx){
   f.xp=Math.max(0,f.xp-ywXpNeed(f));
   f.level=lv+1;
   f.statPoints=(f.statPoints||0)+5;
+  checkAchievements('ywlevel',{level:f.level});
   showFishDetail(idx);
   saveFishDataToDB();
   u1Toast(`🐢 Lv.${f.level} 달성! 스탯 50포인트 획득!`,'#004D40');
@@ -4244,6 +4367,7 @@ function fishSave(isDisconnect){
     money:FG.money,food:FG.food,spFood:FG.spFood,autoFeeders:FG.autoFeeders,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,skillInventory:FG.skillInventory,
+    achievements:FG.achievements,btWins:FG.btWins,totalFished:FG.totalFished,totalEvos:FG.totalEvos,
     battlePickIds:(FG.battlePick||[]).map(f=>f.id),
     stoppedByDisconnect:isDisconnect||false,lastSave:serverNow()};
   localStorage.setItem('u1aquarium_v1',JSON.stringify(data));
@@ -4287,6 +4411,8 @@ function fishLoad(){
     FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||1;
     FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
     FG.skillInventory=d.skillInventory||{};
+    FG.achievements=d.achievements||{};
+    FG.btWins=d.btWins||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;
     FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
     FG.auxMax=d.auxMax||1;
     if(d.battlePickIds&&d.battlePickIds.length){
@@ -4399,6 +4525,7 @@ function fishAuxToMain(idx){
   if(!FG.tickInterval) fishStartLoops();
   fishRenderAux();
   fishRenderInfo();
+  if(_isYwFish(f)) checkAchievements('yw');
   fishQuickSave();
   const s=fStage(f);
   u1Toast(`🐟 ${s.name} → 메인 수조로 이동!`,'#217346');
@@ -4411,6 +4538,7 @@ function fishAuxExpand(){
   if(FG.money<price){u1Toast(`돈 부족 (${price.toLocaleString()}원 필요)`,'#C00000');return;}
   FG.money-=price;
   FG.auxMax++;
+  checkAchievements('expand');
   u1Toast(`✅ 보조 수족관 ${FG.auxMax-1}→${FG.auxMax}칸 확장!`,'#217346');
   fishRenderAux();
   fishRenderInfo();
@@ -7364,6 +7492,8 @@ function btShowResult(myAlive,oppAlive){
     });
     FG.money+=totalReward;
     if(Math.random()<0.25){FG.spFood++;btSpFood=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
+    FG.btWins++;
+    checkAchievements('btwin');
   }
 
   fishRenderInfo();
@@ -7430,6 +7560,7 @@ function onBattleForfeit(payload){
   FG.money+=totalReward;
   let btSpFoodF=0;
   if(Math.random()<0.25){FG.spFood++;btSpFoodF=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
+  FG.btWins++;checkAchievements('btwin');
   fishRenderInfo();fishSave();
   // 결과 배너
   const banner=document.getElementById('bt-result-banner');
