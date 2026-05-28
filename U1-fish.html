@@ -549,7 +549,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       </div>
       <div onclick="openPlazaNum(2)" style="padding:14px;border:2px solid #4A148C;border-radius:8px;cursor:pointer;background:#fff;text-align:center" onmouseover="this.style.background='#F3E5F5'" onmouseout="this.style.background='#fff'">
         <div style="font-size:15px;font-weight:900;color:#4A148C">🏆 2번 광장</div>
-        <div style="font-size:11px;color:#555;margin-top:4px">영웅 · 전설 · 영물 입장 가능</div>
+        <div style="font-size:11px;color:#555;margin-top:4px">영웅 · 전설 입장 가능</div>
       </div>
     </div>
   </div>
@@ -1389,7 +1389,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.80';
+const BUILD = 'v2.81';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -7894,7 +7894,7 @@ document.addEventListener('visibilitychange',()=>{
 // 🏟️ 광장
 // ══════════════════════════════════════════════════════════
 const PLAZA_ALLOWED_GRADES_1=['일반','중급','고급','희귀'];
-const PLAZA_ALLOWED_GRADES_2=['영웅','전설','영물'];
+const PLAZA_ALLOWED_GRADES_2=['영웅','전설'];
 const PLAZA_ATK_RANGE=12;   // % 단위 거리
 const PLAZA_ATK_COOL=1500;  // ms
 const PLAZA_BCAST_INT=30;   // ms — 브로드캐스트 주기
@@ -7925,7 +7925,7 @@ function openPlazaNum(n){
     if(f.isDead||f.id===FG.plazaFishId) return false;
     return grades.includes(fStage(f).grade);
   });
-  const gradeLabel=n===2?'영물 이하 (2번 광장)':'희귀 이하 (1번 광장)';
+  const gradeLabel=n===2?'전설 이하 (2번 광장)':'희귀 이하 (1번 광장)';
   if(eligible.length===0){u1Toast(`입장 가능한 물고기가 없습니다 (${gradeLabel})` ,'#C00000');return;}
   const accentColor=n===2?'#4A148C':'#1A237E';
   const hoverColor=n===2?'#F3E5F5':'#E8EAF6';
@@ -7951,7 +7951,7 @@ function _plzEnter(fishId){
   // 헤더 동적 업데이트
   if(_plzId===2){
     document.getElementById('plaza-header-name').textContent='🏆 2번 광장';
-    document.getElementById('plaza-header-badge').textContent='영물 이하 입장';
+    document.getElementById('plaza-header-badge').textContent='전설 이하 입장';
   } else {
     document.getElementById('plaza-header-name').textContent='🏟️ 1번 광장';
     document.getElementById('plaza-header-badge').textContent='희귀 이하 입장';
