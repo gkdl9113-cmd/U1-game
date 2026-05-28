@@ -1373,7 +1373,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.77';
+const BUILD = 'v2.78';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -2453,8 +2453,8 @@ const ACHIEVEMENTS=[
   {id:'codex_all',    cat:'도감', icon:'📖', name:'도감 마스터',       desc:'모든 물고기 종류를 도감에 등록했습니다',      reward:{money:1000000,  spFood:0}, trigger:'codex',      check:()=>_codexSpeciesCount()>=13, prog:()=>({c:_codexSpeciesCount(),m:13})},
   // 재산
   {id:'money_1k',     cat:'재산', icon:'💰', name:'첫 1,000원',        desc:'재산 1,000원 달성',                           reward:{money:1000,     spFood:0}, trigger:'money',      check:()=>FG.money>=1000},
-  {id:'money_10k',    cat:'재산', icon:'💰', name:'부자의 시작',       desc:'재산 100,000원 달성',                         reward:{money:100000,   spFood:0}, trigger:'money',      check:()=>FG.money>=100000},
-  {id:'money_100k',   cat:'재산', icon:'💰', name:'큰 부자',           desc:'재산 1,000,000원 달성',                       reward:{money:1000000,  spFood:0}, trigger:'money',      check:()=>FG.money>=1000000},
+  {id:'money_10k',    cat:'재산', icon:'💰', name:'부자의 시작',       desc:'재산 100,000원 달성',                         reward:{money:50000,    spFood:0}, trigger:'money',      check:()=>FG.money>=100000},
+  {id:'money_100k',   cat:'재산', icon:'💰', name:'큰 부자',           desc:'재산 1,000,000원 달성',                       reward:{money:500000,   spFood:0}, trigger:'money',      check:()=>FG.money>=1000000},
   // 영물
   {id:'yw_first',     cat:'영물', icon:'🐢', name:'첫 영물',           desc:'처음으로 영물을 메인 수조에 보유했습니다',    reward:{money:0,        spFood:1}, trigger:'yw',         check:()=>FG.fishes.some(f=>_isYwFish(f)&&!f.isDead)},
   {id:'yw_lv10',      cat:'영물', icon:'🐢', name:'영물 성장',         desc:'영물이 레벨 10에 도달했습니다',               reward:{money:0,        spFood:1}, trigger:'ywlevel',    check:(e)=>e&&e.level>=10, prog:()=>{const lv=Math.max(0,...FG.fishes.filter(f=>_isYwFish(f)).map(f=>f.level||1));return{c:Math.min(lv,10),m:10};}},
