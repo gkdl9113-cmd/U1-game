@@ -1313,7 +1313,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.51';
+const BUILD = 'v2.52';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -2235,8 +2235,8 @@ const F_SHOP=[
    catchProb:0.601, catchProbSpecial:1.0, gaugeWidth:0.33, gaugeSpeed:55,
    specialZoneWidth:0.05,
    requiresBait:true,
-   grades:[{grade:'영웅',w:832},{grade:'전설',w:166},{grade:'하급영물',w:1.2},{grade:'중급영물',w:0.6},{grade:'상급영물',w:0.2}],
-   gradesSpecial:[{grade:'영웅',w:690},{grade:'전설',w:300},{grade:'하급영물',w:6},{grade:'중급영물',w:3},{grade:'상급영물',w:1}],
+   grades:[{grade:'희귀',w:60},{grade:'영웅',w:30},{grade:'전설',w:10}],
+   gradesSpecial:[{grade:'희귀',w:20},{grade:'영웅',w:50},{grade:'전설',w:30}],
    desc:'🐢 심연의 거북을 미끼로 영물 도전'},
 ];
 // 미끼 어종 → 영물 확률표 (normal=일반구간, special=황금구간)
@@ -2701,6 +2701,17 @@ function _fishingGaugeTick(ts){
   FMG.gaugeRaf=requestAnimationFrame(_fishingGaugeTick);
 }
 
+function _baitFallbackCatch(rod,inSpecial){
+  const gradeTable=inSpecial?(rod.gradesSpecial||rod.grades):rod.grades;
+  const {type:picked,stage:pickedStage}=pickSpeciesByGrade(gradeTable);
+  const caught=newFish(pickedStage,picked);
+  updateFishCodex(picked,pickedStage);
+  FG.auxFishes.push(caught);fishRenderAux();fishRenderInfo();fishQuickSave();
+  const cs=fStage(caught);
+  document.getElementById('frow-sp').textContent=cs.name;
+  _fishingShowResult(true,`🎣 ${cs.name} 낚았습니다!`,cs.grade);
+}
+
 function fishingGaugeClick(){
   if(FMG.state!=='gauge')return;
   cancelAnimationFrame(FMG.gaugeRaf);FMG.gaugeRaf=null;
@@ -2738,10 +2749,10 @@ function fishingGaugeClick(){
         document.getElementById('frow-sp').textContent=cs.name;
         _fishingShowResult(true,`✨ ${cs.name} 낚았습니다! (이변!)`,cs.grade);
       } else {
-        _fishingShowResult(false,'아깝다! 영물을 놓쳤습니다 🐟💨');
+        _baitFallbackCatch(rod,inSpecial);
       }
     } else {
-      _fishingShowResult(false,'아깝다! 영물을 놓쳤습니다 🐟💨');
+      _baitFallbackCatch(rod,inSpecial);
     }
     return;
   }
