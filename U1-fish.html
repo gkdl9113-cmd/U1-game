@@ -484,6 +484,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <button class="xl-rbtn" onclick="fishingEnter()"><span class="xl-rico">🎣</span><span class="xl-rlbl" id="f-rod-lbl">낚시</span></button>
     <button class="xl-rbtn" onclick="showMiniGameMenu()"><span class="xl-rico">⚔️</span><span class="xl-rlbl">미니게임</span></button>
     <button class="xl-rbtn" onclick="openLotteryMenu()"><span class="xl-rico">🎰</span><span class="xl-rlbl">복권</span></button>
+    <button class="xl-rbtn" onclick="openGambleMenu()"><span class="xl-rico">🎲</span><span class="xl-rlbl">도박</span></button>
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishSave()"><span class="xl-rico">💾</span><span class="xl-rlbl">저장</span></button>
     <button class="xl-rbtn" onclick="reloadFishDataFromDB()" title="DB에서 최신 데이터 불러오기"><span class="xl-rico">🔄</span><span class="xl-rlbl">동기화</span></button>
@@ -1046,6 +1047,154 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
+<!-- ══ 도박 메뉴 ══ -->
+<div class="xl-dlg-ov" id="gamble-menu-modal">
+  <div class="xl-dlg" style="min-width:260px;max-width:300px">
+    <div class="xl-dlg-title" style="background:#7B1FA2;color:#fff">🎲 도박 <button class="xl-dlg-x" onclick="hideDlg('gamble-menu-modal')">✕</button></div>
+    <div class="xl-dlg-body" style="padding:14px;display:flex;flex-direction:column;gap:10px">
+      <button onclick="hideDlg('gamble-menu-modal');openSlot()" style="background:#7B1FA2;color:#fff;border:none;border-radius:6px;padding:14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left">
+        🎰 슬롯머신<div style="font-size:10px;font-weight:400;color:#CE93D8;margin-top:3px">최소 100원 · 심볼 3개 맞추기 · 잭팟 ×50</div>
+      </button>
+      <button onclick="hideDlg('gamble-menu-modal');openBlackjack()" style="background:#1B5E20;color:#fff;border:none;border-radius:6px;padding:14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left">
+        🃏 블랙잭<div style="font-size:10px;font-weight:400;color:#A5D6A7;margin-top:3px">딜러와 21 대결 · 블랙잭 ×1.5 · 더블다운 가능</div>
+      </button>
+      <button onclick="hideDlg('gamble-menu-modal');openRoulette()" style="background:#B71C1C;color:#fff;border:none;border-radius:6px;padding:14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left">
+        🎡 룰렛<div style="font-size:10px;font-weight:400;color:#EF9A9A;margin-top:3px">0~36 · 색상/홀짝/숫자 베팅 · 숫자 적중 ×36</div>
+      </button>
+      <button onclick="hideDlg('gamble-menu-modal');openHiLo()" style="background:#0D47A1;color:#fff;border:none;border-radius:6px;padding:14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left">
+        🎴 하이로우<div style="font-size:10px;font-weight:400;color:#90CAF9;margin-top:3px">카드 높낮이 맞추기 · 연속 성공 시 배율 증가</div>
+      </button>
+      <button onclick="hideDlg('gamble-menu-modal')" style="background:#E8E8E8;color:#333;border:none;border-radius:4px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 슬롯머신 ══ -->
+<div class="xl-dlg-ov" id="slot-modal">
+  <div class="xl-dlg" style="min-width:300px;max-width:340px">
+    <div class="xl-dlg-title" style="background:#7B1FA2;color:#fff">🎰 슬롯머신 <button class="xl-dlg-x" onclick="hideDlg('slot-modal')">✕</button></div>
+    <div class="xl-dlg-body" style="padding:16px;text-align:center">
+      <div style="font-size:11px;color:#666;margin-bottom:10px">💰 보유: <b id="slot-money">0</b>원</div>
+      <div style="display:flex;gap:6px;justify-content:center;margin:0 0 8px">
+        <div id="slot-r1" style="background:#1A237E;color:#fff;border-radius:8px;padding:10px 14px;font-size:38px;min-width:60px;transition:all .15s">🐟</div>
+        <div id="slot-r2" style="background:#1A237E;color:#fff;border-radius:8px;padding:10px 14px;font-size:38px;min-width:60px;transition:all .15s">🐠</div>
+        <div id="slot-r3" style="background:#1A237E;color:#fff;border-radius:8px;padding:10px 14px;font-size:38px;min-width:60px;transition:all .15s">🦑</div>
+      </div>
+      <div id="slot-result" style="min-height:22px;font-size:13px;font-weight:bold;margin-bottom:10px"> </div>
+      <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:12px">
+        <span style="font-size:12px;color:#444">베팅</span>
+        <input id="slot-bet" type="number" min="100" step="100" value="500" style="width:100px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
+        <span style="font-size:12px;color:#444">원</span>
+      </div>
+      <button onclick="slotSpin()" id="slot-spin-btn" style="background:#7B1FA2;color:#fff;border:none;border-radius:6px;padding:12px 36px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit">당기기 🎰</button>
+      <div style="margin-top:14px;background:#F3E5F5;border-radius:6px;padding:8px 10px;font-size:9px;color:#555;text-align:left;line-height:1.8">
+        🏆 💎💎💎 ×50 &nbsp;|&nbsp; 7️⃣7️⃣7️⃣ ×30 &nbsp;|&nbsp; 🐡🐡🐡 ×15<br>
+        같은 심볼 3개 ×10 &nbsp;|&nbsp; 같은 심볼 2개 ×2 &nbsp;|&nbsp; 꽝 0
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 블랙잭 ══ -->
+<div class="xl-dlg-ov" id="bj-modal">
+  <div class="xl-dlg" style="min-width:320px;max-width:380px">
+    <div class="xl-dlg-title" style="background:#1B5E20;color:#fff">🃏 블랙잭 <button class="xl-dlg-x" onclick="hideDlg('bj-modal')">✕</button></div>
+    <div class="xl-dlg-body" style="padding:16px">
+      <div style="font-size:11px;color:#666;margin-bottom:10px;text-align:center">💰 보유: <b id="bj-money">0</b>원 &nbsp;|&nbsp; 베팅: <b id="bj-bet-disp">0</b>원</div>
+      <!-- 딜러 -->
+      <div style="background:#145214;border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="font-size:11px;color:#A5D6A7;margin-bottom:6px;font-weight:700">🤵 딜러 &nbsp;<span id="bj-dealer-score" style="color:#fff"></span></div>
+        <div id="bj-dealer-cards" style="display:flex;flex-wrap:wrap;gap:4px;min-height:48px"></div>
+      </div>
+      <!-- 플레이어 -->
+      <div style="background:#1B5E20;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+        <div style="font-size:11px;color:#C8E6C9;margin-bottom:6px;font-weight:700">🙋 나 &nbsp;<span id="bj-player-score" style="color:#FFEB3B"></span></div>
+        <div id="bj-player-cards" style="display:flex;flex-wrap:wrap;gap:4px;min-height:48px"></div>
+      </div>
+      <div id="bj-result" style="text-align:center;font-size:14px;font-weight:bold;min-height:20px;margin-bottom:10px"></div>
+      <!-- 베팅 UI -->
+      <div id="bj-bet-ui" style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:6px;justify-content:center">
+          <span style="font-size:12px;color:#444">베팅</span>
+          <input id="bj-bet-inp" type="number" min="100" step="100" value="500" style="width:110px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
+          <span style="font-size:12px;color:#444">원</span>
+        </div>
+        <button onclick="bjDeal()" style="background:#2E7D32;color:#fff;border:none;border-radius:6px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">딜 🃏</button>
+      </div>
+      <!-- 게임 중 버튼 -->
+      <div id="bj-action-ui" style="display:none;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:8px">
+          <button onclick="bjHit()" style="flex:1;background:#1565C0;color:#fff;border:none;border-radius:6px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">히트 ➕</button>
+          <button onclick="bjStand()" style="flex:1;background:#C62828;color:#fff;border:none;border-radius:6px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">스탠드 ✋</button>
+        </div>
+        <button id="bj-double-btn" onclick="bjDouble()" style="background:#E65100;color:#fff;border:none;border-radius:6px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">더블다운 ×2 💰</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 룰렛 ══ -->
+<div class="xl-dlg-ov" id="roulette-modal">
+  <div class="xl-dlg" style="min-width:320px;max-width:380px">
+    <div class="xl-dlg-title" style="background:#B71C1C;color:#fff">🎡 룰렛 <button class="xl-dlg-x" onclick="hideDlg('roulette-modal')">✕</button></div>
+    <div class="xl-dlg-body" style="padding:16px">
+      <div style="font-size:11px;color:#666;margin-bottom:10px;text-align:center">💰 보유: <b id="rl-money">0</b>원</div>
+      <div id="rl-ball" style="text-align:center;font-size:36px;margin:8px 0;min-height:48px">🎡</div>
+      <div id="rl-result" style="text-align:center;font-size:13px;font-weight:bold;min-height:20px;margin-bottom:10px"></div>
+      <!-- 베팅 종류 -->
+      <div style="font-size:11px;color:#555;font-weight:700;margin-bottom:6px">베팅 종류 선택</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+        <button onclick="rlSelectBet('red')" id="rl-btn-red" class="rl-bet-btn" style="background:#C62828;color:#fff;border:2px solid transparent;border-radius:5px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🔴 레드 ×2</button>
+        <button onclick="rlSelectBet('black')" id="rl-btn-black" class="rl-bet-btn" style="background:#212121;color:#fff;border:2px solid transparent;border-radius:5px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">⚫ 블랙 ×2</button>
+        <button onclick="rlSelectBet('odd')" id="rl-btn-odd" class="rl-bet-btn" style="background:#4A148C;color:#fff;border:2px solid transparent;border-radius:5px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">홀수 ×2</button>
+        <button onclick="rlSelectBet('even')" id="rl-btn-even" class="rl-bet-btn" style="background:#1A237E;color:#fff;border:2px solid transparent;border-radius:5px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">짝수 ×2</button>
+        <button onclick="rlSelectBet('low')" id="rl-btn-low" class="rl-bet-btn" style="background:#1B5E20;color:#fff;border:2px solid transparent;border-radius:5px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">1~18 ×2</button>
+        <button onclick="rlSelectBet('high')" id="rl-btn-high" class="rl-bet-btn" style="background:#E65100;color:#fff;border:2px solid transparent;border-radius:5px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">19~36 ×2</button>
+        <button onclick="rlSelectBet('num')" id="rl-btn-num" class="rl-bet-btn" style="background:#F57F17;color:#fff;border:2px solid transparent;border-radius:5px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;grid-column:1/-1">🎯 숫자 직접 ×36</button>
+      </div>
+      <div id="rl-num-row" style="display:none;margin-bottom:8px;text-align:center">
+        <input id="rl-num-inp" type="number" min="0" max="36" placeholder="0~36" style="width:80px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:12px">
+        <span style="font-size:12px;color:#444">베팅</span>
+        <input id="rl-bet" type="number" min="100" step="100" value="500" style="width:100px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
+        <span style="font-size:12px;color:#444">원</span>
+      </div>
+      <button onclick="rlSpin()" id="rl-spin-btn" style="width:100%;background:#B71C1C;color:#fff;border:none;border-radius:6px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit">스핀 🎡</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 하이로우 ══ -->
+<div class="xl-dlg-ov" id="hilo-modal">
+  <div class="xl-dlg" style="min-width:300px;max-width:340px">
+    <div class="xl-dlg-title" style="background:#0D47A1;color:#fff">🎴 하이로우 <button class="xl-dlg-x" onclick="hideDlg('hilo-modal')">✕</button></div>
+    <div class="xl-dlg-body" style="padding:16px;text-align:center">
+      <div style="font-size:11px;color:#666;margin-bottom:10px">💰 보유: <b id="hl-money">0</b>원 &nbsp;|&nbsp; 배당: <b id="hl-mult">1.00</b>×</div>
+      <div id="hl-card" style="background:#1A237E;color:#fff;border-radius:12px;padding:16px;font-size:48px;margin:10px auto;width:80px;min-height:70px;display:flex;align-items:center;justify-content:center">🂠</div>
+      <div id="hl-result" style="min-height:20px;font-size:13px;font-weight:bold;margin:8px 0"></div>
+      <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:14px">
+        <span style="font-size:12px;color:#444">베팅</span>
+        <input id="hl-bet" type="number" min="100" step="100" value="500" style="width:100px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
+        <span style="font-size:12px;color:#444">원</span>
+      </div>
+      <div id="hl-start-ui">
+        <button onclick="hlStart()" style="background:#0D47A1;color:#fff;border:none;border-radius:6px;padding:12px 32px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit">시작 🎴</button>
+      </div>
+      <div id="hl-play-ui" style="display:none;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:8px">
+          <button onclick="hlGuess('high')" style="flex:1;background:#C62828;color:#fff;border:none;border-radius:6px;padding:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">📈 하이</button>
+          <button onclick="hlGuess('low')" style="flex:1;background:#1565C0;color:#fff;border:none;border-radius:6px;padding:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">📉 로우</button>
+        </div>
+        <button onclick="hlCashOut()" style="background:#2E7D32;color:#fff;border:none;border-radius:6px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">💰 정산하기 (<span id="hl-payout-disp">0</span>원)</button>
+      </div>
+      <div style="margin-top:12px;font-size:9px;color:#999">
+        정답 시 배율 ×1.5 누적 · 오답 시 베팅금 전액 소멸<br>같은 숫자는 무효 처리 (다시 뽑기)
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 물고기 레이스 복권 -->
 <div class="xl-dlg-ov" id="fish-race-modal">
   <div class="xl-dlg" style="max-width:360px;width:calc(100vw - 16px);max-height:90dvh;overflow:hidden;display:flex;flex-direction:column">
@@ -1492,7 +1641,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.23';
+const BUILD = 'v3.24';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -9016,6 +9165,340 @@ setInterval(()=>{
     }
   }
 },1000);
+
+// ══════════════════════════════════════════════════════════
+// 🎲 도박
+// ══════════════════════════════════════════════════════════
+function openGambleMenu(){
+  document.getElementById('gamble-menu-modal').classList.add('on');
+}
+
+// ── 슬롯머신 ──────────────────────────────────────────────
+const SLOT_SYMS=['🐟','🐠','🦑','🐡','🎣','💎','7️⃣'];
+const SLOT_W   =[ 30,  25,  20,  10,   8,   4,   3]; // 합계 100
+
+function _slotRoll(){
+  let r=Math.random()*100, cum=0;
+  for(let i=0;i<SLOT_SYMS.length;i++){cum+=SLOT_W[i];if(r<cum)return SLOT_SYMS[i];}
+  return SLOT_SYMS[0];
+}
+function _slotPayout(a,b,c){
+  if(a===b&&b===c){
+    if(a==='💎') return 50;
+    if(a==='7️⃣') return 30;
+    if(a==='🐡') return 15;
+    return 10;
+  }
+  if(a===b||b===c||a===c) return 2;
+  return 0;
+}
+function openSlot(){
+  document.getElementById('slot-money').textContent=FG.money.toLocaleString();
+  document.getElementById('slot-result').textContent='';
+  ['slot-r1','slot-r2','slot-r3'].forEach(id=>document.getElementById(id).textContent='❓');
+  document.getElementById('slot-modal').classList.add('on');
+}
+function slotSpin(){
+  const bet=parseInt(document.getElementById('slot-bet').value)||500;
+  if(bet<100){u1Toast('최소 베팅 100원','#C00000');return;}
+  if(FG.money<bet){u1Toast('돈이 부족합니다','#C00000');return;}
+  FG.money-=bet;
+  const btn=document.getElementById('slot-spin-btn');
+  btn.disabled=true;
+  // 슬롯 애니메이션
+  let frames=0;
+  const syms=['🐟','🐠','🦑','🐡','🎣','💎','7️⃣'];
+  const ids=['slot-r1','slot-r2','slot-r3'];
+  const anim=setInterval(()=>{
+    ids.forEach(id=>document.getElementById(id).textContent=syms[Math.floor(Math.random()*syms.length)]);
+    if(++frames>=12){
+      clearInterval(anim);
+      const r=[_slotRoll(),_slotRoll(),_slotRoll()];
+      ids.forEach((id,i)=>document.getElementById(id).textContent=r[i]);
+      const mult=_slotPayout(r[0],r[1],r[2]);
+      const won=bet*mult;
+      let msg='';
+      if(mult===0){
+        msg=`<span style="color:#C00000">꽝! -${bet.toLocaleString()}원</span>`;
+      } else {
+        FG.money+=won;
+        const gain=won-bet;
+        msg=`<span style="color:#217346">×${mult} 당첨! +${gain.toLocaleString()}원 🎉</span>`;
+        if(mult>=15) u1Toast(`🎰 슬롯 잭팟! ×${mult} · ${won.toLocaleString()}원 획득!`,'#7B1FA2');
+      }
+      document.getElementById('slot-result').innerHTML=msg;
+      document.getElementById('slot-money').textContent=FG.money.toLocaleString();
+      fishQuickSave();
+      btn.disabled=false;
+    }
+  },80);
+}
+
+// ── 블랙잭 ──────────────────────────────────────────────
+let _bjDeck=[], _bjPlayer=[], _bjDealer=[], _bjBet=0, _bjDone=false;
+const BJ_RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const BJ_SUITS=['♠','♥','♦','♣'];
+function _bjNewDeck(){
+  const d=[];
+  for(const s of BJ_SUITS) for(const r of BJ_RANKS) d.push({s,r});
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+function _bjVal(r){if(['J','Q','K'].includes(r))return 10;if(r==='A')return 11;return parseInt(r);}
+function _bjHandVal(hand){
+  let v=hand.reduce((s,c)=>s+_bjVal(c.r),0);
+  let aces=hand.filter(c=>c.r==='A').length;
+  while(v>21&&aces-- >0) v-=10;
+  return v;
+}
+function _bjCardHtml(c,hidden){
+  if(hidden) return `<div style="background:#1A237E;color:#fff;border-radius:4px;padding:6px 10px;font-size:14px;font-weight:bold;border:1px solid #333">🂠</div>`;
+  const red=['♥','♦'].includes(c.s);
+  return `<div style="background:#fff;color:${red?'#C62828':'#212121'};border-radius:4px;padding:6px 10px;font-size:14px;font-weight:bold;border:1px solid #ddd;min-width:36px;text-align:center">${c.s}${c.r}</div>`;
+}
+function _bjRenderCards(pid,did,hideDealer){
+  document.getElementById('bj-player-cards').innerHTML=_bjPlayer.map(c=>_bjCardHtml(c,false)).join('');
+  document.getElementById('bj-dealer-cards').innerHTML=_bjDealer.map((c,i)=>_bjCardHtml(c,hideDealer&&i===1)).join('');
+  const ps=_bjHandVal(_bjPlayer);
+  document.getElementById('bj-player-score').textContent=ps+(ps>21?' 버스트':'');
+  document.getElementById('bj-dealer-score').textContent=hideDealer?'?':_bjHandVal(_bjDealer);
+}
+function openBlackjack(){
+  _bjDone=true;
+  document.getElementById('bj-money').textContent=FG.money.toLocaleString();
+  document.getElementById('bj-bet-disp').textContent='0';
+  document.getElementById('bj-player-cards').innerHTML='';
+  document.getElementById('bj-dealer-cards').innerHTML='';
+  document.getElementById('bj-player-score').textContent='';
+  document.getElementById('bj-dealer-score').textContent='';
+  document.getElementById('bj-result').textContent='';
+  document.getElementById('bj-bet-ui').style.display='flex';
+  document.getElementById('bj-action-ui').style.display='none';
+  document.getElementById('bj-modal').classList.add('on');
+}
+function bjDeal(){
+  const bet=parseInt(document.getElementById('bj-bet-inp').value)||500;
+  if(bet<100){u1Toast('최소 베팅 100원','#C00000');return;}
+  if(FG.money<bet){u1Toast('돈이 부족합니다','#C00000');return;}
+  _bjBet=bet; _bjDone=false;
+  FG.money-=bet;
+  _bjDeck=_bjNewDeck();
+  _bjPlayer=[_bjDeck.pop(),_bjDeck.pop()];
+  _bjDealer=[_bjDeck.pop(),_bjDeck.pop()];
+  document.getElementById('bj-bet-disp').textContent=bet.toLocaleString();
+  document.getElementById('bj-money').textContent=FG.money.toLocaleString();
+  document.getElementById('bj-result').textContent='';
+  document.getElementById('bj-bet-ui').style.display='none';
+  document.getElementById('bj-action-ui').style.display='flex';
+  document.getElementById('bj-double-btn').disabled=false;
+  _bjRenderCards(true,true,true);
+  // 블랙잭 즉시 체크
+  const ps=_bjHandVal(_bjPlayer), ds=_bjHandVal(_bjDealer);
+  if(ps===21){
+    if(ds===21){_bjEnd('push');}else{_bjEnd('blackjack');}
+  }
+}
+function bjHit(){
+  if(_bjDone) return;
+  _bjPlayer.push(_bjDeck.pop());
+  document.getElementById('bj-double-btn').disabled=true;
+  _bjRenderCards(true,true,true);
+  if(_bjHandVal(_bjPlayer)>21) _bjEnd('bust');
+}
+function bjStand(){
+  if(_bjDone) return;
+  _bjRenderCards(true,true,false);
+  // 딜러 드로우
+  const timer=setInterval(()=>{
+    if(_bjHandVal(_bjDealer)<17){
+      _bjDealer.push(_bjDeck.pop());
+      _bjRenderCards(true,true,false);
+    } else {
+      clearInterval(timer);
+      const ps=_bjHandVal(_bjPlayer), ds=_bjHandVal(_bjDealer);
+      if(ds>21||ps>ds) _bjEnd('win');
+      else if(ps===ds) _bjEnd('push');
+      else _bjEnd('lose');
+    }
+  },400);
+}
+function bjDouble(){
+  if(_bjDone||FG.money<_bjBet){u1Toast('돈이 부족합니다','#C00000');return;}
+  FG.money-=_bjBet; _bjBet*=2;
+  document.getElementById('bj-bet-disp').textContent=_bjBet.toLocaleString();
+  document.getElementById('bj-money').textContent=FG.money.toLocaleString();
+  _bjPlayer.push(_bjDeck.pop());
+  _bjRenderCards(true,true,true);
+  if(_bjHandVal(_bjPlayer)>21){_bjEnd('bust');return;}
+  bjStand();
+}
+function _bjEnd(result){
+  _bjDone=true;
+  _bjRenderCards(true,true,false);
+  document.getElementById('bj-action-ui').style.display='none';
+  document.getElementById('bj-bet-ui').style.display='flex';
+  let msg='', payout=0;
+  if(result==='blackjack'){payout=Math.floor(_bjBet*2.5);msg=`🎉 블랙잭! +${(payout-_bjBet).toLocaleString()}원`;}
+  else if(result==='win'){payout=_bjBet*2;msg=`✅ 승리! +${_bjBet.toLocaleString()}원`;}
+  else if(result==='push'){payout=_bjBet;msg=`🤝 무승부 (베팅 반환)`;}
+  else if(result==='bust'){msg=`💥 버스트! -${_bjBet.toLocaleString()}원`;}
+  else{msg=`❌ 패배! -${_bjBet.toLocaleString()}원`;}
+  FG.money+=payout;
+  document.getElementById('bj-result').innerHTML=`<span style="color:${payout>_bjBet?'#217346':payout===_bjBet?'#555':'#C00000'}">${msg}</span>`;
+  document.getElementById('bj-money').textContent=FG.money.toLocaleString();
+  fishQuickSave();
+}
+
+// ── 룰렛 ──────────────────────────────────────────────
+const RL_RED=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+let _rlBetType='red', _rlSpinning=false;
+function openRoulette(){
+  _rlBetType='red'; _rlSpinning=false;
+  document.getElementById('rl-money').textContent=FG.money.toLocaleString();
+  document.getElementById('rl-result').textContent='';
+  document.getElementById('rl-ball').textContent='🎡';
+  document.getElementById('rl-num-row').style.display='none';
+  rlSelectBet('red');
+  document.getElementById('roulette-modal').classList.add('on');
+}
+function rlSelectBet(type){
+  _rlBetType=type;
+  document.querySelectorAll('.rl-bet-btn').forEach(b=>b.style.outline='');
+  const btn=document.getElementById('rl-btn-'+type);
+  if(btn) btn.style.outline='3px solid #FFD700';
+  document.getElementById('rl-num-row').style.display=type==='num'?'flex':'none';
+  if(type==='num') document.getElementById('rl-num-row').style.display='block';
+}
+function rlSpin(){
+  if(_rlSpinning) return;
+  const bet=parseInt(document.getElementById('rl-bet').value)||500;
+  if(bet<100){u1Toast('최소 베팅 100원','#C00000');return;}
+  if(FG.money<bet){u1Toast('돈이 부족합니다','#C00000');return;}
+  let targetNum=null;
+  if(_rlBetType==='num'){
+    targetNum=parseInt(document.getElementById('rl-num-inp').value);
+    if(isNaN(targetNum)||targetNum<0||targetNum>36){u1Toast('0~36 숫자를 입력하세요','#C00000');return;}
+  }
+  _rlSpinning=true;
+  FG.money-=bet;
+  document.getElementById('rl-money').textContent=FG.money.toLocaleString();
+  document.getElementById('rl-result').textContent='';
+  const spinEmo=['🔴','⚫','🟢','🔴','⚫','🔴','⚫'];
+  let f=0;
+  const btn=document.getElementById('rl-spin-btn');
+  btn.disabled=true;
+  const anim=setInterval(()=>{
+    document.getElementById('rl-ball').textContent=spinEmo[f%spinEmo.length];
+    if(++f>=16){
+      clearInterval(anim);
+      const n=Math.floor(Math.random()*37); // 0~36
+      const isRed=RL_RED.has(n), isGreen=n===0;
+      const col=isGreen?'🟢':isRed?'🔴':'⚫';
+      document.getElementById('rl-ball').textContent=`${col} ${n}`;
+      let mult=0;
+      if(_rlBetType==='red'&&isRed) mult=2;
+      else if(_rlBetType==='black'&&!isRed&&!isGreen) mult=2;
+      else if(_rlBetType==='odd'&&n>0&&n%2===1) mult=2;
+      else if(_rlBetType==='even'&&n>0&&n%2===0) mult=2;
+      else if(_rlBetType==='low'&&n>=1&&n<=18) mult=2;
+      else if(_rlBetType==='high'&&n>=19&&n<=36) mult=2;
+      else if(_rlBetType==='num'&&n===targetNum) mult=36;
+      const won=bet*mult;
+      FG.money+=won;
+      const gain=won-bet;
+      let msg='';
+      if(mult===0) msg=`<span style="color:#C00000">꽝! -${bet.toLocaleString()}원</span>`;
+      else msg=`<span style="color:#217346">×${mult} 당첨! +${gain.toLocaleString()}원 🎉</span>`;
+      if(mult===36) u1Toast(`🎡 룰렛 잭팟! 숫자 ${n} 적중! ${won.toLocaleString()}원!`,'#B71C1C');
+      document.getElementById('rl-result').innerHTML=msg;
+      document.getElementById('rl-money').textContent=FG.money.toLocaleString();
+      fishQuickSave();
+      _rlSpinning=false;
+      btn.disabled=false;
+    }
+  },100);
+}
+
+// ── 하이로우 ──────────────────────────────────────────────
+let _hlDeck=[], _hlCur=null, _hlMult=1, _hlBet=0, _hlActive=false;
+const HL_RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const HL_SUITS=['♠','♥','♦','♣'];
+const HL_VAL={A:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10,J:11,Q:12,K:13};
+function _hlNewDeck(){
+  const d=[];
+  for(const s of HL_SUITS) for(const r of HL_RANKS) d.push({s,r});
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+function _hlCardStr(c){
+  if(!c) return '🂠';
+  const red=['♥','♦'].includes(c.s);
+  return `<span style="color:${red?'#C62828':'#212121'}">${c.s}${c.r}</span>`;
+}
+function openHiLo(){
+  _hlActive=false;
+  document.getElementById('hl-money').textContent=FG.money.toLocaleString();
+  document.getElementById('hl-mult').textContent='1.00';
+  document.getElementById('hl-card').innerHTML='🂠';
+  document.getElementById('hl-result').textContent='';
+  document.getElementById('hl-start-ui').style.display='block';
+  document.getElementById('hl-play-ui').style.display='none';
+  document.getElementById('hl-payout-disp').textContent='0';
+  document.getElementById('hilo-modal').classList.add('on');
+}
+function hlStart(){
+  const bet=parseInt(document.getElementById('hl-bet').value)||500;
+  if(bet<100){u1Toast('최소 베팅 100원','#C00000');return;}
+  if(FG.money<bet){u1Toast('돈이 부족합니다','#C00000');return;}
+  _hlBet=bet; _hlMult=1; _hlActive=true;
+  FG.money-=bet;
+  _hlDeck=_hlNewDeck();
+  _hlCur=_hlDeck.pop();
+  document.getElementById('hl-money').textContent=FG.money.toLocaleString();
+  document.getElementById('hl-mult').textContent=_hlMult.toFixed(2);
+  document.getElementById('hl-card').innerHTML=_hlCardStr(_hlCur);
+  document.getElementById('hl-result').textContent='';
+  document.getElementById('hl-start-ui').style.display='none';
+  document.getElementById('hl-play-ui').style.display='flex';
+  document.getElementById('hl-payout-disp').textContent=Math.floor(_hlBet*_hlMult).toLocaleString();
+  fishQuickSave();
+}
+function hlGuess(dir){
+  if(!_hlActive) return;
+  let next=_hlDeck.pop();
+  // 같은 숫자면 다시 뽑기 (최대 10회)
+  let retry=0;
+  while(next&&HL_VAL[next.r]===HL_VAL[_hlCur.r]&&retry++<10) next=_hlDeck.pop();
+  if(!next){u1Toast('덱 소진! 정산합니다','#555');hlCashOut();return;}
+  const prev=_hlCur; _hlCur=next;
+  const correct=(dir==='high'&&HL_VAL[next.r]>HL_VAL[prev.r])||(dir==='low'&&HL_VAL[next.r]<HL_VAL[prev.r]);
+  document.getElementById('hl-card').innerHTML=_hlCardStr(_hlCur);
+  if(correct){
+    _hlMult=Math.round(_hlMult*1.5*100)/100;
+    document.getElementById('hl-mult').textContent=_hlMult.toFixed(2);
+    const pay=Math.floor(_hlBet*_hlMult);
+    document.getElementById('hl-payout-disp').textContent=pay.toLocaleString();
+    document.getElementById('hl-result').innerHTML=`<span style="color:#217346">✅ 정답! 배율 ×${_hlMult.toFixed(2)}</span>`;
+  } else {
+    _hlActive=false;
+    document.getElementById('hl-result').innerHTML=`<span style="color:#C00000">❌ 오답! -${_hlBet.toLocaleString()}원</span>`;
+    document.getElementById('hl-play-ui').style.display='none';
+    document.getElementById('hl-start-ui').style.display='block';
+    fishQuickSave();
+  }
+}
+function hlCashOut(){
+  if(!_hlActive) return;
+  _hlActive=false;
+  const pay=Math.floor(_hlBet*_hlMult);
+  FG.money+=pay;
+  const gain=pay-_hlBet;
+  document.getElementById('hl-money').textContent=FG.money.toLocaleString();
+  document.getElementById('hl-result').innerHTML=`<span style="color:#217346">💰 정산! +${gain.toLocaleString()}원</span>`;
+  document.getElementById('hl-play-ui').style.display='none';
+  document.getElementById('hl-start-ui').style.display='block';
+  fishQuickSave();
+}
 </script>
 </body>
 </html>
