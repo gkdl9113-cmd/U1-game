@@ -1492,7 +1492,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.21';
+const BUILD = 'v3.22';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -5823,13 +5823,14 @@ async function adminSaveStockSettings(){
   u1Toast(`✅ 수산시장 설정 저장 완료 (${biasDesc}) | 현재 시세 고정됨`,'#217346');
 }
 async function adminSaveStockAnchor(){
-  await loadStockSettings();
+  // loadStockSettings 호출 없이 현재 메모리 값으로 즉시 앵커 계산
+  // (await 전에 _stockPriceAnchors 교체해야 타이머 렌더 시 가격 점프 없음)
   const cur=_stockCurrentTick();
   const anchor={};
   for(const id of Object.keys(STOCKS_DEF)){
     if(!_stockDelisted.has(id)) anchor[id]={price:stockGetPrice(id,cur),tick:cur};
   }
-  _stockPriceAnchors=anchor;
+  _stockPriceAnchors=anchor; // 동기적으로 먼저 교체
   const error=await _saveStockSettingsToDB();
   if(error){alert('앵커 저장 실패: '+error.message);return;}
   const prices=Object.entries(anchor).map(([id,a])=>`${STOCKS_DEF[id].emoji}${a.price.toLocaleString()}`).join(' ');
@@ -5838,8 +5839,7 @@ async function adminSaveStockAnchor(){
 
 async function adminClearStockAnchor(){
   if(!confirm('시세 고정을 해제하면 가격이 STOCK_EPOCH 기준 결정론적 계산으로 돌아갑니다. 계속할까요?')) return;
-  await loadStockSettings();
-  _stockPriceAnchors={};
+  _stockPriceAnchors={}; // 동기적으로 먼저 교체
   const error=await _saveStockSettingsToDB();
   if(error){alert('해제 실패: '+error.message);return;}
   u1Toast('🔓 시세 고정 해제됨 — 결정론적 공식으로 복귀','#7A9BBF');
