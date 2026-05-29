@@ -1241,6 +1241,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <button onclick="adminOpenJackpotSettings()" style="background:#2D1060;color:#C084FC;border:1px solid #6D28D9;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">⚙️ 잭팟 설정</button>
     <button onclick="adminOpenStockSettings()" style="background:#0F2A1A;color:#4ADE80;border:1px solid #1A5C35;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">📈 주식 설정</button>
     <button onclick="adminSaveStockAnchor()" style="background:#1A2A0F;color:#86EFAC;border:1px solid #2D5C1A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0" title="코드 변경 전에 반드시 클릭 — 현재 시세를 DB에 저장하여 가격 점프 방지">📌 시세 고정</button>
+    <button onclick="adminClearStockAnchor()" style="background:#1A1A0F;color:#FCD34D;border:1px solid #5C4A1A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0" title="고정 해제 — 결정론적 공식으로 복귀">🔓 고정 해제</button>
     <button onclick="adminResetJackpot()" style="background:#1A3D5C;color:#60A5FA;border:1px solid #2D6A9A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🎯 잭팟 초기화</button>
     <button onclick="adminOpenBattleBan()" style="background:#3D1A00;color:#FB923C;border:1px solid #7F3D00;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🚫 배틀 제한</button>
     <button onclick="adminResetServer()"style="background:#3D0000;color:#FB7185;border:1px solid #7F0000;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🗑️ 서버 초기화</button>
@@ -1491,7 +1492,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.17';
+const BUILD = 'v3.18';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -5778,6 +5779,18 @@ async function adminSaveStockAnchor(){
   u1Toast(`📌 시세 고정 완료: ${prices}`,'#217346');
 }
 
+async function adminClearStockAnchor(){
+  if(!confirm('시세 고정을 해제하면 가격이 STOCK_EPOCH 기준 결정론적 계산으로 돌아갑니다. 계속할까요?')) return;
+  await loadStockSettings();
+  const{error}=await _sb.from('fish_accounts').upsert({
+    username:STOCK_SETTINGS_USERNAME,server:ACTIVE_SERVER,
+    password_hash:'__STOCK__',fish_data:{vols:_stockVolOverrides,bearBias:_stockBearBias,anchor:{}},
+    updated_at:new Date().toISOString()
+  },{onConflict:'username,server'});
+  if(error){alert('해제 실패: '+error.message);return;}
+  _stockPriceAnchors={};
+  u1Toast('🔓 시세 고정 해제됨 — 결정론적 공식으로 복귀','#7A9BBF');
+}
 async function adminOpenBattleBan(){
   await loadBattleBanList();
   adminRenderBattleBanModal();
