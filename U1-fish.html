@@ -1473,7 +1473,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.05';
+const BUILD = 'v3.06';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1993,7 +1993,7 @@ function applyFishData(d){
   FG.plazaKills=d.plazaKills||0;
   const _emptyHoldings=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,{shares:0,avgCost:0}]));
   const _emptyRealized=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,0]));
-  FG.stocks=d.stocks||{holdings:_emptyHoldings(),realized:_emptyRealized(),divTick:0};
+  FG.stocks=d.stocks||{holdings:_emptyHoldings(),realized:_emptyRealized(),divTick:_stockCurrentTick()};
   if(!FG.stocks.holdings) FG.stocks.holdings=_emptyHoldings();
   if(!FG.stocks.realized) FG.stocks.realized=_emptyRealized();
   Object.keys(STOCKS_DEF).forEach(k=>{
@@ -4718,7 +4718,7 @@ function fishLoad(){
     FG.btWins=d.btWins||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;
     const _eh2=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,{shares:0,avgCost:0}]));
     const _er2=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,0]));
-    FG.stocks=d.stocks||{holdings:_eh2(),realized:_er2(),divTick:0};
+    FG.stocks=d.stocks||{holdings:_eh2(),realized:_er2(),divTick:_stockCurrentTick()};
     if(!FG.stocks.holdings) FG.stocks.holdings=_eh2();
     if(!FG.stocks.realized) FG.stocks.realized=_er2();
     Object.keys(STOCKS_DEF).forEach(k=>{
@@ -8514,6 +8514,9 @@ function _plzDefeated(n){
 // 📈 주식 시장
 // ══════════════════════════════════════════════════════════
 const STOCK_EPOCH=1748476800000; // 2026-05-29 00:00 UTC 고정 기준점
+const STOCK_TICK_MS=60000;       // 1분 = 1틱
+const STOCK_DIV_INTERVAL=720;   // 12시간 = 720틱마다 배당
+const STOCK_DIV_RATE=0.01;      // 배당률 1%
 const STOCK_SETTINGS_USERNAME='__STOCK__';
 const STOCK_BUY_FEE=0.00015;   // 매수 수수료 0.015%
 const STOCK_SELL_FEE=0.00195;  // 매도 수수료 0.015% + 증권거래세 0.18%
@@ -8523,7 +8526,7 @@ const STOCKS_DEF={
   gwangeo: {name:'광어',  emoji:'🐟', basePrice:50000, vol:0.04, divRate:0,     eventChance:0.04},
   ureok:   {name:'우럭',  emoji:'🐠', basePrice:20000, vol:0.07, divRate:0,     eventChance:0.04},
   dodari:  {name:'도다리',emoji:'🎣', basePrice:8000,  vol:0.30, divRate:0,     eventChance:0.08},
-  godeungeo:{name:'고등어',emoji:'🐡', basePrice:5000,  vol:0.05, divRate:0.002, eventChance:0.04},
+  godeungeo:{name:'고등어',emoji:'🐡', basePrice:5000,  vol:0.05, divRate:0,     eventChance:0.04},
   ojingeo: {name:'오징어',emoji:'🦑', basePrice:3000,  vol:0.50, divRate:0,     eventChance:0.08},
 };
 
@@ -8534,7 +8537,7 @@ function _stockHash(str){
 }
 
 function _stockCurrentTick(){
-  return Math.floor((Date.now()-STOCK_EPOCH)/600000);
+  return Math.floor((Date.now()-STOCK_EPOCH)/STOCK_TICK_MS);
 }
 
 // 결정론적 가격 계산 — 모든 클라이언트가 동일한 결과
@@ -8624,10 +8627,11 @@ function renderStockMarket(){
   const cur=_stockCurrentTick();
   const panel=document.getElementById('stock-panel-market');
   if(!panel||!FG.stocks) return;
-  const nextMs=STOCK_EPOCH+(cur+1)*600000-Date.now();
-  const nextMin=Math.ceil(nextMs/60000);
+  const nextMs=STOCK_EPOCH+(cur+1)*STOCK_TICK_MS-Date.now();
+  const nextSec=Math.ceil(nextMs/1000);
+  const divLeft=STOCK_DIV_INTERVAL-(cur-FG.stocks.divTick);
   const tickEl=document.getElementById('stock-tick-info');
-  if(tickEl) tickEl.textContent=`틱 #${cur} | 다음 업데이트: ${nextMin}분 후`;
+  if(tickEl) tickEl.textContent=`다음 업데이트: ${nextSec}초 후 | 배당까지: ${divLeft}틱`;
   panel.innerHTML='';
   Object.entries(STOCKS_DEF).forEach(([id,def])=>{
     const price=stockGetPrice(id,cur);
@@ -8819,29 +8823,24 @@ function execStockTrade(){
   else renderStockPortfolio();
 }
 
-// 고등어 배당금 지급 (틱 변경 시 체크)
+// 고등어 배당금 지급 (12시간 = 720틱마다)
 function checkStockDividend(){
   if(!FG.stocks) return;
   const cur=_stockCurrentTick();
-  if(cur<=FG.stocks.divTick) return;
-  const ticks=cur-FG.stocks.divTick;
+  if(cur-FG.stocks.divTick < STOCK_DIV_INTERVAL) return;
   FG.stocks.divTick=cur;
-  let totalDiv=0;
-  Object.entries(STOCKS_DEF).forEach(([id,def])=>{
-    if(def.divRate<=0) return;
-    const h=FG.stocks.holdings[id];
-    if(!h||h.shares<=0) return;
-    const price=stockGetPrice(id,cur);
-    const div=Math.floor(price*h.shares*def.divRate*ticks);
-    if(div>0){ FG.money+=div; totalDiv+=div; }
-  });
-  if(totalDiv>0){
-    u1Toast(`🐡 고등어 배당금 ${totalDiv.toLocaleString()}원 수령!`,'#217346');
+  const h=FG.stocks.holdings['godeungeo'];
+  if(!h||h.shares<=0){fishQuickSave();return;}
+  const price=stockGetPrice('godeungeo',cur);
+  const div=Math.floor(price*h.shares*STOCK_DIV_RATE);
+  if(div>0){
+    FG.money+=div;
+    u1Toast(`🐡 고등어 분기배당 ${div.toLocaleString()}원 수령! (${h.shares}주 × ${price.toLocaleString()}원 × 1%)`,'#217346');
     fishQuickSave();
   }
 }
 
-// 주식 시장 정기 갱신 (10분마다 렌더 갱신 + 배당 체크)
+// 수산시장 정기 갱신 (1분마다 렌더 갱신 + 배당 체크)
 setInterval(()=>{
   checkStockDividend();
   if(document.getElementById('s-stock')?.classList.contains('on')){
@@ -8849,7 +8848,7 @@ setInterval(()=>{
     if(activeTab==='market') renderStockMarket();
     else renderStockPortfolio();
   }
-},600000);
+},STOCK_TICK_MS);
 </script>
 </body>
 </html>
