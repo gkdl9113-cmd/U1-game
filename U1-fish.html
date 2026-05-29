@@ -1478,7 +1478,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.09';
+const BUILD = 'v3.10';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -8522,6 +8522,7 @@ const STOCK_EPOCH=1748476800000; // 2026-05-29 00:00 UTC 고정 기준점
 const STOCK_TICK_MS=180000;      // 3분 = 1틱
 const STOCK_DIV_INTERVAL=240;   // 12시간 = 240틱마다 배당
 const STOCK_DIV_RATE=0.01;      // 배당률 1%
+const STOCK_BEAR_BIAS=0.15;     // 하락 편향 (0=중립, 높을수록 하락 우세)
 const STOCK_SETTINGS_USERNAME='__STOCK__';
 const STOCK_BUY_FEE=0.00015;   // 매수 수수료 0.015%
 const STOCK_SELL_FEE=0.00195;  // 매도 수수료 0.015% + 증권거래세 0.18%
@@ -8564,13 +8565,14 @@ function stockGetPrice(id, targetTick){
     const r1=rng(),r2=rng(),r3=rng();
     let change;
     if(r1<def.eventChance){
-      // 이벤트: vol에 비례한 급등락 (vol의 4~8배 충격)
-      change=(r2<0.5?1:-1)*(vol*4+r3*vol*4);
+      // 이벤트: 하락 확률 (50+BEAR_BIAS*100)%
+      const sign=r2<(0.5+STOCK_BEAR_BIAS)?-1:1;
+      change=sign*(vol*4+r3*vol*4);
     } else {
-      // 일반 변동 + 평균 회귀
+      // 일반 변동 + 평균 회귀 + 하락 편향
       const momentum=lastChange*0.25;
       const meanRevert=(def.basePrice-price)/def.basePrice*0.05;
-      change=(r2-0.5)*vol*2+momentum+meanRevert;
+      change=(r2-0.5-STOCK_BEAR_BIAS)*vol*2+momentum+meanRevert;
     }
     price=Math.max(Math.round(def.basePrice*0.05),Math.round(price*(1+change)));
     lastChange=change;
