@@ -1492,7 +1492,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.18';
+const BUILD = 'v3.19';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -5713,18 +5713,89 @@ async function loadStockSettings(){
     _stockVolOverrides=data?.fish_data?.vols||{};
     _stockBearBias=data?.fish_data?.bearBias??STOCK_BEAR_BIAS_DEFAULT;
     _stockPriceAnchors=data?.fish_data?.anchor||{};
-  }catch(e){_stockVolOverrides={};_stockBearBias=STOCK_BEAR_BIAS_DEFAULT;_stockPriceAnchors={};}
+    _stockDelisted=new Set(data?.fish_data?.delisted||[]);
+  }catch(e){_stockVolOverrides={};_stockBearBias=STOCK_BEAR_BIAS_DEFAULT;_stockPriceAnchors={};_stockDelisted=new Set();}
+}
+async function _saveStockSettingsToDB(){
+  const{error}=await _sb.from('fish_accounts').upsert({
+    username:STOCK_SETTINGS_USERNAME,server:ACTIVE_SERVER,
+    password_hash:'__STOCK__',
+    fish_data:{vols:_stockVolOverrides,bearBias:_stockBearBias,anchor:_stockPriceAnchors,delisted:[..._stockDelisted]},
+    updated_at:new Date().toISOString()
+  },{onConflict:'username,server'});
+  return error;
+}
+function _liquidateDelistedHoldings(id){
+  if(!FG.stocks) return;
+  const h=FG.stocks.holdings[id];
+  if(!h||h.shares<=0) return;
+  const loss=-(h.avgCost*h.shares);
+  FG.stocks.realized[id]=(FG.stocks.realized[id]||0)+loss;
+  h.shares=0; h.avgCost=0;
+  fishQuickSave();
+}
+function _checkAndLiquidateDelisted(){
+  if(!FG.stocks) return;
+  for(const id of _stockDelisted) _liquidateDelistedHoldings(id);
+}
+async function _delistStock(id){
+  _stockDelisted.add(id);
+  _stockFloorStreak[id]=0;
+  _liquidateDelistedHoldings(id);
+  const err=await _saveStockSettingsToDB();
+  if(err) console.error('상장폐지 DB 저장 실패',err);
+  u1Toast(`🚨 ${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} 상장폐지! 보유 주식이 휴지조각 처리됩니다.`,'#EF4444');
+  const isOpen=document.getElementById('s-stock')?.classList.contains('on');
+  if(isOpen){
+    const activeTab=document.getElementById('stock-tab-market').classList.contains('active')?'market':'port';
+    if(activeTab==='market') renderStockMarket(); else renderStockPortfolio();
+  }
+}
+function checkStockDelistCondition(cur){
+  for(const id of Object.keys(STOCKS_DEF)){
+    if(_stockDelisted.has(id)) continue;
+    const price=stockGetPrice(id,cur);
+    const floor=Math.round(STOCKS_DEF[id].basePrice*0.05);
+    if(price<=floor){
+      _stockFloorStreak[id]=(_stockFloorStreak[id]||0)+1;
+      if(_stockFloorStreak[id]>=STOCK_AUTO_DELIST_TICKS) _delistStock(id);
+    } else {
+      _stockFloorStreak[id]=0;
+    }
+  }
+}
+async function adminDelistStock(id){
+  if(!confirm(`${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} 을 상장폐지하시겠습니까?\n보유자 주식이 즉시 휴지조각 처리됩니다.`)) return;
+  await _delistStock(id);
+  adminOpenStockSettings();
+}
+async function adminRelistStock(id){
+  if(!confirm(`${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} 을 재상장하시겠습니까?\n기준가(${STOCKS_DEF[id].basePrice.toLocaleString()}원)로 재시작합니다.`)) return;
+  _stockDelisted.delete(id);
+  _stockFloorStreak[id]=0;
+  const cur=_stockCurrentTick();
+  _stockPriceAnchors[id]={price:STOCKS_DEF[id].basePrice,tick:cur};
+  const err=await _saveStockSettingsToDB();
+  if(err){alert('재상장 실패: '+err.message);return;}
+  u1Toast(`✅ ${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} 재상장 완료 (기준가 ${STOCKS_DEF[id].basePrice.toLocaleString()}원)`,'#217346');
+  adminOpenStockSettings();
 }
 async function adminOpenStockSettings(){
   await loadStockSettings();
   const rows=document.getElementById('adm-stock-rows');
   rows.innerHTML=Object.entries(STOCKS_DEF).map(([id,def])=>{
     const cur=_stockVolOverrides[id]!=null?_stockVolOverrides[id]:def.vol;
+    const isDelist=_stockDelisted.has(id);
+    const delistBtn=isDelist
+      ?`<button onclick="adminRelistStock('${id}')" style="background:#1A3D2A;color:#4ADE80;border:1px solid #2D6A4A;padding:2px 7px;font-size:10px;border-radius:4px;cursor:pointer;font-family:inherit">재상장</button>`
+      :`<button onclick="adminDelistStock('${id}')" style="background:#3D1A1A;color:#FB7185;border:1px solid #6A2D2D;padding:2px 7px;font-size:10px;border-radius:4px;cursor:pointer;font-family:inherit">폐지</button>`;
     return `<div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:13px;width:60px;color:#E2E8F0">${def.emoji} ${def.name}</span>
+      <span style="font-size:13px;width:60px;color:${isDelist?'#FB7185':'#E2E8F0'}">${def.emoji} ${def.name}${isDelist?' 🚫':''}</span>
       <input id="adm-stock-vol-${id}" type="number" min="1" max="200" step="1" value="${Math.round(cur*100)}"
-        style="width:70px;text-align:center;background:#0F1724;border:1px solid #2D4A6A;color:#E2E8F0;border-radius:4px;padding:4px;font-size:13px;font-family:inherit">
+        style="width:70px;text-align:center;background:#0F1724;border:1px solid #2D4A6A;color:#E2E8F0;border-radius:4px;padding:4px;font-size:13px;font-family:inherit"
+        ${isDelist?'disabled':''}>
       <span style="font-size:11px;color:#7A9BBF">% / 3분</span>
+      ${delistBtn}
     </div>`;
   }).join('');
   const biasSlider=document.getElementById('adm-stock-bias');
@@ -5746,17 +5817,13 @@ async function adminSaveStockSettings(){
   const cur=_stockCurrentTick();
   const anchor={};
   for(const id of Object.keys(STOCKS_DEF)){
-    anchor[id]={price:stockGetPrice(id,cur),tick:cur};
+    if(!_stockDelisted.has(id)) anchor[id]={price:stockGetPrice(id,cur),tick:cur};
   }
-  const{error}=await _sb.from('fish_accounts').upsert({
-    username:STOCK_SETTINGS_USERNAME,server:ACTIVE_SERVER,
-    password_hash:'__STOCK__',fish_data:{vols,bearBias,anchor},
-    updated_at:new Date().toISOString()
-  },{onConflict:'username,server'});
-  if(error){alert('저장 실패: '+error.message);return;}
   _stockVolOverrides=vols;
   _stockBearBias=bearBias;
   _stockPriceAnchors=anchor;
+  const error=await _saveStockSettingsToDB();
+  if(error){alert('저장 실패: '+error.message);return;}
   hideDlg('adm-stock-modal');
   const biasDesc=bearBias>0?`하락 ${Math.round(bearBias*100)}% 편향`:bearBias<0?`상승 ${Math.round(Math.abs(bearBias)*100)}% 편향`:'중립';
   u1Toast(`✅ 수산시장 설정 저장 완료 (${biasDesc}) | 현재 시세 고정됨`,'#217346');
@@ -5766,15 +5833,11 @@ async function adminSaveStockAnchor(){
   const cur=_stockCurrentTick();
   const anchor={};
   for(const id of Object.keys(STOCKS_DEF)){
-    anchor[id]={price:stockGetPrice(id,cur),tick:cur};
+    if(!_stockDelisted.has(id)) anchor[id]={price:stockGetPrice(id,cur),tick:cur};
   }
-  const{error}=await _sb.from('fish_accounts').upsert({
-    username:STOCK_SETTINGS_USERNAME,server:ACTIVE_SERVER,
-    password_hash:'__STOCK__',fish_data:{vols:_stockVolOverrides,bearBias:_stockBearBias,anchor},
-    updated_at:new Date().toISOString()
-  },{onConflict:'username,server'});
-  if(error){alert('앵커 저장 실패: '+error.message);return;}
   _stockPriceAnchors=anchor;
+  const error=await _saveStockSettingsToDB();
+  if(error){alert('앵커 저장 실패: '+error.message);return;}
   const prices=Object.entries(anchor).map(([id,a])=>`${STOCKS_DEF[id].emoji}${a.price.toLocaleString()}`).join(' ');
   u1Toast(`📌 시세 고정 완료: ${prices}`,'#217346');
 }
@@ -5782,13 +5845,9 @@ async function adminSaveStockAnchor(){
 async function adminClearStockAnchor(){
   if(!confirm('시세 고정을 해제하면 가격이 STOCK_EPOCH 기준 결정론적 계산으로 돌아갑니다. 계속할까요?')) return;
   await loadStockSettings();
-  const{error}=await _sb.from('fish_accounts').upsert({
-    username:STOCK_SETTINGS_USERNAME,server:ACTIVE_SERVER,
-    password_hash:'__STOCK__',fish_data:{vols:_stockVolOverrides,bearBias:_stockBearBias,anchor:{}},
-    updated_at:new Date().toISOString()
-  },{onConflict:'username,server'});
-  if(error){alert('해제 실패: '+error.message);return;}
   _stockPriceAnchors={};
+  const error=await _saveStockSettingsToDB();
+  if(error){alert('해제 실패: '+error.message);return;}
   u1Toast('🔓 시세 고정 해제됨 — 결정론적 공식으로 복귀','#7A9BBF');
 }
 async function adminOpenBattleBan(){
@@ -8584,8 +8643,11 @@ const STOCK_TICKS_PER_PERIOD=6; // 6틱 = 3분 = 등락폭 기준 단위
 const STOCK_DIV_INTERVAL=1440;  // 12시간 = 1440틱마다 배당
 const STOCK_DIV_RATE=0.01;      // 배당률 1%
 const STOCK_BEAR_BIAS_DEFAULT=0.15;
+const STOCK_AUTO_DELIST_TICKS=5; // 5틱(2.5분) 연속 하한가 → 자동 상장폐지
 let _stockBearBias=STOCK_BEAR_BIAS_DEFAULT; // 관리자 설정 가능, 0=중립 0.5=이벤트 항상 하락
 let _stockPriceAnchors={}; // {id:{price,tick}} - 코드 변경 시 가격 점프 방지용 기준점
+let _stockDelisted=new Set(); // 상장폐지된 종목 id Set
+let _stockFloorStreak={}; // {id:연속하한가틱수} - 자동 상장폐지 카운터
 const STOCK_SETTINGS_USERNAME='__STOCK__';
 const STOCK_BUY_FEE=0.00015;   // 매수 수수료 0.015%
 const STOCK_SELL_FEE=0.00195;  // 매도 수수료 0.015% + 증권거래세 0.18%
@@ -8672,7 +8734,7 @@ let _stockDlgId='',_stockDlgMode='buy';
 
 function openStock(){
   show('s-stock');
-  loadStockSettings().then(()=>renderStockMarket());
+  loadStockSettings().then(()=>{_checkAndLiquidateDelisted();renderStockMarket();});
   checkStockDividend();
 }
 
@@ -8715,22 +8777,32 @@ function renderStockMarket(){
 
     const card=document.createElement('div');
     card.className='stock-card';
-    card.innerHTML=`
-      <div class="stock-card-header">
-        <span>${def.emoji} ${def.name}</span>
-        ${def.divRate>0?'<span style="font-size:10px;background:#e8f5e9;color:#2e7d32;padding:1px 5px;border-radius:3px;font-weight:normal">배당주</span>':''}
-        <span style="margin-left:auto;font-size:11px;color:#888;font-weight:normal">보유 ${holding.shares}주</span>
-      </div>
-      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
-        <span class="stock-price">${price.toLocaleString()}원</span>
-        <span class="${chgCls}" style="font-size:13px">${chgStr}</span>
-        <span style="font-size:10px;color:#bbb;margin-left:2px">▲ 현재</span>
-      </div>
-      <div style="margin-bottom:6px">${histHtml}</div>
-      <div style="display:flex;gap:6px">
-        <button class="stock-btn stock-btn-buy" onclick="openStockDlg('${id}','buy')">매수</button>
-        <button class="stock-btn stock-btn-sell" onclick="openStockDlg('${id}','sell')" ${holding.shares<=0?'disabled':''}>매도</button>
-      </div>`;
+    if(_stockDelisted.has(id)){
+      card.style.opacity='0.7';
+      card.innerHTML=`
+        <div class="stock-card-header">
+          <span style="color:#FB7185">${def.emoji} ${def.name}</span>
+          <span style="margin-left:auto;background:#EF4444;color:white;font-size:10px;padding:1px 7px;border-radius:3px;font-weight:bold">🚫 상장폐지</span>
+        </div>
+        <div style="color:#FB7185;font-size:12px;margin:10px 0;text-align:center">거래 불가 — 보유 주식 휴지조각 처리됨</div>`;
+    } else {
+      card.innerHTML=`
+        <div class="stock-card-header">
+          <span>${def.emoji} ${def.name}</span>
+          ${def.divRate>0?'<span style="font-size:10px;background:#e8f5e9;color:#2e7d32;padding:1px 5px;border-radius:3px;font-weight:normal">배당주</span>':''}
+          <span style="margin-left:auto;font-size:11px;color:#888;font-weight:normal">보유 ${holding.shares}주</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+          <span class="stock-price">${price.toLocaleString()}원</span>
+          <span class="${chgCls}" style="font-size:13px">${chgStr}</span>
+          <span style="font-size:10px;color:#bbb;margin-left:2px">▲ 현재</span>
+        </div>
+        <div style="margin-bottom:6px">${histHtml}</div>
+        <div style="display:flex;gap:6px">
+          <button class="stock-btn stock-btn-buy" onclick="openStockDlg('${id}','buy')">매수</button>
+          <button class="stock-btn stock-btn-sell" onclick="openStockDlg('${id}','sell')" ${holding.shares<=0?'disabled':''}>매도</button>
+        </div>`;
+    }
     panel.appendChild(card);
   });
 }
@@ -8801,11 +8873,14 @@ function renderStockPortfolio(){
     const h=FG.stocks.holdings[id];
     const realized=FG.stocks.realized[id]||0;
     if((h&&h.shares>0)||realized===0) return;
+    const isDelist=_stockDelisted.has(id);
     const card=document.createElement('div');
     card.className='stock-card';
     card.style.opacity='0.75';
     card.innerHTML=`
-      <div class="stock-card-header" style="color:#888">${def.emoji} ${def.name} <span style="font-size:11px;font-weight:normal">(전량 매도)</span></div>
+      <div class="stock-card-header" style="color:${isDelist?'#FB7185':'#888'}">${def.emoji} ${def.name}
+        <span style="font-size:11px;font-weight:normal;margin-left:4px">${isDelist?'🚫 상장폐지':'(전량 매도)'}</span>
+      </div>
       <div style="font-size:12px;color:#444">
         실현손익 <b class="${realized>=0?'stock-change-pos':'stock-change-neg'}">${realized>=0?'+':''}${realized.toLocaleString()}원</b>
       </div>`;
@@ -8874,6 +8949,7 @@ function _stockDlgUpdateTotal(){
 function execStockTrade(){
   const qty=Math.max(1,parseInt(document.getElementById('stock-dlg-qty').value)||1);
   const id=_stockDlgId, mode=_stockDlgMode;
+  if(_stockDelisted.has(id)){u1Toast(`${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name}은 상장폐지된 종목입니다`,'#EF4444');closeStockDlg();return;}
   const price=stockGetPrice(id,_stockCurrentTick());
   const baseTotal=qty*price;
   const holding=FG.stocks.holdings[id]||(FG.stocks.holdings[id]={shares:0,avgCost:0});
@@ -8938,6 +9014,7 @@ setInterval(()=>{
   if(cur!==_stockPrevTick){
     _stockPrevTick=cur;
     checkStockDividend();
+    checkStockDelistCondition(cur);
     if(isOpen){
       const activeTab=document.getElementById('stock-tab-market').classList.contains('active')?'market':'port';
       if(activeTab==='market') renderStockMarket();
