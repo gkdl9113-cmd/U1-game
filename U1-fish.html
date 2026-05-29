@@ -906,22 +906,22 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
         </tbody>
       </table>
     </div>
-    <!-- 타이밍 게이지 (엑셀 조건부 서식 스타일) -->
-    <div id="fishing-gauge-wrap" style="display:none;background:#F2F2F2;border-top:2px solid #217346;padding:10px 14px;flex-shrink:0">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <span id="fishing-gauge-label" style="font-size:11px;font-weight:700;color:#1F3864">초록 구간에서 클릭!</span>
-        <span style="font-size:9px;color:#888;padding:1px 6px;background:#E8F5ED;border:1px solid #C6EFCE">타이밍 게이지</span>
-      </div>
-      <div id="fishing-gauge-bar" style="height:30px;background:#E8E8E8;border:1px solid #C8C8C8;position:relative;overflow:hidden">
-        <div id="fishing-gauge-zone" style="position:absolute;top:0;bottom:0;background:#C6EFCE;border-left:1px solid #70AD47;border-right:1px solid #70AD47;z-index:1"></div>
-        <div id="fishing-gauge-special" style="position:absolute;top:0;bottom:0;background:rgba(255,200,0,0.75);border-left:2px solid #FF8C00;border-right:2px solid #FF8C00;display:none;z-index:2"></div>
-        <div id="fishing-gauge-needle" style="position:absolute;top:0;bottom:0;width:3px;background:#217346;left:50%;transform:translateX(-50%);z-index:3"></div>
-      </div>
-      <div id="fishing-gauge-hint" style="display:none;font-size:9px;color:#B8860B;font-weight:700;text-align:center;margin-top:2px">✨ 황금 구간 = 영웅/전설 등장!</div>
-      <div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px;color:#888"><span>0%</span><span>100%</span></div>
-    </div>
     <!-- 낚시찌 숨김 처리 (엑셀 모드에서 미사용) -->
     <div id="fishing-bobber" style="display:none"></div>
+  </div>
+  <!-- 타이밍 게이지 (fishing-area 밖 → overflow:hidden에 잘리지 않음) -->
+  <div id="fishing-gauge-wrap" style="display:none;background:#F2F2F2;border-top:2px solid #217346;padding:10px 14px;flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <span id="fishing-gauge-label" style="font-size:11px;font-weight:700;color:#1F3864">초록 구간에서 클릭!</span>
+      <span style="font-size:9px;color:#888;padding:1px 6px;background:#E8F5ED;border:1px solid #C6EFCE">타이밍 게이지</span>
+    </div>
+    <div id="fishing-gauge-bar" style="height:30px;background:#E8E8E8;border:1px solid #C8C8C8;position:relative;overflow:hidden">
+      <div id="fishing-gauge-zone" style="position:absolute;top:0;bottom:0;background:#C6EFCE;border-left:1px solid #70AD47;border-right:1px solid #70AD47;z-index:1"></div>
+      <div id="fishing-gauge-special" style="position:absolute;top:0;bottom:0;background:rgba(255,200,0,0.75);border-left:2px solid #FF8C00;border-right:2px solid #FF8C00;display:none;z-index:2"></div>
+      <div id="fishing-gauge-needle" style="position:absolute;top:0;bottom:0;width:3px;background:#217346;left:50%;transform:translateX(-50%);z-index:3"></div>
+    </div>
+    <div id="fishing-gauge-hint" style="display:none;font-size:9px;color:#B8860B;font-weight:700;text-align:center;margin-top:2px">✨ 황금 구간 = 영웅/전설 등장!</div>
+    <div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px;color:#888"><span>0%</span><span>100%</span></div>
   </div>
   <!-- 낚싯대 선택 패널 -->
   <div id="fishing-rod-btns" style="padding:8px;background:#F2F2F2;border-top:1px solid #C8C8C8;display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;min-height:52px;align-items:center"></div>
@@ -1404,7 +1404,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.90';
+const BUILD = 'v2.91';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -3204,6 +3204,17 @@ document.getElementById('fishing-area').addEventListener('touchstart',(e)=>{
 document.getElementById('fishing-area').addEventListener('click',(e)=>{
   if(e.target.closest('button,a')) return; // 버튼 click은 버튼이 직접 처리
   if(_fishAreaTouched){_fishAreaTouched=false;return;}
+  fishingAreaClick();
+});
+// 게이지 wrap 터치/클릭 (fishing-area 밖으로 이동했으므로 별도 핸들러)
+let _fishGaugeTouched=false;
+document.getElementById('fishing-gauge-wrap').addEventListener('touchstart',(e)=>{
+  e.preventDefault();
+  _fishGaugeTouched=true;
+  fishingAreaClick();
+},{passive:false});
+document.getElementById('fishing-gauge-wrap').addEventListener('click',()=>{
+  if(_fishGaugeTouched){_fishGaugeTouched=false;return;}
   fishingAreaClick();
 });
 
