@@ -1453,7 +1453,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v2.97';
+const BUILD = 'v2.98';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1972,9 +1972,14 @@ function applyFishData(d){
   FG.plazaFishIds=d.plazaFishIds||(d.plazaFishId?{1:d.plazaFishId,2:null}:{1:null,2:null});
   FG.plazaKills=d.plazaKills||0;
   const _emptyHoldings=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,{shares:0,avgCost:0}]));
-  FG.stocks=d.stocks||{holdings:_emptyHoldings(),divTick:0};
+  const _emptyRealized=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,0]));
+  FG.stocks=d.stocks||{holdings:_emptyHoldings(),realized:_emptyRealized(),divTick:0};
   if(!FG.stocks.holdings) FG.stocks.holdings=_emptyHoldings();
-  Object.keys(STOCKS_DEF).forEach(k=>{if(!FG.stocks.holdings[k]) FG.stocks.holdings[k]={shares:0,avgCost:0};});
+  if(!FG.stocks.realized) FG.stocks.realized=_emptyRealized();
+  Object.keys(STOCKS_DEF).forEach(k=>{
+    if(!FG.stocks.holdings[k]) FG.stocks.holdings[k]={shares:0,avgCost:0};
+    if(FG.stocks.realized[k]==null) FG.stocks.realized[k]=0;
+  });
   setTimeout(()=>{_retroCheckAchievements();migrateAchievementRewards();},1500);
   FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
   FG.auxMax=d.auxMax||1;
@@ -4692,9 +4697,14 @@ function fishLoad(){
     FG.achievements=d.achievements||{};
     FG.btWins=d.btWins||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;
     const _eh2=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,{shares:0,avgCost:0}]));
-    FG.stocks=d.stocks||{holdings:_eh2(),divTick:0};
+    const _er2=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,0]));
+    FG.stocks=d.stocks||{holdings:_eh2(),realized:_er2(),divTick:0};
     if(!FG.stocks.holdings) FG.stocks.holdings=_eh2();
-    Object.keys(STOCKS_DEF).forEach(k=>{if(!FG.stocks.holdings[k]) FG.stocks.holdings[k]={shares:0,avgCost:0};});
+    if(!FG.stocks.realized) FG.stocks.realized=_er2();
+    Object.keys(STOCKS_DEF).forEach(k=>{
+      if(!FG.stocks.holdings[k]) FG.stocks.holdings[k]={shares:0,avgCost:0};
+      if(FG.stocks.realized[k]==null) FG.stocks.realized[k]=0;
+    });
     setTimeout(()=>{_retroCheckAchievements();migrateAchievementRewards();},1500);
     FG.auxFishes=(d.auxFishes||[]).map(f=>({...f,type:inferFishType(f)}));
     FG.auxMax=d.auxMax||1;
@@ -8606,7 +8616,10 @@ function renderStockPortfolio(){
     return {id,def,h,price,val,cost,pnl,ret};
   }).filter(Boolean);
 
-  if(rows.length===0){
+  // 실현손익 합계
+  const totalRealized=Object.values(FG.stocks.realized||{}).reduce((a,b)=>a+b,0);
+
+  if(rows.length===0&&totalRealized===0){
     panel.innerHTML='<div style="text-align:center;color:#888;padding:40px;font-size:13px">보유 종목 없음</div>';
     return;
   }
@@ -8618,13 +8631,15 @@ function renderStockPortfolio(){
   summaryCard.className='stock-card';
   summaryCard.innerHTML=`
     <div style="font-weight:bold;color:#217346;font-size:13px">💼 포트폴리오 총평</div>
-    <div style="display:flex;gap:16px;font-size:12px;margin-top:4px">
-      <span>평가금액 <b>${totalVal.toLocaleString()}원</b></span>
-      <span>수익 <b class="${totalPnl>=0?'stock-change-pos':'stock-change-neg'}">${totalPnl>=0?'+':''}${totalPnl.toLocaleString()}원 (${totalRet.toFixed(1)}%)</b></span>
+    <div style="display:flex;flex-wrap:wrap;gap:10px 20px;font-size:12px;margin-top:4px">
+      ${rows.length>0?`<span>평가금액 <b>${totalVal.toLocaleString()}원</b></span>`:''}
+      ${rows.length>0?`<span>평가손익 <b class="${totalPnl>=0?'stock-change-pos':'stock-change-neg'}">${totalPnl>=0?'+':''}${totalPnl.toLocaleString()}원 (${totalRet.toFixed(1)}%)</b></span>`:''}
+      <span>실현손익 <b class="${totalRealized>=0?'stock-change-pos':'stock-change-neg'}">${totalRealized>=0?'+':''}${totalRealized.toLocaleString()}원</b></span>
     </div>`;
   panel.appendChild(summaryCard);
 
   rows.forEach(({id,def,h,price,val,pnl,ret})=>{
+    const realized=FG.stocks.realized[id]||0;
     const card=document.createElement('div');
     card.className='stock-card';
     card.innerHTML=`
@@ -8634,11 +8649,28 @@ function renderStockPortfolio(){
         <span>평균 단가</span><span>${h.avgCost.toLocaleString()}원</span>
         <span>현재가</span><span>${price.toLocaleString()}원</span>
         <span>평가금액</span><span><b>${val.toLocaleString()}원</b></span>
-        <span>수익</span><span class="${pnl>=0?'stock-change-pos':'stock-change-neg'}"><b>${pnl>=0?'+':''}${pnl.toLocaleString()}원 (${ret.toFixed(1)}%)</b></span>
+        <span>평가손익</span><span class="${pnl>=0?'stock-change-pos':'stock-change-neg'}"><b>${pnl>=0?'+':''}${pnl.toLocaleString()}원 (${ret.toFixed(1)}%)</b></span>
+        <span>실현손익</span><span class="${realized>=0?'stock-change-pos':'stock-change-neg'}"><b>${realized>=0?'+':''}${realized.toLocaleString()}원</b></span>
       </div>
       <div style="display:flex;gap:6px;margin-top:4px">
         <button class="stock-btn stock-btn-buy" onclick="openStockDlg('${id}','buy')">추가 매수</button>
         <button class="stock-btn stock-btn-sell" onclick="openStockDlg('${id}','sell')">매도</button>
+      </div>`;
+    panel.appendChild(card);
+  });
+
+  // 전량 매도된 종목 중 실현손익 있는 것도 표시
+  Object.entries(STOCKS_DEF).forEach(([id,def])=>{
+    const h=FG.stocks.holdings[id];
+    const realized=FG.stocks.realized[id]||0;
+    if((h&&h.shares>0)||realized===0) return;
+    const card=document.createElement('div');
+    card.className='stock-card';
+    card.style.opacity='0.75';
+    card.innerHTML=`
+      <div class="stock-card-header" style="color:#888">${def.emoji} ${def.name} <span style="font-size:11px;font-weight:normal">(전량 매도)</span></div>
+      <div style="font-size:12px;color:#444">
+        실현손익 <b class="${realized>=0?'stock-change-pos':'stock-change-neg'}">${realized>=0?'+':''}${realized.toLocaleString()}원</b>
       </div>`;
     panel.appendChild(card);
   });
@@ -8695,10 +8727,13 @@ function execStockTrade(){
     u1Toast(`${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} ${qty}주 매수 완료`,'#217346');
   } else {
     if(holding.shares<qty){u1Toast('보유 수량이 부족합니다','#C00000');return;}
+    const realizedPnl=Math.round((price-holding.avgCost)*qty);
+    FG.stocks.realized[id]=(FG.stocks.realized[id]||0)+realizedPnl;
     holding.shares-=qty;
     FG.money+=total;
     if(holding.shares===0) holding.avgCost=0;
-    u1Toast(`${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} ${qty}주 매도 완료`,'#1565c0');
+    const sign=realizedPnl>=0?'+':'';
+    u1Toast(`${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} ${qty}주 매도 (실현손익 ${sign}${realizedPnl.toLocaleString()}원)`,'#1565c0');
   }
   closeStockDlg();
   fishQuickSave();
