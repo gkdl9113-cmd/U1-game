@@ -1469,7 +1469,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.00';
+const BUILD = 'v3.01';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -8511,6 +8511,8 @@ function _plzDefeated(n){
 // ══════════════════════════════════════════════════════════
 const STOCK_EPOCH=1748476800000; // 2026-05-29 00:00 UTC 고정 기준점
 const STOCK_SETTINGS_USERNAME='__STOCK__';
+const STOCK_BUY_FEE=0.00015;   // 매수 수수료 0.015%
+const STOCK_SELL_FEE=0.00195;  // 매도 수수료 0.015% + 증권거래세 0.18%
 let _stockVolOverrides={}; // 관리자가 설정한 vol 오버라이드
 
 const STOCKS_DEF={
@@ -8767,32 +8769,43 @@ function stockDlgQty(delta){
 function _stockDlgUpdateTotal(){
   const qty=Math.max(1,parseInt(document.getElementById('stock-dlg-qty')?.value)||1);
   const price=stockGetPrice(_stockDlgId,_stockCurrentTick());
-  const total=qty*price;
+  const base=qty*price;
   const el=document.getElementById('stock-dlg-total');
-  if(el) el.textContent=(_stockDlgMode==='buy'?'매수금액: ':'매도금액: ')+total.toLocaleString()+'원';
+  if(!el) return;
+  if(_stockDlgMode==='buy'){
+    const fee=Math.round(base*STOCK_BUY_FEE);
+    el.innerHTML=`매수금액: <b>${(base+fee).toLocaleString()}원</b> <span style="font-size:11px;color:#888">(수수료 ${fee.toLocaleString()}원)</span>`;
+  } else {
+    const fee=Math.round(base*STOCK_SELL_FEE);
+    el.innerHTML=`수령금액: <b>${(base-fee).toLocaleString()}원</b> <span style="font-size:11px;color:#888">(세금+수수료 ${fee.toLocaleString()}원)</span>`;
+  }
 }
 
 function execStockTrade(){
   const qty=Math.max(1,parseInt(document.getElementById('stock-dlg-qty').value)||1);
   const id=_stockDlgId, mode=_stockDlgMode;
   const price=stockGetPrice(id,_stockCurrentTick());
-  const total=qty*price;
+  const baseTotal=qty*price;
   const holding=FG.stocks.holdings[id]||(FG.stocks.holdings[id]={shares:0,avgCost:0});
   if(mode==='buy'){
-    if(FG.money<total){u1Toast('현금이 부족합니다','#C00000');return;}
-    FG.money-=total;
-    holding.avgCost=Math.round((holding.avgCost*holding.shares+total)/(holding.shares+qty));
+    const fee=Math.round(baseTotal*STOCK_BUY_FEE);
+    const cost=baseTotal+fee;
+    if(FG.money<cost){u1Toast('현금이 부족합니다','#C00000');return;}
+    FG.money-=cost;
+    holding.avgCost=Math.round((holding.avgCost*holding.shares+cost)/(holding.shares+qty));
     holding.shares+=qty;
-    u1Toast(`${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} ${qty}주 매수 완료`,'#217346');
+    u1Toast(`${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} ${qty}주 매수 (수수료 ${fee.toLocaleString()}원)`,'#217346');
   } else {
     if(holding.shares<qty){u1Toast('보유 수량이 부족합니다','#C00000');return;}
-    const realizedPnl=Math.round((price-holding.avgCost)*qty);
+    const fee=Math.round(baseTotal*STOCK_SELL_FEE);
+    const received=baseTotal-fee;
+    const realizedPnl=Math.round((price-holding.avgCost)*qty)-fee;
     FG.stocks.realized[id]=(FG.stocks.realized[id]||0)+realizedPnl;
     holding.shares-=qty;
-    FG.money+=total;
+    FG.money+=received;
     if(holding.shares===0) holding.avgCost=0;
     const sign=realizedPnl>=0?'+':'';
-    u1Toast(`${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} ${qty}주 매도 (실현손익 ${sign}${realizedPnl.toLocaleString()}원)`,'#1565c0');
+    u1Toast(`${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} ${qty}주 매도 (실현손익 ${sign}${realizedPnl.toLocaleString()}원, 세금+수수료 ${fee.toLocaleString()}원)`,'#1565c0');
   }
   closeStockDlg();
   fishQuickSave();
