@@ -1473,7 +1473,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.04';
+const BUILD = 'v3.05';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -8631,9 +8631,10 @@ function renderStockMarket(){
   panel.innerHTML='';
   Object.entries(STOCKS_DEF).forEach(([id,def])=>{
     const price=stockGetPrice(id,cur);
+    const prevPrice=stockGetPrice(id,Math.max(0,cur-1));
     const holding=FG.stocks.holdings[id]||{shares:0,avgCost:0};
     const spark=_stockSparkData(id,20);
-    const chg=spark[0]>0?((spark[spark.length-1]-spark[0])/spark[0]*100):0;
+    const chg=prevPrice>0?((price-prevPrice)/prevPrice*100):0;
     const chgStr=(chg>=0?'+':'')+chg.toFixed(1)+'%';
     const chgCls=chg>=0?'stock-change-pos':'stock-change-neg';
 
@@ -8648,6 +8649,7 @@ function renderStockMarket(){
       <div style="display:flex;align-items:center;gap:8px">
         <span class="stock-price">${price.toLocaleString()}원</span>
         <span class="${chgCls}">${chgStr}</span>
+        <span style="font-size:11px;color:#999;margin-left:2px">직전 ${prevPrice.toLocaleString()}원</span>
         <canvas id="spark-${id}" width="80" height="28" style="margin-left:auto;display:block"></canvas>
       </div>
       <div style="display:flex;gap:6px;margin-top:2px">
