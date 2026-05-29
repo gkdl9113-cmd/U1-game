@@ -1492,7 +1492,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.19';
+const BUILD = 'v3.20';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -5755,13 +5755,7 @@ function checkStockDelistCondition(cur){
   for(const id of Object.keys(STOCKS_DEF)){
     if(_stockDelisted.has(id)) continue;
     const price=stockGetPrice(id,cur);
-    const floor=Math.round(STOCKS_DEF[id].basePrice*0.05);
-    if(price<=floor){
-      _stockFloorStreak[id]=(_stockFloorStreak[id]||0)+1;
-      if(_stockFloorStreak[id]>=STOCK_AUTO_DELIST_TICKS) _delistStock(id);
-    } else {
-      _stockFloorStreak[id]=0;
-    }
+    if(price<=0) _delistStock(id);
   }
 }
 async function adminDelistStock(id){
@@ -8643,7 +8637,7 @@ const STOCK_TICKS_PER_PERIOD=6; // 6틱 = 3분 = 등락폭 기준 단위
 const STOCK_DIV_INTERVAL=1440;  // 12시간 = 1440틱마다 배당
 const STOCK_DIV_RATE=0.01;      // 배당률 1%
 const STOCK_BEAR_BIAS_DEFAULT=0.15;
-const STOCK_AUTO_DELIST_TICKS=5; // 5틱(2.5분) 연속 하한가 → 자동 상장폐지
+// 가격 0원 도달 시 즉시 자동 상장폐지 (가격 바닥 = 0, 0에서 계속 0이므로 1틱이면 충분)
 let _stockBearBias=STOCK_BEAR_BIAS_DEFAULT; // 관리자 설정 가능, 0=중립 0.5=이벤트 항상 하락
 let _stockPriceAnchors={}; // {id:{price,tick}} - 코드 변경 시 가격 점프 방지용 기준점
 let _stockDelisted=new Set(); // 상장폐지된 종목 id Set
@@ -8696,7 +8690,7 @@ function stockGetPrice(id, targetTick){
     const r2=rng();
     const momentum=lastChange*0.25;
     const change=(r2-0.5-_stockBearBias)*vol*2+momentum;
-    price=Math.max(Math.round(def.basePrice*0.05),Math.round(price*(1+change)));
+    price=Math.max(0,Math.round(price*(1+change)));
     lastChange=change;
   }
   return price;
