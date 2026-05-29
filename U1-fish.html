@@ -1473,7 +1473,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.06';
+const BUILD = 'v3.07';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -8627,11 +8627,6 @@ function renderStockMarket(){
   const cur=_stockCurrentTick();
   const panel=document.getElementById('stock-panel-market');
   if(!panel||!FG.stocks) return;
-  const nextMs=STOCK_EPOCH+(cur+1)*STOCK_TICK_MS-Date.now();
-  const nextSec=Math.ceil(nextMs/1000);
-  const divLeft=STOCK_DIV_INTERVAL-(cur-FG.stocks.divTick);
-  const tickEl=document.getElementById('stock-tick-info');
-  if(tickEl) tickEl.textContent=`다음 업데이트: ${nextSec}초 후 | 배당까지: ${divLeft}틱`;
   panel.innerHTML='';
   Object.entries(STOCKS_DEF).forEach(([id,def])=>{
     const price=stockGetPrice(id,cur);
@@ -8840,15 +8835,30 @@ function checkStockDividend(){
   }
 }
 
-// 수산시장 정기 갱신 (1분마다 렌더 갱신 + 배당 체크)
+// 수산시장 1초 루프 — 틱 변경 감지 시 자동 갱신
+let _stockPrevTick=-1;
 setInterval(()=>{
-  checkStockDividend();
-  if(document.getElementById('s-stock')?.classList.contains('on')){
-    const activeTab=document.getElementById('stock-tab-market').classList.contains('active')?'market':'port';
-    if(activeTab==='market') renderStockMarket();
-    else renderStockPortfolio();
+  const cur=_stockCurrentTick();
+  const isOpen=document.getElementById('s-stock')?.classList.contains('on');
+  // 카운트다운 표시 (시장 탭 열려 있을 때)
+  if(isOpen){
+    const nextMs=STOCK_EPOCH+(cur+1)*STOCK_TICK_MS-Date.now();
+    const nextSec=Math.ceil(nextMs/1000);
+    const divLeft=STOCK_DIV_INTERVAL-(cur-FG.stocks.divTick);
+    const tickEl=document.getElementById('stock-tick-info');
+    if(tickEl) tickEl.textContent=`다음 업데이트: ${nextSec}초 후 | 배당까지: ${divLeft}틱`;
   }
-},STOCK_TICK_MS);
+  // 틱 변경 감지
+  if(cur!==_stockPrevTick){
+    _stockPrevTick=cur;
+    checkStockDividend();
+    if(isOpen){
+      const activeTab=document.getElementById('stock-tab-market').classList.contains('active')?'market':'port';
+      if(activeTab==='market') renderStockMarket();
+      else renderStockPortfolio();
+    }
+  }
+},1000);
 </script>
 </body>
 </html>
