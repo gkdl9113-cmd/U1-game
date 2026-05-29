@@ -1083,7 +1083,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div id="slot-result" style="min-height:22px;font-size:13px;font-weight:bold;margin-bottom:10px"> </div>
       <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:12px">
         <span style="font-size:12px;color:#444">베팅</span>
-        <input id="slot-bet" type="number" min="100" step="100" value="500" style="width:100px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
+        <input id="slot-bet" type="number" min="1000" step="1000" value="1000" style="width:100px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
         <span style="font-size:12px;color:#444">원</span>
       </div>
       <button onclick="slotSpin()" id="slot-spin-btn" style="background:#7B1FA2;color:#fff;border:none;border-radius:6px;padding:12px 36px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit">당기기 🎰</button>
@@ -1116,7 +1116,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div id="bj-bet-ui" style="display:flex;flex-direction:column;gap:8px">
         <div style="display:flex;align-items:center;gap:6px;justify-content:center">
           <span style="font-size:12px;color:#444">베팅</span>
-          <input id="bj-bet-inp" type="number" min="100" step="100" value="500" style="width:110px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
+          <input id="bj-bet-inp" type="number" min="1000" step="1000" value="1000" style="width:110px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
           <span style="font-size:12px;color:#444">원</span>
         </div>
         <button onclick="bjDeal()" style="background:#2E7D32;color:#fff;border:none;border-radius:6px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">딜 🃏</button>
@@ -1157,7 +1157,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       </div>
       <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:12px">
         <span style="font-size:12px;color:#444">베팅</span>
-        <input id="rl-bet" type="number" min="100" step="100" value="500" style="width:100px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
+        <input id="rl-bet" type="number" min="1000" step="1000" value="1000" style="width:100px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
         <span style="font-size:12px;color:#444">원</span>
       </div>
       <button onclick="rlSpin()" id="rl-spin-btn" style="width:100%;background:#B71C1C;color:#fff;border:none;border-radius:6px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit">스핀 🎡</button>
@@ -1175,7 +1175,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div id="hl-result" style="min-height:20px;font-size:13px;font-weight:bold;margin:8px 0"></div>
       <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:14px">
         <span style="font-size:12px;color:#444">베팅</span>
-        <input id="hl-bet" type="number" min="100" step="100" value="500" style="width:100px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
+        <input id="hl-bet" type="number" min="1000" step="1000" value="1000" style="width:100px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
         <span style="font-size:12px;color:#444">원</span>
       </div>
       <div id="hl-start-ui">
@@ -1641,7 +1641,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.24';
+const BUILD = 'v3.25';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -9199,8 +9199,8 @@ function openSlot(){
   document.getElementById('slot-modal').classList.add('on');
 }
 function slotSpin(){
-  const bet=parseInt(document.getElementById('slot-bet').value)||500;
-  if(bet<100){u1Toast('최소 베팅 100원','#C00000');return;}
+  const bet=parseInt(document.getElementById('slot-bet').value)||1000;
+  if(bet<1000){u1Toast('최소 베팅 1,000원','#C00000');return;}
   if(FG.money<bet){u1Toast('돈이 부족합니다','#C00000');return;}
   FG.money-=bet;
   const btn=document.getElementById('slot-spin-btn');
@@ -9277,8 +9277,8 @@ function openBlackjack(){
   document.getElementById('bj-modal').classList.add('on');
 }
 function bjDeal(){
-  const bet=parseInt(document.getElementById('bj-bet-inp').value)||500;
-  if(bet<100){u1Toast('최소 베팅 100원','#C00000');return;}
+  const bet=parseInt(document.getElementById('bj-bet-inp').value)||1000;
+  if(bet<1000){u1Toast('최소 베팅 1,000원','#C00000');return;}
   if(FG.money<bet){u1Toast('돈이 부족합니다','#C00000');return;}
   _bjBet=bet; _bjDone=false;
   FG.money-=bet;
@@ -9371,8 +9371,8 @@ function rlSelectBet(type){
 }
 function rlSpin(){
   if(_rlSpinning) return;
-  const bet=parseInt(document.getElementById('rl-bet').value)||500;
-  if(bet<100){u1Toast('최소 베팅 100원','#C00000');return;}
+  const bet=parseInt(document.getElementById('rl-bet').value)||1000;
+  if(bet<1000){u1Toast('최소 베팅 1,000원','#C00000');return;}
   if(FG.money<bet){u1Toast('돈이 부족합니다','#C00000');return;}
   let targetNum=null;
   if(_rlBetType==='num'){
@@ -9447,8 +9447,8 @@ function openHiLo(){
   document.getElementById('hilo-modal').classList.add('on');
 }
 function hlStart(){
-  const bet=parseInt(document.getElementById('hl-bet').value)||500;
-  if(bet<100){u1Toast('최소 베팅 100원','#C00000');return;}
+  const bet=parseInt(document.getElementById('hl-bet').value)||1000;
+  if(bet<1000){u1Toast('최소 베팅 1,000원','#C00000');return;}
   if(FG.money<bet){u1Toast('돈이 부족합니다','#C00000');return;}
   _hlBet=bet; _hlMult=1; _hlActive=true;
   FG.money-=bet;
