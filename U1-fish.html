@@ -480,6 +480,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-rsep"></div>
     <span style="font-size:10px;color:#595959;padding:0 6px">💰 <strong id="f-money">100</strong>원</span>
     <span style="font-size:10px;color:#595959;padding:0 4px">🍤 <strong id="f-food-count">5</strong>개</span>
+    <span style="font-size:10px;color:#8B6914;padding:0 4px" title="전설전 배틀포인트">👑 <strong id="f-battle-points">0</strong>BP</span>
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishingEnter()"><span class="xl-rico">🎣</span><span class="xl-rlbl" id="f-rod-lbl">낚시</span></button>
     <button class="xl-rbtn" onclick="showMiniGameMenu()"><span class="xl-rico">⚔️</span><span class="xl-rlbl">미니게임</span></button>
@@ -1030,6 +1031,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
         <button class="game-sel-btn" onclick="sendChallenge('omok')">⬛ 오목</button>
         <button class="game-sel-btn" onclick="sendChallenge('baseball')">🔢 숫자야구</button>
         <button class="game-sel-btn" style="background:#FCE4D6;color:#C00000;border-color:#F4B8A0" onclick="sendChallenge('battle')">⚔️ 수족관 대결</button>
+        <button class="game-sel-btn" style="background:#FFF3CD;color:#8B6914;border-color:#F5D050" onclick="sendChallenge('legend_battle')">👑 전설전</button>
       </div>
     </div>
   </div>
@@ -1645,7 +1647,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.28';
+const BUILD = 'v3.29';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1764,7 +1766,7 @@ function connectSupabase(){
       return;
     }
     pendingChallenge=payload;
-    const _gname={omok:'오목',baseball:'숫자야구',battle:'수족관 대결'}[payload.game]||payload.game;
+    const _gname={omok:'오목',baseball:'숫자야구',battle:'수족관 대결',legend_battle:'👑 전설전'}[payload.game]||payload.game;
     document.getElementById('challenged-txt').textContent=
       `${payload.fromName}님이 ${_gname} 대전을 신청했습니다.`;
     document.getElementById('challenged-notify').classList.add('on');
@@ -2160,7 +2162,7 @@ function applyFishData(d){
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
   FG.skillInventory=d.skillInventory||{};
   FG.achievements=d.achievements||{};
-  FG.btWins=d.btWins||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;
+  FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;
   FG.plazaFishIds=d.plazaFishIds||(d.plazaFishId?{1:d.plazaFishId,2:null}:{1:null,2:null});
   FG.plazaKills=d.plazaKills||0;
   const _emptyHoldings=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,{shares:0,avgCost:0}]));
@@ -2218,7 +2220,7 @@ async function saveFishDataToDB(){
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,fishCodex:FG.fishCodex,
     skillInventory:FG.skillInventory,
-    achievements:FG.achievements,btWins:FG.btWins,totalFished:FG.totalFished,totalEvos:FG.totalEvos,
+    achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,
     plazaFishIds:{1:FG.plazaFishIds[1]||null,2:FG.plazaFishIds[2]||null},plazaKills:FG.plazaKills||0,
     stocks:FG.stocks,
     battlePickIds:(FG.battlePick||[]).map(f=>f.id),
@@ -2372,7 +2374,11 @@ function sendChallenge(game){
   hideDlg('challenge-dlg');
   if(!challengeTarget) return;
   if(!_chConnectedOnce){u1Toast('서버 연결 중입니다. 잠시 후 다시 시도하세요.','#C00000');return;}
-  if(game==='battle'&&isBattleBlocked(myName,challengeTarget.name)){u1Toast(`🚫 해당 상대와의 배틀은 제한되어 있습니다.`,'#C00000');return;}
+  if((game==='battle'||game==='legend_battle')&&isBattleBlocked(myName,challengeTarget.name)){u1Toast(`🚫 해당 상대와의 배틀은 제한되어 있습니다.`,'#C00000');return;}
+  if(game==='legend_battle'){
+    const hasLegend=FG.fishes.some(f=>!f.isDead&&LEGEND_BATTLE_GRADES.has(fStage(f).grade));
+    if(!hasLegend){u1Toast('👑 전설 이상 물고기가 없으면 전설전을 신청할 수 없습니다.','#C00000');return;}
+  }
   sbSend('challenge',{targetId:challengeTarget.id,fromId:myId,fromName:myName,game,digits:4});
   u1Toast(challengeTarget.name+'님에게 도전 신청 전송!','#1F3864');
 }
@@ -2380,11 +2386,20 @@ function sendChallenge(game){
 function acceptChallenge(){
   u1Toast('[A]수락클릭','#217346');
   if(!pendingChallenge){u1Toast('[A]pendingChallenge없음','#C00000');return;}
-  if(pendingChallenge.game==='battle'&&isBattleBlocked(myName,pendingChallenge.fromName)){
+  if((pendingChallenge.game==='battle'||pendingChallenge.game==='legend_battle')&&isBattleBlocked(myName,pendingChallenge.fromName)){
     sbSend('challenge_reject',{targetId:pendingChallenge.fromId,fromId:myId,fromName:myName});
     pendingChallenge=null;
     document.getElementById('challenged-notify').classList.remove('on');
     u1Toast('배틀이 제한된 계정입니다.','#C00000');return;
+  }
+  if(pendingChallenge.game==='legend_battle'){
+    const hasLegend=FG.fishes.some(f=>!f.isDead&&LEGEND_BATTLE_GRADES.has(fStage(f).grade));
+    if(!hasLegend){
+      sbSend('challenge_reject',{targetId:pendingChallenge.fromId,fromId:myId,fromName:myName});
+      pendingChallenge=null;
+      document.getElementById('challenged-notify').classList.remove('on');
+      u1Toast('👑 전설 이상 물고기가 없어 전설전을 수락할 수 없습니다.','#C00000');return;
+    }
   }
   const{fromId,fromName,game,digits}=pendingChallenge;
   u1Toast(`[A]game:${game} from:${fromName}`,'#217346');
@@ -2439,7 +2454,7 @@ function startOnlineGame(gameType){
   startGameHeartbeat();
   if(gameType==='omok') startOmokOnline();
   else if(gameType==='baseball') startBBOnline();
-  else if(gameType==='battle') startBattleGame();
+  else if(gameType==='battle'||gameType==='legend_battle') startBattleGame();
 }
 
 function backToFishWorld(){
@@ -2475,6 +2490,7 @@ const F_GRADES={
   '중급영물':{label:'중급영물',bg:'#B2DFDB',fg:'#004D40'},
   '상급영물':{label:'상급영물',bg:'#FFF8E1',fg:'#BF6000'},
 };
+const LEGEND_BATTLE_GRADES=new Set(['전설','하급영물','중급영물','상급영물']);
 // 물고기 스킬 정의
 const FISH_SKILLS={
   'gs_폭식':        {name:'폭식',        species:'goldfish', slot:1,icon:'💚',rarity:'희귀',desc:'공격 후 30% 확률, 데미지의 30% HP 회복'},
@@ -2875,7 +2891,7 @@ const FG={
   rods:{rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0}, // 낚싯대 인벤토리
   skillInventory:{}, // {skillId: count}
   achievements:{}, // {id: {unlockedAt: timestamp}}
-  btWins:0, totalFished:0, totalEvos:0,
+  btWins:0, battlePoints:0, totalFished:0, totalEvos:0,
   paused:false,pausedAt:null,
   lastTick:Date.now(),lastAutoFeed:0,
   fishPos:null,
@@ -3927,9 +3943,11 @@ function evolveOneFish(f){
 }
 
 function fishRenderInfo(){
-  // 리본 - 돈/먹이
+  // 리본 - 돈/먹이/BP
   document.getElementById('f-money').textContent=FG.money.toLocaleString();
   document.getElementById('f-food-count').textContent=FG.food.toLocaleString();
+  const _bpEl=document.getElementById('f-battle-points');
+  if(_bpEl) _bpEl.textContent=(FG.battlePoints||0);
   // 수식창
   const alive=aliveFishes();
   const rep=alive[0];
@@ -4840,7 +4858,7 @@ function fishSave(isDisconnect){
     money:FG.money,food:FG.food,spFood:FG.spFood,autoFeeders:FG.autoFeeders,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,skillInventory:FG.skillInventory,
-    achievements:FG.achievements,btWins:FG.btWins,totalFished:FG.totalFished,totalEvos:FG.totalEvos,
+    achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,
     plazaFishIds:{1:FG.plazaFishIds[1]||null,2:FG.plazaFishIds[2]||null},plazaKills:FG.plazaKills||0,
     stocks:FG.stocks,
     battlePickIds:(FG.battlePick||[]).map(f=>f.id),
@@ -4887,7 +4905,7 @@ function fishLoad(){
     FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
     FG.skillInventory=d.skillInventory||{};
     FG.achievements=d.achievements||{};
-    FG.btWins=d.btWins||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;
+    FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;
     const _eh2=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,{shares:0,avgCost:0}]));
     const _er2=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,0]));
     FG.stocks=d.stocks||{holdings:_eh2(),realized:_er2(),divTick:_stockCurrentTick()};
@@ -5339,10 +5357,14 @@ const BTPICK_SPECIES=[
 ];
 const GRADE_CLR={'일반':'#555','중급':'#1565C0','고급':'#558B2F','희귀':'#7B1FA2','영웅':'#E65100','전설':'#B71C1C','하급영물':'#00695C','중급영물':'#004D40','상급영물':'#BF6000'};
 
+let _btPickLegendMode=false;
 function openBattlePick(){
   if(!FG.battlePick) FG.battlePick=[];
+  _btPickLegendMode=!!(currentGame&&currentGame.type==='legend_battle');
   // 죽거나 없어진 물고기 pick에서 제거
   FG.battlePick=FG.battlePick.filter(p=>FG.fishes.some(f=>f.id===p.id&&!f.isDead));
+  // 전설전 모드면 비전설 물고기를 pick에서 제거
+  if(_btPickLegendMode) FG.battlePick=FG.battlePick.filter(f=>LEGEND_BATTLE_GRADES.has(fStage(f).grade));
   renderBattlePickGrid();
   document.getElementById('btpick-modal').classList.add('on');
 }
@@ -5354,6 +5376,8 @@ function renderBattlePickGrid(){
   const selIds=new Set(sel.map(f=>f.id));
   const selCount=sel.length;
   document.getElementById('btpick-count').textContent=`선택: ${selCount}/3`;
+  const headerEl=document.querySelector('#btpick-modal .xl-dlg-title');
+  if(headerEl) headerEl.childNodes[0].textContent=_btPickLegendMode?'👑 전설전 출전 물고기 선택 ':'⚔️ 출전 물고기 선택 ';
   const alive=FG.fishes.map((f,i)=>({f,i})).filter(({f})=>!f.isDead);
   if(!alive.length){
     document.getElementById('btpick-grid').innerHTML='<div style="text-align:center;color:#888;padding:24px">살아있는 물고기가 없습니다</div>';
@@ -5362,9 +5386,11 @@ function renderBattlePickGrid(){
   const items=alive.map(({f,i})=>{
     const s=fStage(f);
     const isSel=selIds.has(f.id);
-    const blocked=!isSel&&selCount>=3;
+    const isLegendLocked=_btPickLegendMode&&!LEGEND_BATTLE_GRADES.has(s.grade);
+    const blocked=isLegendLocked||(!isSel&&selCount>=3);
     const gd=GRADE_CLR[s.grade]||'#333';
     const ywLvTxt=_isYwFish(f)?` <span style="color:#004D40;font-weight:900">Lv.${f.level||1}</span>`:'';
+    const lockBadge=isLegendLocked?'<span style="font-size:9px;color:#aaa;flex-shrink:0">전설 미만</span>':'';
     return `<div onclick="toggleBattlePickFish('${f.id}')"
       style="display:flex;align-items:center;gap:8px;padding:7px 8px;border:2px solid ${isSel?'#217346':s.color+'99'};border-radius:5px;background:${isSel?'#D1FAE5':'#fff'};cursor:${blocked?'default':'pointer'};opacity:${blocked?'0.38':'1'}">
       ${drawMinifish(f.type||'goldfish',s,true)}
@@ -5373,6 +5399,7 @@ function renderBattlePickGrid(){
         <div style="font-size:9px;color:${gd};font-weight:700;margin-top:1px">${s.grade} · ${s.species}</div>
         <div style="font-size:9px;color:#888;margin-top:1px">HP ${f.hp}/${f.maxHp} · 포만감 ${Math.floor(f.fullness||0)}%</div>
       </div>
+      ${lockBadge}
       ${isSel?'<span style="font-size:18px;color:#217346;flex-shrink:0;font-weight:900">✓</span>':''}
     </div>`;
   }).join('');
@@ -5383,6 +5410,7 @@ function toggleBattlePickFish(fishId){
   const fish=FG.fishes.find(f=>f.id===fishId);
   if(!fish||fish.isDead) return;
   const sd=fStage(fish);
+  if(_btPickLegendMode&&!LEGEND_BATTLE_GRADES.has(sd.grade)){u1Toast('👑 전설전에는 전설 이상 물고기만 출전 가능합니다','#C00000');return;}
   const idx=FG.battlePick.findIndex(f=>f.id===fishId);
   if(idx>=0){
     FG.battlePick.splice(idx,1);
@@ -7329,8 +7357,9 @@ function startBattleGame(){
   document.getElementById('battle-status').textContent='물고기 준비 중…';
   // 내 물고기 데이터 준비 후 즉시 전송
   // 출전 선택 물고기 우선 사용, 없으면 생존 물고기 중 랜덤 3마리
-  const _pickAlive=(FG.battlePick||[]).filter(f=>FG.fishes.includes(f)&&!f.isDead);
-  const _alive=FG.fishes.filter(f=>!f.isDead);
+  const _isLegendBattle=currentGame.type==='legend_battle';
+  const _pickAlive=(FG.battlePick||[]).filter(f=>FG.fishes.includes(f)&&!f.isDead&&(!_isLegendBattle||LEGEND_BATTLE_GRADES.has(fStage(f).grade)));
+  const _alive=FG.fishes.filter(f=>!f.isDead&&(!_isLegendBattle||LEGEND_BATTLE_GRADES.has(fStage(f).grade)));
   const _randPick=_alive.slice().sort(()=>Math.random()-.5).slice(0,3);
   const _btSource=_pickAlive.length>0?_pickAlive:_randPick;
   btMyFishData=_btSource.map(f=>{
@@ -8171,6 +8200,7 @@ function btShowResult(myAlive,oppAlive){
   let totalReward=0;
   const rewardLines=[];
   let btSpFood=0;
+  const _isLegBattle=currentGame&&currentGame.type==='legend_battle';
   if(win){
     btFishes.filter(f=>f.side==='opp'&&f.isDead).forEach(f=>{
       const r=BATTLE_GRADE_REWARD[f.grade]||50;
@@ -8181,6 +8211,10 @@ function btShowResult(myAlive,oppAlive){
     if(Math.random()<0.25){FG.spFood++;btSpFood=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
     FG.btWins++;
     checkAchievements('btwin');
+    if(_isLegBattle){FG.battlePoints=(FG.battlePoints||0)+3;u1Toast('👑 배틀포인트 +3 (승리)','#8B6914');}
+  } else if(!draw&&_isLegBattle){
+    FG.battlePoints=(FG.battlePoints||0)+1;
+    u1Toast('👑 배틀포인트 +1 (패배)','#8B6914');
   }
 
   fishRenderInfo();
@@ -8194,18 +8228,19 @@ function btShowResult(myAlive,oppAlive){
 
   let ico,title,detail;
   if(win){
-    ico='🏆'; title='승리!';
+    ico='🏆'; title=_isLegBattle?'👑 전설전 승리!':'승리!';
     detail=`적 전멸! 내 생존: ${myAlive}/${myTotal}마리\n\n`;
     if(rewardLines.length){
       detail+='💰 획득 보상:\n'+rewardLines.join('\n');
       detail+=`\n\n합계: +${totalReward.toLocaleString()}원`;
     }
     if(btSpFood) detail+='\n\n🍖 특수먹이 +1 획득!';
+    if(_isLegBattle) detail+=`\n\n👑 배틀포인트 +3 (누적: ${FG.battlePoints}BP)`;
   } else if(draw){
     ico='🤝'; title='무승부';
     detail=`시간 초과\n내 생존: ${myAlive}/${myTotal}마리`;
   } else {
-    ico='😢'; title='패배...';
+    ico='😢'; title=_isLegBattle?'👑 전설전 패배':'패배...';
     detail=`내 물고기가 전멸했습니다\n\n`;
     detail+=`사망: ${myDeadCnt}/${myTotal}마리\n\n`;
     const allDead=FG.fishes.every(f=>f.isDead);
@@ -8214,13 +8249,14 @@ function btShowResult(myAlive,oppAlive){
     } else {
       detail+=`생존 물고기: ${FG.fishes.filter(f=>!f.isDead).length}마리\n(죽은 물고기는 상세창에서 구매 가능)`;
     }
+    if(_isLegBattle) detail+=`\n\n👑 배틀포인트 +1 (누적: ${FG.battlePoints}BP)`;
   }
 
   document.getElementById('bt-result-ico').textContent=ico;
   document.getElementById('bt-result-txt').textContent=title;
   document.getElementById('bt-result-detail').textContent=detail;
   banner.style.display='flex';
-  document.getElementById('battle-status').textContent=win?'🏆 승리!':draw?'🤝 무승부':'😢 패배';
+  document.getElementById('battle-status').textContent=win?(title):(draw?'🤝 무승부':'😢 패배');
   sendGameMsg({type:'game_end',data:{}});
 }
 
@@ -8248,6 +8284,8 @@ function onBattleForfeit(payload){
   let btSpFoodF=0;
   if(Math.random()<0.25){FG.spFood++;btSpFoodF=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
   FG.btWins++;checkAchievements('btwin');
+  const _isLegBattleF=currentGame&&currentGame.type==='legend_battle';
+  if(_isLegBattleF){FG.battlePoints=(FG.battlePoints||0)+3;u1Toast('👑 배틀포인트 +3 (승리)','#8B6914');}
   fishRenderInfo();fishSave();
   // 결과 배너
   const banner=document.getElementById('bt-result-banner');
@@ -8255,6 +8293,7 @@ function onBattleForfeit(payload){
   detail+=rewardLines.join('\n');
   detail+=`\n\n합계: +${totalReward.toLocaleString()}원`;
   if(btSpFoodF) detail+='\n\n🍖 특수먹이 +1 획득!';
+  if(_isLegBattleF) detail+=`\n\n👑 배틀포인트 +3 (누적: ${FG.battlePoints}BP)`;
   document.getElementById('bt-result-ico').textContent='🏆';
   document.getElementById('bt-result-txt').textContent='승리! (상대 탈주)';
   document.getElementById('bt-result-detail').textContent=detail;
