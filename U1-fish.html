@@ -1934,6 +1934,15 @@ function connectSupabase(){
       u1Toast(`🏆 ${esc(payload.killer)}이(가) ${n}번 광장 보스를 처치! +${reward.toLocaleString()}원`,'#FF8F00');
     }
   })
+  .on('broadcast',{event:'stock_settings_update'},()=>{
+    loadStockSettings().then(()=>{
+      const isOpenNow=document.getElementById('s-stock')?.classList.contains('on');
+      if(isOpenNow&&!_stockLoading){
+        const activeTab=document.getElementById('stock-tab-market').classList.contains('active')?'market':'port';
+        if(activeTab==='market') renderStockMarket(); else renderStockPortfolio();
+      }
+    });
+  })
   .subscribe(async(status)=>{
     if(status==='SUBSCRIBED'){
       const isFirstConnect=!_chConnectedOnce;
@@ -6208,6 +6217,7 @@ async function _saveStockSettingsToDB(){
     fish_data:{vols:_stockVolOverrides,bearBias:_stockBearBias,anchor:_stockPriceAnchors,delisted:[..._stockDelisted]},
     updated_at:new Date().toISOString()
   },{onConflict:'username,server'});
+  if(!error&&_ch) sbSend('stock_settings_update',{});
   return error;
 }
 function _liquidateDelistedHoldings(id){
