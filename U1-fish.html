@@ -1357,6 +1357,19 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
+<!-- HP 회복 물고기 선택 모달 -->
+<div class="xl-dlg-ov" id="bt-hp-pick-modal">
+  <div class="xl-dlg" style="max-width:320px;width:calc(100vw - 16px)">
+    <div class="xl-dlg-title" style="background:#1A3560;color:#FFD700">💊 HP 회복 물고기 선택
+      <button class="xl-dlg-x" onclick="hideDlg('bt-hp-pick-modal')" style="color:#FFD700">✕</button>
+    </div>
+    <div class="xl-dlg-body" style="padding:10px;max-height:60dvh;overflow-y:auto">
+      <div style="font-size:10px;color:#666;margin-bottom:8px">회복할 물고기를 선택하세요 · 1BP 소모</div>
+      <div id="bt-hp-pick-list" style="display:flex;flex-direction:column;gap:5px"></div>
+    </div>
+  </div>
+</div>
+
 <!-- 출전 물고기 선택 모달 -->
 <div class="xl-dlg-ov" id="btpick-modal">
   <div class="xl-dlg" style="max-width:390px;width:calc(100vw - 16px);max-height:88dvh;overflow:hidden;display:flex;flex-direction:column">
@@ -5177,10 +5190,10 @@ function btShopBuy(id){
   if(bp<cfg.cost){u1Toast(`BP 부족 (필요 ${cfg.cost}BP · 보유 ${bp}BP)`,'#C00000');return;}
   FG.battlePoints=(FG.battlePoints||0)-cfg.cost;
   if(cfg.type==='hp'){
-    let cnt=0;
-    FG.fishes.forEach(f=>{if(!f.isDead&&f.hp<f.maxHp){f.hp=f.maxHp;cnt++;}});
-    fishQuickSave();
-    u1Toast(`💊 HP 완전 회복! (${cnt}마리)`,'#217346');
+    FG.battlePoints+=cfg.cost; // 선택 전 환불 (btHpHeal에서 다시 차감)
+    hideDlg('f-shop-modal');
+    openBtHpPick();
+    return;
   } else if(cfg.type==='spfood'){
     FG.spFood=(FG.spFood||0)+1;
     fishQuickSave();
@@ -5211,6 +5224,46 @@ function btShopBuy(id){
   fishOpenShop();
 }
 
+function openBtHpPick(){
+  const list=document.getElementById('bt-hp-pick-list');
+  const alive=FG.fishes.map((f,i)=>({f,i})).filter(({f})=>!f.isDead);
+  if(!alive.length){list.innerHTML='<div style="text-align:center;color:#888;padding:16px">살아있는 물고기가 없습니다</div>';}
+  else{
+    list.innerHTML=alive.map(({f,i})=>{
+      const s=fStage(f);
+      const pct=Math.round(f.hp/f.maxHp*100);
+      const barColor=pct>60?'#22C55E':pct>30?'#F59E0B':'#EF4444';
+      const gd=GRADE_CLR[s.grade]||'#333';
+      return `<div onclick="btHpHeal('${f.id}')" style="display:flex;align-items:center;gap:8px;padding:7px 8px;border:1px solid #E0E0E0;border-radius:5px;background:#fff;cursor:pointer">
+        ${drawMinifish(f.type||'goldfish',s,true)}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:800;color:#222">#${i+1} ${s.name}</div>
+          <div style="font-size:9px;color:${gd};font-weight:700">${s.grade}</div>
+          <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
+            <div style="flex:1;background:#E8E8E8;border-radius:3px;height:5px;overflow:hidden">
+              <div style="width:${pct}%;height:100%;background:${barColor};border-radius:3px"></div>
+            </div>
+            <span style="font-size:9px;color:#666;white-space:nowrap">${f.hp}/${f.maxHp}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('bt-hp-pick-modal').classList.add('on');
+}
+function btHpHeal(fishId){
+  const bp=FG.battlePoints||0;
+  if(bp<1){u1Toast('BP가 부족합니다','#C00000');hideDlg('bt-hp-pick-modal');return;}
+  const f=FG.fishes.find(f=>f.id===fishId);
+  if(!f||f.isDead){u1Toast('대상 물고기를 찾을 수 없습니다','#C00000');return;}
+  const s=fStage(f);
+  FG.battlePoints-=1;
+  f.hp=f.maxHp;
+  fishQuickSave();
+  hideDlg('bt-hp-pick-modal');
+  u1Toast(`💊 ${s.name} HP 완전 회복!`,'#217346');
+}
+
 function fishOpenShop(){
   const div=document.getElementById('f-shop-items');
   // 스킬뽑기 섹션
@@ -5226,7 +5279,7 @@ function fishOpenShop(){
   // 배틀상점 섹션
   const _bp=FG.battlePoints||0;
   const _btItems=[
-    {id:'bt_hp', icon:'💊',name:'HP 회복권',   cost:1,  desc:'모든 물고기 HP 100% 즉시 회복'},
+    {id:'bt_hp', icon:'💊',name:'HP 회복권',   cost:1,  desc:'물고기 1마리 선택 → HP 100% 회복'},
     {id:'bt_sp', icon:'🍖',name:'스페셜 먹이', cost:15, desc:'스페셜 먹이 1개 지급'},
     {id:'bt_yw1',icon:'🌀',name:'하급영물 뽑기',cost:15,desc:'5% 확률로 하급영물 1마리 획득'},
     {id:'bt_yw2',icon:'🌀',name:'중급영물 뽑기',cost:30,desc:'2.5% 확률로 중급영물 1마리 획득'},
