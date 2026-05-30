@@ -5155,6 +5155,62 @@ function fishReset(){
   document.getElementById('f-save-status').textContent='저장 안 됨';
 }
 
+function _getYwByGrade(grade){
+  const candidates=[];
+  for(const type of Object.keys(F_SPECIES)){
+    const sp=F_SPECIES[type];
+    for(let s=1;s<=5;s++){if(sp[s]&&sp[s].grade===grade)candidates.push({type,stage:s});}
+  }
+  if(!candidates.length)return null;
+  return candidates[Math.floor(Math.random()*candidates.length)];
+}
+function btShopBuy(id){
+  const bp=FG.battlePoints||0;
+  const cfg={
+    bt_hp: {cost:1,  type:'hp'},
+    bt_sp: {cost:15, type:'spfood'},
+    bt_yw1:{cost:15, type:'yw',prob:0.05, grade:'하급영물'},
+    bt_yw2:{cost:30, type:'yw',prob:0.025,grade:'중급영물'},
+    bt_yw3:{cost:50, type:'yw',prob:0.005,grade:'상급영물'},
+  }[id];
+  if(!cfg)return;
+  if(bp<cfg.cost){u1Toast(`BP 부족 (필요 ${cfg.cost}BP · 보유 ${bp}BP)`,'#C00000');return;}
+  FG.battlePoints=(FG.battlePoints||0)-cfg.cost;
+  if(cfg.type==='hp'){
+    let cnt=0;
+    FG.fishes.forEach(f=>{if(!f.isDead&&f.hp<f.maxHp){f.hp=f.maxHp;cnt++;}});
+    fishQuickSave();
+    u1Toast(`💊 HP 완전 회복! (${cnt}마리)`,'#217346');
+  } else if(cfg.type==='spfood'){
+    FG.spFood=(FG.spFood||0)+1;
+    fishQuickSave();
+    u1Toast('🍖 스페셜 먹이 1개 획득!','#217346');
+  } else if(cfg.type==='yw'){
+    if(FG.auxFishes.length>=FG.auxMax){
+      FG.battlePoints+=cfg.cost; // 환불
+      u1Toast('보조 수족관이 꽉 찼습니다. 자리를 만들고 다시 시도하세요.','#C00000');
+      fishOpenShop();return;
+    }
+    if(Math.random()<cfg.prob){
+      const picked=_getYwByGrade(cfg.grade);
+      if(picked){
+        const caught=newFish(picked.stage,picked.type);
+        updateFishCodex(picked.type,picked.stage);
+        FG.auxFishes.push(caught);
+        _trySpFoodDrop();fishRenderAux();fishRenderInfo();
+        FG.totalFished++;
+        checkAchievements('fish',{grade:fStage(caught).grade,isYw:_isYwFish(caught)});
+        fishQuickSave();
+        u1Toast(`🎉 ${cfg.grade} ${fStage(caught).name} 획득! (보조 수족관에 추가)`,'#BF6000');
+      }
+    } else {
+      fishQuickSave();
+      u1Toast(`꽝! ${cfg.grade} 획득 실패 (${cfg.prob*100}% 확률)`,'#C00000');
+    }
+  }
+  fishOpenShop();
+}
+
 function fishOpenShop(){
   const div=document.getElementById('f-shop-items');
   // 스킬뽑기 섹션
@@ -5166,6 +5222,34 @@ function fishOpenShop(){
       <button onclick="hideDlg('f-shop-modal');openSkillGacha()" style="flex:1;background:${can1?'#4F46E5':'#3D3D5C'};color:${can1?'#fff':'#888'};border:none;padding:7px 4px;border-radius:5px;font-size:10px;font-weight:700;cursor:${can1?'pointer':'default'};font-family:inherit;line-height:1.5">🎲 1회 뽑기<br><span style="font-size:9px;opacity:.85">5,000원</span></button>
       <button onclick="hideDlg('f-shop-modal');openSkillGacha()" style="flex:1;background:${can10?'#7C3AED':'#3D3D5C'};color:${can10?'#fff':'#888'};border:none;padding:7px 4px;border-radius:5px;font-size:10px;font-weight:700;cursor:${can10?'pointer':'default'};font-family:inherit;line-height:1.5">🎲 10회 뽑기<br><span style="font-size:9px;opacity:.85">48,000원</span></button>
     </div>
+  </div>`;
+  // 배틀상점 섹션
+  const _bp=FG.battlePoints||0;
+  const _btItems=[
+    {id:'bt_hp', icon:'💊',name:'HP 회복권',   cost:1,  desc:'모든 물고기 HP 100% 즉시 회복'},
+    {id:'bt_sp', icon:'🍖',name:'스페셜 먹이', cost:15, desc:'스페셜 먹이 1개 지급'},
+    {id:'bt_yw1',icon:'🌀',name:'하급영물 뽑기',cost:15,desc:'5% 확률로 하급영물 1마리 획득'},
+    {id:'bt_yw2',icon:'🌀',name:'중급영물 뽑기',cost:30,desc:'2.5% 확률로 중급영물 1마리 획득'},
+    {id:'bt_yw3',icon:'🌀',name:'상급영물 뽑기',cost:50,desc:'0.5% 확률로 상급영물 1마리 획득'},
+  ];
+  div.innerHTML+=`<div style="background:linear-gradient(135deg,#0D1B2A,#1A3560);border-radius:6px;padding:10px 12px;margin-bottom:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;color:#FFD700">⚔️ 배틀상점</div>
+      <div style="font-size:10px;color:#93C5FD;font-weight:700">보유 BP: <span style="color:#FFD700">${_bp}</span>BP</div>
+    </div>
+    ${_btItems.map(it=>{
+      const canBuy=_bp>=it.cost;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08)">
+        <div style="font-size:18px;flex-shrink:0">${it.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:700;color:#E2E8F0">${it.name}</div>
+          <div style="font-size:9px;color:#94A3B8;margin-top:1px">${it.desc}</div>
+        </div>
+        <button onclick="btShopBuy('${it.id}')" ${canBuy?'':'disabled'}
+          style="background:${canBuy?'#1D4ED8':'#1E293B'};color:${canBuy?'#fff':'#475569'};border:none;padding:5px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:${canBuy?'pointer':'default'};font-family:inherit;white-space:nowrap;flex-shrink:0">
+          ${it.cost}BP</button>
+      </div>`;
+    }).join('')}
   </div>`;
   div.innerHTML+=F_SHOP.map(item=>{
     const cnt=item.type==='rod'?(FG.rods[item.id]||0):0;
