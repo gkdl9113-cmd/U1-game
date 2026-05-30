@@ -9139,9 +9139,9 @@ function _plzDefeated(n){
 // 📈 주식 시장
 // ══════════════════════════════════════════════════════════
 const STOCK_EPOCH=1748476800000; // 2026-05-29 00:00 UTC 고정 기준점
-const STOCK_TICK_MS=30000;       // 30초 = 1틱 (화면 갱신 주기)
-const STOCK_TICKS_PER_PERIOD=1; // 1틱 = 30초 = 등락폭 기준 단위 (틱당 직접 적용)
-const STOCK_DIV_INTERVAL=1440;  // 12시간 = 1440틱마다 배당
+const STOCK_TICK_MS=600000;      // 10분 = 1틱 (화면 갱신 주기)
+const STOCK_TICKS_PER_PERIOD=1; // 1틱 = 10분 = 등락폭 기준 단위 (틱당 직접 적용)
+const STOCK_DIV_INTERVAL=72;    // 12시간 = 72틱마다 배당
 const STOCK_DIV_RATE=0.01;      // 배당률 1%
 const STOCK_BEAR_BIAS_DEFAULT=0.15;
 // 가격 0원 도달 시 즉시 자동 상장폐지 (가격 바닥 = 0, 0에서 계속 0이므로 1틱이면 충분)
@@ -9262,7 +9262,7 @@ function renderStockMarket(){
   const panel=document.getElementById('stock-panel-market');
   if(!panel||!FG.stocks) return;
   panel.innerHTML='';
-  const HIST=[{lbl:'30초전',t:1},{lbl:'1분전',t:2},{lbl:'1분30초전',t:3},{lbl:'2분전',t:4},{lbl:'2분30초전',t:5}];
+  const HIST=[{lbl:'10분전',t:1},{lbl:'20분전',t:2},{lbl:'30분전',t:3},{lbl:'40분전',t:4},{lbl:'50분전',t:5}];
   Object.entries(STOCKS_DEF).forEach(([id,def])=>{
     const price=stockGetPrice(id,cur);
     const prevPrice=stockGetPrice(id,Math.max(0,cur-1));
@@ -9512,10 +9512,11 @@ setInterval(()=>{
   // 카운트다운 표시 (시장 탭 열려 있을 때)
   if(isOpen){
     const nextMs=STOCK_EPOCH+(cur+1)*STOCK_TICK_MS-Date.now();
-    const nextSec=Math.ceil(nextMs/1000);
+    const nextMin=Math.floor(nextMs/60000), nextSec=Math.ceil((nextMs%60000)/1000);
+    const nextStr=nextMin>0?`${nextMin}분 ${nextSec}초`:`${nextSec}초`;
     const divLeft=STOCK_DIV_INTERVAL-(cur-(FG.stocks?.divTick??cur));
     const tickEl=document.getElementById('stock-tick-info');
-    if(tickEl) tickEl.textContent=`다음 업데이트: ${nextSec}초 후 | 배당까지: ${divLeft}틱`;
+    if(tickEl) tickEl.textContent=`다음 업데이트: ${nextStr} 후 | 배당까지: ${divLeft}틱`;
   }
   // 틱 변경 감지 (설정 로딩 중엔 렌더 스킵)
   if(cur!==_stockPrevTick){
