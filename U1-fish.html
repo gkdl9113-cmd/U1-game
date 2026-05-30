@@ -9187,11 +9187,11 @@ function stockGetPrice(id, targetTick){
   const vol=volPeriod/STOCK_TICKS_PER_PERIOD;
   let price, startTick, lastChange=0;
   const anchor=_stockPriceAnchors[id];
-  if(anchor && anchor.tick<=targetTick && anchor.price>0){
+  if(anchor && anchor.price>0){
+    if(targetTick<=anchor.tick) return anchor.price; // 앵커 이전 틱 → 기준가 평탄 표시
     price=anchor.price;
-    startTick=anchor.tick+1; // anchor.price는 anchor.tick의 가격 → +1부터 변동 적용
+    startTick=anchor.tick+1;
   } else {
-    // tick 0 / basePrice 고정 기준으로 시뮬 — 동일 기준점으로 인접 틱 연속성 보장
     startTick=0;
     price=def.basePrice;
   }
