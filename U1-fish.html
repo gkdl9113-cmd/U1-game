@@ -9182,7 +9182,7 @@ function stockGetPrice(id, targetTick){
   const anchor=_stockPriceAnchors[id];
   if(anchor && anchor.tick<=targetTick && anchor.price>0){
     price=anchor.price;
-    startTick=anchor.tick;
+    startTick=anchor.tick+1; // anchor.price는 anchor.tick의 가격 → +1부터 변동 적용
   } else {
     startTick=Math.max(0,targetTick-300);
     if(startTick>0){
@@ -9235,7 +9235,12 @@ let _stockDlgId='',_stockDlgMode='buy';
 
 function openStock(){
   show('s-stock');
-  loadStockSettings().then(()=>{_checkAndLiquidateDelisted();renderStockMarket();});
+  _stockLoading=true;
+  loadStockSettings().then(()=>{
+    _stockLoading=false;
+    _checkAndLiquidateDelisted();
+    renderStockMarket();
+  });
   checkStockDividend();
 }
 
@@ -9500,6 +9505,7 @@ function checkStockDividend(){
 
 // 수산시장 1초 루프 — 틱 변경 감지 시 자동 갱신
 let _stockPrevTick=-1;
+let _stockLoading=false; // loadStockSettings 진행 중 이중 렌더 방지
 setInterval(()=>{
   const cur=_stockCurrentTick();
   const isOpen=document.getElementById('s-stock')?.classList.contains('on');
@@ -9507,16 +9513,16 @@ setInterval(()=>{
   if(isOpen){
     const nextMs=STOCK_EPOCH+(cur+1)*STOCK_TICK_MS-Date.now();
     const nextSec=Math.ceil(nextMs/1000);
-    const divLeft=STOCK_DIV_INTERVAL-(cur-FG.stocks.divTick);
+    const divLeft=STOCK_DIV_INTERVAL-(cur-(FG.stocks?.divTick??cur));
     const tickEl=document.getElementById('stock-tick-info');
     if(tickEl) tickEl.textContent=`다음 업데이트: ${nextSec}초 후 | 배당까지: ${divLeft}틱`;
   }
-  // 틱 변경 감지
+  // 틱 변경 감지 (설정 로딩 중엔 렌더 스킵)
   if(cur!==_stockPrevTick){
     _stockPrevTick=cur;
     checkStockDividend();
     checkStockDelistCondition(cur);
-    if(isOpen){
+    if(isOpen&&!_stockLoading){
       const activeTab=document.getElementById('stock-tab-market').classList.contains('active')?'market':'port';
       if(activeTab==='market') renderStockMarket();
       else renderStockPortfolio();
