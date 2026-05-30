@@ -5219,6 +5219,35 @@ function moneyYwBuy(id){
   }
   fishOpenShop();
 }
+function moneyYwBuy10(id){
+  const it=MONEY_YW_ITEMS.find(x=>x.id===id);
+  if(!it) return;
+  const totalCost=it.cost*10;
+  if(FG.money<totalCost){u1Toast(`돈이 부족합니다 (필요 ${_fmtBigMoney(totalCost)})`,'#C00000');return;}
+  FG.money-=totalCost;
+  _logMoney('money_yw',-totalCost,`${it.grade} 현금 뽑기 10회`);
+  let wins=0;const names=[];
+  for(let i=0;i<10;i++){
+    if(Math.random()<it.prob){
+      if(FG.auxFishes.length>=FG.auxMax) continue;
+      const picked=_getYwByGrade(it.grade);
+      if(picked){
+        const caught=newFish(picked.stage,picked.type);
+        updateFishCodex(picked.type,picked.stage);
+        FG.auxFishes.push(caught);
+        _trySpFoodDrop();
+        FG.totalFished++;
+        checkAchievements('fish',{grade:fStage(caught).grade,isYw:_isYwFish(caught)});
+        names.push(fStage(caught).name);
+        wins++;
+      }
+    }
+  }
+  fishRenderAux();fishRenderInfo();fishQuickSave();
+  if(wins>0) u1Toast(`🎉 10회 중 ${wins}마리 획득! ${names.join(', ')}`,'#BF6000');
+  else u1Toast(`꽝! 10회 모두 실패`,'#C00000');
+  fishOpenShop();
+}
 function btShopBuy(id){
   const bp=FG.battlePoints||0;
   const cfg={
@@ -5354,15 +5383,22 @@ function fishOpenShop(){
     </div>
     ${MONEY_YW_ITEMS.map(it=>{
       const canBuy=FG.money>=it.cost;
+      const canBuy10=FG.money>=it.cost*10;
+      const btnBase='border:none;border-radius:4px;font-size:9px;font-weight:700;font-family:inherit;white-space:nowrap;flex-shrink:0;line-height:1.4;padding:5px 7px;cursor:';
       return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08)">
         <div style="font-size:18px;flex-shrink:0">${it.icon}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:11px;font-weight:700;color:#E2E8F0">${it.grade} 뽑기 <span style="color:#FCD34D;font-size:8px;font-weight:400">(-BP 뽑기 25분의1)</span></div>
           <div style="font-size:9px;color:#A78BFA;margin-top:1px">${it.grade} 1마리 획득 도전</div>
         </div>
-        <button onclick="moneyYwBuy('${it.id}')" ${canBuy?'':'disabled'}
-          style="background:${canBuy?'#7C3AED':'#2D1B4E'};color:${canBuy?'#fff':'#4B3B6B'};border:none;padding:5px 7px;border-radius:4px;font-size:9px;font-weight:700;cursor:${canBuy?'pointer':'default'};font-family:inherit;white-space:nowrap;flex-shrink:0;line-height:1.4">
-          ${it.label}</button>
+        <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
+          <button onclick="moneyYwBuy('${it.id}')" ${canBuy?'':'disabled'}
+            style="${btnBase}${canBuy?'pointer':'default'};background:${canBuy?'#7C3AED':'#2D1B4E'};color:${canBuy?'#fff':'#4B3B6B'}">
+            ${it.label}</button>
+          <button onclick="moneyYwBuy10('${it.id}')" ${canBuy10?'':'disabled'}
+            style="${btnBase}${canBuy10?'pointer':'default'};background:${canBuy10?'#5B21B6':'#2D1B4E'};color:${canBuy10?'#FCD34D':'#4B3B6B'}">
+            ×10 ${_fmtBigMoney(it.cost*10)}</button>
+        </div>
       </div>`;
     }).join('')}
   </div>`;
