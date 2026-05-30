@@ -5218,7 +5218,7 @@ function btShopBuy(id){
       }
     } else {
       fishQuickSave();
-      u1Toast(`꽝! ${cfg.grade} 획득 실패 (${cfg.prob*100}% 확률)`,'#C00000');
+      u1Toast(`꽝! ${cfg.grade} 획득 실패`,'#C00000');
     }
   }
   fishOpenShop();
@@ -5281,9 +5281,9 @@ function fishOpenShop(){
   const _btItems=[
     {id:'bt_hp', icon:'💊',name:'HP 회복권',   cost:1,  desc:'물고기 1마리 선택 → HP 100% 회복'},
     {id:'bt_sp', icon:'🍖',name:'스페셜 먹이', cost:15, desc:'스페셜 먹이 1개 지급'},
-    {id:'bt_yw1',icon:'🌀',name:'하급영물 뽑기',cost:15,desc:'5% 확률로 하급영물 1마리 획득'},
-    {id:'bt_yw2',icon:'🌀',name:'중급영물 뽑기',cost:30,desc:'2.5% 확률로 중급영물 1마리 획득'},
-    {id:'bt_yw3',icon:'🌀',name:'상급영물 뽑기',cost:50,desc:'0.5% 확률로 상급영물 1마리 획득'},
+    {id:'bt_yw1',icon:'🌀',name:'하급영물 뽑기',cost:15,desc:'하급영물 1마리 획득 도전'},
+    {id:'bt_yw2',icon:'🌀',name:'중급영물 뽑기',cost:30,desc:'중급영물 1마리 획득 도전'},
+    {id:'bt_yw3',icon:'🌀',name:'상급영물 뽑기',cost:50,desc:'상급영물 1마리 획득 도전'},
   ];
   div.innerHTML+=`<div style="background:linear-gradient(135deg,#0D1B2A,#1A3560);border-radius:6px;padding:10px 12px;margin-bottom:8px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
