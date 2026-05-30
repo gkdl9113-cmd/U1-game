@@ -6293,18 +6293,18 @@ async function adminSaveStockSettings(){
   u1Toast(`✅ 수산시장 설정 저장 완료 (${biasDesc}) | 현재 시세 고정됨`,'#217346');
 }
 async function adminSaveStockAnchor(){
-  // loadStockSettings 호출 없이 현재 메모리 값으로 즉시 앵커 계산
-  // (await 전에 _stockPriceAnchors 교체해야 타이머 렌더 시 가격 점프 없음)
+  await loadStockSettings(); // 최신 DB 앵커 확보 (초기화 직후 호출 시 stale 방지)
   const cur=_stockCurrentTick();
   const anchor={};
   for(const id of Object.keys(STOCKS_DEF)){
     if(!_stockDelisted.has(id)) anchor[id]={price:stockGetPrice(id,cur),tick:cur};
   }
-  _stockPriceAnchors=anchor; // 동기적으로 먼저 교체
+  _stockPriceAnchors=anchor;
   const error=await _saveStockSettingsToDB();
   if(error){alert('앵커 저장 실패: '+error.message);return;}
   const prices=Object.entries(anchor).map(([id,a])=>`${STOCKS_DEF[id].emoji}${a.price.toLocaleString()}`).join(' ');
   u1Toast(`📌 시세 고정 완료: ${prices}`,'#217346');
+  _refreshStockIfOpen();
 }
 
 async function adminClearStockAnchor(){
@@ -6328,6 +6328,13 @@ async function adminResetStockPrices(){
   if(error){alert('초기화 실패: '+error.message);return;}
   const prices=Object.entries(anchor).map(([id,a])=>`${STOCKS_DEF[id].emoji}${a.price.toLocaleString()}`).join(' ');
   u1Toast(`💰 시세 초기화 완료: ${prices}`,'#217346');
+  _refreshStockIfOpen();
+}
+function _refreshStockIfOpen(){
+  const isOpen=document.getElementById('s-stock')?.classList.contains('on');
+  if(!isOpen) return;
+  const activeTab=document.getElementById('stock-tab-market').classList.contains('active')?'market':'port';
+  if(activeTab==='market') renderStockMarket(); else renderStockPortfolio();
 }
 async function adminOpenBattleBan(){
   await loadBattleBanList();
