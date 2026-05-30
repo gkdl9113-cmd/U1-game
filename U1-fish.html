@@ -9537,6 +9537,7 @@ function checkStockDividend(){
 // 수산시장 1초 루프 — 틱 변경 감지 시 자동 갱신
 let _stockPrevTick=-1;
 let _stockLoading=false; // loadStockSettings 진행 중 이중 렌더 방지
+let _stockSettingsLastFetch=0;
 setInterval(()=>{
   const cur=_stockCurrentTick();
   const isOpen=document.getElementById('s-stock')?.classList.contains('on');
@@ -9548,6 +9549,20 @@ setInterval(()=>{
     const divLeft=STOCK_DIV_INTERVAL-(cur-(FG.stocks?.divTick??cur));
     const tickEl=document.getElementById('stock-tick-info');
     if(tickEl) tickEl.textContent=`다음 업데이트: ${nextStr} 후 | 배당까지: ${divLeft}틱`;
+  }
+  // 30초마다 설정 재로드 (관리자 변경 즉시 반영)
+  const now=Date.now();
+  if(now-_stockSettingsLastFetch>30000&&!_stockLoading){
+    _stockSettingsLastFetch=now;
+    const prevVols=JSON.stringify(_stockVolOverrides);
+    const prevBias=_stockBearBias;
+    loadStockSettings().then(()=>{
+      const changed=JSON.stringify(_stockVolOverrides)!==prevVols||_stockBearBias!==prevBias;
+      if(changed&&isOpen&&!_stockLoading){
+        const activeTab=document.getElementById('stock-tab-market').classList.contains('active')?'market':'port';
+        if(activeTab==='market') renderStockMarket(); else renderStockPortfolio();
+      }
+    });
   }
   // 틱 변경 감지 (설정 로딩 중엔 렌더 스킵)
   if(cur!==_stockPrevTick){
