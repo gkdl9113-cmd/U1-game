@@ -9224,7 +9224,8 @@ function stockGetPrice(id, targetTick){
     const rng=mulberry32(_stockHash(id+'@'+t));
     const r2=rng();
     const momentum=lastChange*0.25;
-    const change=(r2-0.5-_stockBearBias)*vol*2+momentum;
+    const rawChange=(r2-0.5-_stockBearBias)*vol*2+momentum;
+    const change=Math.max(-vol,Math.min(vol,rawChange));
     price=Math.max(0,Math.round(price*(1+change)));
     lastChange=change;
   }
