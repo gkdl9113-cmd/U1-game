@@ -9184,13 +9184,9 @@ function stockGetPrice(id, targetTick){
     price=anchor.price;
     startTick=anchor.tick+1; // anchor.price는 anchor.tick의 가격 → +1부터 변동 적용
   } else {
-    startTick=Math.max(0,targetTick-300);
-    if(startTick>0){
-      const rng0=mulberry32(_stockHash(id+'@init@'+startTick));
-      price=Math.round(def.basePrice*(0.5+rng0()));
-    } else {
-      price=def.basePrice;
-    }
+    // tick 0 / basePrice 고정 기준으로 시뮬 — 동일 기준점으로 인접 틱 연속성 보장
+    startTick=0;
+    price=def.basePrice;
   }
   for(let t=startTick;t<=targetTick;t++){
     const rng=mulberry32(_stockHash(id+'@'+t));
