@@ -1670,7 +1670,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.53';
+const BUILD = 'v3.54';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -1929,6 +1929,7 @@ function connectSupabase(){
     if(FG.plazaFishIds[n]){
       const reward=PLAZA_BOSS_REWARD[n];
       FG.money+=reward;checkAchievements('money');
+      _logMoney('plaza_boss',reward,`${n}번 광장 보스 (팀킬)`);
       fishRenderInfo();fishQuickSave();
       u1Toast(`🏆 ${esc(payload.killer)}이(가) ${n}번 광장 보스를 처치! +${reward.toLocaleString()}원`,'#FF8F00');
     }
@@ -2874,6 +2875,7 @@ function migrateAchievementRewards(){
   });
   if(!totalMoney&&!totalSp) return;
   FG.money+=totalMoney;FG.spFood+=totalSp;
+  if(totalMoney>0) _logMoney('achievement',totalMoney,'도전과제 보상');
   const parts=[totalMoney?`💰 +${totalMoney.toLocaleString()}원`:'',totalSp?`🍖 특수먹이 +${totalSp}`:''].filter(Boolean).join(', ');
   u1Toast(`🏅 기존 도전과제 보상 지급! ${parts}`,'#1F497D');
   fishRenderInfo();fishQuickSave();
@@ -3938,6 +3940,7 @@ function sellFish(idx){
   const s=fStage(f);
   if(!confirm(`${s.name} (#${idx+1})을(를)\n${price.toLocaleString()}원에 판매하시겠습니까?\n\n(주의: 지금까지의 진화 투자의 35%만 반환됩니다)`)) return;
   FG.money+=price;
+  _logMoney('fish_sell',price,`${fStage(f).name} 판매`);
   FG.fishes.splice(idx,1);
   FG.fishPos=null;
   // 먹이통 배정 해제 (삭제된 물고기 참조 정리)
@@ -5123,6 +5126,7 @@ function fishAuxSell(idx){
   const price=Math.round(getFishSellPrice(f)*0.5);
   FG.auxFishes.splice(idx,1);
   FG.money+=price;
+  _logMoney('fish_sell',price,`${s.name} (보조수조) 판매`);
   fishRenderAux();
   fishRenderInfo();
   fishQuickSave();
@@ -6078,6 +6082,7 @@ function lotteryResult(){
   const el=document.getElementById('lottery-result');el.style.display='block';
   if(ltPrize.amount>0){
     FG.money+=ltPrize.amount;
+    _logMoney('lottery',ltPrize.amount,`복권 ${ltPrize.grade} 당첨`);
     el.style.cssText=`display:block;text-align:center;font-size:14px;font-weight:800;padding:10px;border-radius:4px;margin-bottom:8px;background:${ltPrize.bg};color:${ltPrize.fg}`;
     el.textContent=`🎉 ${ltPrize.grade} 당첨! +${ltPrize.amount.toLocaleString()}원`;fishRenderInfo();
   } else {
@@ -6097,6 +6102,7 @@ function lotteryResultMulti(){
   const el=document.getElementById('lottery-result');el.style.display='block';
   if(totalWon>0){
     FG.money+=totalWon;fishRenderInfo();fishQuickSave();
+    _logMoney('lottery',totalWon,`복권 ${ltMode}장 일괄 당첨`);
     const wins=ltBatch.filter(d=>d.prize.amount>0).map(d=>`${d.prize.grade}(+${d.prize.amount.toLocaleString()}원)`).join(' · ');
     el.style.cssText='display:block;text-align:center;font-size:13px;font-weight:800;padding:10px;border-radius:4px;margin-bottom:8px;background:#1F3864;color:#FFD700';
     el.innerHTML=`🎉 총 +${totalWon.toLocaleString()}원<br><span style="font-size:9px;font-weight:400;color:#90CAF9">${wins}</span>`;
@@ -6174,6 +6180,14 @@ function adminRenderBattleBanModal(){
         <span style="flex:1;font-size:12px;color:#E2E8F0;font-weight:700">${esc(p[0])} ↔ ${esc(p[1])}</span>
         <button onclick="adminRemoveBattlePair(${i})" style="background:#7F0000;color:#FB7185;border:none;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">삭제</button>
       </div>`).join('');
+}
+// ── 머니 로그 ──────────────────────────────────────────────
+function _logMoney(type,amount,detail=''){
+  if(!_sb||!currentUsername) return;
+  _sb.from('fish_money_logs').insert({
+    username:currentUsername,server:ACTIVE_SERVER,
+    type,amount,detail,created_at:new Date().toISOString()
+  }).then(({error})=>{if(error) console.warn('money log error',error.message);});
 }
 // ── 주식 설정 ──────────────────────────────────────────────
 let _stockSettingsLoaded=false;
@@ -6424,6 +6438,7 @@ async function buyNumberLottery(){
   const keepFields={lastAccum:jd.lastAccum||Date.now(),accumRate:jd.accumRate??NUMLT_ACCUM_RATE_DEFAULT};
   if(won){
     FG.money+=jd.pool;fishRenderInfo();fishQuickSave();
+    _logMoney('jackpot',jd.pool,`잭팟 복권 ${jd.round||1}회차 당첨`);
     const newPool=NUMLT_START;
     await _sb.from('fish_accounts').update({
       fish_data:{pool:newPool,target:newTarget,round:(jd.round||1)+1,...keepFields,lastAccum:Date.now()},
@@ -6671,6 +6686,7 @@ function _raceShowResult(){
     else prizeMsg='😢 꽝! 다음 기회를!';
     if(gain>0){
       FG.money+=gain;
+      _logMoney('race_bet',gain,`레이스 배팅 ${correct}적중 ×${mult}`);
       const dispMult=mult===1?'×1 (환불)':'×'+mult;
       betHtml=`<div style="background:#E8F5E9;border:1px solid #81C784;border-radius:6px;padding:8px;margin-bottom:8px;text-align:center;font-size:12px;font-weight:700;color:#1B5E20">💰 +${gain.toLocaleString()}원 (${dispMult})</div>`;
       u1Toast(`💰 배팅 +${gain.toLocaleString()}원 (${dispMult})`,'#1B5E20');
@@ -8534,6 +8550,7 @@ function btShowResult(myAlive,oppAlive){
       rewardLines.push(`  ${f.name} (${f.grade}) → +${r.toLocaleString()}원`);
     });
     FG.money+=totalReward;
+    if(totalReward>0) _logMoney('battle_win',totalReward,`${_isLegBattle?'전설전':'일반전'} 승리`);
     if(Math.random()<0.25){FG.spFood++;btSpFood=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
     FG.btWins++;
     checkAchievements('btwin');
@@ -8607,6 +8624,7 @@ function onBattleForfeit(payload){
     rewardLines.push(`  ${f.name} (${f.grade}) → +${r.toLocaleString()}원`);
   });
   FG.money+=totalReward;
+  if(totalReward>0) _logMoney('battle_win',totalReward,'탈주 승리');
   let btSpFoodF=0;
   if(Math.random()<0.25){FG.spFood++;btSpFoodF=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
   FG.btWins++;checkAchievements('btwin');
@@ -8962,6 +8980,7 @@ function _plzAttackBoss(n,myFish){
     }});
     const reward=PLAZA_BOSS_REWARD[n];
     FG.money+=reward;checkAchievements('money');
+    _logMoney('plaza_boss',reward,`${n}번 광장 보스 직접 처치`);
     fishRenderInfo();fishQuickSave();
     u1Toast(`💀 ${n}번 광장 보스 처치! +${reward.toLocaleString()}원`,'#FF8F00');
   }
@@ -8989,6 +9008,7 @@ function _plzAttack(n,myFish,other){
       const baseReward=n===2?50000:10000;
       const killReward=baseReward*bountyMult;
       FG.money+=killReward;FG.plazaKills=(FG.plazaKills||0)+1;
+      _logMoney('plaza_kill',killReward,`${n}번 광장 처치 (현상금×${bountyMult})`);
       checkAchievements('money');
       const bountyTag=bountyMult>1?` 💰현상금 ×${bountyMult}`:'';
       u1Toast(`⚔️ ${other.nickname}의 물고기를 쓰러뜨렸습니다!${bountyTag} +${killReward.toLocaleString()}원`,'#E65100');
@@ -9482,6 +9502,7 @@ function execStockTrade(){
     FG.stocks.realized[id]=(FG.stocks.realized[id]||0)+realizedPnl;
     holding.shares-=qty;
     FG.money+=received;
+    _logMoney('stock_sell',received,`${STOCKS_DEF[id].name} ${qty}주 매도 (손익 ${realizedPnl>=0?'+':''}${realizedPnl.toLocaleString()}원)`);
     if(holding.shares===0) holding.avgCost=0;
     const sign=realizedPnl>=0?'+':'';
     u1Toast(`${STOCKS_DEF[id].emoji} ${STOCKS_DEF[id].name} ${qty}주 매도 (실현손익 ${sign}${realizedPnl.toLocaleString()}원, 세금+수수료 ${fee.toLocaleString()}원)`,'#1565c0');
@@ -9505,6 +9526,7 @@ function checkStockDividend(){
   const div=Math.floor(price*h.shares*STOCK_DIV_RATE);
   if(div>0){
     FG.money+=div;
+    _logMoney('stock_div',div,`고등어 ${h.shares}주 배당`);
     u1Toast(`🐡 고등어 분기배당 ${div.toLocaleString()}원 수령! (${h.shares}주 × ${price.toLocaleString()}원 × 1%)`,'#217346');
     fishQuickSave();
   }
@@ -9594,6 +9616,7 @@ function slotSpin(){
         msg=`<span style="color:#C00000">꽝! -${bet.toLocaleString()}원</span>`;
       } else {
         FG.money+=won;
+        _logMoney('slot',won-bet,`슬롯 ×${mult} (베팅 ${bet.toLocaleString()}원)`);
         const gain=won-bet;
         msg=`<span style="color:#217346">×${mult} 당첨! +${gain.toLocaleString()}원 🎉</span>`;
         if(mult>=15) u1Toast(`🎰 슬롯 잭팟! ×${mult} · ${won.toLocaleString()}원 획득!`,'#7B1FA2');
@@ -9725,6 +9748,7 @@ function _bjEnd(result){
   else if(result==='bust'){msg=`💥 버스트! -${_bjBet.toLocaleString()}원`;}
   else{msg=`❌ 패배! -${_bjBet.toLocaleString()}원`;}
   FG.money+=payout;
+  if(payout>_bjBet) _logMoney('blackjack',payout-_bjBet,`블랙잭 ${result} (베팅 ${_bjBet.toLocaleString()}원)`);
   document.getElementById('bj-result').innerHTML=`<span style="color:${payout>_bjBet?'#217346':payout===_bjBet?'#555':'#C00000'}">${msg}</span>`;
   document.getElementById('bj-money').textContent=FG.money.toLocaleString();
   fishQuickSave();
@@ -9788,6 +9812,7 @@ function rlSpin(){
       const won=bet*mult;
       FG.money+=won;
       const gain=won-bet;
+      if(gain>0) _logMoney('roulette',gain,`룰렛 ×${mult} ${_rlBetType} (베팅 ${bet.toLocaleString()}원)`);
       let msg='';
       if(mult===0) msg=`<span style="color:#C00000">꽝! -${bet.toLocaleString()}원</span>`;
       else msg=`<span style="color:#217346">×${mult} 당첨! +${gain.toLocaleString()}원 🎉</span>`;
@@ -9863,11 +9888,13 @@ function hlGuess(dir){
   document.getElementById('hl-arrow').style.display='block';
   document.getElementById('hl-cur-card').innerHTML=_hlCardStr(_hlCur);
   if(correct){
-    _hlMult=Math.round(_hlMult*1.5*100)/100;
+    _hlMult=Math.min(Math.round(_hlMult*1.5*100)/100, 200); // 최대 200배 캡
     document.getElementById('hl-mult').textContent=_hlMult.toFixed(2);
     const pay=Math.floor(_hlBet*_hlMult);
     document.getElementById('hl-payout-disp').textContent=pay.toLocaleString();
-    document.getElementById('hl-result').innerHTML=`<span style="color:#217346">✅ 정답! 배율 ×${_hlMult.toFixed(2)}</span>`;
+    const capMsg=_hlMult>=200?' (최대 배율 도달)':'';
+    document.getElementById('hl-result').innerHTML=`<span style="color:#217346">✅ 정답! 배율 ×${_hlMult.toFixed(2)}${capMsg}</span>`;
+    if(_hlMult>=200){hlCashOut();return;}
   } else {
     _hlActive=false;
     document.getElementById('hl-result').innerHTML=`<span style="color:#C00000">❌ 오답! -${_hlBet.toLocaleString()}원</span>`;
@@ -9881,6 +9908,7 @@ function hlCashOut(){
   _hlActive=false;
   const pay=Math.floor(_hlBet*_hlMult);
   FG.money+=pay;
+  _logMoney('hilo',pay-_hlBet,`하이로우 ×${_hlMult.toFixed(2)} 정산 (베팅 ${_hlBet.toLocaleString()}원)`);
   const gain=pay-_hlBet;
   document.getElementById('hl-money').textContent=FG.money.toLocaleString();
   document.getElementById('hl-result').innerHTML=`<span style="color:#217346">💰 정산! +${gain.toLocaleString()}원</span>`;
