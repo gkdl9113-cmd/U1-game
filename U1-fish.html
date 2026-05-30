@@ -6224,7 +6224,7 @@ function checkStockDelistCondition(cur){
   for(const id of Object.keys(STOCKS_DEF)){
     if(_stockDelisted.has(id)) continue;
     const price=stockGetPrice(id,cur);
-    if(price<=0) _delistStock(id);
+    if(price<=100) _delistStock(id);
   }
 }
 async function adminDelistStock(id){
