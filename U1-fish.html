@@ -1420,6 +1420,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <button onclick="adminOpenStockSettings()" style="background:#0F2A1A;color:#4ADE80;border:1px solid #1A5C35;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">📈 주식 설정</button>
     <button onclick="adminSaveStockAnchor()" style="background:#1A2A0F;color:#86EFAC;border:1px solid #2D5C1A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0" title="코드 변경 전에 반드시 클릭 — 현재 시세를 DB에 저장하여 가격 점프 방지">📌 시세 고정</button>
     <button onclick="adminClearStockAnchor()" style="background:#1A1A0F;color:#FCD34D;border:1px solid #5C4A1A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0" title="고정 해제 — 결정론적 공식으로 복귀">🔓 고정 해제</button>
+    <button onclick="adminResetStockPrices()" style="background:#0F2A1A;color:#34D399;border:1px solid #065F46;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0" title="모든 종목을 기준가로 초기화 + 재상장">💰 시세 초기화</button>
     <button onclick="adminResetJackpot()" style="background:#1A3D5C;color:#60A5FA;border:1px solid #2D6A9A;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🎯 잭팟 초기화</button>
     <button onclick="adminOpenBattleBan()" style="background:#3D1A00;color:#FB923C;border:1px solid #7F3D00;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🚫 배틀 제한</button>
     <button onclick="adminResetServer()"style="background:#3D0000;color:#FB7185;border:1px solid #7F0000;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;flex-shrink:0">🗑️ 서버 초기화</button>
@@ -6312,6 +6313,21 @@ async function adminClearStockAnchor(){
   const error=await _saveStockSettingsToDB();
   if(error){alert('해제 실패: '+error.message);return;}
   u1Toast('🔓 시세 고정 해제됨 — 결정론적 공식으로 복귀','#7A9BBF');
+}
+async function adminResetStockPrices(){
+  if(!confirm('모든 종목의 시세를 기준가로 초기화합니다.\n상장폐지 종목은 재상장됩니다. 계속할까요?')) return;
+  const cur=_stockCurrentTick();
+  _stockDelisted.clear();
+  const anchor={};
+  for(const id of Object.keys(STOCKS_DEF)){
+    _stockFloorStreak[id]=0;
+    anchor[id]={price:STOCKS_DEF[id].basePrice,tick:cur};
+  }
+  _stockPriceAnchors=anchor;
+  const error=await _saveStockSettingsToDB();
+  if(error){alert('초기화 실패: '+error.message);return;}
+  const prices=Object.entries(anchor).map(([id,a])=>`${STOCKS_DEF[id].emoji}${a.price.toLocaleString()}`).join(' ');
+  u1Toast(`💰 시세 초기화 완료: ${prices}`,'#217346');
 }
 async function adminOpenBattleBan(){
   await loadBattleBanList();
