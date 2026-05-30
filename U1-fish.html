@@ -8534,7 +8534,7 @@ function btShowResult(myAlive,oppAlive){
     if(Math.random()<0.25){FG.spFood++;btSpFood=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
     FG.btWins++;
     checkAchievements('btwin');
-    if(_isLegBattle&&!_btBPAwarded){_btBPAwarded=true;FG.battlePoints=(FG.battlePoints||0)+3;u1Toast('👑 배틀포인트 +3 (승리)','#8B6914');}
+    if(!_btBPAwarded){_btBPAwarded=true;const _bpW=_isLegBattle?3:1;FG.battlePoints=(FG.battlePoints||0)+_bpW;u1Toast(`${_isLegBattle?'👑':'⚔️'} 배틀포인트 +${_bpW} (승리)`,'#8B6914');}
   } else if(!draw&&_isLegBattle){
     if(!_btBPAwarded){_btBPAwarded=true;FG.battlePoints=(FG.battlePoints||0)+1;}
     u1Toast('👑 배틀포인트 +1 (패배)','#8B6914');
@@ -8558,7 +8558,7 @@ function btShowResult(myAlive,oppAlive){
       detail+=`\n\n합계: +${totalReward.toLocaleString()}원`;
     }
     if(btSpFood) detail+='\n\n🍖 특수먹이 +1 획득!';
-    if(_isLegBattle) detail+=`\n\n👑 배틀포인트 +3 (누적: ${FG.battlePoints}BP)`;
+    detail+=`\n\n${_isLegBattle?'👑 배틀포인트 +3':'⚔️ 배틀포인트 +1'} (누적: ${FG.battlePoints}BP)`;
   } else if(draw){
     ico='🤝'; title='무승부';
     detail=`시간 초과\n내 생존: ${myAlive}/${myTotal}마리`;
@@ -8608,7 +8608,7 @@ function onBattleForfeit(payload){
   if(Math.random()<0.25){FG.spFood++;btSpFoodF=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
   FG.btWins++;checkAchievements('btwin');
   const _isLegBattleF=currentGame&&currentGame.type==='legend_battle';
-  if(_isLegBattleF&&!_btBPAwarded){_btBPAwarded=true;FG.battlePoints=(FG.battlePoints||0)+3;u1Toast('👑 배틀포인트 +3 (승리)','#8B6914');}
+  if(!_btBPAwarded){_btBPAwarded=true;const _bpF=_isLegBattleF?3:1;FG.battlePoints=(FG.battlePoints||0)+_bpF;u1Toast(`${_isLegBattleF?'👑':'⚔️'} 배틀포인트 +${_bpF} (승리)`,'#8B6914');}
   fishRenderInfo();fishSave();
   // 결과 배너
   const banner=document.getElementById('bt-result-banner');
@@ -8616,7 +8616,7 @@ function onBattleForfeit(payload){
   detail+=rewardLines.join('\n');
   detail+=`\n\n합계: +${totalReward.toLocaleString()}원`;
   if(btSpFoodF) detail+='\n\n🍖 특수먹이 +1 획득!';
-  if(_isLegBattleF) detail+=`\n\n👑 배틀포인트 +3 (누적: ${FG.battlePoints}BP)`;
+  detail+=`\n\n${_isLegBattleF?'👑 배틀포인트 +3':'⚔️ 배틀포인트 +1'} (누적: ${FG.battlePoints}BP)`;
   document.getElementById('bt-result-ico').textContent='🏆';
   document.getElementById('bt-result-txt').textContent='승리! (상대 탈주)';
   document.getElementById('bt-result-detail').textContent=detail;
