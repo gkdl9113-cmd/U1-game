@@ -5183,9 +5183,9 @@ function _getYwByGrade(grade){
 }
 // ── 영물 현금 뽑기 ──────────────────────────────────────────
 const MONEY_YW_ITEMS=[
-  {id:'my_yw1',grade:'하급영물',icon:'🌀',cost:5e17,  prob:0.01,  label:'50경원'},
-  {id:'my_yw2',grade:'중급영물',icon:'🌀',cost:1e18,  prob:0.005, label:'100경원'},
-  {id:'my_yw3',grade:'상급영물',icon:'🌀',cost:5e18,  prob:0.001, label:'500경원'},
+  {id:'my_yw1',grade:'하급영물',icon:'🌀',cost:5e17,  prob:0.005, label:'50경원'},
+  {id:'my_yw2',grade:'중급영물',icon:'🌀',cost:1e18,  prob:0.001, label:'100경원'},
+  {id:'my_yw3',grade:'상급영물',icon:'🌀',cost:5e18,  prob:0.0005,label:'500경원'},
 ];
 function _fmtBigMoney(n){
   const k=1e16,j=1e12,e=1e8;
@@ -5358,7 +5358,7 @@ function fishOpenShop(){
         <div style="font-size:18px;flex-shrink:0">${it.icon}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:11px;font-weight:700;color:#E2E8F0">${it.grade} 뽑기</div>
-          <div style="font-size:9px;color:#A78BFA;margin-top:1px">${it.grade} 1마리 획득 도전</div>
+          <div style="font-size:9px;color:#A78BFA;margin-top:1px">${it.grade} 1마리 획득 도전${it.id==='my_yw1'?' <span style="color:#FCD34D;font-size:8px">(-BP 뽑기 10분의1 확률)</span>':''}</div>
         </div>
         <button onclick="moneyYwBuy('${it.id}')" ${canBuy?'':'disabled'}
           style="background:${canBuy?'#7C3AED':'#2D1B4E'};color:${canBuy?'#fff':'#4B3B6B'};border:none;padding:5px 7px;border-radius:4px;font-size:9px;font-weight:700;cursor:${canBuy?'pointer':'default'};font-family:inherit;white-space:nowrap;flex-shrink:0;line-height:1.4">
