@@ -6309,13 +6309,15 @@ async function adminSaveStockAnchor(){
 
 async function adminClearStockAnchor(){
   if(!confirm('시세 고정을 해제하면 가격이 STOCK_EPOCH 기준 결정론적 계산으로 돌아갑니다. 계속할까요?')) return;
-  _stockPriceAnchors={}; // 동기적으로 먼저 교체
+  await loadStockSettings(); // vol/bias 보존 — 덮어쓰기 방지
+  _stockPriceAnchors={};
   const error=await _saveStockSettingsToDB();
   if(error){alert('해제 실패: '+error.message);return;}
   u1Toast('🔓 시세 고정 해제됨 — 결정론적 공식으로 복귀','#7A9BBF');
 }
 async function adminResetStockPrices(){
   if(!confirm('모든 종목의 시세를 기준가로 초기화합니다.\n상장폐지 종목은 재상장됩니다. 계속할까요?')) return;
+  await loadStockSettings(); // vol/bias 보존 — 덮어쓰기 방지
   const cur=_stockCurrentTick();
   _stockDelisted.clear();
   const anchor={};
