@@ -1198,7 +1198,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
           <button onclick="hlGuess('high')" style="flex:1;background:#C62828;color:#fff;border:none;border-radius:6px;padding:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">📈 하이</button>
           <button onclick="hlGuess('low')" style="flex:1;background:#1565C0;color:#fff;border:none;border-radius:6px;padding:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">📉 로우</button>
         </div>
-        <button onclick="hlCashOut()" style="background:#2E7D32;color:#fff;border:none;border-radius:6px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">💰 정산하기 (<span id="hl-payout-disp">0</span>원)</button>
+        <button id="hl-cashout-btn" onclick="hlCashOut()" style="background:#2E7D32;color:#fff;border:none;border-radius:6px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none">💰 정산하기 (<span id="hl-payout-disp">0</span>원)</button>
       </div>
       <div style="margin-top:12px;font-size:9px;color:#999">
         정답 시 배율 ×1.5 누적 · 오답 시 베팅금 전액 소멸<br>같은 숫자는 무효 처리 (다시 뽑기)
@@ -1670,7 +1670,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.60';
+const BUILD = 'v3.61';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -9930,6 +9930,7 @@ function hlStart(){
   document.getElementById('hl-start-ui').style.display='none';
   document.getElementById('hl-play-ui').style.display='flex';
   document.getElementById('hl-payout-disp').textContent=Math.floor(_hlBet*_hlMult).toLocaleString();
+  document.getElementById('hl-cashout-btn').style.display='none'; // 첫 정답 전엔 숨김
   fishQuickSave();
 }
 function hlGuess(dir){
@@ -9955,6 +9956,7 @@ function hlGuess(dir){
     document.getElementById('hl-payout-disp').textContent=pay.toLocaleString();
     const capMsg=_hlMult>=200?' (최대 배율 도달)':'';
     document.getElementById('hl-result').innerHTML=`<span style="color:#217346">✅ 정답! 배율 ×${_hlMult.toFixed(2)}${capMsg}</span>`;
+    document.getElementById('hl-cashout-btn').style.display='block'; // 첫 정답 후 정산 버튼 표시
     if(_hlMult>=200){hlCashOut();return;}
   } else {
     _hlActive=false;
