@@ -1670,7 +1670,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 const SUPABASE_URL     = 'https://cabwvnpcxuiwwcvcqvwg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhYnd2bnBjeHVpd3djdmNxdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNTAzMTcsImV4cCI6MjA5NDkyNjMxN30.ld6I63WcxKQ-Ds3d3b7FLijpevqy8tFwcny4TeY7T8k';
 // ══════════════════════════════════════════════════════════
-const BUILD = 'v3.59';
+const BUILD = 'v3.60';
 // ▼ 서버 전환 시 이 한 줄만 변경 → 'TEST-1' or 'U1'
 const ACTIVE_SERVER  = 'TEST-1';
 const CHANNEL_NAME   = 'aquarium-' + ACTIVE_SERVER.toLowerCase().replace('-','');
@@ -9940,9 +9940,10 @@ function hlGuess(dir){
   while(next&&HL_VAL[next.r]===HL_VAL[_hlCur.r]&&retry++<10) next=_hlDeck.pop();
   if(!next){u1Toast('덱 소진! 정산합니다','#555');hlCashOut();return;}
   const prev=_hlCur; _hlCur=next;
-  // '낮게' 방향 +10% 보너스 (기본 ~47% → ~57%)
-  const correct=(dir==='high'&&HL_VAL[next.r]>HL_VAL[prev.r])
-             ||(dir==='low'&&(HL_VAL[next.r]<HL_VAL[prev.r]||Math.random()<0.10));
+  // 하우스 엣지 21% → 실질 성공률 ~47% × 0.79 ≈ 37%
+  const correct=((dir==='high'&&HL_VAL[next.r]>HL_VAL[prev.r])
+             ||(dir==='low'&&HL_VAL[next.r]<HL_VAL[prev.r]))
+             &&Math.random()>0.21;
   // 이전 카드 위에, 새 카드 아래에 표시
   document.getElementById('hl-prev-card').innerHTML=_hlCardStr(prev);
   document.getElementById('hl-arrow').style.display='block';
