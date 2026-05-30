@@ -7579,6 +7579,7 @@ let btImP1=false;        // 내가 도전자(p1)인지
 let btMyFishData=[];     // 브로드캐스트용 내 물고기 데이터
 let btOppReceived=null;  // 상대 물고기 데이터 (수신 후 저장)
 let btRng=null;          // 배틀용 seeded RNG
+let _btBPAwarded=false;  // 배틀당 BP 중복 지급 방지
 
 // Seeded random number generator (mulberry32)
 function mulberry32(seed){
@@ -7638,7 +7639,7 @@ function startBattleGame(){
   btImP1=(currentGame.myColor===1);
   u1Toast(`[1]배틀시작 p${currentGame.myColor} vs ${currentGame.opponentName}`,'#1F3864');
   btOppReceived=null;
-  btFishes=[];btEvents=[];btTick=0;
+  btFishes=[];btEvents=[];btTick=0;_btBPAwarded=false;
   show('s-battle');
   document.getElementById('bt-my-name').textContent=myName;
   document.getElementById('bt-opp-name').textContent=currentGame.opponentName;
@@ -8509,9 +8510,9 @@ function btShowResult(myAlive,oppAlive){
     if(Math.random()<0.25){FG.spFood++;btSpFood=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
     FG.btWins++;
     checkAchievements('btwin');
-    if(_isLegBattle){FG.battlePoints=(FG.battlePoints||0)+3;u1Toast('👑 배틀포인트 +3 (승리)','#8B6914');}
+    if(_isLegBattle&&!_btBPAwarded){_btBPAwarded=true;FG.battlePoints=(FG.battlePoints||0)+3;u1Toast('👑 배틀포인트 +3 (승리)','#8B6914');}
   } else if(!draw&&_isLegBattle){
-    FG.battlePoints=(FG.battlePoints||0)+1;
+    if(!_btBPAwarded){_btBPAwarded=true;FG.battlePoints=(FG.battlePoints||0)+1;}
     u1Toast('👑 배틀포인트 +1 (패배)','#8B6914');
   }
 
@@ -8583,7 +8584,7 @@ function onBattleForfeit(payload){
   if(Math.random()<0.25){FG.spFood++;btSpFoodF=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
   FG.btWins++;checkAchievements('btwin');
   const _isLegBattleF=currentGame&&currentGame.type==='legend_battle';
-  if(_isLegBattleF){FG.battlePoints=(FG.battlePoints||0)+3;u1Toast('👑 배틀포인트 +3 (승리)','#8B6914');}
+  if(_isLegBattleF&&!_btBPAwarded){_btBPAwarded=true;FG.battlePoints=(FG.battlePoints||0)+3;u1Toast('👑 배틀포인트 +3 (승리)','#8B6914');}
   fishRenderInfo();fishSave();
   // 결과 배너
   const banner=document.getElementById('bt-result-banner');
