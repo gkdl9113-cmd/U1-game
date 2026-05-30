@@ -6258,7 +6258,7 @@ async function adminOpenStockSettings(){
       <input id="adm-stock-vol-${id}" type="number" min="1" max="200" step="1" value="${Math.round(cur*100)}"
         style="width:70px;text-align:center;background:#0F1724;border:1px solid #2D4A6A;color:#E2E8F0;border-radius:4px;padding:4px;font-size:13px;font-family:inherit"
         ${isDelist?'disabled':''}>
-      <span style="font-size:11px;color:#7A9BBF">% / 30초</span>
+      <span style="font-size:11px;color:#7A9BBF">% / 10분</span>
       ${delistBtn}
     </div>`;
   }).join('');
