@@ -792,6 +792,8 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div class="bt-panel-hdr my" id="bt-my-name">나</div>
       <div id="bt-my-hp-list"></div>
     </div>
+    <!-- 날씨 배너 -->
+    <div id="bt-weather-banner" style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);color:#fff;border-radius:20px;padding:3px 14px;font-size:11px;font-weight:700;z-index:15;display:none;pointer-events:none;white-space:nowrap;backdrop-filter:blur(4px)"></div>
     <!-- 중앙 VS 배너 (시작 시 잠깐) -->
     <div id="bt-vs-banner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:20;opacity:0;transition:opacity .4s">
       <div style="text-align:center;color:#fff">
@@ -7624,6 +7626,15 @@ function fwUpdateSidebarMobile(){
 // ══════════════════════════════════════════════════════════
 // ⚔️ 수족관 실시간 대결
 // ══════════════════════════════════════════════════════════
+// ── 날씨 시스템 ───────────────────────────────────────────
+const BATTLE_WEATHERS=[
+  {id:'clear',   icon:'☀️', name:'맑음', species:'영금어',      bg:'rgba(255,220,80,0.08)',  atkMult:1.3, defMult:1.3},
+  {id:'moonlit', icon:'🌙', name:'달빛', species:'해룡',         bg:'rgba(80,100,220,0.10)', atkMult:1.3, defMult:1.3},
+  {id:'storm',   icon:'⚡', name:'폭풍', species:'번개뱀장어',   bg:'rgba(60,60,80,0.12)',   atkMult:1.3, defMult:1.3},
+  {id:'current', icon:'🌊', name:'해류', species:'용궁 거북이', bg:'rgba(0,160,140,0.10)',  atkMult:1.0, defMult:1.3, hpMult:1.3},
+  {id:'deep',    icon:'🌑', name:'심해', species:'메갈로돈',     bg:'rgba(10,10,30,0.15)',   atkMult:1.3, defMult:1.3},
+];
+let btCurrentWeather=null;
 let btFishes=[];         // 전투 중 모든 물고기 [{...stats, x,y,dx,dy,hp,isDead,hitFlash,...}]
 let btEvents=[];         // 사전 계산된 공격 이벤트
 let btTick=0;
@@ -7749,13 +7760,16 @@ function onBothBattleReady(myFish,oppFish){
     try{
       const seed=Date.now();
       const rng=mulberry32(seed);
-      const events=calcBattleEvents(myFish,oppFish,rng);
+      // 날씨 결정 (seed 기반 독립 RNG — 배틀 rng 시퀀스에 영향 없음)
+      const weatherIdx=Math.floor(mulberry32(seed^0xBEEF)()*BATTLE_WEATHERS.length);
+      btCurrentWeather=BATTLE_WEATHERS[weatherIdx];
+      const events=calcBattleEvents(myFish,oppFish,rng,btCurrentWeather);
       btEvents=events;
       u1Toast(`[4b]이벤트 ${events.length}개 계산완료`,'#217346');
       // P2에게 전송 + 재시도 (미수신 대비)
       const _sendActions=()=>{
         if(!battleState||!currentGame) return;
-        sbSend('battle_actions',{targetId:currentGame.opponentId,fromId:myId,seed,myFish,oppFish});
+        sbSend('battle_actions',{targetId:currentGame.opponentId,fromId:myId,seed,myFish,oppFish,weatherId:btCurrentWeather.id});
       };
       _sendActions();
       u1Toast('[4c]actions전송',' #217346');
@@ -7778,11 +7792,12 @@ function onBattleActions(payload){
   u1Toast(`[5]actions수신 seed:${payload.seed}`,'#217346');
   if(btFishes.length>0){u1Toast('[5]이미초기화됨 — 중복무시','#888');return;}
   // p2 관점: payload.myFish = 도전자(상대), payload.oppFish = 나
+  btCurrentWeather=BATTLE_WEATHERS.find(w=>w.id===payload.weatherId)||null;
   initRealtimeBattle(payload.oppFish,payload.myFish,payload.seed,false);
 }
 
 // ── 공격 이벤트 사전 계산 (순수 함수) ───────────────────────
-function calcBattleEvents(p1Fish,p2Fish,rng){
+function calcBattleEvents(p1Fish,p2Fish,rng,weather){
   const events=[];
   // 스킬: 선제일격 조건 계산
   const p2AvgAgi=(p2Fish.reduce((s,f)=>s+f.agi,0)/p2Fish.length)||0;
@@ -7790,6 +7805,16 @@ function calcBattleEvents(p1Fish,p2Fish,rng){
   const hasPre=(f,oppAvg)=>(f.skill1==='gu_선제일격'||f.skill2==='gu_선제일격')&&f.agi>oppAvg;
   const p1=p1Fish.map(f=>({...f,curHp:f.hp,atkCd:hasPre(f,p2AvgAgi)?0:Math.floor(rng()*135)}));
   const p2=p2Fish.map(f=>({...f,curHp:f.hp,atkCd:hasPre(f,p1AvgAgi)?0:Math.floor(rng()*135)}));
+  // 날씨 버프 (영물 species 일치 시 ATK/DEF 강화)
+  if(weather){
+    const applyW=f=>{
+      if(f.species!==weather.species) return;
+      f.atk=Math.floor(f.atk*weather.atkMult);
+      f.def=Math.floor(f.def*weather.defMult);
+      if(weather.hpMult) f.curHp=Math.floor(f.curHp*weather.hpMult);
+    };
+    p1.forEach(applyW); p2.forEach(applyW);
+  }
   // 스킬: 선봉 - 배틀 시작 시 atkCd -60
   p1.forEach(f=>{if(f.skill1==='cm_선봉'||f.skill2==='cm_선봉') f.atkCd=Math.max(0,f.atkCd-60);});
   p2.forEach(f=>{if(f.skill1==='cm_선봉'||f.skill2==='cm_선봉') f.atkCd=Math.max(0,f.atkCd-60);});
@@ -8030,6 +8055,17 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
   btTick=0;btImP1=imP1;_btSeed=seed;
   btRng=mulberry32(seed); // seeded RNG 초기화
   _btLocalStart=Date.now(); // 틱 클럭: 각 플레이어 로컬 시계 기준 (시계 차이 방지)
+  // 날씨 배너 업데이트
+  const wb=document.getElementById('bt-weather-banner');
+  if(wb){
+    if(btCurrentWeather){
+      const buffDesc=btCurrentWeather.hpMult?'DEF·HP ×1.3':'ATK·DEF ×1.3';
+      wb.textContent=`${btCurrentWeather.icon} ${btCurrentWeather.name} — ${btCurrentWeather.species} ${buffDesc}`;
+      wb.style.display='block';
+    } else {
+      wb.style.display='none';
+    }
+  }
   // 캔버스 초기화 (레이아웃 미확정 시 window 크기 폴백)
   btCanvas=document.getElementById('battle-canvas');
   const par=btCanvas.parentElement;
@@ -8347,6 +8383,8 @@ function btDraw(W,H){
   const c=btCtx;
   // 흰색 배경
   c.fillStyle='#FFFFFF';c.fillRect(0,0,W,H);
+  // 날씨 배경 틴트
+  if(btCurrentWeather){c.fillStyle=btCurrentWeather.bg;c.fillRect(0,0,W,H);}
   // 엑셀 격자
   c.strokeStyle='rgba(208,208,208,0.6)';c.lineWidth=0.5;
   const cw=Math.max(24,W/14),ch=Math.max(18,H/9);
@@ -8658,6 +8696,9 @@ function onBattleForfeit(payload){
 }
 
 function battleExit(){
+  btCurrentWeather=null;
+  const wb=document.getElementById('bt-weather-banner');
+  if(wb) wb.style.display='none';
   const wasInBattle=!!btInterval&&btFishes.length>0;
   clearInterval(btInterval);btInterval=null;
   // 배틀 중 도중 이탈: 현재 배틀 상태를 FG.fishes에 반영 + 패배 처리
