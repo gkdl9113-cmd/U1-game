@@ -6305,20 +6305,14 @@ async function adminSaveStockSettings(){
     vols[id]=v/100;
   }
   const bearBias=parseInt(document.getElementById('adm-stock-bias').value)/100;
-  // 설정 변경 시 현재 시세를 앵커로 자동 저장 (이후 코드 변경에도 가격 점프 없음)
-  const cur=_stockCurrentTick();
-  const anchor={};
-  for(const id of Object.keys(STOCKS_DEF)){
-    if(!_stockDelisted.has(id)) anchor[id]={price:stockGetPrice(id,cur),tick:cur};
-  }
+  // 앵커는 유지 (기존 가격 히스토리 보존) — 시세 고정은 별도 버튼으로
   _stockVolOverrides=vols;
   _stockBearBias=bearBias;
-  _stockPriceAnchors=anchor;
   const error=await _saveStockSettingsToDB();
   if(error){alert('저장 실패: '+error.message);return;}
   hideDlg('adm-stock-modal');
   const biasDesc=bearBias>0?`하락 ${Math.round(bearBias*100)}% 편향`:bearBias<0?`상승 ${Math.round(Math.abs(bearBias)*100)}% 편향`:'중립';
-  u1Toast(`✅ 수산시장 설정 저장 완료 (${biasDesc}) | 현재 시세 고정됨`,'#217346');
+  u1Toast(`✅ 수산시장 설정 저장 완료 (${biasDesc})`,'#217346');
 }
 async function adminSaveStockAnchor(){
   await loadStockSettings(); // 최신 DB 앵커 확보 (초기화 직후 호출 시 stale 방지)
