@@ -1972,17 +1972,8 @@ function connectSupabase(){
       u1Toast(`🏆 ${esc(payload.killer)}이(가) ${n}번 광장 보스를 처치! +${reward.toLocaleString()}원`,'#FF8F00');
     }
   })
-  .on('broadcast',{event:'season_reset'},({payload})=>{
-    document.body.innerHTML=`<div style="position:fixed;inset:0;background:#1a0000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#FFD700;font-family:'맑은 고딕',sans-serif;text-align:center;gap:16px">
-      <div style="font-size:48px">👑</div>
-      <div style="font-size:22px;font-weight:700">시즌 1 종료!</div>
-      <div style="font-size:16px;color:#FCA5A5">${payload.winner||''}의 군림으로 시즌1이 막을 내렸습니다.</div>
-      <div style="font-size:13px;color:#aaa;margin-top:8px">시즌 2가 곧 시작됩니다...</div>
-      <div id="_srCountdown" style="font-size:28px;font-weight:700;color:#fff">10</div>
-    </div>`;
-    let n=10;
-    const iv=setInterval(()=>{n--;document.getElementById('_srCountdown').textContent=n;if(n<=0){clearInterval(iv);location.reload();}},1000);
-  })
+  .on('broadcast',{event:'season_reset'},({payload})=>_showSeasonEnd(payload.winner||''))
+  .on('broadcast',{event:'server_open'},()=>location.reload())
   .on('broadcast',{event:'stock_settings_update'},()=>{
     loadStockSettings().then(()=>{
       const isOpenNow=document.getElementById('s-stock')?.classList.contains('on');
@@ -4170,6 +4161,20 @@ function titleGacha(count){
   renderTitleGacha(results);
   fishRenderInfo();fishQuickSave();
 }
+function _showSeasonEnd(winner){
+  const isAdm=currentUsername===ADMIN_USERNAME;
+  document.body.innerHTML=`<div style="position:fixed;inset:0;background:#1a0000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#FFD700;font-family:'맑은 고딕',sans-serif;text-align:center;gap:16px">
+    <div style="font-size:48px">👑</div>
+    <div style="font-size:22px;font-weight:700">시즌 1 종료!</div>
+    <div style="font-size:16px;color:#FCA5A5">${winner}의 군림으로 시즌1이 막을 내렸습니다.</div>
+    <div style="font-size:13px;color:#aaa;margin-top:8px">관리자가 시즌 2를 여는 중입니다...</div>
+    ${isAdm?`<button onclick="openServer()" style="margin-top:16px;background:#FFD700;color:#1a0000;border:none;padding:12px 32px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">🚀 시즌 2 서버 열기</button>`:''}
+  </div>`;
+}
+function openServer(){
+  _ch.send({type:'broadcast',event:'server_open',payload:{}});
+  location.reload();
+}
 async function seasonReset(){
   const SYS_ACCOUNTS=['__LOTTERY__','__JACKPOT__','__BATTLEBAN__','__STOCK__'];
   u1Toast('🔄 시즌 초기화 중...','#7F0000');
@@ -4186,15 +4191,7 @@ async function seasonReset(){
     // 전체 클라이언트에 시즌 종료 브로드캐스트
     _ch.send({type:'broadcast',event:'season_reset',payload:{winner:currentUsername}});
     // 구매자도 동일 화면 처리
-    document.body.innerHTML=`<div style="position:fixed;inset:0;background:#1a0000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#FFD700;font-family:'맑은 고딕',sans-serif;text-align:center;gap:16px">
-      <div style="font-size:48px">👑</div>
-      <div style="font-size:22px;font-weight:700">시즌 1 종료!</div>
-      <div style="font-size:16px;color:#FCA5A5">${currentUsername}의 군림으로 시즌1이 막을 내렸습니다.</div>
-      <div style="font-size:13px;color:#aaa;margin-top:8px">시즌 2가 곧 시작됩니다...</div>
-      <div id="_srCountdown" style="font-size:28px;font-weight:700;color:#fff">10</div>
-    </div>`;
-    let n=10;
-    const iv=setInterval(()=>{n--;document.getElementById('_srCountdown').textContent=n;if(n<=0){clearInterval(iv);location.reload();}},1000);
+    _showSeasonEnd(currentUsername);
   }catch(e){
     u1Toast('초기화 오류: '+e.message,'#C00000');
   }
