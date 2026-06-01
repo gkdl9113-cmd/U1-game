@@ -8289,7 +8289,18 @@ function btFrame(){
     btPhysicsStep(); // 프레임당 1 스텝 고정 (캐치업 제거 — 속도 일정 유지)
     const W=btCanvas.width,H=btCanvas.height;
     btDraw(W,H);
-    // P2에게 매 틱 상태 전송 (P1 단독 시뮬레이션)
+    // 이벤트 소진 후 200틱 경과 시 HP 비율로 강제 종료 (무한 선회 방지)
+    if(btTick>_btMaxEventTick+200){
+      const myLiving=btFishes.filter(f=>f.side==='my'&&!f.isDead);
+      const oppLiving=btFishes.filter(f=>f.side==='opp'&&!f.isDead);
+      if(myLiving.length&&oppLiving.length){
+        const myHpPct=myLiving.reduce((s,f)=>s+f.curHp/f.maxHp,0)/myLiving.length;
+        const oppHpPct=oppLiving.reduce((s,f)=>s+f.curHp/f.maxHp,0)/oppLiving.length;
+        if(myHpPct<=oppHpPct) myLiving.forEach(f=>{f.curHp=0;f.isDead=true;});
+        else oppLiving.forEach(f=>{f.curHp=0;f.isDead=true;});
+      }
+    }
+    // P2에게 매 틱 상태 전송 — 강제 종료 처리 후 전송해야 isDead=true가 반영됨
     if(currentGame){
       sbSend('battle_state',{
         targetId:currentGame.opponentId,fromId:myId,
@@ -8301,17 +8312,6 @@ function btFrame(){
           buffMult:f.buffMult||1,phase:f.phase,
         }))
       });
-    }
-    // 이벤트 소진 후 200틱 경과 시 HP 비율로 강제 종료 (무한 선회 방지)
-    if(btTick>_btMaxEventTick+200){
-      const myLiving=btFishes.filter(f=>f.side==='my'&&!f.isDead);
-      const oppLiving=btFishes.filter(f=>f.side==='opp'&&!f.isDead);
-      if(myLiving.length&&oppLiving.length){
-        const myHpPct=myLiving.reduce((s,f)=>s+f.curHp/f.maxHp,0)/myLiving.length;
-        const oppHpPct=oppLiving.reduce((s,f)=>s+f.curHp/f.maxHp,0)/oppLiving.length;
-        if(myHpPct<=oppHpPct) myLiving.forEach(f=>{f.curHp=0;f.isDead=true;});
-        else oppLiving.forEach(f=>{f.curHp=0;f.isDead=true;});
-      }
     }
     // 종료 체크
     const myAlive=btFishes.filter(f=>f.side==='my'&&!f.isDead).length;
