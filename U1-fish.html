@@ -2453,6 +2453,7 @@ function sendChallenge(game){
   if(!challengeTarget) return;
   if(!_chConnectedOnce){u1Toast('서버 연결 중입니다. 잠시 후 다시 시도하세요.','#C00000');return;}
   if((game==='battle'||game==='legend_battle')&&isBattleBlocked(myName,challengeTarget.name)){u1Toast(`🚫 해당 상대와의 배틀은 제한되어 있습니다.`,'#C00000');return;}
+  if((game==='battle'||game==='legend_battle')&&_btDailyCount()>=DAILY_BATTLE_LIMIT){u1Toast(`오늘 배틀 횟수(${DAILY_BATTLE_LIMIT}판)를 모두 사용했습니다. 내일 다시 도전하세요.`,'#C00000');return;}
   if(game==='legend_battle'){
     const hasLegend=FG.fishes.some(f=>!f.isDead&&LEGEND_BATTLE_GRADES.has(fStage(f).grade));
     if(!hasLegend){u1Toast('👑 전설 이상 물고기가 없으면 전설전을 신청할 수 없습니다.','#C00000');return;}
@@ -8049,7 +8050,14 @@ function seededRng(seed){
   };
 }
 
+const DAILY_BATTLE_LIMIT=10;
+function _btDailyKey(){return 'u1_btday_'+new Date().toISOString().slice(0,10);}
+function _btDailyCount(){return parseInt(localStorage.getItem(_btDailyKey())||'0');}
+function _btDailyAdd(){const k=_btDailyKey();localStorage.setItem(k,(_btDailyCount()+1).toString());}
 function startBattleGame(){
+  const _cnt=_btDailyCount();
+  if(_cnt>=DAILY_BATTLE_LIMIT){u1Toast(`오늘 배틀 횟수(${DAILY_BATTLE_LIMIT}판)를 모두 사용했습니다. 내일 다시 도전하세요.`,'#C00000');return;}
+  _btDailyAdd();
   showIngameChat(false);
   battleState={phase:'fighting'};
   btImP1=(currentGame.myColor===1);
