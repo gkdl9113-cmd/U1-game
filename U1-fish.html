@@ -9339,7 +9339,9 @@ const _plzS={1:_plzMkState(),2:_plzMkState()};
 let _plzPendingId=1,_plzViewId=1;
 
 function openPlaza(){
-  document.getElementById('plaza-choose-modal').classList.add('on');
+  u1Toast('🏟️ 광장 점검 중입니다. 잠시 후 다시 이용해 주세요.','#1A237E');
+  // 광장 임시 점검 중 (Realtime 메시지 초과 — 재개 시 아래 주석 해제)
+  // document.getElementById('plaza-choose-modal').classList.add('on');
 }
 
 function openPlazaNum(n){
