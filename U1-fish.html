@@ -8190,7 +8190,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
   // 스킬: 용의숨결 - 배틀 시작 시 적 전체 ATK·DEF -15%
   if(p1.some(f=>f.skill1==='hl_용의숨결'||f.skill2==='hl_용의숨결')) p2.forEach(f=>{f.atk=Math.floor(f.atk*0.85);f.def=Math.floor(f.def*0.85);});
   if(p2.some(f=>f.skill1==='hl_용의숨결'||f.skill2==='hl_용의숨결')) p1.forEach(f=>{f.atk=Math.floor(f.atk*0.85);f.def=Math.floor(f.def*0.85);});
-  const MAX=7200; // 최대 약 3.6분 (30ms * 7200 = 216초)
+  const MAX=1800; // 최대 1분 30초 (50ms * 1800 = 90초)
   for(let t=0;t<MAX;t++){
     const a1=p1.some(f=>f.curHp>0);
     const a2=p2.some(f=>f.curHp>0);
