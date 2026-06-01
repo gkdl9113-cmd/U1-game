@@ -2809,7 +2809,7 @@ const TITLE_POOL=[
   {id:'ti_미식가',  name:'미식가',  rarity:'영웅',efDesc:'포만감 소비 -20%',      effect:{foodRate:0.20}},
   {id:'ti_황제',    name:'황제',    rarity:'전설',efDesc:'배틀 모든 스탯 +5%',   effect:{allStat:0.05}},
   {id:'ti_독재자',  name:'독재자',  rarity:'전설',efDesc:'수입 +5% · 배틀 승리 시 BP +2',effect:{income:0.05,bpBonus:2}},
-  {id:'ti_S1군림자',name:'S1 군림자',rarity:'초월',efDesc:'수입 +10% · 승리 BP +3',effect:{income:0.10,bpBonus:3}},
+  {id:'ti_S1군림자',name:'S1 군림자',rarity:'초월',efDesc:'수입 +10% · 승리 BP +1',effect:{income:0.10,bpBonus:1}},
 ];
 const TITLE_RARITY_ST={일반:{bg:'#E8E8E8',fg:'#444'},희귀:{bg:'#DBEAFE',fg:'#1D4ED8'},영웅:{bg:'#EDE9FE',fg:'#7C3AED'},전설:{bg:'#FEF9C3',fg:'#92400E'},초월:{bg:'#7F0000',fg:'#FFD700'}};
 const TITLE_REFUND={일반:3,희귀:6,영웅:10,전설:15,초월:0};
@@ -5565,7 +5565,7 @@ function fishOpenShop(){
       <div style="font-size:11px;font-weight:700;color:#FFD700">👑 초월 칭호</div>
       <div style="font-size:10px;color:#FCA5A5;font-weight:700">보유 BP: <span style="color:#FFD700">${_bp}</span>BP</div>
     </div>
-    <div style="font-size:9px;color:#FCA5A5;margin-bottom:6px">시즌 최강자 전용 · 수입 +10% · 승리 BP +3</div>
+    <div style="font-size:9px;color:#FCA5A5;margin-bottom:6px">시즌 최강자 전용 · 수입 +10% · 승리 BP +1</div>
     <button onclick="buyS1Title()" ${_canS1?'':'disabled'} style="width:100%;background:${_hasS1?'#444':_canS1?'linear-gradient(90deg,#7F0000,#B91C1C)':'#2A0000'};color:${_hasS1?'#888':_canS1?'#FFD700':'#666'};border:none;padding:8px;border-radius:5px;font-size:11px;font-weight:700;cursor:${_canS1?'pointer':'default'};font-family:inherit">
       ${_hasS1?'✅ [S1 군림자] 보유 중':'👑 [S1 군림자] 구매 — 200 BP'}
     </button>
