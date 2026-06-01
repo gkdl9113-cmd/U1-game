@@ -3038,6 +3038,8 @@ function fIncomeWithSkills(f){
   const luckyAura=FG.fishes.find(lf=>!lf.isDead&&(lf.skill1==='cl_행운의기운'||lf.skill2==='cl_행운의기운'));
   if(luckyAura) inc+=Math.floor(fStage(luckyAura).luk*0.2);
   if(f.skill1==='cm_황금손'||f.skill2==='cm_황금손') inc=Math.floor(inc*1.1);
+  const _tInc=_titleEf(f).income||0;
+  if(_tInc>0) inc=Math.floor(inc*(1+_tInc));
   return inc;
 }
 function totalIncome(){return aliveFishes().reduce((a,f)=>a+fIncomeWithSkills(f),0);}
