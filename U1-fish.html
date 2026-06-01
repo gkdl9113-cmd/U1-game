@@ -378,87 +378,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
-<!-- ══ 오목 ══ -->
-<div id="s-omok" class="scr">
-  <div class="xl-titlebar">
-    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">4분기_업무현황_최종수정본.xlsx</span></div>
-    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="omokExit()">✕</button></div>
-  </div>
-  <div class="xl-tabs">
-    <button class="xl-tab" onclick="omokExit()">◀ 파일</button>
-    <button class="xl-tab on">홈</button><button class="xl-tab">삽입</button><button class="xl-tab">수식</button><button class="xl-tab">데이터</button>
-  </div>
-  <div class="xl-ribbon">
-    <button class="xl-rbtn" onclick="omokNewGame()"><span class="xl-rico">📋</span><span class="xl-rlbl">붙여넣기</span></button>
-    <div class="xl-rsep"></div>
-    <select class="xl-rsel" id="omok-diff" onchange="omokNewGame()"><option value="easy">초급</option><option value="mid" selected>중급</option><option value="hard">상급</option><option value="expert">유단자</option></select>
-    <button class="xl-rbtn" id="omok-color-btn" onclick="omokToggleColor()"><span class="xl-rico" id="omok-color-ico">B</span><span class="xl-rlbl" id="omok-color-lbl">흑</span></button>
-    <select class="xl-rsel" id="omok-time" onchange="omokNewGame()"><option value="0">무제한</option><option value="10">10초</option><option value="30">30초</option><option value="60">60초</option></select>
-    <div class="xl-rsep"></div>
-    <button class="xl-rbtn"><span class="xl-rico">Σ</span><span class="xl-rlbl">자동합계</span></button>
-  </div>
-  <div class="xl-fbar"><div class="xl-namebox" id="omok-nb">H8</div><div class="xl-fx">fx</div><div class="xl-ftext" id="omok-ft">=IFERROR(VLOOKUP(H8,업무현황!$A:$Z,3,0),"")</div></div>
-  <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#fff;background-image:linear-gradient(rgba(208,208,208,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(208,208,208,.55) 1px,transparent 1px);background-size:64px 22px;background-position:22px 0">
-    <table class="xtbl" id="omok-tbl"></table>
-  </div>
-  <div class="xl-bottombar">
-    <div class="xl-stabs"><button class="xl-stab on">분기실적</button><button class="xl-stab">인원현황</button><button class="xl-stab-plus">＋</button></div>
-    <div class="xl-statusbar"><span class="xl-sitem" id="omok-st">준비</span><span class="xl-sitem" id="omok-timer" style="color:#C00000;font-weight:700"></span><span class="xl-sitem">100%</span></div>
-  </div>
-</div>
-
-<!-- ══ 숫자야구 설정 ══ -->
-<div id="s-bb-setup" class="scr">
-  <div class="xl-titlebar">
-    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">데이터검증_도구.xlsx</span></div>
-    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="bbExit()">✕</button></div>
-  </div>
-  <div class="xl-tabs"><button class="xl-tab" onclick="bbExit()">◀ 파일</button><button class="xl-tab on">홈</button><button class="xl-tab">데이터</button></div>
-  <div class="xl-ribbon"><button class="xl-rbtn"><span class="xl-rico">📋</span><span class="xl-rlbl">붙여넣기</span></button><div class="xl-rsep"></div><button class="xl-rbtn"><span class="xl-rico">🔍</span><span class="xl-rlbl">찾기</span></button></div>
-  <div class="xl-fbar"><div class="xl-namebox">B3</div><div class="xl-fx">fx</div><div class="xl-ftext">=RAND()*9+1</div></div>
-  <div style="flex:1;overflow:auto;background:#fff;background-image:linear-gradient(rgba(208,208,208,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(208,208,208,.55) 1px,transparent 1px);background-size:64px 22px;background-position:22px 0">
-    <table class="bb-setup-tbl">
-      <tbody>
-        <tr><td colspan="2" class="bb-opt-hdr" style="font-size:13px;background:#217346;color:#fff;height:36px">데이터 유효성 검사 설정</td></tr>
-        <tr><td class="bb-opt-hdr">자릿수</td><td class="bb-opt-cell" style="font-size:12px;font-weight:700;color:#217346">4자리 고정</td></tr>
-        <tr><td class="bb-opt-hdr">나의 비밀번호</td>
-            <td class="bb-opt-cell">
-              <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
-                <div id="bb-secret-inp" style="display:flex;gap:3px"></div>
-                <button onclick="bbShuffleSecret()" style="background:#E8E8E8;border:1px solid #B4B4B4;padding:4px 8px;font-size:11px;cursor:pointer;border-radius:2px;font-family:inherit">🔀 랜덤</button>
-              </div>
-              <div style="font-size:10px;color:#888;margin-top:4px">중복 없이 입력 · 첫 자리 0 불가</div>
-            </td></tr>
-        <tr><td class="bb-opt-hdr">난이도 (AI)</td><td class="bb-opt-cell"><div class="bb-chip-row"><button class="bb-chip on" id="bb-easy" onclick="selBBDiff('easy')">초급</button><button class="bb-chip" id="bb-hard" onclick="selBBDiff('hard')">고수</button></div></td></tr>
-        <tr><td colspan="2" style="height:8px;border:1px solid #D0D0D0;background:#fff"></td></tr>
-        <tr><td colspan="2" class="bb-start-cell" onclick="startBBGame()">▶ 검사 실행</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="xl-bottombar"><div class="xl-stabs"><button class="xl-stab on">설정</button><button class="xl-stab-plus">＋</button></div><div class="xl-statusbar"><span class="xl-sitem">준비</span><span class="xl-sitem">100%</span></div></div>
-</div>
-
-<!-- ══ 숫자야구 게임 ══ -->
-<div id="s-bb-game" class="scr">
-  <div class="xl-titlebar">
-    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">데이터검증_도구.xlsx</span></div>
-    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="bbExit()">✕</button></div>
-  </div>
-  <div class="xl-tabs"><button class="xl-tab" onclick="bbExit()">◀ 파일</button><button class="xl-tab on">데이터</button><button class="xl-tab">수식</button></div>
-  <div class="xl-fbar"><div class="xl-namebox" id="bb-nb">A1</div><div class="xl-fx">fx</div><div class="xl-ftext" id="bb-ft">=검증결과</div></div>
-  <div class="bb-game-wrap">
-    <div class="bb-panels">
-      <div class="bb-panel"><div class="bb-panel-hdr">내 입력 기록</div><div class="bb-hist" id="bb-my-hist"></div></div>
-      <div class="bb-panel" id="bb-ai-panel"><div class="bb-panel-hdr" id="bb-ai-panel-hdr">AI 입력 기록</div><div class="bb-hist" id="bb-ai-hist"></div></div>
-    </div>
-    <div class="bb-input-bar">
-      <div class="bb-inp-label" id="bb-inp-label">▶ 지금 입력 (추측)</div>
-      <div class="bb-inp-row"><div id="bb-inp"></div><button class="bb-submit" onclick="bbSubmit()">입력</button></div>
-      <div class="bb-status" id="bb-st">숫자를 입력하세요</div>
-    </div>
-  </div>
-  <div class="xl-bottombar"><div class="xl-stabs"><button class="xl-stab on">검증결과</button><button class="xl-stab-plus">＋</button></div><div class="xl-statusbar"><span class="xl-sitem" id="bb-status-bar">진행 중</span><span class="xl-sitem">100%</span></div></div>
-</div>
 
 <!-- ══ 물고기 월드 (메인) ══ -->
 <div id="s-fishworld" class="scr">
@@ -483,7 +402,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <span style="font-size:10px;color:#8B6914;padding:0 4px" title="전설전 배틀포인트">👑 <strong id="f-battle-points">0</strong>BP</span>
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishingEnter()"><span class="xl-rico">🎣</span><span class="xl-rlbl" id="f-rod-lbl">낚시</span></button>
-    <button class="xl-rbtn" onclick="showMiniGameMenu()"><span class="xl-rico">⚔️</span><span class="xl-rlbl">미니게임</span></button>
+    <button class="xl-rbtn" onclick="showMiniGameMenu()"><span class="xl-rico">⚔️</span><span class="xl-rlbl">배틀</span></button>
     <button class="xl-rbtn" onclick="openLotteryMenu()"><span class="xl-rico">🎰</span><span class="xl-rlbl">복권</span></button>
     <button class="xl-rbtn" onclick="openGambleMenu()"><span class="xl-rico">🎲</span><span class="xl-rlbl">도박</span></button>
     <div class="xl-rsep"></div>
@@ -828,6 +747,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     </div>
     <!-- 날씨 배너 -->
     <div id="bt-weather-banner" style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);color:#fff;border-radius:20px;padding:3px 14px;font-size:11px;font-weight:700;z-index:15;display:none;pointer-events:none;white-space:nowrap;backdrop-filter:blur(4px)"></div>
+    <div id="bt-timer-banner" style="position:absolute;top:36px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);color:#FFC000;border-radius:20px;padding:2px 12px;font-size:11px;font-weight:700;z-index:15;display:none;pointer-events:none;white-space:nowrap;backdrop-filter:blur(4px)"></div>
     <!-- 중앙 VS 배너 (시작 시 잠깐) -->
     <div id="bt-vs-banner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:20;opacity:0;transition:opacity .4s">
       <div style="text-align:center;color:#fff">
@@ -1047,7 +967,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 <!-- 미니게임 메뉴 (플레이어 선택) -->
 <div class="xl-dlg-ov" id="minigame-modal">
   <div class="xl-dlg" style="min-width:260px">
-    <div class="xl-dlg-title">⚔️ 미니게임 도전 <button class="xl-dlg-x" onclick="hideDlg('minigame-modal')">✕</button></div>
+    <div class="xl-dlg-title">⚔️ 배틀 도전 <button class="xl-dlg-x" onclick="hideDlg('minigame-modal')">✕</button></div>
     <div class="xl-dlg-body">
       <div class="xl-dlg-lbl" style="margin-bottom:8px">도전할 플레이어 선택</div>
       <div id="mg-player-list" style="margin-bottom:10px"></div>
@@ -1064,9 +984,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div class="xl-dlg-lbl" id="challenge-target-name">상대: </div>
       <hr class="xl-dlg-sep">
       <div class="game-sel-btns">
-        <button class="game-sel-btn" onclick="sendChallenge('omok')">⬛ 오목</button>
-        <button class="game-sel-btn" onclick="sendChallenge('baseball')">🔢 숫자야구</button>
-        <button class="game-sel-btn" style="background:#FCE4D6;color:#C00000;border-color:#F4B8A0" onclick="sendChallenge('battle')">⚔️ 수족관 대결</button>
+        <button class="game-sel-btn" style="background:#FCE4D6;color:#C00000;border-color:#F4B8A0" onclick="sendChallenge('battle')">⚔️ 일반전</button>
         <button class="game-sel-btn" style="background:#FFF3CD;color:#8B6914;border-color:#F5D050" onclick="sendChallenge('legend_battle')">👑 전설전</button>
       </div>
     </div>
@@ -1827,7 +1745,7 @@ function connectSupabase(){
       return;
     }
     pendingChallenge=payload;
-    const _gname={omok:'오목',baseball:'숫자야구',battle:'수족관 대결',legend_battle:'👑 전설전'}[payload.game]||payload.game;
+    const _gname={omok:'오목',baseball:'숫자야구',battle:'일반전',legend_battle:'👑 전설전'}[payload.game]||payload.game;
     document.getElementById('challenged-txt').textContent=
       `${payload.fromName}님이 ${_gname} 대전을 신청했습니다.`;
     document.getElementById('challenged-notify').classList.add('on');
@@ -1844,13 +1762,11 @@ function connectSupabase(){
   })
   .on('broadcast',{event:'game_move'},({payload})=>{
     if(payload.targetId!==myId) return;
-    if(currentGame?.type==='omok') omokOnlineMove(payload.data);
-    else if(currentGame?.type==='baseball') bbOnlineMove(payload.data);
   })
   .on('broadcast',{event:'game_end'},({payload})=>{
     if(payload.targetId!==myId) return;
     if(currentGame){
-      currentGame=null; stopOmokTimer(); bbOver=true;
+      currentGame=null;
       showResultNotify('🏃','상대방이 당신의 실력에\n감탄하여 탈주했습니다');
     }
   })
@@ -2515,7 +2431,7 @@ function startGameHeartbeat(){
     if(Date.now()-_gameLastHb>15000){
       stopGameHeartbeat();
       if(currentGame){
-        currentGame=null; stopOmokTimer(); bbOver=true;
+        currentGame=null;
         showResultNotify('🏃','상대방 연결이 끊겼습니다\n(15초 무응답)');
       }
     }
@@ -2531,9 +2447,7 @@ function startOnlineGame(gameType){
   u1Toast(`[B]startOnlineGame:${gameType}`,'#1F3864');
   _gameStartTs=Date.now();
   startGameHeartbeat();
-  if(gameType==='omok') startOmokOnline();
-  else if(gameType==='baseball') startBBOnline();
-  else if(gameType==='battle'||gameType==='legend_battle') startBattleGame();
+  if(gameType==='battle'||gameType==='legend_battle') startBattleGame();
 }
 
 function backToFishWorld(){
@@ -7116,231 +7030,6 @@ function _raceShowResult(){
     </div>`;
 }
 
-// ══════════════════════════════════════════════════════════
-// 오목
-// ══════════════════════════════════════════════════════════
-const N=15,OCOLS=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'],ODIRS=[[0,1],[1,0],[1,1],[1,-1]];
-let oBoard,oTurn,oOver,oMode,oMyColor,oAiColor,oDiff,oTimeLimit,oTimerLeft,oTimerInterval,oLastMove,oWinCells,oMyPick=1;
-let lastOmokLoserColor=null;
-
-function startOmokOnline(){oMode='online';oMyColor=currentGame.myColor;oAiColor=3-oMyColor;show('s-omok');buildOmokTable();omokNewGame();showIngameChat(true);}
-
-function buildOmokTable(){
-  const tbl=document.getElementById('omok-tbl'); if(tbl.querySelector('thead'))return;
-  let h=`<thead><tr><th class="xcorner"></th>`;
-  OCOLS.forEach(c=>h+=`<th class="xcol-hdr">${c}</th>`);
-  h+=`</tr></thead><tbody>`;
-  for(let r=0;r<N;r++){h+=`<tr><th class="xrow-hdr">${r+1}</th>`;for(let c=0;c<N;c++)h+=`<td class="xcell" id="ox${r}_${c}" onclick="omokCell(${r},${c})"></td>`;h+=`</tr>`;}
-  tbl.innerHTML=h+'</tbody>';
-}
-function omokNewGame(){
-  stopOmokTimer();oBoard=Array.from({length:N},()=>new Int8Array(N));
-  oTurn=1;oOver=false;oLastMove=null;oWinCells=null;
-  if(oMode!=='online'){oDiff=document.getElementById('omok-diff').value;oTimeLimit=parseInt(document.getElementById('omok-time').value);oMyColor=oMyPick;oAiColor=3-oMyPick;}
-  else{oDiff='mid';oTimeLimit=0;}
-  renderOmok();omokStartTurn();
-}
-function omokToggleColor(){oMyPick=3-oMyPick;document.getElementById('omok-color-ico').textContent=oMyPick===1?'B':'W';document.getElementById('omok-color-lbl').textContent=oMyPick===1?'흑':'백';omokNewGame();}
-function renderOmok(){
-  for(let r=0;r<N;r++)for(let c=0;c<N;c++){
-    const el=document.getElementById(`ox${r}_${c}`);const v=oBoard[r][c];
-    let cl='xcell';if(v===1)cl+=' b1';if(v===2)cl+=' b2';
-    if(oLastMove&&oLastMove[0]===r&&oLastMove[1]===c)cl+=v===1?' lb':' lw';
-    if(oWinCells&&oWinCells.some(([wr,wc])=>wr===r&&wc===c))cl+=' win';el.className=cl;
-  }
-  if(oLastMove){const[r,c]=oLastMove;document.getElementById('omok-nb').textContent=OCOLS[c]+(r+1);}
-  const oppName=oMode==='online'?(currentGame?.opponentName||'상대'):'AI';
-  const myTurn=oMode==='online'?oTurn===oMyColor:oTurn!==oAiColor;
-  const turnTxt=oOver?'게임 종료':(myTurn?'⚡ 내 차례':`⏳ ${oppName} 차례`);
-  const ftEl=document.getElementById('omok-ft');
-  ftEl.textContent=`vs ${oppName}  |  ${turnTxt}`;
-  ftEl.style.fontWeight=myTurn&&!oOver?'800':'400';
-  ftEl.style.color=myTurn&&!oOver?'#217346':'#595959';
-  document.getElementById('omok-st').textContent=oOver?'완료':`${oTurn===1?'⬛ 흑':'🟫 백'}`;
-}
-function omokCell(r,c){
-  if(oOver||oBoard[r][c]) return;
-  if(oMode==='ai'&&oTurn!==oMyColor) return;
-  if(oMode==='online'&&oTurn!==oMyColor) return;
-  omokPlace(r,c);
-  if(oMode==='online') sendGameMsg({type:'game_move',data:{r,c}});
-}
-function omokPlace(r,c){
-  oBoard[r][c]=oTurn;oLastMove=[r,c];
-  if(omokCheckWin(r,c,oTurn)){oWinCells=omokGetWinCells(r,c,oTurn);renderOmok();omokEndGame(oTurn,false);return;}
-  let full=true;outer:for(let i=0;i<N;i++)for(let j=0;j<N;j++)if(!oBoard[i][j]){full=false;break outer;}
-  if(full){renderOmok();omokEndGame(0,false);return;}
-  oTurn=3-oTurn;renderOmok();omokStartTurn();
-}
-function omokStartTurn(){
-  stopOmokTimer();
-  if(oTimeLimit>0){
-    oTimerLeft=oTimeLimit;document.getElementById('omok-timer').textContent=`합계: ${oTimerLeft}`;
-    oTimerInterval=setInterval(()=>{
-      oTimerLeft--;document.getElementById('omok-timer').textContent=`합계: ${oTimerLeft}`;
-      if(oTimerLeft<=0){stopOmokTimer();const cands=omokCands();const[tr,tc]=cands[Math.floor(Math.random()*cands.length)];omokPlace(tr,tc);}
-    },1000);
-  } else document.getElementById('omok-timer').textContent='';
-  if(oMode==='ai'&&oTurn===oAiColor&&!oOver){document.getElementById('omok-st').textContent='계산 중...';setTimeout(omokDoAI,80);}
-}
-function stopOmokTimer(){if(oTimerInterval){clearInterval(oTimerInterval);oTimerInterval=null;}}
-function omokCheckWin(r,c,color){return ODIRS.some(([dr,dc])=>{let cnt=1;for(let i=1;i<5;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cnt++;}for(let i=1;i<5;i++){const nr=r-dr*i,nc=c-dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cnt++;}return cnt>=5;});}
-function omokGetWinCells(r,c,color){for(const[dr,dc]of ODIRS){const cells=[[r,c]];for(let i=1;i<5;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cells.push([nr,nc]);}for(let i=1;i<5;i++){const nr=r-dr*i,nc=c-dc*i;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc]!==color)break;cells.push([nr,nc]);}if(cells.length>=5)return cells;}return[];}
-function omokEndGame(winner,resigned){
-  oOver=true;stopOmokTimer();document.getElementById('omok-timer').textContent='';renderOmok();
-  if(winner!==0&&!resigned) lastOmokLoserColor=3-winner;
-  if(oMode==='online'&&!resigned) sendGameMsg({type:'game_end',data:{}});
-  const isMe=(oMode==='ai'&&winner===oMyColor)||(oMode==='online'&&winner===oMyColor);
-  let ico,txt;
-  if(winner===0){ico='ℹ️';txt='무승부';}
-  else if(resigned){ico='⚠️';txt=`${winner===1?'흑':'백'} 중단`;}
-  else{ico=isMe?'ℹ️':'⚠️';txt=oMode==='ai'?(isMe?'분석 결과: 흑 우세':'분석 결과: 백 우세'):`${winner===1?'⬛ 흑':'🟫 백'} 승리!`;}
-  showResultNotify(ico,txt);
-}
-function omokExit(){
-  if(!oOver&&oBoard){if(!confirm('종료하시겠습니까?'))return;}
-  showIngameChat(false);
-  if(oMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;stopGameHeartbeat();}
-  show('s-fishworld');if(!FG.tickInterval)fishStartLoops();
-}
-function omokOnlineMove(data){
-  if(data.type==='restart'){
-    oMyColor=data.myColorWas===1?2:1;oAiColor=3-oMyColor;
-    oBoard=Array.from({length:N},()=>new Int8Array(N));
-    oTurn=1;oOver=false;oLastMove=null;oWinCells=null;lastOmokLoserColor=null;
-    closeResultNotify();renderOmok();omokStartTurn();
-  } else omokPlace(data.r,data.c);
-}
-// AI
-const OSEQ=(l,o)=>{if(l>=5)return 1e6;if(!o)return 0;return[[0,0,0],[0,1,2],[0,5,50],[0,500,5000],[0,10000,100000]][Math.min(l,4)][Math.min(o,2)]||0;};
-function omokEval(b,color){let s=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(!b[r][c])continue;const me=b[r][c]===color;for(const[dr,dc]of ODIRS){const pr=r-dr,pc=c-dc;if(pr>=0&&pr<N&&pc>=0&&pc<N&&b[pr][pc]===b[r][c])continue;let len=0,nr=r,nc=c;while(nr>=0&&nr<N&&nc>=0&&nc<N&&b[nr][nc]===b[r][c]){len++;nr+=dr;nc+=dc;}let open=0;if(r-dr>=0&&r-dr<N&&c-dc>=0&&c-dc<N&&b[r-dr][c-dc]===0)open++;if(nr>=0&&nr<N&&nc>=0&&nc<N&&b[nr][nc]===0)open++;s+=me?OSEQ(len,open):-OSEQ(len,open);}}return s;}
-function omokCands(){const vis=new Uint8Array(N*N),res=[];let any=false;for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(!oBoard[r][c])continue;any=true;for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const nr=r+dr,nc=c+dc;if(nr<0||nr>=N||nc<0||nc>=N||oBoard[nr][nc])continue;const k=nr*N+nc;if(!vis[k]){vis[k]=1;res.push([nr,nc]);}}}return any?res:[[7,7]];}
-function omokWinAt(b,r,c,color){for(const[dr,dc]of ODIRS){let cnt=1;for(let i=1;i<5;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||b[nr][nc]!==color)break;cnt++;}for(let i=1;i<5;i++){const nr=r-dr*i,nc=c-dc*i;if(nr<0||nr>=N||nc<0||nc>=N||b[nr][nc]!==color)break;cnt++;}if(cnt>=5)return true;}return false;}
-function omokMM(b,depth,a,be,isMax,aiC){if(!depth)return omokEval(b,aiC);const opp=3-aiC,cands=omokCands();if(!cands.length)return 0;const cur=isMax?aiC:opp;const sc=cands.map(([r,c])=>{let s=0;for(const[dr,dc]of ODIRS){let cnt=1;for(let i=1;i<3;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=N||nc<0||nc>=N||b[nr][nc]!==cur)break;cnt++;}s+=cnt*cnt;}return[r,c,s];}).sort((x,y)=>y[2]-x[2]).slice(0,depth>=3?12:20);if(isMax){let best=-Infinity;for(const[r,c]of sc){b[r][c]=aiC;if(omokWinAt(b,r,c,aiC)){b[r][c]=0;return 1e6+depth;}const v=omokMM(b,depth-1,a,be,false,aiC);b[r][c]=0;if(v>best)best=v;a=Math.max(a,best);if(be<=a)break;}return best;}else{let best=Infinity;for(const[r,c]of sc){b[r][c]=opp;if(omokWinAt(b,r,c,opp)){b[r][c]=0;return-1e6-depth;}const v=omokMM(b,depth-1,a,be,true,aiC);b[r][c]=0;if(v<best)best=v;be=Math.min(be,best);if(be<=a)break;}return best;}}
-function omokDoAI(){if(oOver)return;const[r,c]=omokGetAI();omokPlace(r,c);}
-function omokGetAI(){const DEPTH={easy:0,mid:2,hard:3,expert:4}[oDiff];const cands=omokCands();for(const[r,c]of cands){oBoard[r][c]=oAiColor;if(omokWinAt(oBoard,r,c,oAiColor)){oBoard[r][c]=0;return[r,c];}oBoard[r][c]=0;}for(const[r,c]of cands){oBoard[r][c]=oMyColor;if(omokWinAt(oBoard,r,c,oMyColor)){oBoard[r][c]=0;return[r,c];}oBoard[r][c]=0;}if(oDiff==='easy'&&Math.random()<.5)return cands[Math.floor(Math.random()*Math.min(cands.length,8))];if(DEPTH===0){let best=-Infinity,bm=cands[0];for(const[r,c]of cands){oBoard[r][c]=oAiColor;const s=omokEval(oBoard,oAiColor);oBoard[r][c]=0;if(s>best){best=s;bm=[r,c];}}return bm;}const sorted=[...cands].sort((a,b)=>{oBoard[a[0]][a[1]]=oAiColor;const sa=omokEval(oBoard,oAiColor);oBoard[a[0]][a[1]]=0;oBoard[b[0]][b[1]]=oAiColor;const sb=omokEval(oBoard,oAiColor);oBoard[b[0]][b[1]]=0;return sb-sa;}).slice(0,15);let best=-Infinity,bm=sorted[0];for(const[r,c]of sorted){oBoard[r][c]=oAiColor;const v=omokMM(oBoard,DEPTH-1,-Infinity,Infinity,false,oAiColor);oBoard[r][c]=0;if(v>best){best=v;bm=[r,c];}}return bm;}
-
-// ══════════════════════════════════════════════════════════
-// 숫자야구
-// ══════════════════════════════════════════════════════════
-let bbDigits=4,bbDiff='easy',bbMode='ai',bbMySecret='',bbAISecret='',bbAICands=[],bbMyHist=[],bbAIHist=[],bbOver=false,bbMyTurn=true;
-
-function selBBDiff(d){bbDiff=d;document.getElementById('bb-easy').classList.toggle('on',d==='easy');document.getElementById('bb-hard').classList.toggle('on',d==='hard');}
-function bbExit(){
-  showIngameChat(false);
-  if(bbMode==='online'){sendGameMsg({type:'game_end',data:{}});currentGame=null;stopGameHeartbeat();}
-  show('s-fishworld');if(!FG.tickInterval)fishStartLoops();
-}
-function buildBBSecretInput(){
-  const wrap=document.getElementById('bb-secret-inp');wrap.innerHTML='';
-  for(let i=0;i<bbDigits;i++){
-    const inp=document.createElement('input');
-    inp.style.cssText='width:34px;height:34px;border:2px solid #7F9DB9;text-align:center;font-size:18px;font-weight:800;font-family:monospace;outline:none;background:#fff;color:#1F1F1F';
-    inp.maxLength=1;inp.inputMode='numeric';inp.type='password';
-    inp.addEventListener('input',e=>{e.target.value=e.target.value.replace(/[^0-9]/g,'').slice(-1);if(e.target.value&&i<bbDigits-1)wrap.children[i+1].focus();});
-    inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!e.target.value&&i>0)wrap.children[i-1].focus();});
-    inp.addEventListener('focus',()=>inp.style.borderColor='#217346');
-    inp.addEventListener('blur',()=>inp.style.borderColor='#7F9DB9');
-    wrap.appendChild(inp);
-  }
-}
-function getBBSecretInput(){const wrap=document.getElementById('bb-secret-inp');return wrap?Array.from(wrap.children).map(el=>el.value).join(''):'';}
-function bbShuffleSecret(){const s=bbRandSecret(bbDigits);const wrap=document.getElementById('bb-secret-inp');if(!wrap)return;[...wrap.children].forEach((el,i)=>el.value=s[i]);}
-function validateBBSecret(s){if(s.length<bbDigits)return '4자리를 모두 입력하세요';if(s[0]==='0')return '첫 자리는 0 불가';if(new Set(s).size<bbDigits)return '중복 없이 입력하세요';return null;}
-function openBBSetup(){show('s-bb-setup');setTimeout(()=>{buildBBSecretInput();document.getElementById('bb-secret-inp')?.children[0]?.focus();},50);}
-function startBBGame(){
-  const s=getBBSecretInput(),err=validateBBSecret(s);
-  if(err){alert(err);return;}
-  bbMyHist=[];bbAIHist=[];bbOver=false;bbMySecret=s;bbAISecret=bbRandSecret(bbDigits);bbAICands=bbGenAll(bbDigits);
-  show('s-bb-game');document.getElementById('bb-ai-panel').style.display='flex';
-  document.getElementById('bb-ai-panel-hdr').textContent='AI 입력 기록';
-  document.getElementById('bb-nb').textContent='A1';buildBBInput();renderBBHist();
-  document.getElementById('bb-st').textContent=`내 비밀번호: ${bbMySecret}  |  AI 번호를 맞혀보세요!`;
-  document.getElementById('bb-status-bar').textContent='진행 중';
-}
-function startBBOnline(){
-  show('s-bb-setup');
-  setTimeout(()=>{buildBBSecretInput();document.getElementById('bb-secret-inp')?.children[0]?.focus();},50);
-  document.querySelector('.bb-start-cell').onclick=doStartBBOnline;
-}
-function doStartBBOnline(){
-  const s=getBBSecretInput(),err=validateBBSecret(s);
-  if(err){alert(err);return;}
-  document.querySelector('.bb-start-cell').onclick=startBBGame;
-  showIngameChat(true);
-  bbMode='online';bbMyHist=[];bbAIHist=[];bbOver=false;bbMySecret=s;
-  bbMyTurn=(currentGame.myColor===1);
-  show('s-bb-game');document.getElementById('bb-ai-panel-hdr').textContent='상대방 입력 기록';
-  buildBBInput();renderBBHist();
-  document.getElementById('bb-st').textContent=`내 비밀번호: ${bbMySecret}  |  ${bbMyTurn?'✏️ 내 차례':'⏳ 상대 차례'}`;
-}
-function bbGenAll(d){const res=[];function gen(cur,used){if(cur.length===d){if(cur[0]!=='0')res.push(cur.join(''));return;}for(const x of '0123456789'){if(!used.has(x)){used.add(x);cur.push(x);gen(cur,used);cur.pop();used.delete(x);}}}gen([],new Set());return res;}
-function bbRandSecret(d){const all=bbGenAll(d);return all[Math.floor(Math.random()*all.length)];}
-function bbScore(secret,guess){let s=0,b=0;for(let i=0;i<secret.length;i++){if(secret[i]===guess[i])s++;else if(secret.includes(guess[i]))b++;}return{s,b};}
-function buildBBInput(){
-  const wrap=document.getElementById('bb-inp');wrap.innerHTML='';
-  for(let i=0;i<bbDigits;i++){const inp=document.createElement('input');inp.className='bb-digit';inp.type='text';inp.maxLength=1;inp.inputMode='numeric';inp.dataset.i=i;inp.addEventListener('input',e=>{e.target.value=e.target.value.replace(/[^0-9]/g,'').slice(-1);if(e.target.value&&i<bbDigits-1)wrap.children[i+1].focus();});inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!e.target.value&&i>0)wrap.children[i-1].focus();if(e.key==='Enter')bbSubmit();});wrap.appendChild(inp);}
-}
-function getBBInput(){return Array.from(document.getElementById('bb-inp').children).map(el=>el.value).join('');}
-function clearBBInput(){Array.from(document.getElementById('bb-inp').children).forEach(el=>el.value='');document.getElementById('bb-inp').children[0]?.focus();}
-function bbSubmit(){
-  if(bbOver) return;
-  const guess=getBBInput();
-  if(guess.length<bbDigits){document.getElementById('bb-st').textContent=bbDigits+'자리 입력';return;}
-  if(new Set(guess).size<bbDigits){document.getElementById('bb-st').textContent='중복 없이';return;}
-  if(guess[0]==='0'){document.getElementById('bb-st').textContent='첫 자리 0 불가';return;}
-  if(bbMode==='ai'){
-    const{s,b}=bbScore(bbAISecret,guess);bbMyHist.push({guess,s,b});renderBBHist();clearBBInput();
-    document.getElementById('bb-nb').textContent=`C${bbMyHist.length}`;
-    document.getElementById('bb-ft').textContent=`="${guess}" → ${s}S${b}B`;
-    if(s===bbDigits){bbOver=true;showResultNotify('ℹ️',`정답! AI 번호: ${bbAISecret}`);return;}
-    setTimeout(()=>{
-      if(bbOver) return;
-      const aiGuess=bbDiff==='easy'?bbAICands[Math.floor(Math.random()*Math.min(bbAICands.length,5))]:bbAICands[0];
-      if(!aiGuess) return;
-      const r=bbScore(bbMySecret,aiGuess);bbAIHist.push({guess:aiGuess,s:r.s,b:r.b});
-      bbAICands=bbAICands.filter(c=>{const x=bbScore(c,aiGuess);return x.s===r.s&&x.b===r.b;});
-      renderBBHist();document.getElementById('bb-st').textContent=`내 번호: ${bbMySecret} | ${bbAICands.length}개 남음`;
-      document.getElementById('bb-status-bar').textContent=`내 ${bbMyHist.length}회 | AI ${bbAIHist.length}회`;
-      if(r.s===bbDigits){bbOver=true;showResultNotify('⚠️',`AI 정답! 내 번호: ${bbMySecret}`);}
-    },600);
-  } else if(bbMode==='online'){
-    if(!bbMyTurn){document.getElementById('bb-st').textContent='상대방 차례';return;}
-    bbMyHist.push({guess,s:'?',b:'?'});renderBBHist();clearBBInput();
-    sendGameMsg({type:'game_move',data:{type:'guess',guess}});
-    bbMyTurn=false;document.getElementById('bb-st').textContent='상대가 계산 중…';
-  }
-}
-function bbOnlineMove(data){
-  if(data.type==='guess'){
-    const{s,b}=bbScore(bbMySecret,data.guess);bbAIHist.push({guess:data.guess,s,b});renderBBHist();
-    sendGameMsg({type:'game_move',data:{type:'result',s,b}});
-    if(s===bbDigits){bbOver=true;showResultNotify('⚠️',`상대 정답! 내 번호: ${bbMySecret}`);}
-    else{bbMyTurn=true;bbUpdateOnlineSt();}
-  } else if(data.type==='result'){
-    const last=bbMyHist[bbMyHist.length-1];if(last){last.s=data.s;last.b=data.b;}renderBBHist();
-    if(data.s===bbDigits){bbOver=true;showResultNotify('ℹ️','내가 맞혔습니다!');}
-    else{bbMyTurn=false;bbUpdateOnlineSt();}
-  }
-}
-function bbUpdateOnlineSt(){
-  document.getElementById('bb-st').textContent=bbMyTurn
-    ?`내 번호: ${bbMySecret}  |  ✏️ 내 차례`:`내 번호: ${bbMySecret}  |  ⏳ 상대 차례`;
-  document.getElementById('bb-status-bar').textContent=`내 ${bbMyHist.length}회 | 상대 ${bbAIHist.length}회`;
-}
-function renderBBHist(){
-  ['my','ai'].forEach(who=>{
-    const div=document.getElementById(`bb-${who}-hist`); if(!div) return;
-    const hist=who==='my'?bbMyHist:bbAIHist;
-    div.innerHTML=hist.map((h,i)=>`
-      <div class="bb-hist-row" style="${i===hist.length-1?'border-top:2px dashed #9DC3E6;margin-top:12px;padding-top:6px':''}">
-        <span style="font-size:10px;color:#9CA3AF;min-width:18px">${i+1}</span>
-        <span class="bb-hist-num">${h.guess}</span>
-        <span class="bb-hist-res"><span class="s">${h.s}S</span> <span class="b">${h.b}B</span></span>
-      </div>`).join('');
-    div.scrollTop=div.scrollHeight;
-  });
-}
 
 // ══════════════════════════════════════════════════════════
 // 결과 알림 & 재시작
@@ -7348,20 +7037,18 @@ function renderBBHist(){
 function showResultNotify(ico,txt){
   document.getElementById('result-ico').textContent=ico;
   document.getElementById('result-txt').textContent=txt;
-  const isOnline=(oMode==='online'||bbMode==='online');
   const btn=document.getElementById('result-confirm-btn');
-  if(btn) btn.textContent=isOnline?'로비로 돌아가기':'확인';
+  if(btn) btn.textContent='확인';
   document.getElementById('result-notify').classList.add('on');
 }
 function closeResultNotify(){document.getElementById('result-notify').classList.remove('on');}
 function confirmResult(){
   closeResultNotify();
-  if(oMode==='online'||bbMode==='online'||battleState){
+  if(battleState){
     sendGameMsg({type:'game_end',data:{}}); currentGame=null; stopGameHeartbeat(); showIngameChat(false);
     updateMyPresence(false); show('s-fishworld'); if(!FG.tickInterval)fishStartLoops();
     return;
   }
-  // 물고기 전멸 상태면 구매 플로우 실행
   if(aliveFishes().length===0){
     buyNewFish();
   }
@@ -7369,18 +7056,7 @@ function confirmResult(){
 function restartFromResult(){
   closeResultNotify();
   const scrId=document.querySelector('.scr.on')?.id;
-  if(scrId==='s-omok'){
-    if(oMode==='online'){
-      if(lastOmokLoserColor!==null){oMyColor=lastOmokLoserColor===oMyColor?1:2;oAiColor=3-oMyColor;}
-      oBoard=Array.from({length:N},()=>new Int8Array(N));oTurn=1;oOver=false;oLastMove=null;oWinCells=null;lastOmokLoserColor=null;
-      renderOmok();omokStartTurn();
-      sendGameMsg({type:'game_move',data:{type:'restart',myColorWas:oMyColor}});
-    } else {
-      if(lastOmokLoserColor!==null)oMyColor=lastOmokLoserColor;oAiColor=3-oMyColor;lastOmokLoserColor=null;omokNewGame();
-    }
-  } else if(scrId==='s-bb-game'){
-    if(bbMode==='online')startBBOnline();else startBBGame();
-  } else if(scrId==='s-fishworld'&&aliveFishes().length===0){
+  if(scrId==='s-fishworld'&&aliveFishes().length===0){
     buyNewFish();
   }
 }
@@ -7400,14 +7076,12 @@ document.addEventListener('keydown',e=>{
   if((e.key==='s'||e.key==='S')&&!bossKeyOn){
     bossKeyOn=true;
     document.getElementById('boss-overlay').style.display='block';
-    stopOmokTimer();
     if(!FG.paused&&FG.tickInterval){FG._bossPaused=true;fishPause();}
   }
   if((e.key==='p'||e.key==='P')&&bossKeyOn){
     bossKeyOn=false;
     document.getElementById('boss-overlay').style.display='none';
     if(FG._bossPaused){FG._bossPaused=false;fishResume();}
-    if(!oOver&&oBoard&&oMode==='online') omokStartTurn();
     const chatMsg='상사 크리 ☠️ 잠시 자리 비웠습니다';
     const msg={fromId:myId,fromName:myName,text:chatMsg};
     sbSend('chat',msg);addChatMsg(msg);
@@ -8461,6 +8135,9 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
       wb.style.display='none';
     }
   }
+  // 타이머 배너 초기화
+  const tb=document.getElementById('bt-timer-banner');
+  if(tb) tb.style.display='none';
   // 캔버스 초기화 (레이아웃 미확정 시 window 크기 폴백)
   btCanvas=document.getElementById('battle-canvas');
   const par=btCanvas.parentElement;
@@ -8498,6 +8175,9 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
   const p2Bt=p2Data.map((f,i)=>{const fish=mkFish(f,i,p2Data.length,imP1?'opp':'my');fish.isP1=false;return fish;});
   btFishes=[...p1Bt,...p2Bt];
   _btMaxEventTick=btEvents.length?Math.max(...btEvents.map(e=>e.t)):0;
+  // 타이머 배너 표시
+  const _tb=document.getElementById('bt-timer-banner');
+  if(_tb&&_btMaxEventTick>0){_tb.style.display='block';_tb.textContent=`⏱ ${Math.ceil((_btMaxEventTick+200)*30/1000)}초`;}
 
   // VS 배너 표시
   const vsBanner=document.getElementById('bt-vs-banner');
@@ -8595,6 +8275,14 @@ function btFrame(){
       btCanvas.width=par.clientWidth;btCanvas.height=par.clientHeight;
       btCtx=btCanvas.getContext('2d');
     } else return;
+  }
+  // 타이머 배너 업데이트 (1초마다 갱신)
+  if(_btMaxEventTick>0&&btTick%33===0){
+    const _tb=document.getElementById('bt-timer-banner');
+    if(_tb&&_tb.style.display!=='none'){
+      const rem=Math.max(0,Math.ceil((_btMaxEventTick+200-btTick)*30/1000));
+      _tb.textContent=`⏱ ${rem}초`;
+    }
   }
   if(btImP1){
     // ── P1: 시뮬레이션 실행 + P2에게 상태 브로드캐스트 ──────────
@@ -9236,6 +8924,8 @@ function battleExit(){
   btCurrentWeather=null;
   const wb=document.getElementById('bt-weather-banner');
   if(wb) wb.style.display='none';
+  const _tb2=document.getElementById('bt-timer-banner');
+  if(_tb2) _tb2.style.display='none';
   const wasInBattle=!!btInterval&&btFishes.length>0;
   clearInterval(btInterval);btInterval=null;
   // 배틀 중 도중 이탈: 현재 배틀 상태를 FG.fishes에 반영 + 패배 처리
@@ -9293,8 +8983,6 @@ function triggerAutoUpdate(){
   if(currentUsername) fishSave();
   // 게임 중이면 30초, 아니면 10초
   const inGame=!!(currentGame||
-    document.getElementById('s-omok')?.classList.contains('on')||
-    document.getElementById('s-bb-game')?.classList.contains('on')||
     document.getElementById('s-battle')?.classList.contains('on'));
   let secs=inGame?30:10;
   document.getElementById('update-notify').classList.add('on');
