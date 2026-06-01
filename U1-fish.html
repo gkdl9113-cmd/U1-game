@@ -2280,7 +2280,7 @@ async function saveFishDataToDB(){
     id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',
     stage:f.stage,hp:f.hp,maxHp:f.maxHp,
     fullness:f.fullness,xp:f.xp,isDead:f.isDead||false,
-    skill1:f.skill1||undefined,skill2:f.skill2||undefined,
+    skill1:f.skill1||undefined,skill2:f.skill2||undefined,title:f.title||undefined,
     ...(_isYwFish(f)?{level:f.level||1,statPoints:f.statPoints||0,bonusAtk:f.bonusAtk||0,bonusDef:f.bonusDef||0,bonusAgi:f.bonusAgi||0,bonusLuk:f.bonusLuk||0}:{})
   }));
   const cleanAux=FG.auxFishes.map(f=>({
@@ -5218,7 +5218,7 @@ function fishDraw(){
 }
 
 function fishSave(isDisconnect){
-  const cleanFishes=FG.fishes.map(f=>{const s=fStage(f);return{id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',name:s.name,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:f.isDead||false,skill1:f.skill1||undefined,skill2:f.skill2||undefined,...(_isYwFish(f)?{level:f.level||1,statPoints:f.statPoints||0,bonusAtk:f.bonusAtk||0,bonusDef:f.bonusDef||0,bonusAgi:f.bonusAgi||0,bonusLuk:f.bonusLuk||0}:{})};});
+  const cleanFishes=FG.fishes.map(f=>{const s=fStage(f);return{id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',name:s.name,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:f.isDead||false,skill1:f.skill1||undefined,skill2:f.skill2||undefined,title:f.title||undefined,...(_isYwFish(f)?{level:f.level||1,statPoints:f.statPoints||0,bonusAtk:f.bonusAtk||0,bonusDef:f.bonusDef||0,bonusAgi:f.bonusAgi||0,bonusLuk:f.bonusLuk||0}:{})};});
   const cleanAux=FG.auxFishes.map(f=>{const s=fStage(f);return{id:f.id,sc:`${f.type||'goldfish'}_${f.stage}`,type:f.type||'goldfish',name:s.name,stage:f.stage,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:f.xp,isDead:false};});
   const data={fishes:cleanFishes,auxFishes:cleanAux,auxMax:FG.auxMax,
     money:FG.money,food:FG.food,spFood:FG.spFood,autoFeeders:FG.autoFeeders,
