@@ -7875,7 +7875,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
       if(dodge){
         // 스킬: 번개 반격 - 회피 성공 시 즉시 반격
         if(tgt.skill1==='el_번개반격'||tgt.skill2==='el_번개반격') tgt.atkCd=0;
-        events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(20,270-f.agi*1.0);return;
+        events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(20,Math.floor(270-f.agi*(250/1200)));return;
       }
       const crit=rng()<Math.min(1,Math.min(0.80,f.luk/1200)*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1));
       // 스킬: 포식자의 영역 - 아군 피라냐 2마리+ 시 공격력 +20%
@@ -7980,7 +7980,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
           events.push({t,side:1,ai:i,ti:cTi,dmg:cDmg,crit:false,dodge:false,hpAfter:cTgt.curHp,skillHeal:0,atkHpAfter:f.curHp,chain:true});
         }
       }
-      f.atkCd=Math.max(20,270-f.agi*1.0); // AGI 높을수록 빠른 공격
+      f.atkCd=Math.max(20,Math.floor(270-f.agi*(250/1200))); // AGI 높을수록 빠른 공격
     });
     // p2 공격 체크
     p2.forEach((f,i)=>{
@@ -7994,7 +7994,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
       if(dodge){
         // 스킬: 번개 반격 - 회피 성공 시 즉시 반격
         if(tgt.skill1==='el_번개반격'||tgt.skill2==='el_번개반격') tgt.atkCd=0;
-        events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(20,270-f.agi*1.0);return;
+        events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(20,Math.floor(270-f.agi*(250/1200)));return;
       }
       const crit=rng()<Math.min(1,Math.min(0.80,f.luk/1200)*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1));
       // 스킬: 포식자의 영역 - 아군 피라냐 2마리+ 시 공격력 +20%
@@ -8099,7 +8099,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
           events.push({t,side:2,ai:i,ti:cTi,dmg:cDmg,crit:false,dodge:false,hpAfter:cTgt.curHp,skillHeal:0,atkHpAfter:f.curHp,chain:true});
         }
       }
-      f.atkCd=Math.max(20,270-f.agi*1.0);
+      f.atkCd=Math.max(20,Math.floor(270-f.agi*(250/1200)));
     });
   }
   return events;
