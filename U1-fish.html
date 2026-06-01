@@ -5603,7 +5603,10 @@ function fishOpenShop(){
       <div style="font-size:11px;font-weight:700;color:#FFD700">👑 초월 칭호</div>
       <div style="font-size:10px;color:#FCA5A5;font-weight:700">보유 BP: <span style="color:#FFD700">${_bp}</span>BP</div>
     </div>
-    <div style="font-size:9px;color:#FCA5A5;margin-bottom:6px">시즌 최강자 전용 · 수입 +20% · 승리 BP +1 · 선제 30%</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <div style="font-size:9px;color:#FCA5A5">시즌 최강자 전용 · 수입 +20% · 승리 BP +1 · 선제 30%</div>
+      <span style="font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;background:#FF0000;color:#fff;flex-shrink:0">서버 초기화</span>
+    </div>
     <button onclick="buyS1Title()" ${_canS1?'':'disabled'} style="width:100%;background:${_hasS1?'#444':_canS1?'linear-gradient(90deg,#7F0000,#B91C1C)':'#2A0000'};color:${_hasS1?'#888':_canS1?'#FFD700':'#666'};border:none;padding:8px;border-radius:5px;font-size:11px;font-weight:700;cursor:${_canS1?'pointer':'default'};font-family:inherit">
       ${_hasS1?'✅ [S1 군림자] 보유 중':'👑 [S1 군림자] 구매 — 200 BP'}
     </button>
