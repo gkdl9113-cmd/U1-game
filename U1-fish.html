@@ -4575,6 +4575,7 @@ function showFishDetail(idx){
   const isYw=_isYwFish(f);
   const ywLv=f.level||1;
   const _fdTitleObj=f.title?TITLE_POOL.find(t=>t.id===f.title):null;
+  const tef=_titleEf(f); const as=1+(tef.allStat||0);
   const _fdTitleBadge=document.getElementById('fd-title-badge');
   if(_fdTitleBadge){
     if(_fdTitleObj){const _st=TITLE_RARITY_ST[_fdTitleObj.rarity];_fdTitleBadge.textContent=`[${_fdTitleObj.name}]`;_fdTitleBadge.style.color=_st.fg;_fdTitleBadge.style.background=_st.bg;_fdTitleBadge.style.padding='1px 5px';_fdTitleBadge.style.borderRadius='3px';}
@@ -4586,7 +4587,10 @@ function showFishDetail(idx){
     (isYw?`Lv.${ywLv}/50 · ${s.species}`:(`${f.stage}단계 · ${s.species}`))+
     (f.isDead?' (사망)':'')+' '+
     `<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:${gd.bg};color:${gd.fg}">${s.grade||'일반'}</span>`;
-  document.getElementById('fd-hp').textContent=Math.ceil(f.hp)+'/'+f.maxHp;
+  const _effMaxHp=Math.floor(f.maxHp*(1+(tef.hp||0)));
+  const _hpEl=document.getElementById('fd-hp');
+  _hpEl.textContent=Math.ceil(f.hp)+'/'+_effMaxHp;
+  _hpEl.style.color=_effMaxHp>f.maxHp?'#B8860B':'';
   document.getElementById('fd-full').textContent=Math.floor(f.fullness)+'/100';
   if(isYw){
     const xpNeedYw=ywXpNeed(f);
@@ -4595,14 +4599,16 @@ function showFishDetail(idx){
   } else {
     document.getElementById('fd-xp').textContent=Math.floor(f.xp)+'/'+s.xpNeed;
   }
-  document.getElementById('fd-income').textContent=fIncomeWithSkills(f)+'원/30초';
-  if(isYw){
-    document.getElementById('fd-atk').textContent=(s.atk+(f.bonusAtk||0)*YW_PER_PT.atk)||0;
-    document.getElementById('fd-def').textContent=(s.def+(f.bonusDef||0)*YW_PER_PT.def)||0;
-  } else {
-    document.getElementById('fd-atk').textContent=s.atk||0;
-    document.getElementById('fd-def').textContent=s.def||0;
-  }
+  const _baseInc=fIncomeWithSkills(f);
+  const _effInc=tef.income>0?Math.floor(_baseInc*(1+tef.income)):_baseInc;
+  const _incEl=document.getElementById('fd-income');
+  _incEl.textContent=_effInc+'원/30초'; _incEl.style.color=_effInc>_baseInc?'#B8860B':'';
+  const _baseAtk=isYw?(s.atk+(f.bonusAtk||0)*YW_PER_PT.atk)||0:s.atk||0;
+  const _baseDef=isYw?(s.def+(f.bonusDef||0)*YW_PER_PT.def)||0:s.def||0;
+  const _effAtk=Math.floor(_baseAtk*(1+(tef.atk||0))*as);
+  const _effDef=Math.floor(_baseDef*(1+(tef.def||0))*as);
+  const _atkEl=document.getElementById('fd-atk'); _atkEl.textContent=_effAtk; _atkEl.style.color=_effAtk>_baseAtk?'#B8860B':'';
+  const _defEl=document.getElementById('fd-def'); _defEl.textContent=_effDef; _defEl.style.color=_effDef>_baseDef?'#B8860B':'';
   // 스킬 슬롯 표시
   const fdSkills=document.getElementById('fd-skills');
   if(fdSkills){
@@ -4633,8 +4639,12 @@ function showFishDetail(idx){
     fdFeeder.innerHTML=`<span style="color:#595959;font-size:11px">🍤 먹이통: <strong>${assignedTxt}</strong></span>
       ${hasFeeder&&!f.isDead?`<button onclick="fishAssignFeeder(${idx})" style="margin-left:6px;background:${assignedIdx>=0?'#C00000':'#217346'};color:#fff;border:none;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">${btnTxt}</button>`:''}`;
   }
-  document.getElementById('fd-agi').textContent=isYw?(s.agi+(f.bonusAgi||0)*YW_PER_PT.agi)||0:s.agi||0;
-  document.getElementById('fd-luk').textContent=isYw?(s.luk+(f.bonusLuk||0)*YW_PER_PT.luk)||0:s.luk||0;
+  const _baseAgi=isYw?(s.agi+(f.bonusAgi||0)*YW_PER_PT.agi)||0:s.agi||0;
+  const _baseLuk=isYw?(s.luk+(f.bonusLuk||0)*YW_PER_PT.luk)||0:s.luk||0;
+  const _effAgi=Math.floor(_baseAgi*(1+(tef.agi||0))*as);
+  const _effLuk=Math.floor(_baseLuk*(1+(tef.luk||0))*as);
+  const _agiEl=document.getElementById('fd-agi'); _agiEl.textContent=_effAgi; _agiEl.style.color=_effAgi>_baseAgi?'#B8860B':'';
+  const _lukEl=document.getElementById('fd-luk'); _lukEl.textContent=_effLuk; _lukEl.style.color=_effLuk>_baseLuk?'#B8860B':'';
   const evoEl=document.getElementById('fd-evo');
   if(isYw){
     const hasPts=(f.statPoints||0)>0;
