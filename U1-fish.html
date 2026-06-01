@@ -3821,9 +3821,9 @@ function fishTick(){
     let effFullRate=hasSym?Math.floor(fullRate*4/3):fullRate;
     // 스킬: 절약 - 포만감 소모 -15%
     if(f.skill1==='cm_절약'||f.skill2==='cm_절약') effFullRate=Math.floor(effFullRate/0.85);
-    // 칭호: 대식가(-10%) / 미식가(-20%) 포만감 소비 감소 (미적용)
-    // const _tFoodR=(_titleEf(f).foodRate||0);
-    // if(_tFoodR>0) effFullRate=Math.round(effFullRate/(1-_tFoodR));
+    // 칭호: 대식가(-10%) / 미식가(-20%) 포만감 소비 감소
+    const _tFoodR=(_titleEf(f).foodRate||0);
+    if(_tFoodR>0) effFullRate=Math.round(effFullRate/(1-_tFoodR));
     if(f._fullAcc>=effFullRate){f._fullAcc=0;f.fullness=Math.max(0,f.fullness-1);}
     // HP 변화 (10초마다 퍼센트 단위 회복/감소)
     f._hpAcc=(f._hpAcc||0)+elapsed;
@@ -3857,9 +3857,9 @@ function fishTick(){
       if(f.skill1==='cm_황금손'||f.skill2==='cm_황금손') fishInc=Math.floor(fishInc*1.1);
       // 스킬: 황금기운 - 자신의 LUK×1.5원 추가 수입
       if(f.skill1==='yg_황금기운'||f.skill2==='yg_황금기운') fishInc+=Math.floor(fStage(f).luk*1.5);
-      // 칭호: 황금손(+6%) / 황금(+10%) / 독재자(+5%) 수입 증가 (미적용)
-      // const _tInc=_titleEf(f).income||0;
-      // if(_tInc>0) fishInc=Math.floor(fishInc*(1+_tInc));
+      // 칭호: 황금손(+6%) / 황금(+10%) / 독재자(+5%) 수입 증가
+      const _tInc=_titleEf(f).income||0;
+      if(_tInc>0) fishInc=Math.floor(fishInc*(1+_tInc));
       inc+=fishInc;
     }
     // XP (10초마다)
@@ -5518,7 +5518,7 @@ function fishOpenShop(){
     {id:'bt_yw2',icon:'🌀',name:'중급영물 뽑기',cost:30,desc:'중급영물 1마리 획득 도전'},
     {id:'bt_yw3',icon:'🌀',name:'상급영물 뽑기',cost:50,desc:'상급영물 1마리 획득 도전'},
   ];
-  /* 칭호 가챠 섹션 (미적용 — 활성화 시 주석 해제)
+  // 칭호 가챠 섹션
   const _ownedCnt=(FG.titles||[]).length;
   const _canT1=_bp>=5,_canT10=_bp>=45;
   div.innerHTML+=`<div style="background:linear-gradient(135deg,#3B1A00,#7C3000);border-radius:6px;padding:10px 12px;margin-bottom:8px">
@@ -5533,7 +5533,6 @@ function fishOpenShop(){
       <button onclick="hideDlg('f-shop-modal');openTitleGacha(-1)" style="flex:0.7;background:#1A1A2E;color:#94A3B8;border:none;padding:7px 4px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.5">📋 목록<br><span style="font-size:9px;opacity:.85">&nbsp;</span></button>
     </div>
   </div>`;
-  */
   div.innerHTML+=`<div style="background:linear-gradient(135deg,#0D1B2A,#1A3560);border-radius:6px;padding:10px 12px;margin-bottom:8px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div style="font-size:11px;font-weight:700;color:#FFD700">⚔️ 배틀상점</div>
@@ -7977,21 +7976,20 @@ function startBattleGame(){
   btMyFishData=_btSource.map(f=>{
     const s=fStage(f);
     const isYwF=_isYwFish(f);
-    // 칭호 배틀 스탯 적용 (미적용) — 적용 시 아래 주석 해제 후 위 return 제거
-    // const tef=_titleEf(f); const as=1+(tef.allStat||0);
-    // const baseAtk=isYwF?s.atk+(f.bonusAtk||0)*YW_PER_PT.atk:s.atk;
-    // const baseDef=isYwF?s.def+(f.bonusDef||0)*YW_PER_PT.def:s.def;
-    // const baseAgi=isYwF?s.agi+(f.bonusAgi||0)*YW_PER_PT.agi:s.agi;
-    // const baseLuk=isYwF?s.luk+(f.bonusLuk||0)*YW_PER_PT.luk:s.luk;
-    // atk:Math.floor(baseAtk*(1+(tef.atk||0))*as), def:Math.floor(baseDef*(1+(tef.def||0))*as),
-    // agi:Math.floor(baseAgi*(1+(tef.agi||0))*as), luk:Math.floor(baseLuk*(1+(tef.luk||0))*as),
-    // hp:Math.floor(f.hp*(1+(tef.hp||0))), maxHp:Math.floor(f.maxHp*(1+(tef.hp||0))),
+    // 칭호 배틀 스탯 적용
+    const tef=_titleEf(f); const as=1+(tef.allStat||0);
+    const baseAtk=isYwF?s.atk+(f.bonusAtk||0)*YW_PER_PT.atk:s.atk;
+    const baseDef=isYwF?s.def+(f.bonusDef||0)*YW_PER_PT.def:s.def;
+    const baseAgi=isYwF?s.agi+(f.bonusAgi||0)*YW_PER_PT.agi:s.agi;
+    const baseLuk=isYwF?s.luk+(f.bonusLuk||0)*YW_PER_PT.luk:s.luk;
     return{origIdx:FG.fishes.indexOf(f),name:s.name,grade:s.grade,type:f.type||'goldfish',
-      stage:f.stage,hp:f.hp,maxHp:f.maxHp,
-      atk:isYwF?s.atk+(f.bonusAtk||0)*YW_PER_PT.atk:s.atk,
-      def:isYwF?s.def+(f.bonusDef||0)*YW_PER_PT.def:s.def,
-      agi:isYwF?s.agi+(f.bonusAgi||0)*YW_PER_PT.agi:s.agi,
-      luk:isYwF?s.luk+(f.bonusLuk||0)*YW_PER_PT.luk:s.luk,
+      stage:f.stage,
+      hp:Math.floor(f.hp*(1+(tef.hp||0))),
+      maxHp:Math.floor(f.maxHp*(1+(tef.hp||0))),
+      atk:Math.floor(baseAtk*(1+(tef.atk||0))*as),
+      def:Math.floor(baseDef*(1+(tef.def||0))*as),
+      agi:Math.floor(baseAgi*(1+(tef.agi||0))*as),
+      luk:Math.floor(baseLuk*(1+(tef.luk||0))*as),
       color:s.color,fin:s.fin,species:s.species,fullness:f.fullness||80,
       skill1:f.skill1||null,skill2:f.skill2||null,
       title:f.title||null,
@@ -9032,8 +9030,7 @@ function btShowResult(myAlive,oppAlive){
     if(Math.random()<0.25){FG.spFood++;btSpFood=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
     FG.btWins++;
     checkAchievements('btwin');
-    // 칭호 BP보너스 (미적용): const _bpTitleBonus=Math.max(0,...(btFishes||[]).filter(f=>f.side==='my'&&!f.isDead).map(f=>{const tef=f.title?((TITLE_POOL.find(t=>t.id===f.title)||{}).effect||{}):{}; return tef.bpBonus||0;}));
-    if(!_btBPAwarded){_btBPAwarded=true;const _bpW=_isLegBattle?3:1;FG.battlePoints=(FG.battlePoints||0)+_bpW;u1Toast(`${_isLegBattle?'👑':'⚔️'} 배틀포인트 +${_bpW} (승리)`,'#8B6914');}
+    if(!_btBPAwarded){_btBPAwarded=true;const _bpW=_isLegBattle?3:1;const _bpTitleBonus=Math.max(0,...(btFishes||[]).filter(f=>f.side==='my'&&!f.isDead).map(f=>{const tef=f.title?((TITLE_POOL.find(t=>t.id===f.title)||{}).effect||{}):{}; return tef.bpBonus||0;}));FG.battlePoints=(FG.battlePoints||0)+_bpW+_bpTitleBonus;u1Toast(`${_isLegBattle?'👑':'⚔️'} 배틀포인트 +${_bpW+_bpTitleBonus} (승리${_bpTitleBonus>0?` +${_bpTitleBonus}칭호보너스`:''})`,'#8B6914');}
   } else if(!draw&&_isLegBattle){
     if(!_btBPAwarded){_btBPAwarded=true;FG.battlePoints=(FG.battlePoints||0)+1;}
     u1Toast('👑 배틀포인트 +1 (패배)','#8B6914');
@@ -9111,8 +9108,7 @@ function onBattleForfeit(payload){
   if(Math.random()<0.25){FG.spFood++;btSpFoodF=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
   FG.btWins++;checkAchievements('btwin');
   const _isLegBattleF=currentGame&&currentGame.type==='legend_battle';
-  // 칭호 BP보너스 (미적용): const _bpFTitleBonus=Math.max(0,...(btFishes||[]).filter(f=>f.side==='my'&&!f.isDead).map(f=>{const tef=f.title?((TITLE_POOL.find(t=>t.id===f.title)||{}).effect||{}):{}; return tef.bpBonus||0;}));
-  if(!_btBPAwarded){_btBPAwarded=true;const _bpF=_isLegBattleF?3:1;FG.battlePoints=(FG.battlePoints||0)+_bpF;u1Toast(`${_isLegBattleF?'👑':'⚔️'} 배틀포인트 +${_bpF} (승리)`,'#8B6914');}
+  if(!_btBPAwarded){_btBPAwarded=true;const _bpF=_isLegBattleF?3:1;const _bpFTitleBonus=Math.max(0,...(btFishes||[]).filter(f=>f.side==='my'&&!f.isDead).map(f=>{const tef=f.title?((TITLE_POOL.find(t=>t.id===f.title)||{}).effect||{}):{}; return tef.bpBonus||0;}));FG.battlePoints=(FG.battlePoints||0)+_bpF+_bpFTitleBonus;u1Toast(`${_isLegBattleF?'👑':'⚔️'} 배틀포인트 +${_bpF+_bpFTitleBonus} (승리${_bpFTitleBonus>0?` +${_bpFTitleBonus}칭호보너스`:''})`,'#8B6914');}
   fishRenderInfo();fishSave();
   // 결과 배너
   const banner=document.getElementById('bt-result-banner');
