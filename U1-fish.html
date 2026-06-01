@@ -7871,13 +7871,13 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
       if(!targets.length) return;
       const tgt=targets[Math.floor(rng()*targets.length)];
       const ti=p2.indexOf(tgt);
-      const dodge=rng()<tgt.agi/800*((tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1);
+      const _dodgeBase=Math.min(0.60,tgt.agi/1500);const _dodgeMult=(tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1;const dodge=rng()<Math.min(0.90,_dodgeBase*_dodgeMult);
       if(dodge){
         // 스킬: 번개 반격 - 회피 성공 시 즉시 반격
         if(tgt.skill1==='el_번개반격'||tgt.skill2==='el_번개반격') tgt.atkCd=0;
         events.push({t,side:1,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;
       }
-      const crit=rng()<Math.min(1,f.luk/500)*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
+      const crit=rng()<Math.min(1,Math.min(0.80,f.luk/1200)*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1));
       // 스킬: 포식자의 영역 - 아군 피라냐 2마리+ 시 공격력 +20%
       const domainMult1=(f.skill1==='pr_포식자의영역'||f.skill2==='pr_포식자의영역')&&p1.filter(ff=>ff.type==='piranha'&&ff.curHp>0).length>=2?1.2:1;
       // 스킬: 혈흔의 냄새 - 처치 누적 공격력 +8%
@@ -7990,13 +7990,13 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
       if(!targets.length) return;
       const tgt=targets[Math.floor(rng()*targets.length)];
       const ti=p1.indexOf(tgt);
-      const dodge=rng()<tgt.agi/800*((tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1);
+      const _dodgeBase=Math.min(0.60,tgt.agi/1500);const _dodgeMult=(tgt.skill1==='gu_황금비늘'||tgt.skill2==='gu_황금비늘')?2:1;const dodge=rng()<Math.min(0.90,_dodgeBase*_dodgeMult);
       if(dodge){
         // 스킬: 번개 반격 - 회피 성공 시 즉시 반격
         if(tgt.skill1==='el_번개반격'||tgt.skill2==='el_번개반격') tgt.atkCd=0;
         events.push({t,side:2,ai:i,ti,dmg:0,dodge:true});f.atkCd=Math.max(45,270-f.agi*4.5);return;
       }
-      const crit=rng()<Math.min(1,f.luk/500)*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1);
+      const crit=rng()<Math.min(1,Math.min(0.80,f.luk/1200)*((f.skill1==='tr_화려한섬광'||f.skill2==='tr_화려한섬광')?2:1));
       // 스킬: 포식자의 영역 - 아군 피라냐 2마리+ 시 공격력 +20%
       const domainMult2=(f.skill1==='pr_포식자의영역'||f.skill2==='pr_포식자의영역')&&p2.filter(ff=>ff.type==='piranha'&&ff.curHp>0).length>=2?1.2:1;
       // 스킬: 혈흔의 냄새 - 처치 누적 공격력 +8%
