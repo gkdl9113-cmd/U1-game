@@ -1189,7 +1189,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div id="hl-result" style="min-height:20px;font-size:13px;font-weight:bold;margin:4px 0"></div>
       <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:14px">
         <span style="font-size:12px;color:#444">베팅</span>
-        <input id="hl-bet" type="number" min="1000" max="10000000" step="1000" value="1000" style="width:100px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
+        <input id="hl-bet" type="number" min="1000" max="100000000" step="1000" value="1000" style="width:100px;border:1px solid #aaa;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit;text-align:center">
         <span style="font-size:12px;color:#444">원</span>
       </div>
       <div id="hl-start-ui">
@@ -10168,7 +10168,7 @@ function openHiLo(){
 function hlStart(){
   const bet=parseInt(document.getElementById('hl-bet').value)||1000;
   if(bet<1000){u1Toast('최소 베팅 1,000원','#C00000');return;}
-  if(bet>10000000){u1Toast('최대 베팅은 1,000만원입니다','#C00000');return;}
+  if(bet>100000000){u1Toast('최대 베팅은 1억원입니다','#C00000');return;}
   if(FG.money<bet){u1Toast('돈이 부족합니다','#C00000');return;}
   _hlBet=bet; _hlMult=1; _hlActive=true;
   FG.money-=bet;
