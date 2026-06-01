@@ -2699,7 +2699,7 @@ const F_SPECIES={
   ],
   // 용궁 거북이: 영물 단독, 운철 낚시대 전용 획득
   yongwang:[null,
-    {name:'용궁 거북이',species:'용궁 거북이',grade:'중급영물',color:'#004D40',fin:'#FFD700',hp:8000,atk:600,def:1800,agi:120,luk:400,xpRate:15,xpNeed:9999,evoCost:0,foodRate:6},
+    {name:'용궁 거북이',species:'용궁 거북이',grade:'중급영물',color:'#004D40',fin:'#FFD700',hp:8000,atk:600,def:700,agi:120,luk:400,xpRate:15,xpNeed:9999,evoCost:0,foodRate:6},
   ],
   yeongeum:[null,
     {name:'영금어',species:'영금어',grade:'하급영물',color:'#1B0050',fin:'#FFD700',hp:5500,atk:550,def:450,agi:320,luk:220,xpRate:12,xpNeed:9999,evoCost:0,foodRate:7},
@@ -2718,7 +2718,7 @@ const F_SPECIES={
   ],
   // 궐어: 균형 반격형 중급영물, 심연의 쏘가리 미끼로 획득
   geumlin:[null,
-    {name:'궐어',species:'궐어',grade:'중급영물',color:'#7A3500',fin:'#FFD700',hp:7500,atk:800,def:900,agi:280,luk:260,xpRate:15,xpNeed:9999,evoCost:0,foodRate:7},
+    {name:'궐어',species:'궐어',grade:'중급영물',color:'#7A3500',fin:'#FFD700',hp:7500,atk:800,def:500,agi:280,luk:260,xpRate:15,xpNeed:9999,evoCost:0,foodRate:7},
   ],
   // 거북이: HP/DEF 특화 탱커, 낮은 AGI, 높은 행운 (호수 전용)
   // 등급: 중급→고급→희귀→영웅→전설
@@ -8198,7 +8198,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
   // 스킬: 용의숨결 - 배틀 시작 시 적 전체 ATK·DEF -15%
   if(p1.some(f=>f.skill1==='hl_용의숨결'||f.skill2==='hl_용의숨결')) p2.forEach(f=>{f.atk=Math.floor(f.atk*0.85);f.def=Math.floor(f.def*0.85);});
   if(p2.some(f=>f.skill1==='hl_용의숨결'||f.skill2==='hl_용의숨결')) p1.forEach(f=>{f.atk=Math.floor(f.atk*0.85);f.def=Math.floor(f.def*0.85);});
-  const MAX=1800; // 최대 1분 30초 (50ms * 1800 = 90초)
+  const MAX=2000; // 최대 1분 (30ms * 2000 = 60초)
   for(let t=0;t<MAX;t++){
     const a1=p1.some(f=>f.curHp>0);
     const a2=p2.some(f=>f.curHp>0);
@@ -8522,7 +8522,7 @@ function initRealtimeBattle(myFish,oppFish,seed,imP1){
 
   // 30ms 인터벌 시작
   clearInterval(btInterval);
-  btInterval=setInterval(btFrame,50);
+  btInterval=setInterval(btFrame,30);
 }
 
 // ── 사전 계산 이벤트 적용 ────────────────────────────────
