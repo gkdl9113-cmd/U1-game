@@ -2214,6 +2214,7 @@ function applyFishData(d){
   FG.auxMax=d.auxMax||1;
   FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{},megalodonte:{}};
   if(!FG.fishCodex.megalodonte) FG.fishCodex.megalodonte={};
+  if(!FG.fishCodex.geumlin) FG.fishCodex.geumlin={};
   if(d.battlePickIds&&d.battlePickIds.length){
     FG.battlePick=d.battlePickIds.map(id=>FG.fishes.find(f=>f.id===id)).filter(f=>f&&!f.isDead);
   }
@@ -2580,6 +2581,8 @@ const FISH_SKILLS={
   'hl_왕의분노':    {name:'왕의분노',    species:'haelyong',    slot:1,icon:'😡',rarity:'전설',desc:'배틀 패시브: HP 50% 이하 시 ATK·DEF +40%'},
   'mg_심연의턱':    {name:'심연의턱',    species:'megalodonte', slot:1,icon:'🦷',rarity:'영웅',desc:'배틀 패시브: 공격 시 30% 확률로 적 DEF 완전 무시'},
   'mg_고대의분노':  {name:'고대의분노',  species:'megalodonte', slot:1,icon:'💢',rarity:'전설',desc:'배틀 패시브: HP 60% 이하 시 ATK +60%'},
+  'gl_황금방패':    {name:'황금방패',    species:'geumlin',     slot:1,icon:'🛡️',rarity:'영웅',desc:'배틀 패시브: 피격 시 30% 확률로 DEF×0.5만큼 공격자에게 반격 데미지'},
+  'gl_황금의의지':  {name:'황금의의지',  species:'geumlin',     slot:1,icon:'✨',rarity:'전설',desc:'배틀 패시브: HP 30% 이하 시 ATK·DEF +50% / 매 공격마다 최대 HP 2% 회복'},
 };
 const SKILL_RARITY={
   '일반':{bg:'#E8E8E8',fg:'#555555',border:'#BBBBBB',label:'⚪ 일반'},
@@ -2674,6 +2677,10 @@ const F_SPECIES={
   megalodonte:[null,
     {name:'메갈로돈',species:'메갈로돈',grade:'상급영물',color:'#1C2340',fin:'#B91C1C',hp:10000,atk:3250,def:300,agi:150,luk:350,xpRate:18,xpNeed:9999,evoCost:0,foodRate:5},
   ],
+  // 금린 쏘가리: 균형 반격형 중급영물, 심연의 쏘가리 미끼로 획득
+  geumlin:[null,
+    {name:'금린 쏘가리',species:'금린 쏘가리',grade:'중급영물',color:'#7A3500',fin:'#FFD700',hp:7500,atk:800,def:900,agi:280,luk:260,xpRate:15,xpNeed:9999,evoCost:0,foodRate:7},
+  ],
   // 거북이: HP/DEF 특화 탱커, 낮은 AGI, 높은 행운 (호수 전용)
   // 등급: 중급→고급→희귀→영웅→전설
   turtle:[null,
@@ -2701,6 +2708,7 @@ const STAGE_INCOME={
   eelyw:[0,2200],
   haelyong:[0,3500],
   megalodonte:[0,4000],
+  geumlin:[0,2100],
 };
 const F_TANK_PRICES=[0,500,1200,2800,6000,13000,28000,60000,130000,280000];
 const F_SHOP=[
@@ -2745,6 +2753,7 @@ const BAIT_YW_TABLE={
   goldfish:{main:{type:'yeongeum',stage:1},normal:{mainProb:0.03,otherProb:0.003},special:{mainProb:0.10,otherProb:0.007}},
   electric:{main:{type:'eelyw',stage:1},normal:{mainProb:0.01,otherProb:0.005},special:{mainProb:0.05,otherProb:0.010}},
   piranha:{main:{type:'megalodonte',stage:1},normal:{mainProb:0.008,otherProb:0.003},special:{mainProb:0.04,otherProb:0.008}},
+  mandarin:{main:{type:'geumlin',stage:1},normal:{mainProb:0.01,otherProb:0.005},special:{mainProb:0.05,otherProb:0.010}},
 };
 const LOTTERY_PRIZES=[
   {rank:1,grade:'1등',amount:100000,count:1,  bg:'#FFD700',fg:'#7F4F00'},
@@ -2946,12 +2955,12 @@ const FG={
   fishPos:null,
   tickInterval:null,swimInterval:null,saveInterval:null,
   cvs:null,ctx:null,
-  fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{},megalodonte:{}}, // 도감: {type:{stage:bool}}
+  fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{},megalodonte:{},geumlin:{}}, // 도감: {type:{stage:bool}}
 };
 function fGet(i){return FG.fishes[i];}
 function fStage(f){const sp=F_SPECIES[f.type||'goldfish']||F_SPECIES.goldfish;return sp[f.stage]||sp[1];}
 function fishStage(){const f=FG.fishes.find(x=>!x.isDead);return f?fStage(f):F_STAGES[1];}
-function _isYwFish(f){return f.type==='yongwang'||f.type==='yeongeum'||f.type==='eelyw'||f.type==='haelyong'||f.type==='megalodonte';}
+function _isYwFish(f){return f.type==='yongwang'||f.type==='yeongeum'||f.type==='eelyw'||f.type==='haelyong'||f.type==='megalodonte'||f.type==='geumlin';}
 function newFish(stage=1,type='goldfish'){
   const s=(F_SPECIES[type]||F_SPECIES.goldfish)[stage];
   const base={id:'f'+Date.now()+Math.random().toString(36).slice(2),type,stage,hp:s.hp,maxHp:s.hp,fullness:80,xp:0,isDead:false};
@@ -4818,6 +4827,26 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx+dir*size*.6,fy-bodyRy);
     c.closePath();c.fill();
   }
+  // 금린 쏘가리 영물 장식 (황금빛 비늘 + 아우라)
+  if(type==='geumlin'){
+    const gg=c.createRadialGradient(fx,fy,size*.25,fx,fy,size*2.0);
+    gg.addColorStop(0,'rgba(255,200,0,0.18)');gg.addColorStop(1,'rgba(255,200,0,0)');
+    c.fillStyle=gg;c.beginPath();c.arc(fx,fy,size*2.0,0,Math.PI*2);c.fill();
+    // 황금 등지느러미 (3갈래 부채형)
+    c.fillStyle=s.fin+'cc';
+    c.beginPath();
+    c.moveTo(fx-dir*size*.20,fy-bodyRy);
+    c.lineTo(fx+dir*size*.05,fy-bodyRy*1.70);
+    c.lineTo(fx+dir*size*.28,fy-bodyRy*1.35);
+    c.lineTo(fx+dir*size*.48,fy-bodyRy*1.62);
+    c.lineTo(fx+dir*size*.62,fy-bodyRy);
+    c.closePath();c.fill();
+    // 비늘 황금 패턴 (3줄 곡선)
+    c.strokeStyle='rgba(255,215,0,0.50)';c.lineWidth=1.4;
+    for(let k=0;k<3;k++){
+      c.beginPath();c.arc(fx+dir*size*(0.22-k*0.22),fy-bodyRy*(0.10+k*0.05),size*(0.32-k*0.05),Math.PI*.60,Math.PI*1.55);c.stroke();
+    }
+  }
   // 영금어 특수 효과
   if(type==='yeongeum'){
     // 보라빛 글로우 오라
@@ -4906,10 +4935,10 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
   const eyeY=(type==='turtle'||type==='yongwang')?fy-size*.12:type==='haelyong'?fy-size*.10:type==='megalodonte'?fy-bodyRy*.42:fy-bodyRy*.15;
   c.fillStyle='#fff';c.beginPath();c.arc(eyeX,eyeY,eyeR,0,Math.PI*2);c.fill();
   // 영물 눈동자 (영금어=보라, 용궁거북이=황금, 번개뱀장어=시안, 해룡=청, 메갈로돈=적)
-  c.fillStyle=type==='yeongeum'?'#7B00D4':type==='yongwang'?'#C8A000':type==='eelyw'?'#00B4CC':type==='haelyong'?'#00E5FF':type==='megalodonte'?'#FF1010':'#111';
+  c.fillStyle=type==='yeongeum'?'#7B00D4':type==='yongwang'?'#C8A000':type==='eelyw'?'#00B4CC':type==='haelyong'?'#00E5FF':type==='megalodonte'?'#FF1010':type==='geumlin'?'#FFB800':'#111';
   c.beginPath();c.arc(eyeX+dir*size*.04,eyeY,eyePupilR,0,Math.PI*2);c.fill();
-  if(type==='yeongeum'||type==='yongwang'||type==='eelyw'||type==='haelyong'||type==='megalodonte'){
-    c.strokeStyle=type==='yongwang'?'rgba(0,210,170,0.7)':type==='eelyw'?'rgba(0,229,255,0.75)':type==='haelyong'?'rgba(30,144,255,0.75)':type==='megalodonte'?'rgba(220,20,20,0.75)':'rgba(255,215,0,0.6)';c.lineWidth=.8;
+  if(type==='yeongeum'||type==='yongwang'||type==='eelyw'||type==='haelyong'||type==='megalodonte'||type==='geumlin'){
+    c.strokeStyle=type==='yongwang'?'rgba(0,210,170,0.7)':type==='eelyw'?'rgba(0,229,255,0.75)':type==='haelyong'?'rgba(30,144,255,0.75)':type==='megalodonte'?'rgba(220,20,20,0.75)':type==='geumlin'?'rgba(255,190,0,0.75)':'rgba(255,215,0,0.6)';c.lineWidth=.8;
     c.beginPath();c.arc(eyeX,eyeY,eyeR,0,Math.PI*2);c.stroke();
   }
 }
@@ -5408,6 +5437,7 @@ function drawMinifish(type,s,has){
       ${type==='eelyw'?`<radialGradient id="glow_eelyw_${s.grade}" cx="50%" cy="50%"><stop offset="0%" style="stop-color:rgb(0,229,255);stop-opacity:0.22"/><stop offset="100%" style="stop-color:rgb(0,229,255);stop-opacity:0"/></radialGradient>`:''}
       ${type==='haelyong'?`<radialGradient id="glow_haelyong_${s.grade}" cx="50%" cy="50%"><stop offset="0%" style="stop-color:rgb(30,144,255);stop-opacity:0.28"/><stop offset="100%" style="stop-color:rgb(30,144,255);stop-opacity:0"/></radialGradient>`:''}
       ${type==='megalodonte'?`<radialGradient id="glow_megalodonte_${s.grade}" cx="50%" cy="50%"><stop offset="0%" style="stop-color:rgb(185,28,28);stop-opacity:0.28"/><stop offset="100%" style="stop-color:rgb(185,28,28);stop-opacity:0"/></radialGradient>`:''}
+      ${type==='geumlin'?`<radialGradient id="glow_geumlin_${s.grade}" cx="50%" cy="50%"><stop offset="0%" style="stop-color:rgb(255,200,0);stop-opacity:0.22"/><stop offset="100%" style="stop-color:rgb(255,200,0);stop-opacity:0"/></radialGradient>`:''}
     </defs>`;
 
   // 꼬리 (타입별로 다름)
@@ -5421,7 +5451,7 @@ function drawMinifish(type,s,has){
     svg+=`<path d="M ${fx-dir*size*0.85},${fy-size*0.1} L ${fx-dir*size*1.5},${fy-size*0.65} L ${fx-dir*size*1.6},${fy} L ${fx-dir*size*1.5},${fy+size*0.65} L ${fx-dir*size*0.85},${fy+size*0.1} Z" fill="${finColor}"/>`;
   } else if(type==='clownfish'){
     svg+=`<path d="M ${fx-dir*size*0.72},${fy} L ${fx-dir*size*1.45},${fy-size*0.6} L ${fx-dir*size*1.55},${fy} L ${fx-dir*size*1.45},${fy+size*0.6} Z" fill="${finColor}"/>`;
-  } else if(type==='mandarin'){
+  } else if(type==='mandarin'||type==='geumlin'){
     svg+=`<path d="M ${fx-dir*size*0.8},${fy} L ${fx-dir*size*1.35},${fy-size*0.65} L ${fx-dir*size*1.5},${fy-size*0.25} L ${fx-dir*size*1.55},${fy} L ${fx-dir*size*1.5},${fy+size*0.25} L ${fx-dir*size*1.35},${fy+size*0.65} Z" fill="${finColor}"/>`;
   } else if(type==='electric'){
     svg+=`<path d="M ${fx-dir*size*1.4},${fy-size*0.08} L ${fx-dir*size*2.2},${fy-size*0.04} L ${fx-dir*size*2.6},${fy} L ${fx-dir*size*2.2},${fy+size*0.04} L ${fx-dir*size*1.4},${fy+size*0.08} Z" fill="${finColor}"/>`;
@@ -5551,6 +5581,13 @@ function drawMinifish(type,s,has){
     svg+=`<path d="M ${fx-dir*size*0.28},${fy-bodyRy} L ${fx+dir*size*0.02},${fy-bodyRy*1.68} L ${fx+dir*size*0.2},${fy-bodyRy*1.28} L ${fx+dir*size*0.38},${fy-bodyRy*1.58} L ${fx+dir*size*0.52},${fy-bodyRy} Z" fill="${finColor}" opacity="0.8"/>`;
     svg+=`<path d="M ${fx+dir*size*0.48},${fy-bodyRy*0.22} A ${size*0.30},${size*0.30} 0 0,0 ${fx+dir*size*0.18},${fy-bodyRy*0.72}" stroke="rgba(255,215,0,0.45)" stroke-width="1.3" fill="none"/>`;
     svg+=`<circle cx="${fx}" cy="${fy}" r="${size*1.7}" fill="url(#glow_yeongeum_${s.grade})" opacity="1"/>`;
+  }
+  // 금린 쏘가리 영물 장식 SVG
+  if(type==='geumlin'){
+    svg+=`<circle cx="${fx}" cy="${fy}" r="${size*2.0}" fill="url(#glow_geumlin_${s.grade})"/>`;
+    svg+=`<path d="M ${fx-dir*size*0.20},${fy-bodyRy} L ${fx+dir*size*0.05},${fy-bodyRy*1.70} L ${fx+dir*size*0.28},${fy-bodyRy*1.35} L ${fx+dir*size*0.48},${fy-bodyRy*1.62} L ${fx+dir*size*0.62},${fy-bodyRy} Z" fill="${finColor}" opacity="0.85"/>`;
+    svg+=`<path d="M ${fx-dir*size*0.28},${fy-bodyRy*0.25} Q ${fx+dir*size*0.12},${fy-bodyRy*0.55} ${fx+dir*size*0.52},${fy-bodyRy*0.25}" stroke="rgba(255,215,0,0.50)" stroke-width="1.4" fill="none"/>`;
+    svg+=`<path d="M ${fx-dir*size*0.10},${fy+bodyRy*0.05} Q ${fx+dir*size*0.18},${fy-bodyRy*0.28} ${fx+dir*size*0.45},${fy+bodyRy*0.02}" stroke="rgba(255,215,0,0.42)" stroke-width="1.2" fill="none"/>`;
   }
   // 메갈로돈 영물 장식 SVG
   if(type==='megalodonte'){
@@ -7623,7 +7660,7 @@ function fwUpdateSidebarMobile(){
 // ── 날씨 시스템 ───────────────────────────────────────────
 const BATTLE_WEATHERS=[
   {id:'clear',   icon:'☀️', name:'맑음', species:['영금어','금붕어','구피','흰동가리'],       bg:'rgba(255,220,80,0.08)',  atkMult:1.3, defMult:1.3},
-  {id:'moonlit', icon:'🌙', name:'달빛', species:['해룡','가물치','쏘가리'],                  bg:'rgba(80,100,220,0.10)', atkMult:1.3, defMult:1.3},
+  {id:'moonlit', icon:'🌙', name:'달빛', species:['해룡','가물치','쏘가리','금린 쏘가리'],     bg:'rgba(80,100,220,0.10)', atkMult:1.3, defMult:1.3},
   {id:'storm',   icon:'⚡', name:'폭풍', species:['번개뱀장어','전기뱀장어','피라냐'],        bg:'rgba(60,60,80,0.12)',   atkMult:1.3, defMult:1.3},
   {id:'current', icon:'🌊', name:'해류', species:['용궁 거북이','열대어','거북이'],            bg:'rgba(0,160,140,0.10)',  atkMult:1.0, defMult:1.3, hpMult:1.3},
   {id:'deep',    icon:'🌑', name:'심해', species:['메갈로돈'],                                bg:'rgba(10,10,30,0.15)',   atkMult:1.3, defMult:1.3},
@@ -7861,9 +7898,13 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
       const rageKingDef1=(tgt.skill1==='hl_왕의분노'||tgt.skill2==='hl_왕의분노')&&tgt.curHp<=tgt.maxHp*0.5?1.4:1;
       // 스킬: 고대의분노 - HP 60% 이하 시 ATK +60%
       const ancientRage1=(f.skill1==='mg_고대의분노'||f.skill2==='mg_고대의분노')&&f.curHp<=f.maxHp*0.6?1.6:1;
+      // 스킬: 황금의의지 - HP 30% 이하 시 ATK +50%
+      const goldenWillAtk1=(f.skill1==='gl_황금의의지'||f.skill2==='gl_황금의의지')&&f.curHp<=f.maxHp*0.30?1.5:1;
+      // 스킬: 황금의의지 - 피격 대상 HP 30% 이하 시 DEF +50%
+      const goldenWillDef1=(tgt.skill1==='gl_황금의의지'||tgt.skill2==='gl_황금의의지')&&tgt.curHp<=tgt.maxHp*0.30?1.5:1;
       // 스킬: 심연의턱 - 30% 확률로 적 DEF 완전 무시
       const abyssJaw1=(f.skill1==='mg_심연의턱'||f.skill2==='mg_심연의턱')&&rng()<0.30;
-      const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*desperateAtk1*rageMult1*ando1*rageKingAtk1*ancientRage1*0.7-(abyssJaw1?0:tgt.def*desperateDef1*penMult1*rageKingDef1*0.3)+(rng()-0.5)*f.atk*0.15));
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult1*bloodMult1*desperateAtk1*rageMult1*ando1*rageKingAtk1*ancientRage1*goldenWillAtk1*0.7-(abyssJaw1?0:tgt.def*desperateDef1*penMult1*rageKingDef1*goldenWillDef1*0.3)+(rng()-0.5)*f.atk*0.15));
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
@@ -7911,9 +7952,17 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
       if((f.skill1==='cm_흡혈'||f.skill2==='cm_흡혈')&&rng()<0.15){
         const vh=Math.floor(fd*0.20);skillHeal+=vh;f.curHp=Math.min(f.maxHp,f.curHp+vh);
       }
+      // 스킬: 황금의의지 - 매 공격마다 최대HP 2% 회복
+      if(f.skill1==='gl_황금의의지'||f.skill2==='gl_황금의의지'){
+        const gwh=Math.floor(f.maxHp*0.02);skillHeal+=gwh;f.curHp=Math.min(f.maxHp,f.curHp+gwh);
+      }
       // 스킬: 가시 방어 - 피격 시 받은 피해 25% 반사
       if((tgt.skill1==='tu_가시방어'||tgt.skill2==='tu_가시방어')&&tgt.curHp>0){
         f.curHp=Math.max(0,f.curHp-Math.max(1,Math.floor(fd*0.25)));
+      }
+      // 스킬: 황금방패 - 피격 시 30% 확률로 DEF×0.5 반격 데미지
+      if((tgt.skill1==='gl_황금방패'||tgt.skill2==='gl_황금방패')&&tgt.curHp>0&&rng()<0.30){
+        f.curHp=Math.max(0,f.curHp-Math.max(1,Math.floor(tgt.def*0.5)));
       }
       // 스킬: 혈흔의 냄새 - 적 처치 시 스택 증가
       if(tgt.curHp<=0&&(f.skill1==='pr_혈흔의냄새'||f.skill2==='pr_혈흔의냄새')){
@@ -7968,9 +8017,13 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
       const rageKingDef2=(tgt.skill1==='hl_왕의분노'||tgt.skill2==='hl_왕의분노')&&tgt.curHp<=tgt.maxHp*0.5?1.4:1;
       // 스킬: 고대의분노 - HP 60% 이하 시 ATK +60%
       const ancientRage2=(f.skill1==='mg_고대의분노'||f.skill2==='mg_고대의분노')&&f.curHp<=f.maxHp*0.6?1.6:1;
+      // 스킬: 황금의의지 - HP 30% 이하 시 ATK +50%
+      const goldenWillAtk2=(f.skill1==='gl_황금의의지'||f.skill2==='gl_황금의의지')&&f.curHp<=f.maxHp*0.30?1.5:1;
+      // 스킬: 황금의의지 - 피격 대상 HP 30% 이하 시 DEF +50%
+      const goldenWillDef2=(tgt.skill1==='gl_황금의의지'||tgt.skill2==='gl_황금의의지')&&tgt.curHp<=tgt.maxHp*0.30?1.5:1;
       // 스킬: 심연의턱 - 30% 확률로 적 DEF 완전 무시
       const abyssJaw2=(f.skill1==='mg_심연의턱'||f.skill2==='mg_심연의턱')&&rng()<0.30;
-      const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*desperateAtk2*rageMult2*ando2*rageKingAtk2*ancientRage2*0.7-(abyssJaw2?0:tgt.def*desperateDef2*penMult2*rageKingDef2*0.3)+(rng()-0.5)*f.atk*0.15));
+      const dmg=Math.max(1,Math.floor(f.atk*domainMult2*bloodMult2*desperateAtk2*rageMult2*ando2*rageKingAtk2*ancientRage2*goldenWillAtk2*0.7-(abyssJaw2?0:tgt.def*desperateDef2*penMult2*rageKingDef2*goldenWillDef2*0.3)+(rng()-0.5)*f.atk*0.15));
       let fd=crit?dmg*2:dmg;
       // 스킬: 행운의 폭발 - 크리티컬 시 LUK×2 추가 데미지
       if(crit&&(f.skill1==='cl_행운의폭발'||f.skill2==='cl_행운의폭발')) fd+=f.luk*2;
@@ -8018,9 +8071,17 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
       if((f.skill1==='cm_흡혈'||f.skill2==='cm_흡혈')&&rng()<0.15){
         const vh=Math.floor(fd*0.20);skillHeal+=vh;f.curHp=Math.min(f.maxHp,f.curHp+vh);
       }
+      // 스킬: 황금의의지 - 매 공격마다 최대HP 2% 회복
+      if(f.skill1==='gl_황금의의지'||f.skill2==='gl_황금의의지'){
+        const gwh=Math.floor(f.maxHp*0.02);skillHeal+=gwh;f.curHp=Math.min(f.maxHp,f.curHp+gwh);
+      }
       // 스킬: 가시 방어 - 피격 시 받은 피해 25% 반사
       if((tgt.skill1==='tu_가시방어'||tgt.skill2==='tu_가시방어')&&tgt.curHp>0){
         f.curHp=Math.max(0,f.curHp-Math.max(1,Math.floor(fd*0.25)));
+      }
+      // 스킬: 황금방패 - 피격 시 30% 확률로 DEF×0.5 반격 데미지
+      if((tgt.skill1==='gl_황금방패'||tgt.skill2==='gl_황금방패')&&tgt.curHp>0&&rng()<0.30){
+        f.curHp=Math.max(0,f.curHp-Math.max(1,Math.floor(tgt.def*0.5)));
       }
       // 스킬: 혈흔의 냄새 - 적 처치 시 스택 증가
       if(tgt.curHp<=0&&(f.skill1==='pr_혈흔의냄새'||f.skill2==='pr_혈흔의냄새')){
