@@ -7132,6 +7132,7 @@ const ADM_GIVE_SPECIES=[
   {key:'eelyw',   label:'번개뱀장어'},
   {key:'haelyong',label:'해룡'},
   {key:'megalodonte',label:'메갈로돈'},
+  {key:'geumlin',  label:'궐어'},
 ];
 let _admGiveType='goldfish';
 let _admGiveStage=1;
@@ -10155,16 +10156,30 @@ function hlStart(){
 }
 function hlGuess(dir){
   if(!_hlActive) return;
+  const prev=_hlCur;
+  // 기본 카드 뽑기 (같은 숫자 스킵, 최대 10회)
   let next=_hlDeck.pop();
-  // 같은 숫자면 다시 뽑기 (최대 10회)
   let retry=0;
-  while(next&&HL_VAL[next.r]===HL_VAL[_hlCur.r]&&retry++<10) next=_hlDeck.pop();
+  while(next&&HL_VAL[next.r]===HL_VAL[prev.r]&&retry++<10) next=_hlDeck.pop();
   if(!next){u1Toast('덱 소진! 정산합니다','#555');hlCashOut();return;}
-  const prev=_hlCur; _hlCur=next;
-  // 하우스 엣지 21% → 실질 성공률 ~47% × 0.79 ≈ 37%
-  const correct=((dir==='high'&&HL_VAL[next.r]>HL_VAL[prev.r])
-             ||(dir==='low'&&HL_VAL[next.r]<HL_VAL[prev.r]))
-             &&Math.random()>0.21;
+  // 하우스 엣지 21%: 정답 카드일 때만 반대 방향 카드로 교체 (표시 결과와 일치)
+  const naturalCorrect=(dir==='high'&&HL_VAL[next.r]>HL_VAL[prev.r])
+                    ||(dir==='low'&&HL_VAL[next.r]<HL_VAL[prev.r]);
+  if(naturalCorrect&&Math.random()<0.21){
+    let loseIdx=-1;
+    for(let i=_hlDeck.length-1;i>=0;i--){
+      const c=_hlDeck[i],v=HL_VAL[c.r],pv=HL_VAL[prev.r];
+      if(v!==pv&&((dir==='high'&&v<pv)||(dir==='low'&&v>pv))){loseIdx=i;break;}
+    }
+    if(loseIdx>=0){
+      const loseCard=_hlDeck.splice(loseIdx,1)[0];
+      _hlDeck.unshift(next); // 원래 카드 덱 맨 아래로 반환
+      next=loseCard;
+    }
+  }
+  _hlCur=next;
+  const correct=(dir==='high'&&HL_VAL[next.r]>HL_VAL[prev.r])
+             ||(dir==='low'&&HL_VAL[next.r]<HL_VAL[prev.r]);
   // 이전 카드 위에, 새 카드 아래에 표시
   document.getElementById('hl-prev-card').innerHTML=_hlCardStr(prev);
   document.getElementById('hl-arrow').style.display='block';
