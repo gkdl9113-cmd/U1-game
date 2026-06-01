@@ -4176,10 +4176,10 @@ async function seasonReset(){
   try{
     // 전체 플레이어 목록 조회
     const{data:allRows}=await _sb.from('fish_accounts').select('username').eq('server',ACTIVE_SERVER);
-    const toDelete=(allRows||[]).map(r=>r.username).filter(u=>!SYS_ACCOUNTS.includes(u));
-    // 플레이어 데이터 삭제
-    for(const u of toDelete){
-      await _sb.from('fish_accounts').delete().eq('username',u).eq('server',ACTIVE_SERVER);
+    const toReset=(allRows||[]).map(r=>r.username).filter(u=>!SYS_ACCOUNTS.includes(u));
+    // 계정은 유지하고 게임 데이터만 초기화
+    for(const u of toReset){
+      await _sb.from('fish_accounts').update({fish_data:{},updated_at:new Date().toISOString()}).eq('username',u).eq('server',ACTIVE_SERVER);
     }
     // 광장 데이터 전체 삭제
     await _sb.from('plaza').delete().neq('user_id','__KEEP__');
