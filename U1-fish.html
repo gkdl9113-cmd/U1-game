@@ -4614,15 +4614,18 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*1.38,fy+size*.06);
     c.closePath();c.fill();
   } else if(type==='haelyong'){
-    // 해룡: 두 갈래 용 꼬리
-    c.beginPath();
-    c.moveTo(fx-dir*size*1.30,fy-size*.06);
-    c.lineTo(fx-dir*size*1.55,fy-size*.60);
-    c.lineTo(fx-dir*size*1.32,fy-size*.12);
-    c.lineTo(fx-dir*size*1.65,fy);
-    c.lineTo(fx-dir*size*1.32,fy+size*.12);
-    c.lineTo(fx-dir*size*1.55,fy+size*.60);
-    c.lineTo(fx-dir*size*1.30,fy+size*.06);
+    // 해룡: 3갈래 날카로운 용 꼬리
+    c.fillStyle=s.fin;
+    c.beginPath();c.moveTo(fx-dir*size*1.22,fy-size*.12);
+    c.quadraticCurveTo(fx-dir*size*1.50,fy-size*.38,fx-dir*size*1.85,fy-size*.78);
+    c.lineTo(fx-dir*size*1.65,fy-size*.28);c.lineTo(fx-dir*size*1.28,fy-size*.04);
+    c.closePath();c.fill();
+    c.beginPath();c.moveTo(fx-dir*size*1.22,fy+size*.02);
+    c.lineTo(fx-dir*size*2.02,fy+size*.02);c.lineTo(fx-dir*size*1.76,fy+size*.18);
+    c.lineTo(fx-dir*size*1.34,fy+size*.14);c.closePath();c.fill();
+    c.beginPath();c.moveTo(fx-dir*size*1.22,fy+size*.12);
+    c.quadraticCurveTo(fx-dir*size*1.50,fy+size*.38,fx-dir*size*1.78,fy+size*.70);
+    c.lineTo(fx-dir*size*1.58,fy+size*.26);c.lineTo(fx-dir*size*1.28,fy+size*.04);
     c.closePath();c.fill();
   } else if(type==='turtle'||type==='yongwang'){
     // 거북이/용궁 거북이: 짧은 꼬리 + 4발 (발은 몸통 뒤에 그림)
@@ -4771,48 +4774,50 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
   }
   // 해룡 영물 장식 (상급영물)
   if(type==='haelyong'){
-    // 청룡 파란 글로우 오라
-    const hlGlow=c.createRadialGradient(fx,fy,size*.4,fx,fy,size*2.5);
-    hlGlow.addColorStop(0,'rgba(30,144,255,0.28)');hlGlow.addColorStop(1,'rgba(30,144,255,0)');
-    c.fillStyle=hlGlow;c.beginPath();c.arc(fx,fy,size*2.5,0,Math.PI*2);c.fill();
-    // 파란 비늘 무늬
-    c.strokeStyle='rgba(30,144,255,0.45)';c.lineWidth=1.1;
-    [[-0.38,-.08],[-.08,-.18],[.22,-.04]].forEach(([ox,oy])=>{
-      c.beginPath();c.arc(fx+dir*size*ox,fy+bodyRy*oy,size*.24,Math.PI*.6,Math.PI*1.55);c.stroke();
-    });
-    // 등 용 가시 5개 (더 높고 날카롭게)
+    // 강력한 파란-보라 오라
+    const hlGlow=c.createRadialGradient(fx,fy,size*.3,fx,fy,size*3.0);
+    hlGlow.addColorStop(0,'rgba(50,120,255,0.30)');hlGlow.addColorStop(.5,'rgba(100,20,220,0.15)');hlGlow.addColorStop(1,'rgba(20,80,200,0)');
+    c.fillStyle=hlGlow;c.beginPath();c.arc(fx,fy,size*3.0,0,Math.PI*2);c.fill();
+    // 등 가시 7개 — 중앙 최고(×3.0), 좌우로 낮아지며 기울기
+    const _spP=[-0.62,-0.42,-0.22,0.00,0.20,0.40,0.58];
+    const _spH=[1.60,2.00,2.50,3.00,2.50,2.00,1.60];
+    const _spT=[-0.10,-0.06,-0.03,0,0.03,0.06,0.10];
     c.fillStyle=s.fin;
-    [-0.60,-.38,-.16,.06,.28].forEach(di=>{
+    _spP.forEach((di,idx)=>{
       const sx=fx+dir*size*di;
-      c.beginPath();c.moveTo(sx-size*.07,fy-bodyRy*.88);c.lineTo(sx,fy-bodyRy*2.0);c.lineTo(sx+size*.07,fy-bodyRy*.88);c.closePath();c.fill();
+      c.beginPath();c.moveTo(sx-size*.09,fy-bodyRy*.82);c.lineTo(sx+dir*size*_spT[idx],fy-bodyRy*_spH[idx]);c.lineTo(sx+size*.09,fy-bodyRy*.82);c.closePath();c.fill();
     });
-    // 각진 용 머리 (넓은 턱 다각형)
-    const hx=fx+dir*(bodyRx+size*.18);
+    // 측면 날개 지느러미 (아래쪽 블레이드 2개)
+    c.fillStyle=s.fin+'99';
+    c.beginPath();c.moveTo(fx+dir*size*.20,fy+bodyRy*.88);c.lineTo(fx+dir*size*.50,fy+bodyRy*2.10);c.lineTo(fx+dir*size*.70,fy+bodyRy*1.55);c.lineTo(fx+dir*size*.44,fy+bodyRy*.88);c.closePath();c.fill();
+    c.beginPath();c.moveTo(fx-dir*size*.08,fy+bodyRy*.88);c.lineTo(fx-dir*size*.38,fy+bodyRy*1.82);c.lineTo(fx-dir*size*.18,fy+bodyRy*1.38);c.lineTo(fx-dir*size*.02,fy+bodyRy*.88);c.closePath();c.fill();
+    // 비늘 호선 4개
+    c.strokeStyle='rgba(80,140,255,0.55)';c.lineWidth=1.2;
+    [[-0.48,-.10],[-.20,-.08],[.08,-.06],[.32,-.04]].forEach(([ox,oy])=>{
+      c.beginPath();c.arc(fx+dir*size*ox,fy+bodyRy*oy,size*.22,Math.PI*.55,Math.PI*1.50);c.stroke();
+    });
+    // 용 머리 (더 크고 뾰족하게)
+    const hx=fx+dir*(bodyRx+size*.22);
     c.fillStyle=s.color;
     c.beginPath();
-    c.moveTo(hx-dir*size*.28,fy-size*.18);
-    c.lineTo(hx+dir*size*.06,fy-size*.28);
-    c.lineTo(hx+dir*size*.32,fy-size*.14);
-    c.lineTo(hx+dir*size*.50,fy-size*.02);
-    c.lineTo(hx+dir*size*.50,fy+size*.14);
-    c.lineTo(hx+dir*size*.18,fy+size*.24);
-    c.lineTo(hx-dir*size*.28,fy+size*.22);
-    c.closePath();c.fill();
-    // 수염 2가닥
-    c.strokeStyle=s.fin;c.lineWidth=1.5;
-    c.beginPath();c.moveTo(hx+dir*size*.44,fy+size*.08);c.lineTo(hx+dir*size*.76,fy+size*.02);c.stroke();
-    c.beginPath();c.moveTo(hx+dir*size*.44,fy+size*.12);c.lineTo(hx+dir*size*.70,fy+size*.38);c.stroke();
-    // 머리 테두리
-    c.strokeStyle=s.fin;c.lineWidth=1.5;
+    c.moveTo(hx-dir*size*.28,fy-size*.22);c.lineTo(hx+dir*size*.08,fy-size*.38);
+    c.lineTo(hx+dir*size*.42,fy-size*.20);c.lineTo(hx+dir*size*.62,fy-size*.02);
+    c.lineTo(hx+dir*size*.58,fy+size*.22);c.lineTo(hx+dir*size*.20,fy+size*.32);
+    c.lineTo(hx-dir*size*.28,fy+size*.25);c.closePath();c.fill();
+    c.strokeStyle=s.fin;c.lineWidth=1.8;
     c.beginPath();
-    c.moveTo(hx-dir*size*.28,fy-size*.18);
-    c.lineTo(hx+dir*size*.06,fy-size*.28);
-    c.lineTo(hx+dir*size*.32,fy-size*.14);
-    c.lineTo(hx+dir*size*.50,fy-size*.02);
-    c.lineTo(hx+dir*size*.50,fy+size*.14);
-    c.lineTo(hx+dir*size*.18,fy+size*.24);
-    c.lineTo(hx-dir*size*.28,fy+size*.22);
-    c.closePath();c.stroke();
+    c.moveTo(hx-dir*size*.28,fy-size*.22);c.lineTo(hx+dir*size*.08,fy-size*.38);
+    c.lineTo(hx+dir*size*.42,fy-size*.20);c.lineTo(hx+dir*size*.62,fy-size*.02);
+    c.lineTo(hx+dir*size*.58,fy+size*.22);c.lineTo(hx+dir*size*.20,fy+size*.32);
+    c.lineTo(hx-dir*size*.28,fy+size*.25);c.closePath();c.stroke();
+    // 이마 뿔
+    c.fillStyle=s.fin;
+    c.beginPath();c.moveTo(hx-dir*size*.02,fy-size*.32);c.lineTo(hx+dir*size*.16,fy-size*.72);c.lineTo(hx+dir*size*.30,fy-size*.32);c.closePath();c.fill();
+    // 수염 3가닥
+    c.strokeStyle=s.fin;c.lineWidth=1.8;
+    c.beginPath();c.moveTo(hx+dir*size*.54,fy-size*.04);c.lineTo(hx+dir*size*.92,fy-size*.18);c.stroke();
+    c.beginPath();c.moveTo(hx+dir*size*.54,fy+size*.10);c.lineTo(hx+dir*size*.90,fy+size*.32);c.stroke();
+    c.beginPath();c.moveTo(hx+dir*size*.52,fy+size*.20);c.lineTo(hx+dir*size*.80,fy+size*.52);c.stroke();
   }
   // 번개뱀장어 영물 효과 (시안 글로우 오라)
   if(type==='eelyw'){
@@ -5463,8 +5468,10 @@ function drawMinifish(type,s,has){
   } else if(type==='eelyw'){
     svg+=`<path d="M ${fx-dir*size*1.38},${fy-size*0.06} L ${fx-dir*size*2.05},${fy-size*0.52} L ${fx-dir*size*1.72},${fy-size*0.1} L ${fx-dir*size*2.5},${fy} L ${fx-dir*size*1.72},${fy+size*0.1} L ${fx-dir*size*2.05},${fy+size*0.52} L ${fx-dir*size*1.38},${fy+size*0.06} Z" fill="${finColor}"/>`;
   } else if(type==='haelyong'){
-    // 해룡: 두 갈래 용 꼬리
-    svg+=`<path d="M ${fx-dir*size*1.30},${fy-size*0.06} L ${fx-dir*size*1.55},${fy-size*0.60} L ${fx-dir*size*1.32},${fy-size*0.12} L ${fx-dir*size*1.65},${fy} L ${fx-dir*size*1.32},${fy+size*0.12} L ${fx-dir*size*1.55},${fy+size*0.60} L ${fx-dir*size*1.30},${fy+size*0.06} Z" fill="${finColor}"/>`;
+    // 해룡: 3갈래 날카로운 용 꼬리
+    svg+=`<path d="M ${fx-dir*size*1.22},${fy-size*0.12} Q ${fx-dir*size*1.50},${fy-size*0.38} ${fx-dir*size*1.85},${fy-size*0.78} L ${fx-dir*size*1.65},${fy-size*0.28} L ${fx-dir*size*1.28},${fy-size*0.04} Z" fill="${finColor}"/>`;
+    svg+=`<path d="M ${fx-dir*size*1.22},${fy+size*0.02} L ${fx-dir*size*2.02},${fy+size*0.02} L ${fx-dir*size*1.76},${fy+size*0.18} L ${fx-dir*size*1.34},${fy+size*0.14} Z" fill="${finColor}"/>`;
+    svg+=`<path d="M ${fx-dir*size*1.22},${fy+size*0.12} Q ${fx-dir*size*1.50},${fy+size*0.38} ${fx-dir*size*1.78},${fy+size*0.70} L ${fx-dir*size*1.58},${fy+size*0.26} L ${fx-dir*size*1.28},${fy+size*0.04} Z" fill="${finColor}"/>`;
   } else if(type==='turtle'||type==='yongwang'){
     // 거북이/용궁 거북이: 짧은 꼬리 + 뒷발
     svg+=`<path d="M ${fx-dir*size*0.82},${fy} L ${fx-dir*size*1.1},${fy-size*0.18} L ${fx-dir*size*1.1},${fy+size*0.18} Z" fill="${finColor}"/>`;
@@ -5558,20 +5565,27 @@ function drawMinifish(type,s,has){
 
   // 해룡 영물 장식 (상급영물)
   if(type==='haelyong'){
-    svg+=`<circle cx="${fx}" cy="${fy}" r="${size*2.5}" fill="url(#glow_haelyong_${s.grade})"/>`;
-    // 파란 비늘 무늬
-    svg+=`<path d="M ${fx+dir*size*0.10},${fy-bodyRy*0.26} A ${size*0.24},${size*0.24} 0 0,0 ${fx-dir*size*0.26},${fy-bodyRy*0.66}" stroke="rgba(30,144,255,0.45)" stroke-width="1.1" fill="none"/>`;
-    svg+=`<path d="M ${fx+dir*size*0.40},${fy-bodyRy*0.14} A ${size*0.24},${size*0.24} 0 0,0 ${fx+dir*size*0.04},${fy-bodyRy*0.54}" stroke="rgba(30,144,255,0.45)" stroke-width="1.1" fill="none"/>`;
-    // 등 용 가시 5개 (더 높고 날카롭게)
-    [-0.60,-0.38,-0.16,0.06,0.28].forEach(di=>{
-      svg+=`<path d="M ${fx+dir*size*di-size*0.07},${fy-bodyRy*0.88} L ${fx+dir*size*di},${fy-bodyRy*2.0} L ${fx+dir*size*di+size*0.07},${fy-bodyRy*0.88} Z" fill="${finColor}"/>`;
+    svg+=`<circle cx="${fx}" cy="${fy}" r="${size*3.0}" fill="url(#glow_haelyong_${s.grade})"/>`;
+    // 등 가시 7개 — 중앙 최고(×3.0), 좌우 낮아지며 기울기
+    [[-0.62,1.60,-0.10],[-0.42,2.00,-0.06],[-0.22,2.50,-0.03],[0.00,3.00,0],[0.20,2.50,0.03],[0.40,2.00,0.06],[0.58,1.60,0.10]].forEach(([di,h,tilt])=>{
+      svg+=`<path d="M ${fx+dir*size*di-size*0.09},${fy-bodyRy*0.82} L ${fx+dir*size*(di+tilt)},${fy-bodyRy*h} L ${fx+dir*size*di+size*0.09},${fy-bodyRy*0.82} Z" fill="${finColor}"/>`;
     });
-    // 각진 용 머리 (넓은 턱 다각형)
-    const hx=fx+dir*(bodyRx+size*0.18);
-    svg+=`<path d="M ${hx-dir*size*0.28},${fy-size*0.18} L ${hx+dir*size*0.06},${fy-size*0.28} L ${hx+dir*size*0.32},${fy-size*0.14} L ${hx+dir*size*0.50},${fy-size*0.02} L ${hx+dir*size*0.50},${fy+size*0.14} L ${hx+dir*size*0.18},${fy+size*0.24} L ${hx-dir*size*0.28},${fy+size*0.22} Z" fill="${bodyColor}" stroke="${finColor}" stroke-width="1.5"/>`;
-    // 수염 2가닥
-    svg+=`<line x1="${hx+dir*size*0.44}" y1="${fy+size*0.08}" x2="${hx+dir*size*0.76}" y2="${fy+size*0.02}" stroke="${finColor}" stroke-width="1.5"/>`;
-    svg+=`<line x1="${hx+dir*size*0.44}" y1="${fy+size*0.12}" x2="${hx+dir*size*0.70}" y2="${fy+size*0.38}" stroke="${finColor}" stroke-width="1.5"/>`;
+    // 측면 날개 지느러미 (아래쪽 블레이드 2개)
+    svg+=`<path d="M ${fx+dir*size*0.20},${fy+bodyRy*0.88} L ${fx+dir*size*0.50},${fy+bodyRy*2.10} L ${fx+dir*size*0.70},${fy+bodyRy*1.55} L ${fx+dir*size*0.44},${fy+bodyRy*0.88} Z" fill="${finColor}" opacity="0.65"/>`;
+    svg+=`<path d="M ${fx-dir*size*0.08},${fy+bodyRy*0.88} L ${fx-dir*size*0.38},${fy+bodyRy*1.82} L ${fx-dir*size*0.18},${fy+bodyRy*1.38} L ${fx-dir*size*0.02},${fy+bodyRy*0.88} Z" fill="${finColor}" opacity="0.65"/>`;
+    // 비늘 호선 3개
+    svg+=`<path d="M ${fx+dir*size*0.26},${fy-bodyRy*0.24} A ${size*0.22},${size*0.22} 0 0,0 ${fx-dir*size*0.16},${fy-bodyRy*0.62}" stroke="rgba(80,140,255,0.55)" stroke-width="1.2" fill="none"/>`;
+    svg+=`<path d="M ${fx+dir*size*0.50},${fy-bodyRy*0.14} A ${size*0.22},${size*0.22} 0 0,0 ${fx+dir*size*0.08},${fy-bodyRy*0.54}" stroke="rgba(80,140,255,0.55)" stroke-width="1.2" fill="none"/>`;
+    svg+=`<path d="M ${fx-dir*size*0.02},${fy-bodyRy*0.34} A ${size*0.22},${size*0.22} 0 0,0 ${fx-dir*size*0.42},${fy-bodyRy*0.72}" stroke="rgba(80,140,255,0.55)" stroke-width="1.2" fill="none"/>`;
+    // 용 머리 (더 크고 뾰족하게)
+    const hx=fx+dir*(bodyRx+size*0.22);
+    svg+=`<path d="M ${hx-dir*size*0.28},${fy-size*0.22} L ${hx+dir*size*0.08},${fy-size*0.38} L ${hx+dir*size*0.42},${fy-size*0.20} L ${hx+dir*size*0.62},${fy-size*0.02} L ${hx+dir*size*0.58},${fy+size*0.22} L ${hx+dir*size*0.20},${fy+size*0.32} L ${hx-dir*size*0.28},${fy+size*0.25} Z" fill="${bodyColor}" stroke="${finColor}" stroke-width="1.8"/>`;
+    // 이마 뿔
+    svg+=`<path d="M ${hx-dir*size*0.02},${fy-size*0.32} L ${hx+dir*size*0.16},${fy-size*0.72} L ${hx+dir*size*0.30},${fy-size*0.32} Z" fill="${finColor}"/>`;
+    // 수염 3가닥
+    svg+=`<line x1="${hx+dir*size*0.54}" y1="${fy-size*0.04}" x2="${hx+dir*size*0.92}" y2="${fy-size*0.18}" stroke="${finColor}" stroke-width="1.8"/>`;
+    svg+=`<line x1="${hx+dir*size*0.54}" y1="${fy+size*0.10}" x2="${hx+dir*size*0.90}" y2="${fy+size*0.32}" stroke="${finColor}" stroke-width="1.8"/>`;
+    svg+=`<line x1="${hx+dir*size*0.52}" y1="${fy+size*0.20}" x2="${hx+dir*size*0.80}" y2="${fy+size*0.52}" stroke="${finColor}" stroke-width="1.8"/>`;
   }
   // 번개뱀장어 영물 효과 (시안 글로우 + 등지느러미 번개 가시)
   if(type==='eelyw'){
