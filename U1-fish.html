@@ -4651,6 +4651,15 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.quadraticCurveTo(fx-dir*size*1.95,fy+size*.65,fx-dir*size*1.42,fy+size*.22);
     c.lineTo(fx-dir*size*.75,fy-size*.08);
     c.closePath();c.fill();
+  } else if(type==='geumlin'){
+    // 궐어: 능성어형 부채꼬리
+    c.beginPath();
+    c.moveTo(fx-dir*size*.80,fy-size*.08);
+    c.lineTo(fx-dir*size*1.50,fy-size*.58);
+    c.quadraticCurveTo(fx-dir*size*1.74,fy-size*.22,fx-dir*size*1.74,fy);
+    c.quadraticCurveTo(fx-dir*size*1.74,fy+size*.22,fx-dir*size*1.50,fy+size*.58);
+    c.lineTo(fx-dir*size*.80,fy+size*.08);
+    c.closePath();c.fill();
   } else {
     // 금붕어 기본 꼬리
     c.beginPath();c.moveTo(fx-dir*size*.8,fy);
@@ -4658,8 +4667,8 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx-dir*size*1.4,fy+size*.5);c.fill();
   }
   // 몸통
-  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:type==='piranha'?size*1.05:type==='tropical'?size*.95:(type==='electric'||type==='eelyw')?size*1.45:(type==='turtle'||type==='yongwang')?size*.92:type==='haelyong'?size*1.35:type==='megalodonte'?size*1.20:type==='yeongeum'?size*.88:size;
-  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:type==='piranha'?size*.55:type==='tropical'?size*.6:(type==='electric'||type==='eelyw')?size*.28:(type==='turtle'||type==='yongwang')?size*.72:type==='haelyong'?size*.40:type==='megalodonte'?size*.50:type==='yeongeum'?size*.60:size*.58;
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*.88:type==='piranha'?size*1.05:type==='tropical'?size*.95:(type==='electric'||type==='eelyw')?size*1.45:(type==='turtle'||type==='yongwang')?size*.92:type==='haelyong'?size*1.35:type==='megalodonte'?size*1.20:type==='yeongeum'?size*.88:type==='geumlin'?size*1.05:size;
+  const bodyRy=type==='snakehead'?size*.42:type==='guppy'?size*.62:type==='piranha'?size*.55:type==='tropical'?size*.6:(type==='electric'||type==='eelyw')?size*.28:(type==='turtle'||type==='yongwang')?size*.72:type==='haelyong'?size*.40:type==='megalodonte'?size*.50:type==='yeongeum'?size*.60:type==='geumlin'?size*.70:size*.58;
   const g=c.createRadialGradient(fx-dir*size*.1,fy-size*.1,0,fx,fy,size);
   g.addColorStop(0,s.fin);g.addColorStop(1,s.color);
   c.fillStyle=g;c.beginPath();c.ellipse(fx,fy,bodyRx,bodyRy,0,0,Math.PI*2);c.fill();
@@ -4834,25 +4843,35 @@ function drawFishShape(c,fx,fy,size,dir,s,type){
     c.lineTo(fx+dir*size*.6,fy-bodyRy);
     c.closePath();c.fill();
   }
-  // 궐어 영물 장식 (황금빛 비늘 + 아우라)
+  // 궐어 영물 장식 (능성어형: 가시 등지느러미, 가슴지느러미, 표범 반점)
   if(type==='geumlin'){
-    const gg=c.createRadialGradient(fx,fy,size*.25,fx,fy,size*2.0);
-    gg.addColorStop(0,'rgba(255,200,0,0.18)');gg.addColorStop(1,'rgba(255,200,0,0)');
-    c.fillStyle=gg;c.beginPath();c.arc(fx,fy,size*2.0,0,Math.PI*2);c.fill();
-    // 황금 등지느러미 (3갈래 부채형)
-    c.fillStyle=s.fin+'cc';
+    // 황금 글로우 오라
+    const gg=c.createRadialGradient(fx,fy,size*.3,fx,fy,size*2.2);
+    gg.addColorStop(0,'rgba(255,190,0,0.22)');gg.addColorStop(1,'rgba(255,190,0,0)');
+    c.fillStyle=gg;c.beginPath();c.arc(fx,fy,size*2.2,0,Math.PI*2);c.fill();
+    // 가슴 지느러미
+    c.fillStyle=s.fin+'99';
     c.beginPath();
-    c.moveTo(fx-dir*size*.20,fy-bodyRy);
-    c.lineTo(fx+dir*size*.05,fy-bodyRy*1.70);
-    c.lineTo(fx+dir*size*.28,fy-bodyRy*1.35);
-    c.lineTo(fx+dir*size*.48,fy-bodyRy*1.62);
-    c.lineTo(fx+dir*size*.62,fy-bodyRy);
+    c.moveTo(fx+dir*size*.12,fy+bodyRy*.62);
+    c.lineTo(fx+dir*size*.40,fy+size*1.18);
+    c.lineTo(fx+dir*size*.62,fy+bodyRy*.65);
     c.closePath();c.fill();
-    // 비늘 황금 패턴 (3줄 곡선)
-    c.strokeStyle='rgba(255,215,0,0.50)';c.lineWidth=1.4;
-    for(let k=0;k<3;k++){
-      c.beginPath();c.arc(fx+dir*size*(0.22-k*0.22),fy-bodyRy*(0.10+k*0.05),size*(0.32-k*0.05),Math.PI*.60,Math.PI*1.55);c.stroke();
+    // 가시 등지느러미 (9가시 들쭉날쭉)
+    c.fillStyle=s.fin+'cc';
+    const _gX=[-0.50,-0.32,-0.14,0.04,0.20,0.34,0.46,0.54,0.60];
+    const _gH=[1.55,2.05,2.52,2.82,2.58,2.28,1.98,1.68,1.42];
+    c.beginPath();c.moveTo(fx-dir*size*.50,fy-bodyRy*.90);
+    for(let i=0;i<9;i++){
+      c.lineTo(fx+dir*size*_gX[i],fy-bodyRy*_gH[i]);
+      if(i<8) c.lineTo(fx+dir*size*(_gX[i]+(_gX[i+1]-_gX[i])*.5),fy-bodyRy*(_gH[i]*.52+_gH[i+1]*.48));
     }
+    c.lineTo(fx+dir*size*.60,fy-bodyRy*.90);
+    c.closePath();c.fill();
+    // 표범 반점 (어두운 타원 8개)
+    c.fillStyle='rgba(60,25,0,0.30)';
+    [[.24,-.26,.17,.10],[.42,-.04,.14,.11],[.12,.26,.18,.11],[.36,.34,.12,.09],[-.06,-.34,.14,.09],[-.18,.17,.16,.10],[.55,.16,.10,.08],[-.02,.48,.13,.08]].forEach(([sx,sy,rx,ry])=>{
+      c.beginPath();c.ellipse(fx+dir*size*sx,fy+size*sy,size*rx,size*ry,0,0,Math.PI*2);c.fill();
+    });
   }
   // 영금어 특수 효과
   if(type==='yeongeum'){
@@ -5458,8 +5477,11 @@ function drawMinifish(type,s,has){
     svg+=`<path d="M ${fx-dir*size*0.85},${fy-size*0.1} L ${fx-dir*size*1.5},${fy-size*0.65} L ${fx-dir*size*1.6},${fy} L ${fx-dir*size*1.5},${fy+size*0.65} L ${fx-dir*size*0.85},${fy+size*0.1} Z" fill="${finColor}"/>`;
   } else if(type==='clownfish'){
     svg+=`<path d="M ${fx-dir*size*0.72},${fy} L ${fx-dir*size*1.45},${fy-size*0.6} L ${fx-dir*size*1.55},${fy} L ${fx-dir*size*1.45},${fy+size*0.6} Z" fill="${finColor}"/>`;
-  } else if(type==='mandarin'||type==='geumlin'){
+  } else if(type==='mandarin'){
     svg+=`<path d="M ${fx-dir*size*0.8},${fy} L ${fx-dir*size*1.35},${fy-size*0.65} L ${fx-dir*size*1.5},${fy-size*0.25} L ${fx-dir*size*1.55},${fy} L ${fx-dir*size*1.5},${fy+size*0.25} L ${fx-dir*size*1.35},${fy+size*0.65} Z" fill="${finColor}"/>`;
+  } else if(type==='geumlin'){
+    // 궐어: 능성어형 부채꼬리
+    svg+=`<path d="M ${fx-dir*size*0.80},${fy-size*0.08} L ${fx-dir*size*1.50},${fy-size*0.58} Q ${fx-dir*size*1.74},${fy-size*0.22} ${fx-dir*size*1.74},${fy} Q ${fx-dir*size*1.74},${fy+size*0.22} ${fx-dir*size*1.50},${fy+size*0.58} L ${fx-dir*size*0.80},${fy+size*0.08} Z" fill="${finColor}"/>`;
   } else if(type==='electric'){
     svg+=`<path d="M ${fx-dir*size*1.4},${fy-size*0.08} L ${fx-dir*size*2.2},${fy-size*0.04} L ${fx-dir*size*2.6},${fy} L ${fx-dir*size*2.2},${fy+size*0.04} L ${fx-dir*size*1.4},${fy+size*0.08} Z" fill="${finColor}"/>`;
   } else if(type==='megalodonte'){
@@ -5487,8 +5509,8 @@ function drawMinifish(type,s,has){
   }
 
   // 몸통
-  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*0.88:type==='piranha'?size*1.05:type==='tropical'?size*0.95:(type==='electric'||type==='eelyw')?size*1.45:type==='turtle'?size*0.92:type==='haelyong'?size*1.35:type==='megalodonte'?size*1.20:type==='yeongeum'?size*0.88:size;
-  const bodyRy=type==='snakehead'?size*0.42:type==='guppy'?size*0.62:type==='piranha'?size*0.55:type==='tropical'?size*0.6:(type==='electric'||type==='eelyw')?size*0.28:type==='turtle'?size*0.72:type==='haelyong'?size*0.40:type==='megalodonte'?size*0.50:type==='yeongeum'?size*0.60:size*0.58;
+  const bodyRx=type==='snakehead'?size*1.15:type==='guppy'?size*0.88:type==='piranha'?size*1.05:type==='tropical'?size*0.95:(type==='electric'||type==='eelyw')?size*1.45:type==='turtle'?size*0.92:type==='haelyong'?size*1.35:type==='megalodonte'?size*1.20:type==='yeongeum'?size*0.88:type==='geumlin'?size*1.05:size;
+  const bodyRy=type==='snakehead'?size*0.42:type==='guppy'?size*0.62:type==='piranha'?size*0.55:type==='tropical'?size*0.6:(type==='electric'||type==='eelyw')?size*0.28:type==='turtle'?size*0.72:type==='haelyong'?size*0.40:type==='megalodonte'?size*0.50:type==='yeongeum'?size*0.60:type==='geumlin'?size*0.70:size*0.58;
   svg+=`<ellipse cx="${fx}" cy="${fy}" rx="${bodyRx}" ry="${bodyRy}" fill="url(#grad_${type}_${s.grade})" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`;
 
   // 구피 등지느러미
@@ -5598,12 +5620,25 @@ function drawMinifish(type,s,has){
     svg+=`<path d="M ${fx+dir*size*0.48},${fy-bodyRy*0.22} A ${size*0.30},${size*0.30} 0 0,0 ${fx+dir*size*0.18},${fy-bodyRy*0.72}" stroke="rgba(255,215,0,0.45)" stroke-width="1.3" fill="none"/>`;
     svg+=`<circle cx="${fx}" cy="${fy}" r="${size*1.7}" fill="url(#glow_yeongeum_${s.grade})" opacity="1"/>`;
   }
-  // 궐어 영물 장식 SVG
+  // 궐어 영물 장식 SVG (능성어형)
   if(type==='geumlin'){
-    svg+=`<circle cx="${fx}" cy="${fy}" r="${size*2.0}" fill="url(#glow_geumlin_${s.grade})"/>`;
-    svg+=`<path d="M ${fx-dir*size*0.20},${fy-bodyRy} L ${fx+dir*size*0.05},${fy-bodyRy*1.70} L ${fx+dir*size*0.28},${fy-bodyRy*1.35} L ${fx+dir*size*0.48},${fy-bodyRy*1.62} L ${fx+dir*size*0.62},${fy-bodyRy} Z" fill="${finColor}" opacity="0.85"/>`;
-    svg+=`<path d="M ${fx-dir*size*0.28},${fy-bodyRy*0.25} Q ${fx+dir*size*0.12},${fy-bodyRy*0.55} ${fx+dir*size*0.52},${fy-bodyRy*0.25}" stroke="rgba(255,215,0,0.50)" stroke-width="1.4" fill="none"/>`;
-    svg+=`<path d="M ${fx-dir*size*0.10},${fy+bodyRy*0.05} Q ${fx+dir*size*0.18},${fy-bodyRy*0.28} ${fx+dir*size*0.45},${fy+bodyRy*0.02}" stroke="rgba(255,215,0,0.42)" stroke-width="1.2" fill="none"/>`;
+    svg+=`<circle cx="${fx}" cy="${fy}" r="${size*2.2}" fill="url(#glow_geumlin_${s.grade})"/>`;
+    // 가슴지느러미
+    svg+=`<path d="M ${fx+dir*size*0.12},${fy+bodyRy*0.62} L ${fx+dir*size*0.40},${fy+size*1.18} L ${fx+dir*size*0.62},${fy+bodyRy*0.65} Z" fill="${finColor}" opacity="0.6"/>`;
+    // 가시 등지느러미
+    const _gSpX=[-0.50,-0.32,-0.14,0.04,0.20,0.34,0.46,0.54,0.60];
+    const _gSpH=[1.55,2.05,2.52,2.82,2.58,2.28,1.98,1.68,1.42];
+    let _dp=`M ${fx-dir*size*0.50},${fy-bodyRy*0.90}`;
+    for(let i=0;i<9;i++){
+      _dp+=` L ${fx+dir*size*_gSpX[i]},${fy-bodyRy*_gSpH[i]}`;
+      if(i<8) _dp+=` L ${fx+dir*size*(_gSpX[i]+(_gSpX[i+1]-_gSpX[i])*0.5)},${fy-bodyRy*(_gSpH[i]*0.52+_gSpH[i+1]*0.48)}`;
+    }
+    _dp+=` L ${fx+dir*size*0.60},${fy-bodyRy*0.90} Z`;
+    svg+=`<path d="${_dp}" fill="${finColor}" opacity="0.8"/>`;
+    // 표범 반점
+    [[0.24,-0.26,0.17,0.10],[0.42,-0.04,0.14,0.11],[0.12,0.26,0.18,0.11],[0.36,0.34,0.12,0.09],[-0.06,-0.34,0.14,0.09],[-0.18,0.17,0.16,0.10],[0.55,0.16,0.10,0.08],[-0.02,0.48,0.13,0.08]].forEach(([sx,sy,rx,ry])=>{
+      svg+=`<ellipse cx="${fx+dir*size*sx}" cy="${fy+size*sy}" rx="${size*rx}" ry="${size*ry}" fill="rgba(60,25,0,0.30)"/>`;
+    });
   }
   // 메갈로돈 영물 장식 SVG
   if(type==='megalodonte'){
@@ -5628,8 +5663,8 @@ function drawMinifish(type,s,has){
   const eyePupilR=(type==='electric'||type==='eelyw')?size*0.055:(type==='turtle'||type==='yongwang')?size*0.07:type==='haelyong'?size*0.065:type==='megalodonte'?size*0.052:size*0.09;
   const eyeX=(type==='turtle'||type==='yongwang')?fx+dir*(bodyRx+size*0.22):type==='haelyong'?fx+dir*(bodyRx+size*0.28):type==='megalodonte'?fx+dir*bodyRx*0.52:fx+dir*bodyRx*0.48;
   const eyeY=(type==='turtle'||type==='yongwang')?fy-size*0.12:type==='haelyong'?fy-size*0.10:type==='megalodonte'?fy-bodyRy*0.42:fy-bodyRy*0.15;
-  svg+=`<circle cx="${eyeX}" cy="${eyeY}" r="${eyeR}" fill="#fff" stroke="${type==='yeongeum'?'rgba(255,215,0,0.7)':type==='yongwang'?'rgba(0,210,170,0.7)':type==='eelyw'?'rgba(0,229,255,0.75)':type==='haelyong'?'rgba(30,144,255,0.75)':type==='megalodonte'?'rgba(220,20,20,0.75)':'rgba(0,0,0,0.2)'}" stroke-width="${(type==='yeongeum'||type==='yongwang'||type==='eelyw'||type==='haelyong'||type==='megalodonte')?0.9:0.5}"/>`;
-  svg+=`<circle cx="${eyeX+dir*size*0.04}" cy="${eyeY}" r="${eyePupilR}" fill="${type==='yeongeum'?'#7B00D4':type==='yongwang'?'#C8A000':type==='eelyw'?'#00B4CC':type==='haelyong'?'#00E5FF':type==='megalodonte'?'#FF1010':'#111'}"/>`;
+  svg+=`<circle cx="${eyeX}" cy="${eyeY}" r="${eyeR}" fill="#fff" stroke="${type==='yeongeum'?'rgba(255,215,0,0.7)':type==='yongwang'?'rgba(0,210,170,0.7)':type==='eelyw'?'rgba(0,229,255,0.75)':type==='haelyong'?'rgba(30,144,255,0.75)':type==='megalodonte'?'rgba(220,20,20,0.75)':type==='geumlin'?'rgba(255,190,0,0.75)':'rgba(0,0,0,0.2)'}" stroke-width="${(type==='yeongeum'||type==='yongwang'||type==='eelyw'||type==='haelyong'||type==='megalodonte'||type==='geumlin')?0.9:0.5}"/>`;
+  svg+=`<circle cx="${eyeX+dir*size*0.04}" cy="${eyeY}" r="${eyePupilR}" fill="${type==='yeongeum'?'#7B00D4':type==='yongwang'?'#C8A000':type==='eelyw'?'#00B4CC':type==='haelyong'?'#00E5FF':type==='megalodonte'?'#FF1010':type==='geumlin'?'#FFB800':'#111'}"/>`;
   svg+=`</svg>`;
   return svg;
 }
