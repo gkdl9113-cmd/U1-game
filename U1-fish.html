@@ -5206,7 +5206,7 @@ function fishDraw(){
         c.font=`bold ${_tFontSz}px '맑은 고딕',sans-serif`;
         const _tW=c.measureText(_tLabel).width;
         // 배경 박스
-        c.fillStyle='rgba(0,0,0,0.45)';
+        c.fillStyle=_tSt.bg;
         c.beginPath();c.roundRect(fx-_tW/2-3,fy-size*1.75-_tFontSz,_tW+6,_tFontSz+3,3);c.fill();
         c.fillStyle=_tSt.fg;
         c.fillText(_tLabel,fx,fy-size*1.72);
