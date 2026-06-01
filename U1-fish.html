@@ -1452,6 +1452,8 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <select id="adm-edit-stage" style="display:none"></select>
       <div class="adm-form-row"><label>💰 금액</label><input class="adm-form-inp" id="adm-edit-money" type="number" min="0"></div>
       <div class="adm-form-row"><label>🍤 먹이</label><input class="adm-form-inp" id="adm-edit-food" type="number" min="0"></div>
+      <div class="adm-form-row"><label>🍖 특수먹이</label><input class="adm-form-inp" id="adm-edit-spfood" type="number" min="0"></div>
+      <div class="adm-form-row"><label>⚔️ BP</label><input class="adm-form-inp" id="adm-edit-bp" type="number" min="0"></div>
       <div class="adm-btn-row">
         <button class="adm-btn secondary" onclick="hideDlg('adm-edit-modal')">취소</button>
         <button class="adm-btn primary" onclick="adminSaveEdit()">저장</button>
@@ -7415,10 +7417,12 @@ function adminOpenEdit(username,server){
       if(stageEl) stageEl.value=best?.stage||1;
       document.getElementById('adm-edit-money').value=fd.money||0;
       document.getElementById('adm-edit-food').value=fd.food||0;
+      document.getElementById('adm-edit-spfood').value=fd.spFood||0;
+      document.getElementById('adm-edit-bp').value=fd.battlePoints||0;
       // 물고기 현황
       document.getElementById('adm-edit-title').innerHTML=
         `유저: <strong>${esc(username)}</strong> (${server})<br>
-        <span style="font-size:10px;color:#888">생존 ${alive.length}마리 / 전체 ${fishes.length}마리 | 💰${(fd.money||0).toLocaleString()}원 🍤${fd.food||0}개 먹이통${fd.autoFeeders?.length||0}개</span>`;
+        <span style="font-size:10px;color:#888">생존 ${alive.length}마리 / 전체 ${fishes.length}마리 | 💰${(fd.money||0).toLocaleString()}원 🍤${fd.food||0} 🍖${fd.spFood||0} ⚔️${fd.battlePoints||0}BP</span>`;
       document.getElementById('adm-edit-modal').classList.add('on');
     });
 }
@@ -7428,14 +7432,16 @@ async function adminSaveEdit(){
   const{username,server}=_admEditTarget;
   const money=parseInt(document.getElementById('adm-edit-money').value)||0;
   const food=parseInt(document.getElementById('adm-edit-food').value)||0;
-  // 최신 DB 데이터 재조회 후 money/food만 덮어씀 (fishes 등 다른 데이터 유지)
+  const spFood=parseInt(document.getElementById('adm-edit-spfood').value)||0;
+  const battlePoints=parseInt(document.getElementById('adm-edit-bp').value)||0;
+  // 최신 DB 데이터 재조회 후 덮어씀 (fishes 등 다른 데이터 유지)
   const{data,error:e1}=await _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).single();
   if(e1||!data){alert('데이터 로드 실패: '+(e1?.message||'없음'));return;}
-  const newData={...(data.fish_data||{}),money,food,lastSave:serverNow()};
+  const newData={...(data.fish_data||{}),money,food,spFood,battlePoints,lastSave:serverNow()};
   const{error}=await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',username).eq('server',server);
   if(error){alert('저장 실패: '+error.message);return;}
   hideDlg('adm-edit-modal');
-  document.getElementById('adm-status').textContent=`✅ ${username} 수정 완료 (💰${money.toLocaleString()}원 🍤${food}개)`;
+  document.getElementById('adm-status').textContent=`✅ ${username} 수정 완료 (💰${money.toLocaleString()}원 🍤${food} 🍖${spFood} ⚔️${battlePoints}BP)`;
   // 접속 중인 플레이어에게 실시간 동기화 신호 전송
   sbSend('data_reload',{targetName:username,fromAdmin:ADMIN_USERNAME});
   adminLoadUsers();
@@ -7927,7 +7933,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 도망가기 - 치명상 1회 무효화, HP 10%로 생존
       if(tgt.curHp<=0&&!tgt.deathSaved&&(tgt.skill1==='cm_도망가기'||tgt.skill2==='cm_도망가기')){
-        tgt.curHp=Math.max(1,Math.floor(tgt.maxHp*0.1));tgt.deathSaved=true;
+        tgt.curHp=0;tgt.deathSaved=true; // 배틀에서 도주 (curHp=0 → 이후 공격 대상 제외)
       }
       // 스킬: 반격 - 받은 피해가 DEF보다 작으면 즉시 반격
       if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){tgt.atkCd=0;}
@@ -8046,7 +8052,7 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
       tgt.curHp=Math.max(0,tgt.curHp-fd);
       // 스킬: 도망가기 - 치명상 1회 무효화, HP 10%로 생존
       if(tgt.curHp<=0&&!tgt.deathSaved&&(tgt.skill1==='cm_도망가기'||tgt.skill2==='cm_도망가기')){
-        tgt.curHp=Math.max(1,Math.floor(tgt.maxHp*0.1));tgt.deathSaved=true;
+        tgt.curHp=0;tgt.deathSaved=true; // 배틀에서 도주 (curHp=0 → 이후 공격 대상 제외)
       }
       // 스킬: 반격 - 받은 피해가 DEF보다 작으면 즉시 반격
       if((tgt.skill1==='md_반격'||tgt.skill2==='md_반격')&&tgt.curHp>0&&fd<tgt.def){tgt.atkCd=0;}
@@ -8221,7 +8227,7 @@ function btApplyEvents(){
       target.curHp=Math.max(0,target.curHp-evt.dmg);
       if(target.curHp<=0){
         if(!target.deathSaved&&(target.skill1==='cm_도망가기'||target.skill2==='cm_도망가기')){
-          target.curHp=Math.max(1,Math.floor(target.maxHp*0.1));target.deathSaved=true;
+          target.curHp=0;target.isDead=true;target.deathSaved=true; // 도주: 배틀에서 제거, 결과 반영 시 10% HP 복원
           target.floatTxt={txt:'🏃도망!',age:0,x:target.x,y:target.y-0.08,color:'#FFD700'};
         } else {
           target.curHp=0;target.isDead=true;
@@ -8266,7 +8272,7 @@ function btFrame(){
       sbSend('battle_state',{
         targetId:currentGame.opponentId,fromId:myId,
         fishes:btFishes.map(f=>({
-          curHp:f.curHp,isDead:f.isDead,
+          curHp:f.curHp,isDead:f.isDead,deathSaved:f.deathSaved||false,
           x:f.x,y:f.y,vx:f.vx||0,vy:f.vy||0,
           hitFlash:f.hitFlash,hitType:f.hitType,
           floatTxt:f.floatTxt,healTxt:f.healTxt,
@@ -8306,7 +8312,7 @@ function onBattleState(payload){
   if(!btFishes.length) return;
   payload.fishes.forEach((fs,i)=>{
     const f=btFishes[i]; if(!f) return;
-    f.curHp=fs.curHp; f.isDead=fs.isDead;
+    f.curHp=fs.curHp; f.isDead=fs.isDead; f.deathSaved=fs.deathSaved||false;
     f.x=fs.x; f.y=fs.y; f.vx=fs.vx||0; f.vy=fs.vy||0;
     f.hitFlash=fs.hitFlash||0; f.hitType=fs.hitType||'';
     f.floatTxt=fs.floatTxt||null; f.healTxt=fs.healTxt||null;
@@ -8771,7 +8777,11 @@ function btShowResult(myAlive,oppAlive){
   btFishes.filter(f=>f.side==='my').forEach(f=>{
     if(f.origIdx==null||!FG.fishes[f.origIdx]) return;
     FG.fishes[f.origIdx].hp=Math.max(0,f.curHp);
-    if(f.isDead||f.curHp<=0){
+    if(f.deathSaved){
+      // 도망가기 발동: 배틀에서 도주 → 10% HP로 수조 귀환
+      FG.fishes[f.origIdx].hp=Math.max(1,Math.floor(FG.fishes[f.origIdx].maxHp*0.1));
+      FG.fishes[f.origIdx].isDead=false;
+    } else if(f.isDead||f.curHp<=0){
       FG.fishes[f.origIdx].isDead=true;
       FG.fishes[f.origIdx].hp=0;
     }
@@ -8849,7 +8859,10 @@ function onBattleForfeit(payload){
   btFishes.filter(f=>f.side==='my').forEach(f=>{
     if(f.origIdx==null||!FG.fishes[f.origIdx]) return;
     FG.fishes[f.origIdx].hp=Math.max(0,Math.floor(f.curHp));
-    if(f.isDead||f.curHp<=0){
+    if(f.deathSaved){
+      FG.fishes[f.origIdx].hp=Math.max(1,Math.floor(FG.fishes[f.origIdx].maxHp*0.1));
+      FG.fishes[f.origIdx].isDead=false;
+    } else if(f.isDead||f.curHp<=0){
       FG.fishes[f.origIdx].isDead=true;
       FG.fishes[f.origIdx].hp=0;
     }
@@ -8896,7 +8909,10 @@ function battleExit(){
     btFishes.filter(f=>f.side==='my').forEach(f=>{
       if(f.origIdx==null||!FG.fishes[f.origIdx]) return;
       FG.fishes[f.origIdx].hp=Math.max(0,Math.floor(f.curHp));
-      if(f.isDead||f.curHp<=0){
+      if(f.deathSaved){
+        FG.fishes[f.origIdx].hp=Math.max(1,Math.floor(FG.fishes[f.origIdx].maxHp*0.1));
+        FG.fishes[f.origIdx].isDead=false;
+      } else if(f.isDead||f.curHp<=0){
         FG.fishes[f.origIdx].isDead=true;
         FG.fishes[f.origIdx].hp=0;
       }
