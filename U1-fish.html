@@ -2076,7 +2076,6 @@ async function doRegister(){
   localStorage.setItem('u1_name',v.uid); localStorage.setItem('u1_uid',v.uid);
   entryStatus('가입 완료! 입장합니다…','#217346');
   enterFishWorldWithData(null);
-  saveFishDataToDB(); // 초기 금붕어 치어 즉시 DB 저장 (관리자 패널 즉시 반영)
 }
 
 function enterFishWorldWithData(dbData){
@@ -2092,8 +2091,8 @@ function enterFishWorldWithData(dbData){
   if(dbData&&Object.keys(dbData).length>0){
     applyFishData(dbData);
   }
-  // 물고기 없으면 초기 금붕어 치어 1마리 생성
-  if(!FG.fishes||FG.fishes.length===0) FG.fishes=[newFish(1)];
+  // 물고기 없으면 초기 금붕어 치어 1마리 생성 후 즉시 DB 저장 (신규가입·초기화 모두 처리)
+  if(!FG.fishes||FG.fishes.length===0){FG.fishes=[newFish(1)];saveFishDataToDB();}
   show('s-fishworld');
   showMobileFloatBtns(true);
   setTimeout(()=>{
