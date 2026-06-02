@@ -2060,13 +2060,34 @@ async function doLogin(){
   enterFishWorldWithData(data.fish_data);
 }
 
+function _buildInitialFishData(){
+  const f=newFish(1);
+  const cleanFish={id:f.id,sc:'goldfish_1',type:'goldfish',stage:1,hp:f.hp,maxHp:f.maxHp,fullness:f.fullness,xp:0,isDead:false};
+  const _emptyH=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,{shares:0,avgCost:0}]));
+  const _emptyR=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,0]));
+  return{
+    fishes:[cleanFish],auxFishes:[],auxMax:1,
+    money:100,food:5,spFood:0,autoFeeders:[],
+    tankLevel:0,tankMax:1,
+    rods:{rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},
+    skillInventory:{},achievements:{},
+    btWins:0,battlePoints:0,totalFished:0,totalEvos:0,titles:[],
+    plazaFishIds:{1:null,2:null},plazaKills:0,
+    stocks:{holdings:_emptyH(),realized:_emptyR(),divTick:_stockCurrentTick()},
+    fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{},megalodonte:{},geumlin:{}},
+    battlePickIds:[],legendPickIds:[],
+    lastSave:serverNow()
+  };
+}
+
 async function doRegister(){
   const v=validateInput(); if(!v) return;
   if(!/^[a-zA-Z0-9가-힣_]{2,16}$/.test(v.uid)){entryStatus('아이디: 2~16자 (한글·영문·숫자·_ 사용가능)','#C00000');return;}
   entryStatus('회원가입 중…','#595959');
   if(!_sb) _sb=makeSb();
   const hash=await hashPassword(v.pw);
-  const{error}=await _sb.from('fish_accounts').insert({username:v.uid,server:ACTIVE_SERVER,password_hash:hash,fish_data:{},updated_at:new Date().toISOString()});
+  const initData=_buildInitialFishData();
+  const{error}=await _sb.from('fish_accounts').insert({username:v.uid,server:ACTIVE_SERVER,password_hash:hash,fish_data:initData,updated_at:new Date().toISOString()});
   if(error){
     if(error.code==='23505') entryStatus('이미 사용 중인 아이디입니다','#C00000');
     else entryStatus('오류: '+error.message,'#C00000');
@@ -2075,7 +2096,7 @@ async function doRegister(){
   currentUsername=v.uid; myName=v.uid;
   localStorage.setItem('u1_name',v.uid); localStorage.setItem('u1_uid',v.uid);
   entryStatus('가입 완료! 입장합니다…','#217346');
-  enterFishWorldWithData(null);
+  enterFishWorldWithData(initData);
 }
 
 function enterFishWorldWithData(dbData){
@@ -7510,7 +7531,7 @@ async function adminResetServer(){
 async function adminResetUser(username,server){
   if(!confirm(`⚠️ [${username}] (${server}) 계정의 게임 데이터를 초기화합니다.\n계정(아이디/비밀번호)은 유지됩니다.\n\n정말 초기화하시겠습니까?`)) return;
   const{error}=await _sb.from('fish_accounts')
-    .update({fish_data:{},updated_at:new Date().toISOString()})
+    .update({fish_data:_buildInitialFishData(),updated_at:new Date().toISOString()})
     .eq('username',username).eq('server',server);
   if(error){alert('초기화 실패: '+error.message);return;}
   // 접속 중인 유저에게 강제 새로고침 신호 전송
