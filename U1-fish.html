@@ -1777,6 +1777,17 @@ function connectSupabase(){
     if(!battleState) return;
     onBattleForfeit(payload);
   })
+  .on('broadcast',{event:'battle_timeout'},({payload})=>{
+    if(payload.targetId!==myId) return;
+    if(!battleState||btImP1) return;
+    clearInterval(btInterval);btInterval=null;
+    // p1win = 상대(P1)가 이겼으니 나(P2)는 패배
+    const myResult=payload.result==='p1win'?'loss':payload.result==='p1loss'?'win':'draw';
+    const myAlive=btFishes.filter(f=>f.side==='my'&&!f.isDead).length;
+    const oppAlive=btFishes.filter(f=>f.side==='opp'&&!f.isDead).length;
+    if(btCanvas) btDraw(btCanvas.width,btCanvas.height);
+    setTimeout(()=>btShowResult(myAlive,oppAlive,myResult),800);
+  })
   .on('broadcast',{event:'battle_state'},({payload})=>onBattleState(payload))
   .on('broadcast',{event:'battle_hit'},({payload})=>{
     if(!battleState) return;
@@ -8289,18 +8300,7 @@ function btFrame(){
     btPhysicsStep(); // 프레임당 1 스텝 고정 (캐치업 제거 — 속도 일정 유지)
     const W=btCanvas.width,H=btCanvas.height;
     btDraw(W,H);
-    // 이벤트 소진 후 200틱 경과 시 HP 비율로 강제 종료 (무한 선회 방지)
-    if(btTick>_btMaxEventTick+200){
-      const myLiving=btFishes.filter(f=>f.side==='my'&&!f.isDead);
-      const oppLiving=btFishes.filter(f=>f.side==='opp'&&!f.isDead);
-      if(myLiving.length&&oppLiving.length){
-        const myHpPct=myLiving.reduce((s,f)=>s+f.curHp/f.maxHp,0)/myLiving.length;
-        const oppHpPct=oppLiving.reduce((s,f)=>s+f.curHp/f.maxHp,0)/oppLiving.length;
-        if(myHpPct<=oppHpPct) myLiving.forEach(f=>{f.curHp=0;f.isDead=true;});
-        else oppLiving.forEach(f=>{f.curHp=0;f.isDead=true;});
-      }
-    }
-    // P2에게 매 틱 상태 전송 — 강제 종료 처리 후 전송해야 isDead=true가 반영됨
+    // P2에게 매 틱 상태 전송
     if(currentGame){
       sbSend('battle_state',{
         targetId:currentGame.opponentId,fromId:myId,
@@ -8313,13 +8313,29 @@ function btFrame(){
         }))
       });
     }
-    // 종료 체크
+    // 이벤트 소진 후 200틱 경과 시 HP% 기준 시간초과 종료 (물고기 사망 없음)
+    if(btTick>_btMaxEventTick+200){
+      const myLiving=btFishes.filter(f=>f.side==='my'&&!f.isDead);
+      const oppLiving=btFishes.filter(f=>f.side==='opp'&&!f.isDead);
+      if(myLiving.length&&oppLiving.length){
+        const myHpPct=myLiving.reduce((s,f)=>s+f.curHp/f.maxHp,0)/myLiving.length;
+        const oppHpPct=oppLiving.reduce((s,f)=>s+f.curHp/f.maxHp,0)/oppLiving.length;
+        const p1result=myHpPct>oppHpPct?'p1win':myHpPct<oppHpPct?'p1loss':'draw';
+        clearInterval(btInterval);btInterval=null;
+        if(currentGame) sbSend('battle_timeout',{targetId:currentGame.opponentId,fromId:myId,result:p1result});
+        btDraw(W,H);
+        const myResult=p1result==='p1win'?'win':p1result==='p1loss'?'loss':'draw';
+        setTimeout(()=>btShowResult(myLiving.length,oppLiving.length,myResult),800);
+        return;
+      }
+    }
+    // 정상 종료 체크 (한쪽 전멸)
     const myAlive=btFishes.filter(f=>f.side==='my'&&!f.isDead).length;
     const oppAlive=btFishes.filter(f=>f.side==='opp'&&!f.isDead).length;
     if(myAlive===0||oppAlive===0){
       clearInterval(btInterval);btInterval=null;
       btDraw(W,H);
-      setTimeout(()=>btShowResult(myAlive,oppAlive),800);
+      setTimeout(()=>btShowResult(myAlive,oppAlive,null),800);
     }
   } else {
     // ── P2: 렌더링만 (상태는 battle_state 브로드캐스트로 수신) ──
@@ -8791,21 +8807,26 @@ function toggleBattleStatusMobile(){
 // 등급별 보상
 const BATTLE_GRADE_REWARD={'일반':50,'중급':150,'고급':400,'희귀':1000,'영웅':3000,'전설':10000};
 
-function btShowResult(myAlive,oppAlive){
-  const win=myAlive>0&&oppAlive===0;
-  const draw=myAlive>0&&oppAlive>0; // 시간 초과
+function btShowResult(myAlive,oppAlive,timeoutResult=null){
+  const isTimeout=timeoutResult!==null;
+  const win=isTimeout?(timeoutResult==='win'):(myAlive>0&&oppAlive===0);
+  const draw=isTimeout?(timeoutResult==='draw'):false;
 
   // ── 실제 HP/사망 반영 ──────────────────────────────
   btFishes.filter(f=>f.side==='my').forEach(f=>{
     if(f.origIdx==null||!FG.fishes[f.origIdx]) return;
-    FG.fishes[f.origIdx].hp=Math.max(0,f.curHp);
-    if(f.deathSaved){
-      // 도망가기 발동: 배틀에서 도주 → 10% HP로 수조 귀환
-      FG.fishes[f.origIdx].hp=Math.max(1,Math.floor(FG.fishes[f.origIdx].maxHp*0.1));
-      FG.fishes[f.origIdx].isDead=false;
-    } else if(f.isDead||f.curHp<=0){
-      FG.fishes[f.origIdx].isDead=true;
-      FG.fishes[f.origIdx].hp=0;
+    if(isTimeout){
+      // 시간초과: 물고기 죽지 않음, 남은 HP로 귀환 (최소 1)
+      FG.fishes[f.origIdx].hp=Math.max(1,Math.floor(f.curHp));
+    } else {
+      FG.fishes[f.origIdx].hp=Math.max(0,Math.floor(f.curHp));
+      if(f.deathSaved){
+        FG.fishes[f.origIdx].hp=Math.max(1,Math.floor(FG.fishes[f.origIdx].maxHp*0.1));
+        FG.fishes[f.origIdx].isDead=false;
+      } else if(f.isDead||f.curHp<=0){
+        FG.fishes[f.origIdx].isDead=true;
+        FG.fishes[f.origIdx].hp=0;
+      }
     }
   });
 
@@ -8814,7 +8835,8 @@ function btShowResult(myAlive,oppAlive){
   const rewardLines=[];
   let btSpFood=0;
   const _isLegBattle=currentGame&&currentGame.type==='legend_battle';
-  if(win){
+  if(win&&!isTimeout){
+    // 정상 승리: 적 처치 보상
     btFishes.filter(f=>f.side==='opp'&&f.isDead).forEach(f=>{
       const r=BATTLE_GRADE_REWARD[f.grade]||50;
       totalReward+=r;
@@ -8826,13 +8848,17 @@ function btShowResult(myAlive,oppAlive){
     FG.btWins++;
     checkAchievements('btwin');
     if(!_btBPAwarded){_btBPAwarded=true;const _bpW=_isLegBattle?3:1;const _bpTitleBonus=Math.max(0,...(btFishes||[]).filter(f=>f.side==='my'&&!f.isDead).map(f=>{const tef=f.title?((TITLE_POOL.find(t=>t.id===f.title)||{}).effect||{}):{}; return tef.bpBonus||0;}));FG.battlePoints=(FG.battlePoints||0)+_bpW+_bpTitleBonus;u1Toast(`${_isLegBattle?'👑':'⚔️'} 배틀포인트 +${_bpW+_bpTitleBonus} (승리${_bpTitleBonus>0?` +${_bpTitleBonus}칭호보너스`:''})`,'#8B6914');}
-  } else if(!draw&&_isLegBattle){
+  } else if(win&&isTimeout){
+    // 시간초과 승리: BP만 지급
+    if(!_btBPAwarded){_btBPAwarded=true;const _bpW=_isLegBattle?3:1;FG.battlePoints=(FG.battlePoints||0)+_bpW;u1Toast(`${_isLegBattle?'👑':'⚔️'} 배틀포인트 +${_bpW} (시간초과 승리)`,'#8B6914');}
+    FG.btWins++;checkAchievements('btwin');
+  } else if(!win&&!draw&&_isLegBattle){
     if(!_btBPAwarded){_btBPAwarded=true;FG.battlePoints=(FG.battlePoints||0)+1;}
     u1Toast('👑 배틀포인트 +1 (패배)','#8B6914');
   }
 
   fishRenderInfo();
-  fishSave(); // 즉시 DB 저장
+  fishSave();
 
   // ── 결과 화면 ────────────────────────────────────
   const banner=document.getElementById('bt-result-banner');
@@ -8841,7 +8867,18 @@ function btShowResult(myAlive,oppAlive){
   const myDeadCnt=btFishes.filter(f=>f.side==='my'&&f.isDead).length;
 
   let ico,title,detail;
-  if(win){
+  if(draw){
+    ico='🤝'; title='무승부';
+    detail=`시간 초과 — 무승부\n내 생존: ${myAlive}/${myTotal}마리`;
+  } else if(win&&isTimeout){
+    ico='⏱'; title=_isLegBattle?'👑 전설전 시간초과 승리!':'⏱ 시간초과 승리!';
+    detail=`HP 비율 우세로 승리\n내 생존: ${myAlive}/${myTotal}마리\n\n물고기는 남은 HP로 귀환합니다.`;
+    detail+=`\n\n${_isLegBattle?'👑 배틀포인트 +3':'⚔️ 배틀포인트 +1'} (누적: ${FG.battlePoints}BP)`;
+  } else if(!win&&isTimeout){
+    ico='⏱'; title=_isLegBattle?'👑 전설전 시간초과 패배':'⏱ 시간초과 패배';
+    detail=`HP 비율 열세로 패배\n내 생존: ${myAlive}/${myTotal}마리\n\n물고기는 남은 HP로 귀환합니다.`;
+    if(_isLegBattle) detail+=`\n\n👑 배틀포인트 +1 (누적: ${FG.battlePoints}BP)`;
+  } else if(win){
     ico='🏆'; title=_isLegBattle?'👑 전설전 승리!':'승리!';
     detail=`적 전멸! 내 생존: ${myAlive}/${myTotal}마리\n\n`;
     if(rewardLines.length){
@@ -8850,9 +8887,6 @@ function btShowResult(myAlive,oppAlive){
     }
     if(btSpFood) detail+='\n\n🍖 특수먹이 +1 획득!';
     detail+=`\n\n${_isLegBattle?'👑 배틀포인트 +3':'⚔️ 배틀포인트 +1'} (누적: ${FG.battlePoints}BP)`;
-  } else if(draw){
-    ico='🤝'; title='무승부';
-    detail=`시간 초과\n내 생존: ${myAlive}/${myTotal}마리`;
   } else {
     ico='😢'; title=_isLegBattle?'👑 전설전 패배':'패배...';
     detail=`내 물고기가 전멸했습니다\n\n`;
