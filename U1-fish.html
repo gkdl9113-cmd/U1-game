@@ -7756,7 +7756,7 @@ function _baitOtherYwPool(excludeType){
     if(type===excludeType)continue;
     const sp=F_SPECIES[type];
     for(let i=1;i<=5;i++){
-      if(sp[i]&&(sp[i].grade||'').includes('영물')&&sp[i].grade!=='상급영물')pool.push({type,stage:i});
+      if(sp[i]&&(sp[i].grade||'').includes('영물'))pool.push({type,stage:i});
     }
   }
   return pool;
