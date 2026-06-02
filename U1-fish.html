@@ -7397,6 +7397,7 @@ function adminRenderTable(rows){
           <button class="adm-act-btn green" onclick="adminOpenGiveFish('${r.username}','${r.server}')">🐟 지급</button>
           <button class="adm-act-btn" onclick="adminOpenSkill('${r.username}','${r.server}')">🎯 스킬</button>
           <button class="adm-act-btn" onclick="adminOpenEdit('${r.username}','${r.server}')">✏️ 수정</button>
+          <button class="adm-act-btn red" onclick="adminResetUser('${r.username}','${r.server}')">🗑️ 초기화</button>
         `}
       </div>
     </div>`;
@@ -7502,6 +7503,16 @@ async function adminResetServer(){
   const{error}=await query;
   if(error){alert('초기화 실패: '+error.message);return;}
   document.getElementById('adm-status').textContent=`${target} 데이터 초기화 완료 (계정 유지)`;
+  adminLoadUsers();
+}
+
+async function adminResetUser(username,server){
+  if(!confirm(`⚠️ [${username}] (${server}) 계정의 게임 데이터를 초기화합니다.\n계정(아이디/비밀번호)은 유지됩니다.\n\n정말 초기화하시겠습니까?`)) return;
+  const{error}=await _sb.from('fish_accounts')
+    .update({fish_data:{},updated_at:new Date().toISOString()})
+    .eq('username',username).eq('server',server);
+  if(error){alert('초기화 실패: '+error.message);return;}
+  document.getElementById('adm-status').textContent=`[${username}] 데이터 초기화 완료`;
   adminLoadUsers();
 }
 
@@ -7846,6 +7857,8 @@ function onBattleActions(payload){
   if(btFishes.length>0){u1Toast('[5]이미초기화됨 — 중복무시','#888');return;}
   // p2 관점: payload.myFish = 도전자(상대), payload.oppFish = 나
   btCurrentWeather=BATTLE_WEATHERS.find(w=>w.id===payload.weatherId)||null;
+  // P2도 동일 seed로 이벤트 계산 — _btMaxEventTick 설정 및 타이머 표시용
+  btEvents=calcBattleEvents(payload.myFish,payload.oppFish,mulberry32(payload.seed),btCurrentWeather);
   initRealtimeBattle(payload.oppFish,payload.myFish,payload.seed,false);
 }
 
@@ -8291,7 +8304,8 @@ function btFrame(){
   if(_btMaxEventTick>0&&btTick%33===0){
     const _tb=document.getElementById('bt-timer-banner');
     if(_tb&&_tb.style.display!=='none'){
-      const rem=Math.max(0,Math.ceil((_btMaxEventTick+200-btTick)*30/1000));
+      const elapsed=btImP1?btTick:Math.floor((Date.now()-_btLocalStart)/30);
+      const rem=Math.max(0,Math.ceil((_btMaxEventTick+200-elapsed)*30/1000));
       _tb.textContent=`⏱ ${rem}초`;
     }
   }
