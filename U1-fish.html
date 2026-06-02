@@ -5443,9 +5443,9 @@ function btShopBuy(id){
   const cfg={
     bt_hp: {cost:1,  type:'hp'},
     bt_sp: {cost:15, type:'spfood'},
-    bt_yw1:{cost:15, type:'yw',prob:0.05, grade:'하급영물'},
-    bt_yw2:{cost:30, type:'yw',prob:0.025,grade:'중급영물'},
-    bt_yw3:{cost:50, type:'yw',prob:0.005,grade:'상급영물'},
+    bt_yw1:{cost:5,  type:'yw', tiers:[{grade:'하급영물',prob:0.10}]},
+    bt_yw2:{cost:15, type:'yw', tiers:[{grade:'중급영물',prob:0.10},{grade:'하급영물',prob:0.20}]},
+    bt_yw3:{cost:30, type:'yw', tiers:[{grade:'상급영물',prob:0.20},{grade:'중급영물',prob:0.30},{grade:'하급영물',prob:0.40}]},
   }[id];
   if(!cfg)return;
   if(bp<cfg.cost){u1Toast(`BP 부족 (필요 ${cfg.cost}BP · 보유 ${bp}BP)`,'#C00000');return;}
@@ -5465,8 +5465,14 @@ function btShopBuy(id){
       u1Toast('보조 수족관이 꽉 찼습니다. 자리를 만들고 다시 시도하세요.','#C00000');
       fishOpenShop();return;
     }
-    if(Math.random()<cfg.prob){
-      const picked=_getYwByGrade(cfg.grade);
+    const r=Math.random();
+    let cumul=0, wonGrade=null;
+    for(const tier of cfg.tiers){
+      cumul+=tier.prob;
+      if(r<cumul){wonGrade=tier.grade;break;}
+    }
+    if(wonGrade){
+      const picked=_getYwByGrade(wonGrade);
       if(picked){
         const caught=newFish(picked.stage,picked.type);
         updateFishCodex(picked.type,picked.stage);
@@ -5475,11 +5481,11 @@ function btShopBuy(id){
         FG.totalFished++;
         checkAchievements('fish',{grade:fStage(caught).grade,isYw:_isYwFish(caught)});
         fishQuickSave();
-        u1Toast(`🎉 ${cfg.grade} ${fStage(caught).name} 획득! (보조 수족관에 추가)`,'#BF6000');
+        u1Toast(`🎉 ${wonGrade} ${fStage(caught).name} 획득! (보조 수족관에 추가)`,'#BF6000');
       }
     } else {
       fishQuickSave();
-      u1Toast(`꽝! ${cfg.grade} 획득 실패`,'#C00000');
+      u1Toast(`꽝! 영물 획득 실패`,'#C00000');
     }
   }
   fishOpenShop();
@@ -5542,9 +5548,9 @@ function fishOpenShop(){
   const _btItems=[
     {id:'bt_hp', icon:'💊',name:'HP 회복권',   cost:1,  desc:'물고기 1마리 선택 → HP 100% 회복'},
     {id:'bt_sp', icon:'🍖',name:'스페셜 먹이', cost:15, desc:'스페셜 먹이 1개 지급'},
-    {id:'bt_yw1',icon:'🌀',name:'하급영물 뽑기',cost:15,desc:'하급영물 1마리 획득 도전'},
-    {id:'bt_yw2',icon:'🌀',name:'중급영물 뽑기',cost:30,desc:'중급영물 1마리 획득 도전'},
-    {id:'bt_yw3',icon:'🌀',name:'상급영물 뽑기',cost:50,desc:'상급영물 1마리 획득 도전'},
+    {id:'bt_yw1',icon:'🌀',name:'하급영물 뽑기',cost:5, desc:'하급 10%'},
+    {id:'bt_yw2',icon:'🌀',name:'중급영물 뽑기',cost:15,desc:'하급 20% · 중급 10%'},
+    {id:'bt_yw3',icon:'🌀',name:'상급영물 뽑기',cost:30,desc:'하급 40% · 중급 30% · 상급 20%'},
   ];
   // 초월 칭호 섹션
   const _hasS1=( FG.titles||[]).includes('ti_S1군림자');
@@ -5595,6 +5601,20 @@ function fishOpenShop(){
           ${it.cost}BP</button>
       </div>`;
     }).join('')}
+    <div style="margin-top:8px;border-radius:4px;overflow:hidden;font-size:9px">
+      <div style="display:grid;grid-template-columns:1fr 52px 1fr;background:#0A1628;color:#93C5FD;font-weight:700;padding:4px 6px;gap:4px">
+        <span>상품</span><span style="text-align:center">비용</span><span>확률</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 52px 1fr;background:#0F2040;color:#CBD5E1;padding:4px 6px;gap:4px;align-items:center">
+        <span>🌀 하급영물 뽑기</span><span style="text-align:center;color:#FFD700;font-weight:700">5 BP</span><span style="color:#86EFAC">하급 10%</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 52px 1fr;background:#0D1B2A;color:#CBD5E1;padding:4px 6px;gap:4px;align-items:center">
+        <span>🌀 중급영물 뽑기</span><span style="text-align:center;color:#FFD700;font-weight:700">15 BP</span><span style="color:#86EFAC">하급 20% · 중급 10%</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 52px 1fr;background:#0F2040;color:#CBD5E1;padding:4px 6px;gap:4px;align-items:center">
+        <span>🌀 상급영물 뽑기</span><span style="text-align:center;color:#FFD700;font-weight:700">30 BP</span><span style="color:#86EFAC">하급 40% · 중급 30% · 상급 20%</span>
+      </div>
+    </div>
   </div>`;
   div.innerHTML+=F_SHOP.map(item=>{
     const cnt=item.type==='rod'?(FG.rods[item.id]||0):0;
