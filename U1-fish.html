@@ -5442,7 +5442,7 @@ function btShopBuy(id){
   const bp=FG.battlePoints||0;
   const cfg={
     bt_hp: {cost:1,  type:'hp'},
-    bt_sp: {cost:15, type:'spfood'},
+    bt_sp: {cost:5,  type:'spfood'},
     bt_yw1:{cost:5,  type:'yw', tiers:[{grade:'하급영물',prob:0.10}]},
     bt_yw2:{cost:15, type:'yw', tiers:[{grade:'중급영물',prob:0.10},{grade:'하급영물',prob:0.20}]},
     bt_yw3:{cost:30, type:'yw', tiers:[{grade:'상급영물',prob:0.20},{grade:'중급영물',prob:0.30},{grade:'하급영물',prob:0.40}]},
@@ -5547,7 +5547,7 @@ function fishOpenShop(){
   const _bp=FG.battlePoints||0;
   const _btItems=[
     {id:'bt_hp', icon:'💊',name:'HP 회복권',   cost:1,  desc:'물고기 1마리 선택 → HP 100% 회복'},
-    {id:'bt_sp', icon:'🍖',name:'스페셜 먹이', cost:15, desc:'스페셜 먹이 1개 지급'},
+    {id:'bt_sp', icon:'🍖',name:'스페셜 먹이', cost:5,  desc:'스페셜 먹이 1개 지급'},
     {id:'bt_yw1',icon:'🌀',name:'하급영물 뽑기',cost:5, desc:'하급 10%'},
     {id:'bt_yw2',icon:'🌀',name:'중급영물 뽑기',cost:15,desc:'하급 20% · 중급 10%'},
     {id:'bt_yw3',icon:'🌀',name:'상급영물 뽑기',cost:30,desc:'하급 40% · 중급 30% · 상급 20%'},
