@@ -8897,6 +8897,7 @@ function btShowResult(myAlive,oppAlive,timeoutResult=null){
 
   fishRenderInfo();
   fishSave();
+  stopGameHeartbeat();
 
   // ── 결과 화면 ────────────────────────────────────
   const banner=document.getElementById('bt-result-banner');
