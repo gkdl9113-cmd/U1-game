@@ -1818,6 +1818,7 @@ function connectSupabase(){
   .on('broadcast',{event:'data_reload'},({payload})=>{
     if(payload.targetName!==myName) return;
     if(payload.forceReset){location.reload(true);return;} // 관리자 초기화 → 강제 새로고침
+    if(payload.forceLogout){_kickLogout();return;} // 관리자 강제 로그아웃
     // 관리자가 데이터 변경 → DB에서 최신 데이터 로드
     reloadFishDataFromDB(payload.fishName);
   })
@@ -7439,6 +7440,7 @@ function adminRenderTable(rows){
           <button class="adm-act-btn green" onclick="adminOpenGiveFish('${r.username}','${r.server}')">🐟 지급</button>
           <button class="adm-act-btn" onclick="adminOpenSkill('${r.username}','${r.server}')">🎯 스킬</button>
           <button class="adm-act-btn" onclick="adminOpenEdit('${r.username}','${r.server}')">✏️ 수정</button>
+          <button class="adm-act-btn red" onclick="adminKickAndRefresh('${r.username}','${r.server}')">⚠️ 강제로그아웃</button>
           <button class="adm-act-btn red" onclick="adminResetUser('${r.username}','${r.server}')">🗑️ 초기화</button>
         `}
       </div>
@@ -7546,6 +7548,13 @@ async function adminResetServer(){
   if(error){alert('초기화 실패: '+error.message);return;}
   document.getElementById('adm-status').textContent=`${target} 데이터 초기화 완료 (계정 유지)`;
   adminLoadUsers();
+}
+
+async function adminKickAndRefresh(username,server){
+  if(!confirm(`⚠️ [${username}] (${server}) 계정을 강제 로그아웃하고 새로고침합니다.\n\n정말 진행하시겠습니까?`)) return;
+  sbSend('data_reload',{targetName:username,forceLogout:true});
+  document.getElementById('adm-status').textContent=`[${username}] 강제 로그아웃 신호 전송`;
+  setTimeout(adminLoadUsers,2000);
 }
 
 async function adminResetUser(username,server){
