@@ -1823,7 +1823,7 @@ function connectSupabase(){
   })
   .on('broadcast',{event:'new_login'},({payload})=>{
     if(payload.name!==myName||payload.sessionId===myId) return;
-    const iShouldLeave=!payload.joinedAt||(payload.joinedAt>=_myJoinedAt);
+    const iShouldLeave=payload.joinedAt&&(payload.joinedAt>_myJoinedAt);
     if(!iShouldLeave) return;
     _kickLogout();
   })
@@ -1834,7 +1834,7 @@ function connectSupabase(){
     const entries=state[currentUsername];
     if(!Array.isArray(entries)) return;
     const newer=entries.find(p=>p.userId!==myId&&p.joinedAt>_myJoinedAt);
-    if(newer) _kickLogout();
+    if(newer) _kickLogout(); // 다른 기기가 훨씬 더 최신이면 로그아웃 (현재 기기 우선)
   })
   .on('broadcast',{event:'plaza_pos'},({payload})=>{
     const pid=payload.plaza_id;
