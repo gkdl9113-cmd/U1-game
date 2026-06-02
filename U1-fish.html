@@ -1817,6 +1817,7 @@ function connectSupabase(){
   })
   .on('broadcast',{event:'data_reload'},({payload})=>{
     if(payload.targetName!==myName) return;
+    if(payload.forceReset){location.reload(true);return;} // 관리자 초기화 → 강제 새로고침
     // 관리자가 데이터 변경 → DB에서 최신 데이터 로드
     reloadFishDataFromDB(payload.fishName);
   })
@@ -7512,6 +7513,8 @@ async function adminResetUser(username,server){
     .update({fish_data:{},updated_at:new Date().toISOString()})
     .eq('username',username).eq('server',server);
   if(error){alert('초기화 실패: '+error.message);return;}
+  // 접속 중인 유저에게 강제 새로고침 신호 전송
+  sbSend('data_reload',{targetName:username,fromAdmin:ADMIN_USERNAME,forceReset:true});
   document.getElementById('adm-status').textContent=`[${username}] 데이터 초기화 완료`;
   adminLoadUsers();
 }
