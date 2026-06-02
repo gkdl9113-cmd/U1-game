@@ -2738,7 +2738,7 @@ const BAIT_YW_TABLE={
   turtle:{main:{type:'yongwang',stage:1},normal:{mainProb:0.01,otherProb:0.005},special:{mainProb:0.05,otherProb:0.010}},
   goldfish:{main:{type:'yeongeum',stage:1},normal:{mainProb:0.03,otherProb:0.003},special:{mainProb:0.10,otherProb:0.007}},
   electric:{main:{type:'eelyw',stage:1},normal:{mainProb:0.01,otherProb:0.005},special:{mainProb:0.05,otherProb:0.010}},
-  piranha:{main:{type:'megalodonte',stage:1},normal:{mainProb:0.008,otherProb:0.003},special:{mainProb:0.04,otherProb:0.008}},
+  piranha:{main:null,normal:{mainProb:0,otherProb:0.003},special:{mainProb:0,otherProb:0.008}},
   mandarin:{main:{type:'geumlin',stage:1},normal:{mainProb:0.01,otherProb:0.005},special:{mainProb:0.05,otherProb:0.010}},
 };
 // ── 칭호 시스템 ─────────────────────────────────────────
@@ -3418,7 +3418,7 @@ function fishingGaugeClick(){
     const probs=bt?(inSpecial?bt.special:bt.normal):baseProbsByZone;
     FMG.baitFish=null;
     const roll=Math.random();
-    if(bt&&roll<probs.mainProb){
+    if(bt&&bt.main&&roll<probs.mainProb){
       const caught=newFish(bt.main.stage,bt.main.type);
       updateFishCodex(bt.main.type,bt.main.stage);
       FG.auxFishes.push(caught);_trySpFoodDrop();fishRenderAux();fishRenderInfo();
@@ -7756,7 +7756,7 @@ function _baitOtherYwPool(excludeType){
     if(type===excludeType)continue;
     const sp=F_SPECIES[type];
     for(let i=1;i<=5;i++){
-      if(sp[i]&&(sp[i].grade||'').includes('영물'))pool.push({type,stage:i});
+      if(sp[i]&&(sp[i].grade||'').includes('영물')&&sp[i].grade!=='상급영물')pool.push({type,stage:i});
     }
   }
   return pool;
