@@ -5258,6 +5258,13 @@ window.addEventListener('beforeunload',()=>{
   if(!FG.tickInterval&&!FG.saveInterval) return;
   fishSave(FISH_STOP_ON_DISCONNECT);
 });
+
+// 탭 숨김/표시 감지 — 백그라운드 중단 방지
+document.addEventListener('visibilitychange',()=>{
+  if(!currentUsername||!myName) return; // 게임 중이 아니면 무시
+  if(document.hidden) fishPause(); // 탭 숨김
+  else fishResume(); // 탭 표시
+});
 function fishLoad(){
   try{
     const raw=localStorage.getItem('u1aquarium_v1'); if(!raw) return;
