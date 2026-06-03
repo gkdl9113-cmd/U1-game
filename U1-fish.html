@@ -4150,8 +4150,8 @@ async function seasonReset(){
 }
 function buyS1Title(){
   if((FG.titles||[]).includes('ti_S1군림자')){u1Toast('이미 보유 중입니다','#555');return;}
-  if((FG.battlePoints||0)<200){u1Toast('BP 부족 (필요 200BP)','#C00000');return;}
-  FG.battlePoints-=200;
+  if((FG.battlePoints||0)<100){u1Toast('BP 부족 (필요 100BP)','#C00000');return;}
+  FG.battlePoints-=100;
   FG.titles=FG.titles||[];
   FG.titles.push('ti_S1군림자');
   seasonReset();
