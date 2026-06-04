@@ -5562,7 +5562,7 @@ function fishOpenShop(){
   ];
   // 초월 칭호 섹션
   const _hasS1=( FG.titles||[]).includes('ti_S1군림자');
-  const _canS1=_bp>=200&&!_hasS1;
+  const _canS1=_bp>=100&&!_hasS1;
   div.innerHTML+=`<div style="background:linear-gradient(135deg,#3D0000,#7F0000);border-radius:6px;padding:10px 12px;margin-bottom:8px;border:1px solid #FFD70055">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div style="font-size:11px;font-weight:700;color:#FFD700">👑 초월 칭호</div>
@@ -5573,7 +5573,7 @@ function fishOpenShop(){
       <span style="font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;background:#FF0000;color:#fff;flex-shrink:0">서버 초기화</span>
     </div>
     <button onclick="buyS1Title()" ${_canS1?'':'disabled'} style="width:100%;background:${_hasS1?'#444':_canS1?'linear-gradient(90deg,#7F0000,#B91C1C)':'#2A0000'};color:${_hasS1?'#888':_canS1?'#FFD700':'#666'};border:none;padding:8px;border-radius:5px;font-size:11px;font-weight:700;cursor:${_canS1?'pointer':'default'};font-family:inherit">
-      ${_hasS1?'✅ [S1 군림자] 보유 중':'👑 [S1 군림자] 구매 — 200 BP'}
+      ${_hasS1?'✅ [S1 군림자] 보유 중':'👑 [S1 군림자] 구매 — 100 BP'}
     </button>
   </div>`;
   // 칭호 가챠 섹션
