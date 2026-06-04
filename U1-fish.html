@@ -8919,17 +8919,32 @@ function btShowResult(myAlive,oppAlive,timeoutResult=null){
     if(Math.random()<0.25){FG.spFood++;btSpFood=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
     FG.btWins++;
     checkAchievements('btwin');
-    if(!_btBPAwarded){_btBPAwarded=true;const _bpW=_isLegBattle?3:1;const _bpTitleBonus=Math.max(0,...(btFishes||[]).filter(f=>f.side==='my'&&!f.isDead).map(f=>{const tef=f.title?((TITLE_POOL.find(t=>t.id===f.title)||{}).effect||{}):{}; return tef.bpBonus||0;}));FG.battlePoints=(FG.battlePoints||0)+_bpW+_bpTitleBonus;u1Toast(`${_isLegBattle?'👑':'⚔️'} 배틀포인트 +${_bpW+_bpTitleBonus} (승리${_bpTitleBonus>0?` +${_bpTitleBonus}칭호보너스`:''})`,'#8B6914');}
+    if(!_btBPAwarded){
+      _btBPAwarded=true;
+      const _bpW=_isLegBattle?3:1;
+      const _bpTitleBonus=Math.max(0,...(btFishes||[]).filter(f=>f.side==='my'&&!f.isDead).map(f=>{const tef=f.title?((TITLE_POOL.find(t=>t.id===f.title)||{}).effect||{}):{}; return tef.bpBonus||0;}));
+      FG.battlePoints=(FG.battlePoints||0)+_bpW+_bpTitleBonus;
+      u1Toast(`${_isLegBattle?'👑':'⚔️'} 배틀포인트 +${_bpW+_bpTitleBonus} (승리${_bpTitleBonus>0?` +${_bpTitleBonus}칭호보너스`:''})`,'#8B6914');
+    }
   } else if(win&&isTimeout){
     // 시간초과 승리: BP만 지급
-    if(!_btBPAwarded){_btBPAwarded=true;const _bpW=_isLegBattle?3:1;FG.battlePoints=(FG.battlePoints||0)+_bpW;u1Toast(`${_isLegBattle?'👑':'⚔️'} 배틀포인트 +${_bpW} (시간초과 승리)`,'#8B6914');}
+    if(!_btBPAwarded){
+      _btBPAwarded=true;
+      const _bpW=_isLegBattle?3:1;
+      FG.battlePoints=(FG.battlePoints||0)+_bpW;
+      u1Toast(`${_isLegBattle?'👑':'⚔️'} 배틀포인트 +${_bpW} (시간초과 승리)`,'#8B6914');
+    }
     FG.btWins++;checkAchievements('btwin');
   } else if(!win&&!draw&&_isLegBattle){
-    if(!_btBPAwarded){_btBPAwarded=true;FG.battlePoints=(FG.battlePoints||0)+1;}
-    u1Toast('👑 배틀포인트 +1 (패배)','#8B6914');
+    if(!_btBPAwarded){
+      _btBPAwarded=true;
+      FG.battlePoints=(FG.battlePoints||0)+1;
+      u1Toast('👑 배틀포인트 +1 (패배)','#8B6914');
+    }
   }
 
   fishRenderInfo();
+  console.log('[Battle End] BP before save:', FG.battlePoints, 'Win:', win, 'Draw:', draw, 'Timeout:', isTimeout);
   fishSave();
   stopGameHeartbeat();
 
@@ -9010,8 +9025,16 @@ function onBattleForfeit(payload){
   if(Math.random()<0.25){FG.spFood++;btSpFoodF=1;u1Toast('🍖 특수먹이 획득! (승리 보상)','#5D4037');}
   FG.btWins++;checkAchievements('btwin');
   const _isLegBattleF=currentGame&&currentGame.type==='legend_battle';
-  if(!_btBPAwarded){_btBPAwarded=true;const _bpF=_isLegBattleF?3:1;const _bpFTitleBonus=Math.max(0,...(btFishes||[]).filter(f=>f.side==='my'&&!f.isDead).map(f=>{const tef=f.title?((TITLE_POOL.find(t=>t.id===f.title)||{}).effect||{}):{}; return tef.bpBonus||0;}));FG.battlePoints=(FG.battlePoints||0)+_bpF+_bpFTitleBonus;u1Toast(`${_isLegBattleF?'👑':'⚔️'} 배틀포인트 +${_bpF+_bpFTitleBonus} (승리${_bpFTitleBonus>0?` +${_bpFTitleBonus}칭호보너스`:''})`,'#8B6914');}
-  fishRenderInfo();fishSave();
+  if(!_btBPAwarded){
+    _btBPAwarded=true;
+    const _bpF=_isLegBattleF?3:1;
+    const _bpFTitleBonus=Math.max(0,...(btFishes||[]).filter(f=>f.side==='my'&&!f.isDead).map(f=>{const tef=f.title?((TITLE_POOL.find(t=>t.id===f.title)||{}).effect||{}):{}; return tef.bpBonus||0;}));
+    FG.battlePoints=(FG.battlePoints||0)+_bpF+_bpFTitleBonus;
+    u1Toast(`${_isLegBattleF?'👑':'⚔️'} 배틀포인트 +${_bpF+_bpFTitleBonus} (승리${_bpFTitleBonus>0?` +${_bpFTitleBonus}칭호보너스`:''})`,'#8B6914');
+  }
+  fishRenderInfo();
+  console.log('[Battle Forfeit] BP:', FG.battlePoints, 'Reward:', totalReward);
+  fishSave();
   // 결과 배너
   const banner=document.getElementById('bt-result-banner');
   let detail=`🏃 상대 탈주 — 자동 승리!\n\n💰 획득 보상 (탈주 보상 50%):\n`;
