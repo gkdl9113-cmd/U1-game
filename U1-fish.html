@@ -3077,6 +3077,17 @@ function _applyOfflineElapsed(hiddenAt){
     FG.fishes.forEach(f=>{if(!f.isDead&&f.hp<=0) fishDieOne(f);});
   }
 }
+let _lastOfflineCheck=0;
+function _checkOfflineTime(){
+  const now=serverNow();
+  if(now-_lastOfflineCheck>30000&&FG.lastTick&&now-FG.lastTick>2000){
+    const offlineElapsed=(now-FG.lastTick)/1000;
+    if(offlineElapsed>1) fishCalcOffline(offlineElapsed);
+    FG.lastTick=now;
+    fishRenderInfo();
+  }
+  _lastOfflineCheck=now;
+}
 document.addEventListener('visibilitychange',()=>{
   const fishActive=!!FG.tickInterval;
   if(document.hidden){
@@ -3087,6 +3098,7 @@ document.addEventListener('visibilitychange',()=>{
   } else {
     const savedAt=_tabHiddenAt||parseInt(localStorage.getItem('_tabHiddenAt')||'0');
     if(savedAt&&fishActive) _applyOfflineElapsed(savedAt);
+    _checkOfflineTime();
     // 광장: 복귀 시 경과 시간만큼 수입 보상 후 루프 재시작
     [1,2].forEach(pid=>{
       if(!FG.plazaFishIds[pid]) return;
@@ -3752,7 +3764,11 @@ function fishTick(){
   const now=Date.now();
   if(!FG.lastTick) FG.lastTick=now;
   const _prevTick=FG.lastTick; FG.lastTick=now;
-  const elapsed=Math.min((now-_prevTick)/1000,5); // 먼저 선언 (낚시대/자동먹이통 공통 사용)
+  let elapsed=Math.min((now-_prevTick)/1000,5);
+  if(elapsed>2){
+    const offlineElapsed=elapsed-0.05;
+    if(offlineElapsed>0.1) fishCalcOffline(offlineElapsed);
+  } // 먼저 선언 (낚시대/자동먹이통 공통 사용)
   const alive=aliveFishes();
   // 자동 먹이통 — 배정된 물고기만 급식 (미배정 건너뜀)
   if(FG.autoFeeders.length>0&&FG.food>0){
