@@ -1,0 +1,27 @@
+# 시즌2 개발 파일 (로컬 전용)
+U1-fish-S2.html
+01_Development/
+02_QA/
+
+# 임시 파일
+*.log
+*.tmp
+*.pyc
+
+# 데이터 파일
+Money_log.csv
+Supabase.txt
+auto_update.log
+auto_update.ps1
+
+# 스크린샷 및 비디오
+*.mp4
+*.mov
+
+# 설정 파일
+*.xlsx
+*.xls
+
+# Python 스크립트
+*.py
+!make_gamedata.py
