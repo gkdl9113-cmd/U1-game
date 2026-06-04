@@ -982,6 +982,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-dlg-title">⚔️ 게임 선택 <button class="xl-dlg-x" onclick="hideDlg('challenge-dlg')">✕</button></div>
     <div class="xl-dlg-body">
       <div class="xl-dlg-lbl" id="challenge-target-name">상대: </div>
+      <div style="font-size:10px;color:#8B6914;margin-bottom:8px;text-align:center;font-weight:700">오늘 남은 배틀: <span id="challenge-remaining-battles">10</span>/10판</div>
       <hr class="xl-dlg-sep">
       <div class="game-sel-btns">
         <button class="game-sel-btn" style="background:#FCE4D6;color:#C00000;border-color:#F4B8A0" onclick="sendChallenge('battle')">⚔️ 일반전</button>
@@ -2376,6 +2377,9 @@ function fwUpdateSidebar(){
 function fwChallenge(targetId,targetName){
   challengeTarget={id:targetId,name:targetName};
   document.getElementById('challenge-target-name').textContent='상대: '+targetName;
+  // 남은 배틀 수 표기
+  const remaining=DAILY_BATTLE_LIMIT-_btDailyCount();
+  document.getElementById('challenge-remaining-battles').textContent=Math.max(0,remaining);
   document.getElementById('challenge-dlg').classList.add('on');
 }
 
