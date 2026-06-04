@@ -7137,12 +7137,10 @@ document.addEventListener('keydown',e=>{
   if((e.key==='s'||e.key==='S')&&!bossKeyOn){
     bossKeyOn=true;
     document.getElementById('boss-overlay').style.display='block';
-    if(!FG.paused&&FG.tickInterval){FG._bossPaused=true;fishPause();}
   }
   if((e.key==='p'||e.key==='P')&&bossKeyOn){
     bossKeyOn=false;
     document.getElementById('boss-overlay').style.display='none';
-    if(FG._bossPaused){FG._bossPaused=false;fishResume();}
     const chatMsg='상사 크리 ☠️ 잠시 자리 비웠습니다';
     const msg={fromId:myId,fromName:myName,text:chatMsg};
     sbSend('chat',msg);addChatMsg(msg);
