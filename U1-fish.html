@@ -3089,16 +3089,16 @@ function _checkOfflineTime(){
   _lastOfflineCheck=now;
 }
 document.addEventListener('visibilitychange',()=>{
-  const fishActive=!!FG.tickInterval;
   if(document.hidden){
-    if(fishActive){_tabHiddenAt=serverNow();localStorage.setItem('_tabHiddenAt',_tabHiddenAt);}
+    _tabHiddenAt=serverNow();localStorage.setItem('_tabHiddenAt',_tabHiddenAt);
     // 광장: RAF는 브라우저가 자동 중단 — 숨김 시각만 기록
     if(FG.plazaFishIds[1]) _plzS[1].hiddenAt=Date.now();
     if(FG.plazaFishIds[2]) _plzS[2].hiddenAt=Date.now();
   } else {
     const savedAt=_tabHiddenAt||parseInt(localStorage.getItem('_tabHiddenAt')||'0');
-    if(savedAt&&fishActive) _applyOfflineElapsed(savedAt);
+    if(savedAt) _applyOfflineElapsed(savedAt);
     _checkOfflineTime();
+    if(!FG.tickInterval&&aliveFishes().length>0) fishStartLoops();
     // 광장: 복귀 시 경과 시간만큼 수입 보상 후 루프 재시작
     [1,2].forEach(pid=>{
       if(!FG.plazaFishIds[pid]) return;

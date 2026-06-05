@@ -866,7 +866,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div style="font-size:10px;font-weight:700;color:#1F3864;margin-bottom:6px">🎯 게이지: 초록 구간 유지하기!</div>
       <div style="background:#E0E0E0;height:24px;border-radius:3px;position:relative;overflow:hidden;border:1px solid #999">
         <div id="success-zone" style="background:rgba(76,175,80,0.5);position:absolute;height:100%"></div>
-        <div id="current-gauge" style="background:#217346;position:absolute;height:100%;width:6px;top:0;transition:left 0.02s linear"></div>
+        <div id="current-gauge" style="background:#217346;position:absolute;height:100%;width:12px;top:-6px;transition:left 0.02s linear;border:2px solid #FF6B00"></div>
       </div>
     </div>
     <!-- 엑셀 그리드 -->
@@ -3450,7 +3450,7 @@ function fishingStartGauge(){
   if(dg){
     dg.style.display='block';
     const gaugebar=dg.querySelector('[style*="height:24px"]');
-    const successZoneWidth=gaugebar.clientWidth*0.4;
+    const successZoneWidth=gaugebar.clientWidth*0.25;
     const successZoneStart=Math.random()*(gaugebar.clientWidth-successZoneWidth);
     FMG.successZoneStart=successZoneStart;
     FMG.successZoneWidth=successZoneWidth;
@@ -3473,7 +3473,7 @@ function fishingStartGauge(){
   // 드래그 이벤트 등록
   const area=document.getElementById('fishing-area');
   if(area){
-    area.style.cursor='grab';
+    area.style.cursor='crosshair';
     area.addEventListener('mousedown',_startFishingDrag);
     area.addEventListener('mousemove',_moveFishingDrag);
     area.addEventListener('mouseup',_endFishingDrag);
@@ -3487,7 +3487,7 @@ function _startDragGaugeAnimation(){
   const animate=()=>{
     if(FMG.state!=='drag')return;
     const elapsed=(Date.now()-FMG.gaugeStartTime)/1000;
-    const speed=100;
+    const speed=400;
     const basePos=(elapsed*speed)%(FMG.gaugebarWidth*2);
     let pos;
     if(FMG.autoGaugeDir>0){
@@ -3507,7 +3507,6 @@ function _startDragGaugeAnimation(){
       if(!FMG.successZoneHoldStart) FMG.successZoneHoldStart=Date.now();
       FMG.successZoneHoldTime=Date.now()-FMG.successZoneHoldStart;
       if(FMG.successZoneHoldTime>=2000){
-        FMG.state='result';
         _endFishingDrag({});
         return;
       }
@@ -3538,22 +3537,41 @@ function _startFishingDrag(e){
 }
 
 function _moveFishingDrag(e){
-  if(FMG.state!=='drag'||!FMG.dragStartX)return;
+  if(FMG.state!=='drag')return;
+  if(!FMG.dragStartX){
+    const pt=e.touches?e.touches[0]:e;
+    FMG.dragStartX=pt.clientX;
+    FMG.dragStartY=pt.clientY;
+    const area=document.getElementById('fishing-area');
+    if(area){
+      area.style.cursor='crosshair';
+      if(area.requestPointerLock)area.requestPointerLock();
+    }
+  }
   FMG.draggingActive=true;
   const pt=e.touches?e.touches[0]:e;
-  const dx=pt.clientX-FMG.dragStartX;
-  const dy=pt.clientY-FMG.dragStartY;
-  FMG.dragDistance=Math.sqrt(dx*dx+dy*dy);
+  const area=document.getElementById('fishing-area');
+  const isPointerLocked=document.pointerLockElement===area;
 
-  const dxMove=pt.clientX-_lastDragX;
-  const dyMove=pt.clientY-_lastDragY;
-  const moveDistance=Math.sqrt(dxMove*dxMove+dyMove*dyMove);
-  FMG.dragSpeed=moveDistance*60;
+  if(isPointerLocked){
+    FMG.dragGaugeOffset+=e.movementX*0.2;
+    FMG.dragDistance+=e.movementX;
+    FMG.dragSpeed=Math.abs(e.movementX)*60;
+  } else {
+    const dx=pt.clientX-FMG.dragStartX;
+    const dy=pt.clientY-FMG.dragStartY;
+    FMG.dragDistance=Math.sqrt(dx*dx+dy*dy);
 
-  FMG.dragGaugeOffset=dx*0.2;
+    const dxMove=pt.clientX-_lastDragX;
+    const dyMove=pt.clientY-_lastDragY;
+    const moveDistance=Math.sqrt(dxMove*dxMove+dyMove*dyMove);
+    FMG.dragSpeed=moveDistance*60;
 
-  _lastDragX=pt.clientX;
-  _lastDragY=pt.clientY;
+    FMG.dragGaugeOffset=dx*0.2;
+
+    _lastDragX=pt.clientX;
+    _lastDragY=pt.clientY;
+  }
 }
 
 function _endFishingDrag(e){
@@ -3566,6 +3584,7 @@ function _endFishingDrag(e){
   const area=document.getElementById('fishing-area');
   if(area){
     area.style.cursor='default';
+    if(document.pointerLockElement)document.exitPointerLock();
     area.removeEventListener('mousedown',_startFishingDrag);
     area.removeEventListener('mousemove',_moveFishingDrag);
     area.removeEventListener('mouseup',_endFishingDrag);
