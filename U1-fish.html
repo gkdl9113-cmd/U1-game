@@ -3359,6 +3359,8 @@ function fishingStartGauge(){
   FMG.gaugeDir=FMG.gaugePos<0.5?1:-1;
   FMG.gaugeSpeed=rod.gaugeSpeed/100;
   FMG.gaugeLastTime=null;
+  FMG.gaugeStartTime=Date.now();
+  FMG.gaugeTimeout=setTimeout(()=>fishingGaugeTimeOut(),30000);
   const zone=document.getElementById('fishing-gauge-zone');
   if(zone){zone.style.left=(FMG.gaugeZoneStart*100)+'%';zone.style.width=(FMG.gaugeZoneWidth*100)+'%';}
   // 미스릴 낚시대: 황금 존 설정
@@ -3419,6 +3421,7 @@ function _baitFallbackCatch(rod,inSpecial){
 function fishingGaugeClick(){
   if(FMG.state!=='gauge')return;
   cancelAnimationFrame(FMG.gaugeRaf);FMG.gaugeRaf=null;
+  clearTimeout(FMG.gaugeTimeout);FMG.gaugeTimeout=null;
   document.getElementById('fishing-gauge-wrap').style.display='none';
   const rod=F_SHOP.find(r=>r.id===FMG.rodId);
   // 황금 존 판정 (미스릴 낚시대)
@@ -3481,6 +3484,15 @@ function fishingGaugeClick(){
   } else {
     _fishingShowResult(false,'아깝다! 물고기가 빠져나갔습니다 🐟💨');
   }
+}
+
+function fishingGaugeTimeOut(){
+  if(FMG.state!=='gauge')return;
+  FMG.state='result';
+  cancelAnimationFrame(FMG.gaugeRaf);FMG.gaugeRaf=null;
+  clearTimeout(FMG.gaugeTimeout);FMG.gaugeTimeout=null;
+  document.getElementById('fishing-gauge-wrap').style.display='none';
+  _fishingShowResult(false,'⏰ 시간 초과! 물고기가 도망쳤습니다 🐟💨');
 }
 
 function _fishingShowResult(success, msg, grade){
