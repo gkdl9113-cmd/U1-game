@@ -3501,7 +3501,7 @@ function fishingStartGauge(){
   if(dg){
     dg.style.display='block';
     const gaugebar=dg.querySelector('[style*="height:24px"]');
-    const successZoneWidth=gaugebar.clientWidth*0.25;
+    const successZoneWidth=gaugebar.clientWidth*0.35;
     const successZoneStart=Math.random()*(gaugebar.clientWidth-successZoneWidth);
     FMG.successZoneStart=successZoneStart;
     FMG.successZoneWidth=successZoneWidth;
@@ -3605,7 +3605,7 @@ function _moveFishingDrag(e){
   const isPointerLocked=document.pointerLockElement===area;
 
   if(isPointerLocked){
-    FMG.dragGaugeOffset+=e.movementX*0.2;
+    FMG.dragGaugeOffset+=e.movementX*0.1;
     FMG.dragDistance+=e.movementX;
     FMG.dragSpeed=Math.abs(e.movementX)*60;
   } else {
@@ -3626,7 +3626,7 @@ function _moveFishingDrag(e){
 }
 
 function _endFishingDrag(e){
-  if(FMG.state!=='drag'||!FMG.dragStartX)return;
+  if(FMG.state!=='drag'||FMG.dragStartX===null||FMG.dragStartX===undefined)return;
   FMG.state='result';
   clearTimeout(FMG.gaugeTimeout);FMG.gaugeTimeout=null;
 
