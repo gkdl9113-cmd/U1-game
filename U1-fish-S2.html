@@ -915,7 +915,16 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
           </tr>
           <tr>
             <td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:10px;color:#555;position:sticky;left:0;z-index:1">5</td>
-            <td colspan="5" style="border:1px solid #D0D0D0;padding:3px 8px;background:#fff;font-size:10px;color:#595959">🐟 <strong style="color:#1F3864">보조 수족관</strong> &nbsp;<span id="aux-tank-info">0/1마리</span><span style="color:#C05000;margin-left:8px">포만감 ×2.5 · 먹이 불가 · 0% 자동 방생</span></td>
+            <td colspan="5" style="border:1px solid #D0D0D0;padding:8px;background:#fff;font-size:10px;color:#595959">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <div>🐟 <strong style="color:#1F3864">보조 수족관</strong> &nbsp;<span id="aux-tank-info">0/1마리</span></div>
+                <div style="display:flex;gap:6px;align-items:center">
+                  <span style="color:#666;white-space:nowrap">🪱 미끼:</span>
+                  <div id="bait-select-btns" style="display:flex;gap:4px"></div>
+                  <span id="selected-bait-badge" style="background:#217346;color:#fff;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;display:none">선택됨</span>
+                </div>
+              </div>
+            </td>
           </tr>
           <tr>
             <td style="background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:10px;color:#555;position:sticky;left:0;z-index:1">6</td>
@@ -3233,6 +3242,8 @@ function fishCalcOfflineAutoFeed(seconds){
 const FMG={
   state:'idle', // idle | casting | waiting | bite | gauge | result
   rodId:null,
+  selectedPersistentBait:null, // 지속적으로 선택된 미끼
+  usedBait:null, // 현재 사용 중인 미끼
   biteTimer:null, biteWindowTimer:null,
   gaugePos:0, gaugeDir:1, gaugeZoneStart:0, gaugeZoneWidth:0.3,
   gaugeSpeed:1, gaugeRaf:null, gaugeLastTime:null,
@@ -3308,8 +3319,48 @@ function fishingSelectRod(rodId){
   }
   if(equippedRod.durability<=0){u1Toast('낚시대 내구도가 없습니다!','#C00000');return;}
   if(getTotalFishCount()>=FG.tankMax){u1Toast('수조가 꽉 찼습니다!','#C00000');return;}
+
+  // 미끼가 선택되어 있는지 확인
+  if(!FMG.selectedPersistentBait){
+    u1Toast('미끼를 선택하세요!','#C00000');
+    return;
+  }
+
+  // 미끼 개수 확인
+  if((FG.inventory[FMG.selectedPersistentBait]||0)<=0){
+    u1Toast('선택한 미끼가 부족합니다!','#C00000');
+    return;
+  }
+
   FMG.rodId=rodId;
-  fishingOpenBaitSelect();
+  FMG.usedBait=FMG.selectedPersistentBait;
+  FG.inventory[FMG.usedBait]--;
+  fishQuickSave();
+  // 낚시 바로 시작
+  FMG.state='casting';
+  fishingRenderRodBtns();
+  const rod=F_SHOP.find(r=>r.id===rodId);
+  const baitName={bait_common:'일반 미끼',bait_rare:'희귀 미끼',bait_hero:'영웅 미끼'}[FMG.usedBait]||'미끼';
+  _fishingSetRodInfo(`${rod.name} | 🪱 미끼 사용 중`);
+  _fishingSetFormula(`=FISHING.CAST("${rod.name}","${baitName}" 사용)`);
+  _fishingSetCells(1,FMG.rodId?'낚시대':'-','캐스팅','공중','🎣','fishing-cell-wait');
+  _fishingSetMsg('캐스팅 중...','물고기의 입질을 기다리는 중...');
+  _fishingSetState('기다리는 중');
+  _fishingBobStart('flying');
+  FMG.waitStartTime=Date.now();
+  FMG.waitDuration=3000+Math.random()*4000;
+  FMG.fishChance=0.4;
+}
+
+function selectPersistentBait(baitId){
+  const cnt=FG.inventory[baitId]||0;
+  if(cnt<=0) return;
+  if(FMG.selectedPersistentBait===baitId){
+    FMG.selectedPersistentBait=null; // 토글
+  } else {
+    FMG.selectedPersistentBait=baitId;
+  }
+  fishRenderInfo();
 }
 
 // ── S2: 미끼 아이템 선택 ─────────────────────────
@@ -4289,6 +4340,37 @@ function fishRenderInfo(){
         createNewFish('goldfish','희귀'),createNewFish('goldfish','희귀'),
         createNewFish('goldfish','영웅')
       ];
+    }
+  }
+
+  // 미끼 선택 버튼 렌더링
+  const baitSelectBtns=document.getElementById('bait-select-btns');
+  if(baitSelectBtns){
+    const baitTypes=[
+      {id:'bait_common',name:'일반',icon:'🪱'},
+      {id:'bait_rare',name:'희귀',icon:'🐠'},
+      {id:'bait_hero',name:'영웅',icon:'✨'}
+    ];
+    baitSelectBtns.innerHTML=baitTypes.map(b=>{
+      const cnt=FG.inventory[b.id]||0;
+      const selected=FMG.selectedPersistentBait===b.id;
+      return `<button onclick="selectPersistentBait('${b.id}')"
+        style="background:${selected?'#217346':'#E8E8E8'};color:${selected?'#fff':'#333'};border:1px solid ${selected?'#1A5C35':'#CCC'};
+        padding:4px 8px;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:${cnt>0?'1':'0.4'}"
+        ${cnt>0?'':'disabled'}
+        title="${cnt}개">
+        ${b.icon} ${b.name}(${cnt})
+      </button>`;
+    }).join('');
+  }
+
+  // 선택된 미끼 배지 표시
+  const baitBadge=document.getElementById('selected-bait-badge');
+  if(baitBadge){
+    if(FMG.selectedPersistentBait){
+      baitBadge.style.display='inline-block';
+    } else {
+      baitBadge.style.display='none';
     }
   }
 
