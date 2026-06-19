@@ -3682,7 +3682,12 @@ function _endFishingDrag(e){
       const gradeTable=rod.gradesSpecial||rod.grades;
       const {type:picked,stage:pickedStage}=pickSpeciesByGrade(gradeTable);
       updateFishCodex(picked,pickedStage);
-      addFish(picked,1);
+      // 올바른 등급으로 물고기 추가
+      if(!FG.fishes[picked]) FG.fishes[picked]={quantity:0,level:1,exp:0,fish:[]};
+      FG.fishes[picked].quantity+=1;
+      if(!FG.fishes[picked].fish) FG.fishes[picked].fish=[];
+      const newFish=createNewFish(picked,pickedStage);
+      FG.fishes[picked].fish.push(newFish);
       const cs=F_SPECIES[picked][pickedStage];
       FG.totalFished++;checkAchievements('fish',{grade:cs.grade,isYw:_isYwFish({type:picked})});
       fishQuickSave();
@@ -3707,7 +3712,12 @@ function _baitFallbackCatch(rod,inSpecial){
   const gradeTable=inSpecial?(rod.gradesSpecial||rod.grades):rod.grades;
   const {type:picked,stage:pickedStage}=pickSpeciesByGrade(gradeTable);
   updateFishCodex(picked,pickedStage);
-  addFish(picked,1);
+  // 올바른 등급으로 물고기 추가
+  if(!FG.fishes[picked]) FG.fishes[picked]={quantity:0,level:1,exp:0,fish:[]};
+  FG.fishes[picked].quantity+=1;
+  if(!FG.fishes[picked].fish) FG.fishes[picked].fish=[];
+  const newFish=createNewFish(picked,pickedStage);
+  FG.fishes[picked].fish.push(newFish);
   const cs=F_SPECIES[picked][pickedStage];
   FG.totalFished++;checkAchievements('fish',{grade:cs.grade,isYw:_isYwFish({type:picked})});
   fishQuickSave();
