@@ -3440,6 +3440,7 @@ function fishingStartGauge(){
   FMG.autoGaugeDir=Math.random()>0.5?1:-1;
   FMG.dragGaugeOffset=0;
   FMG.gaugeStartTime=Date.now();
+  FMG.gaugeTimeout=setTimeout(()=>fishingGaugeTimeOut(),30000);
   FMG.successZoneHoldTime=0;
   FMG.successZoneHoldStart=null;
   FMG.successZoneRequiredTime=2000;
@@ -3578,6 +3579,7 @@ function _moveFishingDrag(e){
 function _endFishingDrag(e){
   if(FMG.state!=='drag'||!FMG.dragStartX)return;
   FMG.state='result';
+  clearTimeout(FMG.gaugeTimeout);FMG.gaugeTimeout=null;
 
   const dg=document.getElementById('fishing-drag-gauge');
   if(dg) dg.style.display='none';
@@ -11122,6 +11124,25 @@ function doYongwangFusion(type){
   fishRenderInfo();
   fishQuickSave();
   hideDlg('fish-detail-modal-s2');
+}
+
+function fishingGaugeTimeOut(){
+  if(FMG.state!=='drag')return;
+  FMG.state='result';
+  clearTimeout(FMG.gaugeTimeout);FMG.gaugeTimeout=null;
+  const dg=document.getElementById('fishing-drag-gauge');
+  if(dg) dg.style.display='none';
+  const area=document.getElementById('fishing-area');
+  if(area){
+    area.style.cursor='default';
+    area.removeEventListener('mousedown',_startFishingDrag);
+    area.removeEventListener('mousemove',_moveFishingDrag);
+    area.removeEventListener('mouseup',_endFishingDrag);
+    area.removeEventListener('touchstart',_startFishingDrag);
+    area.removeEventListener('touchmove',_moveFishingDrag);
+    area.removeEventListener('touchend',_endFishingDrag);
+  }
+  _fishingShowResult(false,'⏰ 시간 초과! 물고기가 도망쳤습니다 🐟💨');
 }
 </script>
 </body>
