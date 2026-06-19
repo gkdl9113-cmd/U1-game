@@ -2192,7 +2192,7 @@ function _buildInitialFishData(){
     tankLevel:0,tankMax:15,
     rods:{rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},
     skillInventory:{},achievements:{},
-    btWins:0,battlePoints:0,totalFished:0,totalEvos:0,titles:[],
+    btWins:0,battlePoints:0,fusionCrystals:0,totalFished:0,totalEvos:0,titles:[],
     stocks:{holdings:_emptyH(),realized:_emptyR(),divTick:_stockCurrentTick()},
     fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{},megalodonte:{},geumlin:{}},
     lastSave:serverNow()
@@ -2311,7 +2311,7 @@ function applyFishData(d){
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
   FG.skillInventory=d.skillInventory||{};
   FG.achievements=d.achievements||{};
-  FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;FG.titles=d.titles||[];
+  FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.fusionCrystals=d.fusionCrystals||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;FG.titles=d.titles||[];
   const _emptyHoldings=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,{shares:0,avgCost:0}]));
   const _emptyRealized=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,0]));
   FG.stocks=d.stocks||{holdings:_emptyHoldings(),realized:_emptyRealized(),divTick:_stockCurrentTick()};
@@ -2346,7 +2346,7 @@ async function saveFishDataToDB(){
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,fishCodex:FG.fishCodex,
     skillInventory:FG.skillInventory,
-    achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],
+    achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],
     stocks:FG.stocks,
     lastSave:serverNow()
   };
@@ -5460,7 +5460,7 @@ function fishSave(isDisconnect){
     money:FG.money,food:FG.food,spFood:FG.spFood,autoFeeders:FG.autoFeeders,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,skillInventory:FG.skillInventory,
-    achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],
+    achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],
     stocks:FG.stocks,
     stoppedByDisconnect:isDisconnect||false,lastSave:serverNow()
   };
@@ -5532,7 +5532,7 @@ function fishLoad(){
     FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||15;
     FG.skillInventory=d.skillInventory||{};
     FG.achievements=d.achievements||{};
-    FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;FG.titles=d.titles||[];
+    FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.fusionCrystals=d.fusionCrystals||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;FG.titles=d.titles||[];
     const _eh2=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,{shares:0,avgCost:0}]));
     const _er2=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,0]));
     FG.stocks=d.stocks||{holdings:_eh2(),realized:_er2(),divTick:_stockCurrentTick()};
