@@ -5746,6 +5746,7 @@ function btShopBuy(id){
     bt_yw1:{cost:5,  type:'yw', tiers:[{grade:'하급영물',prob:0.10}]},
     bt_yw2:{cost:15, type:'yw', tiers:[{grade:'중급영물',prob:0.10},{grade:'하급영물',prob:0.20}]},
     bt_yw3:{cost:30, type:'yw', tiers:[{grade:'상급영물',prob:0.20},{grade:'중급영물',prob:0.30},{grade:'하급영물',prob:0.40}]},
+    fusion_crystal:{cost:5, type:'crystal'}
   }[id];
   if(!cfg)return;
   if(bp<cfg.cost){u1Toast(`BP 부족 (필요 ${cfg.cost}BP · 보유 ${bp}BP)`,'#C00000');return;}
@@ -5759,6 +5760,10 @@ function btShopBuy(id){
     FG.spFood=(FG.spFood||0)+1;
     fishQuickSave();
     u1Toast('🍖 스페셜 먹이 1개 획득!','#217346');
+  } else if(cfg.type==='crystal'){
+    FG.fusionCrystals=(FG.fusionCrystals||0)+1;
+    fishQuickSave();
+    u1Toast('💠 융합수정 1개 획득!','#7C3AED');
   } else if(cfg.type==='yw'){
     if(getTotalFishCount()>=FG.tankMax){
       FG.battlePoints+=cfg.cost; // 환불
@@ -5850,6 +5855,7 @@ function fishOpenShop(){
     {id:'bt_yw1',icon:'🌀',name:'하급영물 뽑기',cost:5, desc:'하급 10%'},
     {id:'bt_yw2',icon:'🌀',name:'중급영물 뽑기',cost:15,desc:'하급 20% · 중급 10%'},
     {id:'bt_yw3',icon:'🌀',name:'상급영물 뽑기',cost:30,desc:'하급 40% · 중급 30% · 상급 20%'},
+    {id:'fusion_crystal',icon:'💠',name:'융합수정',cost:5,desc:'영물 합성에 필요 · 1개'},
   ];
   // 초월 칭호 섹션
   const _hasS1=( FG.titles||[]).includes('ti_S1군림자');
@@ -11017,6 +11023,41 @@ function hlCashOut(){
   document.getElementById('hl-result').innerHTML=`<span style="color:#217346">💰 정산! +${gain.toLocaleString()}원</span>`;
   document.getElementById('hl-play-ui').style.display='none';
   document.getElementById('hl-start-ui').style.display='block';
+  fishQuickSave();
+}
+
+// ══════════════════════════════════════════════════════════
+// 영물 합성 시스템
+// ══════════════════════════════════════════════════════════
+const YONGWANG_GRADE={'yongwang':'하급','yeongeum':'중급','eelyw':'중급','haelyong':'중급','megalodonte':'상급','geumlin':'상급'};
+const YONGWANG_BY_GRADE={하급:['yongwang'],중급:['yeongeum','eelyw','haelyong'],상급:['megalodonte','geumlin']};
+
+function fuseYongwang(type){
+  if(!FG.fishes[type]||FG.fishes[type].quantity<3){u1Toast('영물 3마리 필요','#C00000');return;}
+  if(FG.money<1000000){u1Toast('돈 부족 (1,000,000원 필요)','#C00000');return;}
+  if(FG.fusionCrystals<1){u1Toast('융합수정 부족','#C00000');return;}
+  const grade=YONGWANG_GRADE[type];
+  const roll=Math.random()*100;
+  let resultGrade=grade;
+  if(grade==='하급'){
+    if(roll<1) resultGrade='상급';
+    else if(roll<31) resultGrade='중급';
+  } else if(grade==='중급'){
+    if(roll<10) resultGrade='상급';
+  }
+  const resultPool=YONGWANG_BY_GRADE[resultGrade].filter(t=>t!==type);
+  if(resultPool.length===0){u1Toast('변환 가능한 종 없음','#C00000');return;}
+  const resultType=resultPool[Math.floor(Math.random()*resultPool.length)];
+  FG.money-=1000000;
+  FG.fusionCrystals-=1;
+  FG.fishes[type].quantity-=3;
+  FG.fishes[resultType].quantity+=1;
+  FG.fishes[resultType].level=1;
+  FG.fishes[resultType].exp=0;
+  const resultName=['yongwang','yeongeum','eelyw','haelyong','megalodonte','geumlin'].includes(resultType)?'영물':'?';
+  const gradeEmoji={하급:'🟢',중급:'🟡',상급:'🔴'}[resultGrade]||'';
+  u1Toast(`${gradeEmoji} ${resultType} 영물 획득!`,'#7C3AED');
+  fishRenderInfo();
   fishQuickSave();
 }
 </script>
