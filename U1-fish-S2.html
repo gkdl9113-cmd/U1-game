@@ -3973,7 +3973,7 @@ function fishCalcOffline(seconds){
     // HP 오프라인 감소 없음 — 복귀 후 실시간 틱이 정상 처리
     const inc=Math.floor(ticks/30)*(STAGE_INCOME[f.stage]||2);
     totalOff+=inc;
-    if(!_isYwFish(f)) f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
+    if(_isYwFish(f)) f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
   });
   FG.money+=totalOff;
   if(totalOff>0){
@@ -3999,16 +3999,18 @@ function fishTick(){
     const totalIncome=Math.floor(baseIncome*data.quantity*levelBonus);
     inc+=totalIncome;
 
-    // 경험치 누적 (30초마다 +1)
-    data._xpAcc=(data._xpAcc||0)+elapsed;
-    if(data._xpAcc>=30){
-      data._xpAcc=0;
-      data.exp+=1;
-      // 진화 조건: 레벨 당 경험치 필요 (예: Lv1→2는 100xp 필요)
-      const xpNeeded=data.level*100;
-      if(data.exp>=xpNeeded){
-        data.exp=0;
-        // 진화는 UI에서 3마리 모았을 때 선택
+    // 경험치 누적 (영물만 - 30초마다 +1)
+    if(type==='영물'||type==='yeongeum'||type==='eelyw'||type==='haelyong'||type==='megalodonte'||type==='geumlin'){
+      data._xpAcc=(data._xpAcc||0)+elapsed;
+      if(data._xpAcc>=30){
+        data._xpAcc=0;
+        data.exp+=1;
+        // 진화 조건: 레벨 당 경험치 필요 (예: Lv1→2는 100xp 필요)
+        const xpNeeded=data.level*100;
+        if(data.exp>=xpNeeded){
+          data.exp=0;
+          // 진화는 UI에서 3마리 모았을 때 선택
+        }
       }
     }
   });
