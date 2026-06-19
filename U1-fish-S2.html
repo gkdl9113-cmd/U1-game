@@ -3270,14 +3270,18 @@ function fishingEnter(){
   _fishingSetCells('-','-','-','-','-');
   _fishingSetFormula(`=FISHING.SELECT("${equippedRod.id} (내구도: ${equippedRod.durability}/${equippedRod.maxDurability})")`);
   fishingRenderRodBtns();
-  _fishingSetMsg('낚시 시작 준비 완료','낚시 버튼을 누르세요');
+  _fishingSetMsg('낚시 시작 준비 완료','낚시 버튼을 누르거나 스페이스바 ⎵');
   _fishingSetState('낚시 준비');
   _fishingBobStart('idle');
   const m=document.getElementById('fishing-money');
   if(m) m.textContent=FG.money.toLocaleString();
+
+  // 스페이스바로 낚시 시작
+  document.addEventListener('keydown',_fishingSpacebarStart);
 }
 
 function fishingExit(){
+  document.removeEventListener('keydown',_fishingSpacebarStart);
   _fishingCleanup();
   show('s-fishworld');
   fishRenderInfo();
@@ -3359,6 +3363,15 @@ function selectPersistentBait(baitId){
     FMG.selectedPersistentBait=baitId;
   }
   fishRenderInfo();
+}
+
+function _fishingSpacebarStart(e){
+  if(e.code==='Space'||e.key===' '){
+    e.preventDefault();
+    if(FMG.state==='idle'&&FG.equipment?.equippedRod){
+      fishingSelectRod(FG.equipment.equippedRod.id);
+    }
+  }
 }
 
 // ── S2: 미끼 아이템 선택 ─────────────────────────
