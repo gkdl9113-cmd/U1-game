@@ -440,7 +440,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
         <div style="display:flex;justify-content:space-between;margin-bottom:2px">
           <span style="color:#555">🐟 수조</span><strong id="f-tank-info">0/1마리</strong>
         </div>
-        <div style="font-size:9px;color:#888;margin-top:3px" id="f-auto-status">자동먹이통: 없음</div>
       </div>
     </div>
     <!-- 접속자+채팅 사이드바 -->
@@ -567,7 +566,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div style="display:flex;justify-content:space-between;margin-bottom:2px">
       <span>🐟 수조</span><strong id="f-tank-info-m">0/1마리</strong>
     </div>
-    <div style="font-size:9px;color:#888" id="f-auto-status-m">자동먹이통: 없음</div>
   </div>
 </div>
 
@@ -1014,23 +1012,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-dlg-title" style="background:#7C3AED;color:#fff">⬆️ 물고기 진화 <button class="xl-dlg-x" onclick="hideDlg('fish-evolution-modal')">✕</button></div>
     <div class="xl-dlg-body" style="padding:16px">
       <div id="fish-evolution-content"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ 자동먹이통 관리 모달 ══ -->
-<div class="xl-dlg-ov" id="feeder-mgr-modal" style="align-items:flex-end;padding-bottom:26px">
-  <div style="background:#F2F2F2;border:1px solid #888;width:100%;max-width:480px;max-height:75vh;display:flex;flex-direction:column;box-shadow:0 -4px 20px rgba(0,0,0,.3)">
-    <div class="xl-dlg-title" style="background:#1F3864;padding:7px 12px">
-      🍤 자동먹이통 관리
-      <button class="xl-dlg-x" onclick="hideDlg('feeder-mgr-modal')">✕</button>
-    </div>
-    <div style="flex:1;overflow-y:auto;padding:10px" id="feeder-mgr-list"></div>
-    <div style="padding:8px 12px;border-top:1px solid #C8C8C8;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <span style="font-size:11px;color:#595959">먹이통 <strong id="feeder-count-txt">0</strong>개 운영 중</span>
-      <button id="feeder-buy-btn" onclick="fishBuyAutoFeeder()" style="background:#217346;color:#fff;border:none;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;border-radius:3px;font-family:inherit">
-        + 구매
-      </button>
     </div>
   </div>
 </div>
@@ -2198,7 +2179,7 @@ function _buildInitialFishData(){
   const _emptyR=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,0]));
   return{
     fishes:{goldfish:{quantity:1,level:1,exp:0},snakehead:{quantity:0,level:1,exp:0},guppy:{quantity:0,level:1,exp:0},tropical:{quantity:0,level:1,exp:0},piranha:{quantity:0,level:1,exp:0},clownfish:{quantity:0,level:1,exp:0},mandarin:{quantity:0,level:1,exp:0},electric:{quantity:0,level:1,exp:0},turtle:{quantity:0,level:1,exp:0},yongwang:{quantity:0,level:1,exp:0},yeongeum:{quantity:0,level:1,exp:0},eelyw:{quantity:0,level:1,exp:0},haelyong:{quantity:0,level:1,exp:0},megalodonte:{quantity:0,level:1,exp:0},geumlin:{quantity:0,level:1,exp:0}},
-    money:100,food:5,spFood:0,autoFeeders:[],
+    money:100,food:5,spFood:0,
     tankLevel:0,tankMax:15,
     rods:{rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},
     skillInventory:{},achievements:{},
@@ -2316,7 +2297,7 @@ function applyFishData(d){
   } else if(getTotalFishCount()===0){
     FG.fishes.goldfish={quantity:1,level:1,exp:0,fish:[createNewFish('goldfish','일반')]};
   }
-  FG.money=d.money??100;FG.food=d.food??5;FG.spFood=d.spFood??0;FG.autoFeeders=d.autoFeeders||[];
+  FG.money=d.money??100;FG.food=d.food??5;FG.spFood=d.spFood??0;
   FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||15;
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
   FG.skillInventory=d.skillInventory||{};
@@ -2338,11 +2319,9 @@ function applyFishData(d){
   if(d.lastSave){
     const elapsed=(serverNow()-d.lastSave)/1000;
     if(elapsed>10&&elapsed<86400*30){
-      fishCalcOfflineAutoFeed(elapsed);
     }
   }
   FG.lastTick=Date.now();
-  FG.lastAutoFeed=Date.now();
   loadBattleBanList();
 }
 
@@ -2352,7 +2331,7 @@ async function saveFishDataToDB(){
   _dbSaving=true;
   const data={
     fishes:FG.fishes,
-    money:FG.money,food:FG.food,spFood:FG.spFood,autoFeeders:FG.autoFeeders,
+    money:FG.money,food:FG.food,spFood:FG.spFood,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,fishCodex:FG.fishCodex,
     skillInventory:FG.skillInventory,
@@ -3218,34 +3197,6 @@ document.addEventListener('visibilitychange',()=>{
     });
   }
 });
-
-function fishCalcOfflineAutoFeed(seconds){
-  if(!FG.autoFeeders.length||FG.food===0) return;
-  // 오프라인 중 포만감 감소 시뮬레이션 후 임계값 기반 급식
-  // 단순화: 30초마다 한 번씩 임계값 체크
-  const elapsed=Math.min(seconds,86400);
-  const checks=Math.floor(elapsed/30);
-  if(checks<=0) return;
-  let totalFed=0;
-  for(let c=0;c<checks;c++){
-    if(FG.food<=0) break;
-    FG.autoFeeders.forEach(feeder=>{
-      if(FG.food<=0||feeder.targetIdx===null) return; // 미배정 건너뜀
-      const thr=feeder.threshold||30;
-      const f=FG.fishes[feeder.targetIdx];
-      if(f&&!f.isDead&&f.fullness<thr){
-        FG.food--;f.fullness=Math.min(100,f.fullness+15);totalFed++;
-      }
-    });
-  }
-  if(totalFed>0){
-    setTimeout(()=>{
-      const el=document.getElementById('f-status');
-      if(el) el.textContent=`오프라인 자동급식 ${totalFed}회`;
-      setTimeout(()=>fishUpdateStatus(),3000);
-    },100);
-  }
-}
 
 // ── 낚시 미니게임 ─────────────────────────────────────────
 const FMG={
@@ -5584,7 +5535,7 @@ function fishDraw(){
 function fishSave(isDisconnect){
   const data={
     fishes:FG.fishes,
-    money:FG.money,food:FG.food,spFood:FG.spFood,autoFeeders:FG.autoFeeders,
+    money:FG.money,food:FG.food,spFood:FG.spFood,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,skillInventory:FG.skillInventory,
     achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],
@@ -6148,25 +6099,8 @@ function fishOpenShop(){
       <div><div style="font-size:12px;font-weight:700">${item.name}${cntTxt}</div><div style="font-size:10px;color:#888">${item.desc}</div></div>
       <button onclick="fishBuy('${item.id}')" ${disabled?'disabled':''} style="${btnStyle}">${item.price.toLocaleString()}원</button></div>`;
   }).join('');
-  // 자동먹이통 구매 (가격 체증)
-  const maxFeeders=12;
-  if(FG.autoFeeders.length<maxFeeders){
-    const fPrice=600*(FG.autoFeeders.length+1);
-    const fCan=FG.money>=fPrice;
-    div.innerHTML+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F0F0F0">
-      <div>
-        <div style="font-size:12px;font-weight:700">🍤 자동먹이통 구매 (${FG.autoFeeders.length+1}/${maxFeeders}번째)</div>
-        <div style="font-size:10px;color:#888">30초마다 배정 물고기에게 급식 · 먹이 1개 소모</div>
-        <div style="font-size:10px;color:#595959">현재 운영: ${FG.autoFeeders.length}개 · 상세창에서 물고기 배정 가능</div>
-      </div>
-      <button onclick="fishBuyAutoFeeder()" ${fCan?'':'disabled'}
-        style="background:${fCan?'#217346':'#E8E8E8'};color:${fCan?'#fff':'#999'};border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:${fCan?'pointer':'default'};font-family:inherit;white-space:nowrap">
-        ${fPrice.toLocaleString()}원</button></div>`;
-  } else {
-    div.innerHTML+=`<div style="padding:8px 0;font-size:11px;color:#217346;font-weight:700;text-align:center">🍤 최대 먹이통 달성! (${FG.autoFeeders.length}/${maxFeeders})</div>`;
-  }
 
-  if(FG.tankLevel<9){
+if(FG.tankLevel<9){
     const nl=FG.tankLevel+1,price=F_TANK_PRICES[nl],canBuy=FG.money>=price;
     div.innerHTML+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0">
       <div><div style="font-size:12px;font-weight:700">수조 확장 Lv.${nl}</div><div style="font-size:10px;color:#888">최대 ${nl+1}마리 (현재 ${getTotalFishCount()}/${FG.tankMax})</div></div>
@@ -6641,40 +6575,6 @@ function feederRemove(fi){
   fishRenderInfo();fishQuickSave();renderFeederMgr();
 }
 
-function fishBuyAutoFeeder(){
-  const price=600*(FG.autoFeeders.length+1);
-  if(FG.money<price||FG.autoFeeders.length>=FG.tankMax) return;
-  FG.money-=price;
-  // 아직 배정 안 된 살아있는 물고기에 자동 배정
-  const usedIdx=FG.autoFeeders.map(f=>f.targetIdx);
-  const defaultIdx=FG.fishes.findIndex((f,i)=>!f.isDead&&!usedIdx.includes(i));
-  FG.autoFeeders.push({targetIdx:defaultIdx>=0?defaultIdx:null,threshold:30});
-  fishRenderInfo();fishQuickSave();
-  if(document.getElementById("feeder-mgr-modal").classList.contains("on")) renderFeederMgr();
-  else fishOpenFeeders();
-}
-
-function fishAssignFeeder(fishIdx){
-  // 이 물고기에 배정된 먹이통 찾기
-  const assigned=FG.autoFeeders.findIndex(f=>f.targetIdx===fishIdx);
-  if(assigned>=0){
-    // 배정 해제
-    FG.autoFeeders[assigned].targetIdx=null;
-    u1Toast('먹이통 배정 해제','#595959');
-  } else {
-    // 배정 안 된 먹이통 찾아서 배정
-    const free=FG.autoFeeders.findIndex(f=>f.targetIdx===null);
-    if(free>=0){
-      FG.autoFeeders[free].targetIdx=fishIdx;
-      u1Toast(`먹이통 ${free+1}번 → #${fishIdx+1} ${fStage(FG.fishes[fishIdx]).name} 배정`,'#217346');
-    } else {
-      u1Toast('배정 가능한 먹이통이 없습니다 (모두 배정됨)','#C00000');
-      return;
-    }
-  }
-  fishQuickSave();
-  showFishDetail(_fdIdx); // 상세창 갱신
-}
 function fishBuyTank(level){
   const price=F_TANK_PRICES[level];
   if(FG.money<price||FG.tankLevel>=level) return;
