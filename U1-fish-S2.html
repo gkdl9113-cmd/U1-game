@@ -2817,6 +2817,15 @@ const F_SHOP=[
    grades:[{grade:'일반',w:93},{grade:'중급',w:5},{grade:'희귀',w:2}],
    desc:'성공률 30%'},
 ];
+// 미끼별 등급 확률표
+const BAIT_GRADE_TABLE={
+  bait_common:[{grade:'일반',w:100}],
+  bait_normal:[{grade:'일반',w:60},{grade:'중급',w:40}],
+  bait_high:[{grade:'일반',w:30},{grade:'중급',w:50},{grade:'고급',w:20}],
+  bait_rare:[{grade:'중급',w:20},{grade:'고급',w:50},{grade:'희귀',w:30}],
+  bait_hero:[{grade:'고급',w:20},{grade:'희귀',w:50},{grade:'영웅',w:30}],
+  bait_legend:[{grade:'희귀',w:20},{grade:'영웅',w:50},{grade:'전설',w:30}],
+};
 // 미끼 어종 → 영물 확률표 (normal=일반구간, special=황금구간)
 const BAIT_YW_TABLE={
   turtle:{main:{type:'yongwang',stage:1},normal:{mainProb:0.01,otherProb:0.005},special:{mainProb:0.05,otherProb:0.010}},
@@ -3679,7 +3688,7 @@ function _endFishingDrag(e){
     const baitProbs={bait_common:0.5,bait_rare:0.65,bait_hero:0.85};
     const prob=baitProbs[FMG.usedBait]||0.5;
     if(Math.random()<prob){
-      const gradeTable=rod.gradesSpecial||rod.grades;
+      const gradeTable=BAIT_GRADE_TABLE[FMG.usedBait]||rod.grades;
       const {type:picked,stage:pickedStage}=pickSpeciesByGrade(gradeTable);
       updateFishCodex(picked,pickedStage);
       // 올바른 등급으로 물고기 추가
@@ -3740,10 +3749,16 @@ function fishingGaugeClick(){
     const prob=baitProbs[FMG.usedBait]||0.5;
     const inZoneOK=inZone||inSpecial;
     if(Math.random()<prob){
-      const gradeTable=inSpecial?(rod.gradesSpecial||rod.grades):rod.grades;
+      const baitGrades=BAIT_GRADE_TABLE[FMG.usedBait]||rod.grades;
+      const gradeTable=inSpecial?(rod.gradesSpecial||baitGrades):baitGrades;
       const {type:picked,stage:pickedStage}=pickSpeciesByGrade(gradeTable);
       updateFishCodex(picked,pickedStage);
-      addFish(picked,1);
+      // 올바른 등급으로 물고기 추가
+      if(!FG.fishes[picked]) FG.fishes[picked]={quantity:0,level:1,exp:0,fish:[]};
+      FG.fishes[picked].quantity+=1;
+      if(!FG.fishes[picked].fish) FG.fishes[picked].fish=[];
+      const newFish=createNewFish(picked,pickedStage);
+      FG.fishes[picked].fish.push(newFish);
       FG.totalFished++;checkAchievements('fish',{grade:F_SPECIES[picked][pickedStage].grade,isYw:_isYwFish({type:picked})});
       fishQuickSave();
       const cs=F_SPECIES[picked][pickedStage];
