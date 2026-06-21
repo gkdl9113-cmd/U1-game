@@ -4357,9 +4357,9 @@ function fishRenderInfo(){
     }
     if(!FG.fishes.goldfish.fish||FG.fishes.goldfish.fish.length===0){
       FG.fishes.goldfish.fish=[
-        createNewFish('goldfish','일반'),createNewFish('goldfish','일반'),
-        createNewFish('goldfish','희귀'),createNewFish('goldfish','희귀'),
-        createNewFish('goldfish','영웅')
+        createNewFish('goldfish',1),createNewFish('goldfish',1),
+        createNewFish('goldfish',2),createNewFish('goldfish',2),
+        createNewFish('goldfish',3)
       ];
     }
   }
@@ -5689,14 +5689,16 @@ function fishReset(){
 }
 
 // 개별 물고기 생성 (낚시 시 호출)
-function createNewFish(type,grade='일반'){
+function createNewFish(type,stage=1){
   const sp=F_SPECIES[type]||F_SPECIES.goldfish;
-  const s=sp[1]; // stage 1 스탯
+  const stageNum=typeof stage==='string'?1:stage; // stage가 문자열이면 1로 (호환성)
+  const s=sp[stageNum]||sp[1];
   const variance=1+((Math.random()-0.5)*0.2); // ±10% 랜덤
   const fish={
     id:`${type}_${Date.now()}_${Math.random().toString(36).slice(2,9)}`,
     type:type,
-    grade:grade,
+    stage:stageNum,
+    grade:s.grade,
     hp:Math.floor(s.hp*variance),
     maxHp:Math.floor(s.hp*variance),
     atk:Math.floor(s.atk*variance),
@@ -5718,7 +5720,7 @@ function showFishDetail(type,fishIndex){
   _selectedFish={type,fishIndex};
   const f=typeData.fish[fishIndex];
   const sp=F_SPECIES[type]||F_SPECIES.goldfish;
-  const stageData=sp[typeData.level]||sp[1];
+  const stageData=sp[f.stage]||sp[1];
 
   const html=`
     <div style="text-align:center;margin-bottom:12px">
