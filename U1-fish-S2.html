@@ -5739,6 +5739,15 @@ function showFishDetail(type,fishIndex){
         </div>
       </div>
     </div>
+    <div style="background:#fff;border-radius:6px;padding:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:#666">🍖 포만감</span>
+        <div style="flex:1;margin:0 8px;background:#EEE;height:12px;border-radius:3px;overflow:hidden">
+          <div style="background:#F57C00;height:100%;width:${f.fullness}%"></div>
+        </div>
+        <span style="font-weight:700;min-width:30px;text-align:right">${f.fullness}/100</span>
+      </div>
+    </div>
   `;
 
   document.getElementById('fish-detail-content').innerHTML=html;
