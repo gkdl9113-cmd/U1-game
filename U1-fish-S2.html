@@ -2059,7 +2059,7 @@ let _chConnectedOnce=sessionStorage.getItem('_u1_ch_once')==='1';
 async function reloadFishDataFromDB(fishName){
   if(!_sb||!currentUsername) return;
   const{data}=await _sb.from('fish_accounts').select('fish_data')
-    .eq('username',currentUsername).eq('server',ACTIVE_SERVER).single();
+    .eq('username',currentUsername).eq('server',ACTIVE_SERVER).eq('season',2).single();
   if(!data?.fish_data) return;
   const wasAllDead=aliveFishes().length===0;
   applyFishData(data.fish_data);
@@ -2160,7 +2160,7 @@ async function doLogin(){
     _sb=makeSb();
   }
   const hash=await hashPassword(v.pw);
-  const{data,error}=await _sb.from('fish_accounts').select('password_hash,fish_data').eq('username',v.uid).eq('server',ACTIVE_SERVER).single();
+  const{data,error}=await _sb.from('fish_accounts').select('password_hash,fish_data').eq('username',v.uid).eq('server',ACTIVE_SERVER).eq('season',2).single();
   if(error||!data){entryStatus('아이디를 찾을 수 없습니다. 회원가입을 먼저 하세요.','#C00000');return;}
   if(data.password_hash!==hash){entryStatus('비밀번호가 틀렸습니다','#C00000');document.getElementById('e-pw').value='';document.getElementById('e-pw').focus();return;}
   currentUsername=v.uid;
@@ -2197,7 +2197,7 @@ async function doRegister(){
   if(!_sb) _sb=makeSb();
   const hash=await hashPassword(v.pw);
   const initData=_buildInitialFishData();
-  const{error}=await _sb.from('fish_accounts').insert({username:v.uid,server:ACTIVE_SERVER,password_hash:hash,fish_data:initData,updated_at:new Date().toISOString()});
+  const{error}=await _sb.from('fish_accounts').insert({season:2,username:v.uid,server:ACTIVE_SERVER,password_hash:hash,fish_data:initData,updated_at:new Date().toISOString()});
   if(error){
     if(error.code==='23505') entryStatus('이미 사용 중인 아이디입니다','#C00000');
     else entryStatus('오류: '+error.message,'#C00000');
@@ -2858,7 +2858,7 @@ function _lotteryInitPool(){
 }
 async function _lotteryGetPool(){
   const{data}=await _sb.from('fish_accounts').select('fish_data')
-    .eq('username',LOTTERY_USERNAME).eq('server',ACTIVE_SERVER).single();
+    .eq('username',LOTTERY_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).single();
   return data?.fish_data||null;
 }
 async function _lotteryEnsurePool(){
@@ -2866,7 +2866,7 @@ async function _lotteryEnsurePool(){
   if(!ld){
     ld=_lotteryInitPool();
     await _sb.from('fish_accounts').upsert({
-      username:LOTTERY_USERNAME,server:ACTIVE_SERVER,
+      username:LOTTERY_USERNAME,server:ACTIVE_SERVER,season:2,
       password_hash:'__LOTTERY__',fish_data:ld,
       updated_at:new Date().toISOString()
     },{onConflict:'username,server'});
@@ -4469,7 +4469,7 @@ async function seasonReset(){
     const toReset=(allRows||[]).map(r=>r.username).filter(u=>!SYS_ACCOUNTS.includes(u));
     // 계정은 유지, 게임 데이터 초기화 (S1 군림자 칭호는 보존)
     for(const u of toReset){
-      const{data:prev}=await _sb.from('fish_accounts').select('fish_data').eq('username',u).eq('server',ACTIVE_SERVER).single();
+      const{data:prev}=await _sb.from('fish_accounts').select('fish_data').eq('username',u).eq('server',ACTIVE_SERVER).eq('season',2).single();
       const hasS1=(prev?.fish_data?.titles||[]).includes('ti_S1군림자');
       const newData=hasS1?{titles:['ti_S1군림자']}:{};
       await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',u).eq('server',ACTIVE_SERVER);
@@ -7187,7 +7187,7 @@ const BATTLEBAN_USERNAME='__BATTLEBAN__';
 let BATTLE_BAN_PAIRS=[]; // [[userA, userB], ...]
 async function loadBattleBanList(){
   try{
-    const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',BATTLEBAN_USERNAME).eq('server',ACTIVE_SERVER).single();
+    const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',BATTLEBAN_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).single();
     BATTLE_BAN_PAIRS=data?.fish_data?.pairs||[];
   }catch(e){BATTLE_BAN_PAIRS=[];}
 }
@@ -7242,7 +7242,7 @@ function _logMoney(type,amount,detail=''){
 let _stockSettingsLoaded=false;
 async function loadStockSettings(){
   try{
-    const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',STOCK_SETTINGS_USERNAME).eq('server',ACTIVE_SERVER).single();
+    const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',STOCK_SETTINGS_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).single();
     _stockVolOverrides=data?.fish_data?.vols||{};
     _stockBearBias=data?.fish_data?.bearBias??STOCK_BEAR_BIAS_DEFAULT;
     _stockPriceAnchors=data?.fish_data?.anchor||{};
@@ -7409,7 +7409,7 @@ const NUMLT_ACCUM_RATE_DEFAULT=600; // 원/시간 기본값 (10원/시간 → 60
 
 async function getJackpotData(){
   const{data}=await _sb.from('fish_accounts').select('fish_data')
-    .eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER).single();
+    .eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).single();
   return data?.fish_data||null;
 }
 
@@ -8282,7 +8282,7 @@ async function adminResetUser(username,server){
 }
 
 async function adminEnterGame(){
-  const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',ADMIN_USERNAME).eq('server',ACTIVE_SERVER).single();
+  const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',ADMIN_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).single();
   const dbData=data?.fish_data||{};
   if(dbData&&Object.keys(dbData).length>0) applyFishData(dbData); else fishLoad();
   // 관리자 돌아가기 버튼 표시
