@@ -4007,15 +4007,16 @@ function fishCalcOffline(seconds){
       if(f.isDead) return;
       const s=F_SPECIES[type]?.[f.stage]||F_SPECIES[type]?.[1];
       if(!s) return;
-      f.fullness=Math.max(0,f.fullness-Math.floor(ticks/s.foodRate));
-      // HP 오프라인 감소 없음 — 복귀 후 실시간 틱이 정상 처리
+      // 먼저 포만감으로 활동 시간 계산 (포만감이 감소하기 전)
       const stageIncome=STAGE_INCOME[type]?.[f.stage]||2;
-      // 포만감을 시간으로 변환: 100% = 10시간, 50% = 5시간, 0% = 0시간
       const activeHours=(f.fullness/100)*10;
       const activeSeconds=activeHours*3600;
       const calcSeconds=Math.min(ticks,activeSeconds);
       const inc=Math.floor(calcSeconds/30)*stageIncome;
       totalOff+=inc;
+      // 그 후 포만감 감소
+      f.fullness=Math.max(0,f.fullness-Math.floor(ticks/s.foodRate));
+      // HP 오프라인 감소 없음 — 복귀 후 실시간 틱이 정상 처리
       if(_isYwFish({type:type})) f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
     });
   });
