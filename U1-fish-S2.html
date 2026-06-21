@@ -11174,15 +11174,20 @@ const YONGWANG_NAMES={yongwang:'용왕',yeongeum:'영금',eelyw:'뱀장어',hael
 
 function openFusionSelect(){
   if(!_selectedFish)return;
-  const {type}=_selectedFish;
+  const {type,fishIndex}=_selectedFish;
   const typeData=FG.fishes[type];
-  if(!typeData||typeData.quantity<3){u1Toast('영물 3마리 이상 필요','#C00000');return;}
+  if(!typeData||!typeData.fish||!typeData.fish[fishIndex]){u1Toast('물고기를 찾을 수 없음','#C00000');return;}
+
+  const selectedStage=typeData.fish[fishIndex].stage;
+  const sameStageCount=typeData.fish.filter(f=>f.stage===selectedStage).length;
+  if(sameStageCount<3){u1Toast(`같은 등급 영물 3마리 필요 (현재 ${sameStageCount}마리)`,'#C00000');return;}
 
   const grade=YONGWANG_GRADE[type];
   const resultPool=YONGWANG_BY_GRADE[grade].filter(t=>t!==type);
+  const fishName=F_SPECIES[type][selectedStage].name;
 
   let html=`<div style="text-align:center;margin-bottom:12px;font-size:11px;color:#666">
-    <strong>${YONGWANG_NAMES[type]} 영물 3마리</strong><br>
+    <strong>${fishName} 영물 3마리</strong><br>
     💠 융합수정 1개 + 💰 1,000,000원<br>
     <span style="color:#7C3AED;font-weight:700">${grade} → 다른 종으로 변환</span>
   </div>`;
@@ -11217,8 +11222,15 @@ function openFusionSelect(){
 }
 
 function doYongwangFusion(type){
+  if(!_selectedFish){u1Toast('선택된 물고기 없음','#C00000');return;}
+  const {fishIndex}=_selectedFish;
   const typeData=FG.fishes[type];
-  if(!typeData||typeData.quantity<3){u1Toast('영물 3마리 필요','#C00000');return;}
+  if(!typeData||!typeData.fish||!typeData.fish[fishIndex]){u1Toast('물고기를 찾을 수 없음','#C00000');return;}
+
+  const selectedStage=typeData.fish[fishIndex].stage;
+  const sameStageIndices=typeData.fish.map((f,i)=>f.stage===selectedStage?i:-1).filter(i=>i>=0);
+  if(sameStageIndices.length<3){u1Toast(`같은 등급 영물 3마리 필요 (현재 ${sameStageIndices.length}마리)`,'#C00000');return;}
+
   if(FG.money<1000000){u1Toast('돈 부족 (1,000,000원 필요)','#C00000');return;}
   if(FG.fusionCrystals<1){u1Toast('융합수정 부족','#C00000');return;}
 
@@ -11237,6 +11249,10 @@ function doYongwangFusion(type){
   if(resultPool.length===0){u1Toast('변환 가능한 종 없음','#C00000');return;}
 
   const resultType=resultPool[Math.floor(Math.random()*resultPool.length)];
+
+  // 같은 등급 영물 3마리 제거 (역순으로 제거해야 인덱스 꼬이지 않음)
+  const toRemove=sameStageIndices.slice(0,3).sort((a,b)=>b-a);
+  toRemove.forEach(idx=>typeData.fish.splice(idx,1));
 
   FG.money-=1000000;
   FG.fusionCrystals-=1;
