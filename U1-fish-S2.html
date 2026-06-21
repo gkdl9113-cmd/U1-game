@@ -3749,16 +3749,10 @@ function fishingGaugeClick(){
     const prob=baitProbs[FMG.usedBait]||0.5;
     const inZoneOK=inZone||inSpecial;
     if(Math.random()<prob){
-      const baitGrades=BAIT_GRADE_TABLE[FMG.usedBait]||rod.grades;
-      const gradeTable=inSpecial?(rod.gradesSpecial||baitGrades):baitGrades;
+      const gradeTable=inSpecial?(rod.gradesSpecial||rod.grades):rod.grades;
       const {type:picked,stage:pickedStage}=pickSpeciesByGrade(gradeTable);
       updateFishCodex(picked,pickedStage);
-      // 올바른 등급으로 물고기 추가
-      if(!FG.fishes[picked]) FG.fishes[picked]={quantity:0,level:1,exp:0,fish:[]};
-      FG.fishes[picked].quantity+=1;
-      if(!FG.fishes[picked].fish) FG.fishes[picked].fish=[];
-      const newFish=createNewFish(picked,pickedStage);
-      FG.fishes[picked].fish.push(newFish);
+      addFish(picked,1);
       FG.totalFished++;checkAchievements('fish',{grade:F_SPECIES[picked][pickedStage].grade,isYw:_isYwFish({type:picked})});
       fishQuickSave();
       const cs=F_SPECIES[picked][pickedStage];
@@ -11254,6 +11248,21 @@ function doYongwangFusion(type){
   const gradeEmoji={하급:'🟢',중급:'🟡',상급:'🔴'}[resultGrade]||'';
   u1Toast(`${gradeEmoji} ${YONGWANG_NAMES[resultType]} 영물 획득!`,'#7C3AED');
 
+  fishRenderInfo();
+  fishQuickSave();
+  hideDlg('fish-detail-modal-s2');
+}
+
+function releaseFish(){
+  if(!_selectedFish){u1Toast('선택된 물고기 없음','#C00000');return;}
+  const {type,fishIndex}=_selectedFish;
+  const typeData=FG.fishes[type];
+  if(!typeData||!typeData.fish||!typeData.fish[fishIndex]){u1Toast('물고기를 찾을 수 없음','#C00000');return;}
+
+  const fishName=F_SPECIES[type][typeData.fish[fishIndex].stage].name;
+  typeData.fish.splice(fishIndex,1);
+  typeData.quantity-=1;
+  u1Toast(`🐟 ${fishName}을(를) 방생했습니다!`,'#217346');
   fishRenderInfo();
   fishQuickSave();
   hideDlg('fish-detail-modal-s2');
