@@ -4041,14 +4041,18 @@ function fishCalcOfflineRod(){
 function fishCalcOffline(seconds){
   const ticks=Math.min(seconds,14400);
   let totalOff=0;
-  Object.values(FG.fishes).forEach(f=>{
-    if(f.isDead) return;
-    const s=fStage(f);
-    f.fullness=Math.max(0,f.fullness-Math.floor(ticks/s.foodRate));
-    // HP 오프라인 감소 없음 — 복귀 후 실시간 틱이 정상 처리
-    const inc=Math.floor(ticks/30)*(STAGE_INCOME[f.stage]||2);
-    totalOff+=inc;
-    if(_isYwFish(f)) f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
+  Object.entries(FG.fishes).forEach(([type,typeData])=>{
+    if(typeData.quantity<=0||!typeData.fish) return;
+    typeData.fish.forEach(f=>{
+      if(f.isDead) return;
+      const s=F_SPECIES[type]?.[f.stage]||F_SPECIES[type]?.[1];
+      if(!s) return;
+      f.fullness=Math.max(0,f.fullness-Math.floor(ticks/s.foodRate));
+      // HP 오프라인 감소 없음 — 복귀 후 실시간 틱이 정상 처리
+      const inc=Math.floor(ticks/30)*(STAGE_INCOME[type]?.[f.stage]||2);
+      totalOff+=inc;
+      if(_isYwFish({type:type})) f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
+    });
   });
   FG.money+=totalOff;
   if(totalOff>0){
@@ -4066,12 +4070,19 @@ function fishTick(){
 
   let inc=0;
   Object.entries(FG.fishes).forEach(([type,data])=>{
-    if(data.quantity<=0) return;
+    if(data.quantity<=0||!data.fish) return;
 
-    // 기본 수입 × 수량 × 레벨 보너스
-    const baseIncome=STAGE_INCOME[type]?.[1]||2;
+    // 개별 물고기별 수입 계산 (stage 반영)
+    let typeIncome=0;
+    data.fish.forEach(f=>{
+      if(f.isDead) return;
+      const stageIncome=STAGE_INCOME[type]?.[f.stage]||2;
+      typeIncome+=stageIncome;
+    });
+
+    // 레벨 보너스 (종 레벨 기준)
     const levelBonus=1+(data.level-1)*0.1; // 레벨당 10% 증가
-    const totalIncome=Math.floor(baseIncome*data.quantity*levelBonus);
+    const totalIncome=Math.floor(typeIncome*levelBonus);
     inc+=totalIncome;
 
     // 경험치 누적 (영물만 - 30초마다 +1)
