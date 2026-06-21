@@ -4059,8 +4059,11 @@ function fishCalcOffline(seconds){
       f.fullness=Math.max(0,f.fullness-Math.floor(ticks/s.foodRate));
       // HP 오프라인 감소 없음 — 복귀 후 실시간 틱이 정상 처리
       const stageIncome=STAGE_INCOME[type]?.[f.stage]||2;
-      const fullnessMultiplier=Math.max(0.1,f.fullness/100); // 최소 10% 수익 보장
-      const inc=Math.floor(ticks/30)*stageIncome*fullnessMultiplier;
+      // 포만감을 시간으로 변환: 100% = 10시간, 50% = 5시간, 0% = 0시간
+      const activeHours=(f.fullness/100)*10;
+      const activeSeconds=activeHours*3600;
+      const calcSeconds=Math.min(ticks,activeSeconds);
+      const inc=Math.floor(calcSeconds/30)*stageIncome;
       totalOff+=inc;
       if(_isYwFish({type:type})) f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
     });
@@ -4083,13 +4086,12 @@ function fishTick(){
   Object.entries(FG.fishes).forEach(([type,data])=>{
     if(data.quantity<=0||!data.fish) return;
 
-    // 개별 물고기별 수입 계산 (stage 및 포만감 반영)
+    // 개별 물고기별 수입 계산 (stage 반영, 포만감 0이면 수익 없음)
     let typeIncome=0;
     data.fish.forEach(f=>{
-      if(f.isDead) return;
+      if(f.isDead||f.fullness<=0) return; // 포만감 0이면 수익 없음
       const stageIncome=STAGE_INCOME[type]?.[f.stage]||2;
-      const fullnessMultiplier=Math.max(0.1,f.fullness/100); // 최소 10% 수익 보장
-      typeIncome+=stageIncome*fullnessMultiplier;
+      typeIncome+=stageIncome;
     });
 
     // 레벨 보너스 (종 레벨 기준)
