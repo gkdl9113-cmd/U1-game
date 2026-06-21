@@ -4390,7 +4390,7 @@ function fishRenderInfo(){
         const stage=f.stage||1;
         const spec=F_SPECIES[type]&&F_SPECIES[type][stage]?F_SPECIES[type][stage]:s;
         const fname=spec.name||s.name;
-        return `<div style="padding:6px;background:#F9F9F9;border-radius:4px;margin-bottom:4px;cursor:pointer;border:1px solid #DDD;transition:all 0.2s" onmouseover="this.style.background='#E8F5E9'" onmouseout="this.style.background='#F9F9F9'" onclick="showFishDetail('${type}',${i})"><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700"><span>${fname}</span><span>❤️${f.hp}/${f.maxHp}</span></div><div style="display:flex;justify-content:space-around;font-size:9px;color:#666;margin-top:3px"><span>⚔️${f.atk}</span><span>🛡️${f.def}</span><span>⚡${f.agi}</span><span>✨${f.luk}</span></div></div>`;
+        return `<div style="padding:6px;background:#F9F9F9;border-radius:4px;margin-bottom:4px;cursor:pointer;border:1px solid #DDD;transition:all 0.2s" onmouseover="this.style.background='#E8F5E9'" onmouseout="this.style.background='#F9F9F9'" onclick="showFishDetail('${type}',${i})"><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700"><span>${fname}</span><span>❤️${f.hp}/${f.maxHp}</span></div><div style="font-size:9px;color:#F57C00;margin-top:2px">🍖 포만감 ${f.fullness}/100</div><div style="display:flex;justify-content:space-around;font-size:9px;color:#666;margin-top:3px"><span>⚔️${f.atk}</span><span>🛡️${f.def}</span><span>⚡${f.agi}</span><span>✨${f.luk}</span></div></div>`;
       }).join(''):'<div style="font-size:9px;color:#999;padding:6px">물고기 정보 없음</div>';
 
       return `<div style="padding:8px;background:#fff;border-bottom:1px solid #E8E8E8">
