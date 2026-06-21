@@ -4429,16 +4429,10 @@ function fishRenderInfo(){
       if(!s) return '';
       const xpPct=Math.min(100,data.exp/(data.level*100)*100);
       const fishList=data.fish&&data.fish.length>0?data.fish.map((f,i)=>{
-        const fname=F_SPECIES[type][f.stage].name;
-        return `<div style="padding:6px;background:#F9F9F9;border-radius:4px;margin-bottom:4px;cursor:pointer;border:1px solid #DDD;transition:all 0.2s" onmouseover="this.style.background='#E8F5E9'" onmouseout="this.style.background='#F9F9F9'" onclick="showFishDetail('${type}',${i})">
-        <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700">
-          <span>${fname}</span>
-          <span>❤️${f.hp}/${f.maxHp}</span>
-        </div>
-        <div style="display:flex;justify-content:space-around;font-size:9px;color:#666;margin-top:3px">
-          <span>⚔️${f.atk}</span><span>🛡️${f.def}</span><span>⚡${f.agi}</span><span>✨${f.luk}</span>
-        </div>
-      </div>`;}).join(''):'<div style="font-size:9px;color:#999;padding:6px">물고기 정보 없음</div>';
+        const spec=F_SPECIES[type]&&F_SPECIES[type][f.stage]?F_SPECIES[type][f.stage]:{name:'?'};
+        const fname=spec.name;
+        return `<div style="padding:6px;background:#F9F9F9;border-radius:4px;margin-bottom:4px;cursor:pointer;border:1px solid #DDD;transition:all 0.2s" onmouseover="this.style.background='#E8F5E9'" onmouseout="this.style.background='#F9F9F9'" onclick="showFishDetail('${type}',${i})"><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700"><span>${fname}</span><span>❤️${f.hp}/${f.maxHp}</span></div><div style="display:flex;justify-content:space-around;font-size:9px;color:#666;margin-top:3px"><span>⚔️${f.atk}</span><span>🛡️${f.def}</span><span>⚡${f.agi}</span><span>✨${f.luk}</span></div></div>`;
+      }).join(''):'<div style="font-size:9px;color:#999;padding:6px">물고기 정보 없음</div>';
 
       return `<div style="padding:8px;background:#fff;border-bottom:1px solid #E8E8E8">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
