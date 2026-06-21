@@ -5716,7 +5716,9 @@ function createNewFish(type,stage=1){
     def:Math.floor(s.def*variance),
     agi:Math.floor(s.agi*variance),
     luk:Math.floor(s.luk*variance),
-    fullness:80
+    fullness:80,
+    xp:0,
+    isDead:false
   };
   return fish;
 }
