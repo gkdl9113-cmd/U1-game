@@ -571,9 +571,9 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 
 <!-- 물고기 상세창 -->
 <div class="xl-dlg-ov" id="fish-detail-modal">
-  <div class="xl-dlg" style="min-width:260px">
-    <div class="xl-dlg-title" style="background:#1F3864">🐟 물고기 정보 <button class="xl-dlg-x" onclick="hideDlg('fish-detail-modal')">✕</button></div>
-    <div class="xl-dlg-body" style="padding:12px;max-height:70dvh;overflow-y:auto">
+  <div class="xl-dlg" style="min-width:260px;max-height:85dvh;display:flex;flex-direction:column">
+    <div class="xl-dlg-title" style="background:#1F3864;flex-shrink:0">🐟 물고기 정보 <button class="xl-dlg-x" onclick="hideDlg('fish-detail-modal')">✕</button></div>
+    <div class="xl-dlg-body" style="padding:12px;flex:1;overflow-y:auto;min-height:0">
       <div style="font-size:13px;font-weight:800;color:#1F3864;margin-bottom:2px" id="fd-title">🐟 #1 금붕어 치어</div>
       <div style="font-size:10px;color:#888;margin-bottom:10px" id="fd-stage">1단계 · 금붕어</div>
       <!-- 상태 + 전투 스탯 -->
