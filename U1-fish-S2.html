@@ -8098,7 +8098,8 @@ async function adminLoadUsers(){
   if(filter!=='ALL') query=query.eq('server',filter);
   query=query.eq('season',2);
   const{data:rawData,error}=await query;
-  if(error){document.getElementById('adm-status').textContent='오류: '+error.message;return;}
+  console.log('adminLoadUsers - filter:',filter,'rawData:',rawData?.length,'error:',error);
+  if(error){document.getElementById('adm-status').textContent='오류: '+error.message;console.error('DB Error:',error);return;}
   const data=rawData.filter(r=>r.username!==NUMLT_USERNAME&&r.username!==BATTLEBAN_USERNAME&&r.username!==LOTTERY_USERNAME);
   // 통계 계산
   const total=data.length;
@@ -8117,10 +8118,10 @@ function adminRenderTable(rows){
   const COLORS=['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];
   grid.innerHTML=rows.map((r,i)=>{
     const fd=r.fish_data||{};
-    const fishes=fd.fishes||[];
-    const alive=fishes.filter(f=>!f.isDead);
-    const dead=fishes.filter(f=>f.isDead).length;
-    const best=alive.sort((a,b)=>b.stage-a.stage)[0];
+    const fishList=Object.values(fd.fishes||{}).flatMap(cat=>(cat.fish||[]));
+    const alive=fishList.filter(f=>!f.isDead);
+    const dead=fishList.filter(f=>f.isDead).length;
+    const best=[...alive].sort((a,b)=>(b.stage||0)-(a.stage||0))[0];
     const bestName=best?((F_SPECIES[best.type||'goldfish']?.[best.stage]?.name)||best.stage+'단계'):'없음';
     const bestGrade=best?(F_SPECIES[best.type||'goldfish']?.[best.stage]?.grade)||'일반':'없음';
     const gd=F_GRADES[bestGrade]||F_GRADES['일반'];
