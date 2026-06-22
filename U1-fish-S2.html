@@ -4987,7 +4987,7 @@ function showFishDetail(typeOrIdx, fishIndex){
       const sk=FISH_SKILLS[skId];
       if(sk){
         const cfg=SKILL_RARITY[sk.rarity]||SKILL_RARITY['일반'];
-        return `<div onclick="openSkillAssign(${idx},${slotNum})" style="background:#EEF2FF;border:1px solid ${cfg.border};border-radius:3px;padding:6px;font-size:10px;color:#3730A3;cursor:pointer" onmouseover="this.style.background='#E0E7FF'" onmouseout="this.style.background='#EEF2FF'">
+        return `<div onclick="openSkillAssign('${_fdType}',${_fdIdx},${slotNum})" style="background:#EEF2FF;border:1px solid ${cfg.border};border-radius:3px;padding:6px;font-size:10px;color:#3730A3;cursor:pointer" onmouseover="this.style.background='#E0E7FF'" onmouseout="this.style.background='#EEF2FF'">
           <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px">
             <span style="font-weight:700">${slotLabel}: ${sk.icon||'⚡'} ${sk.name}</span>
             <span style="background:${cfg.bg};color:${cfg.fg};border:1px solid ${cfg.border};border-radius:8px;padding:0 5px;font-size:8px;font-weight:700">${cfg.label}</span>
@@ -4996,19 +4996,19 @@ function showFishDetail(typeOrIdx, fishIndex){
           <div style="font-size:8px;color:#A5B4FC;margin-top:2px">탭하여 변경</div>
         </div>`;
       }
-      return `<div onclick="openSkillAssign(${idx},${slotNum})" style="background:#F0F0FF;border:1px dashed #A5B4FC;border-radius:3px;padding:6px;text-align:center;font-size:10px;color:#888;cursor:pointer" onmouseover="this.style.background='#E8E8FF'" onmouseout="this.style.background='#F0F0FF'">${slotLabel}<br><span style="font-size:9px;color:#A5B4FC">+ 스킬 장착</span></div>`;
+      return `<div onclick="openSkillAssign('${_fdType}',${_fdIdx},${slotNum})" style="background:#F0F0FF;border:1px dashed #A5B4FC;border-radius:3px;padding:6px;text-align:center;font-size:10px;color:#888;cursor:pointer" onmouseover="this.style.background='#E8E8FF'" onmouseout="this.style.background='#F0F0FF'">${slotLabel}<br><span style="font-size:9px;color:#A5B4FC">+ 스킬 장착</span></div>`;
     };
     fdSkills.innerHTML=renderSlot(f.skill1,'전용스킬',1)+renderSlot(f.skill2,'공용스킬',2);
   }
   // 먹이통 배정 표시
-  const assignedIdx=FG.autoFeeders.findIndex(fd=>fd.targetIdx===idx);
+  const assignedIdx=FG.autoFeeders.findIndex(fd=>fd.targetIdx===_fdIdx);
   const fdFeeder=document.getElementById('fd-feeder-row');
   if(fdFeeder){
     const assignedTxt=assignedIdx>=0?`먹이통 ${assignedIdx+1}번 배정됨`:'배정 없음 (랜덤)';
     const btnTxt=assignedIdx>=0?'배정 해제':'이 물고기에 배정';
     const hasFeeder=FG.autoFeeders.length>0;
     fdFeeder.innerHTML=`<span style="color:#595959;font-size:11px">🍤 먹이통: <strong>${assignedTxt}</strong></span>
-      ${hasFeeder&&!f.isDead?`<button onclick="fishAssignFeeder(${idx})" style="margin-left:6px;background:${assignedIdx>=0?'#C00000':'#217346'};color:#fff;border:none;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">${btnTxt}</button>`:''}`;
+      ${hasFeeder&&!f.isDead?`<button onclick="fishAssignFeeder('${_fdType}',${_fdIdx})" style="margin-left:6px;background:${assignedIdx>=0?'#C00000':'#217346'};color:#fff;border:none;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">${btnTxt}</button>`:''}`;
   }
   const _baseAgi=isYw?(s.agi+(f.bonusAgi||0)*YW_PER_PT.agi)||0:s.agi||0;
   const _baseLuk=isYw?(s.luk+(f.bonusLuk||0)*YW_PER_PT.luk)||0:s.luk||0;
