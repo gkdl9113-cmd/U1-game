@@ -8096,6 +8096,7 @@ async function adminLoadUsers(){
   const filter=document.getElementById('adm-server-filter').value;
   let query=_sb.from('fish_accounts').select('username,server,fish_data,updated_at').order('updated_at',{ascending:false});
   if(filter!=='ALL') query=query.eq('server',filter);
+  query=query.eq('season',2);
   const{data:rawData,error}=await query;
   if(error){document.getElementById('adm-status').textContent='오류: '+error.message;return;}
   const data=rawData.filter(r=>r.username!==NUMLT_USERNAME&&r.username!==BATTLEBAN_USERNAME&&r.username!==LOTTERY_USERNAME);
