@@ -2160,7 +2160,7 @@ async function doLogin(){
     _sb=makeSb();
   }
   const hash=await hashPassword(v.pw);
-  const{data,error}=await _sb.from('fish_accounts').select('password_hash,fish_data').eq('username',v.uid).eq('server',ACTIVE_SERVER).eq('season',2).single();
+  const{data,error}=await _sb.from('fish_accounts').select('password_hash,fish_data').eq('username',v.uid).eq('server',ACTIVE_SERVER).single();
   if(error||!data){entryStatus('아이디를 찾을 수 없습니다. 회원가입을 먼저 하세요.','#C00000');return;}
   if(data.password_hash!==hash){entryStatus('비밀번호가 틀렸습니다','#C00000');document.getElementById('e-pw').value='';document.getElementById('e-pw').focus();return;}
   currentUsername=v.uid;
@@ -2340,7 +2340,7 @@ async function saveFishDataToDB(){
     lastSave:serverNow()
   };
   try{
-    const{error}=await _sb.from('fish_accounts').update({fish_data:data,updated_at:new Date().toISOString()}).eq('username',currentUsername).eq('server',ACTIVE_SERVER);
+    const{error}=await _sb.from('fish_accounts').update({fish_data:data,updated_at:new Date().toISOString()}).eq('username',currentUsername).eq('server',ACTIVE_SERVER).eq('season',2);
     if(error) u1Toast('⚠️ DB 저장 실패: '+error.message,'#C00000');
   }catch(e){}
   finally{_dbSaving=false;}
