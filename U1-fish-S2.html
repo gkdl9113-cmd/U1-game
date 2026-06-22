@@ -4908,9 +4908,40 @@ function skillAssignRemove(){
 }
 
 let _fdIdx=-1;
-function showFishDetail(idx){
-  const f=FG.fishes[idx]; if(!f) return;
-  _fdIdx=idx;
+let _fdType=null;
+function showFishDetail(typeOrIdx, fishIndex){
+  // 타입과 인덱스로 호출된 경우
+  if(typeof fishIndex === 'number'){
+    const typeData=FG.fishes[typeOrIdx];
+    if(!typeData||!typeData.fish||!typeData.fish[fishIndex]) return;
+    _fdType=typeOrIdx;
+    _fdIdx=fishIndex;
+    const f=typeData.fish[fishIndex];
+  } else {
+    // 인덱스만으로 호출된 경우 (S1 호환성)
+    let foundType=null, foundIdx=-1;
+    for(const [type, typeData] of Object.entries(FG.fishes)){
+      if(typeData.fish){
+        for(let i=0; i<typeData.fish.length; i++){
+          foundIdx++;
+          if(foundIdx===typeOrIdx){
+            foundType=type;
+            break;
+          }
+        }
+        if(foundType) break;
+      }
+    }
+    if(!foundType) return;
+    _fdType=foundType;
+    _fdIdx=typeOrIdx;
+    const typeData=FG.fishes[foundType];
+    const f=typeData.fish[foundIdx%typeData.fish.length];
+  }
+
+  const typeData=FG.fishes[_fdType];
+  const f=typeData.fish[_fdIdx];
+  if(!f) return;
   const s=fStage(f);
   const isYw=_isYwFish(f);
   const ywLv=f.level||1;
