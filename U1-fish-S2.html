@@ -2299,7 +2299,7 @@ function applyFishData(d){
     FG.fishes.goldfish={quantity:1,level:1,exp:0,fish:[createNewFish('goldfish','일반')]};
   }
   FG.money=d.money??100;FG.food=d.food??5;FG.spFood=d.spFood??0;
-  FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||15;
+  FG.tankLevel=d.tankLevel??0;FG.tankMax=d.tankMax??1;
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
   FG.skillInventory=d.skillInventory||{};
   FG.achievements=d.achievements||{};
@@ -3038,7 +3038,7 @@ const FG={
   battlePick:[],
   legendPick:[],
   money:100,food:5,spFood:0,autoFeeders:[],
-  tankLevel:0,tankMax:15,
+  tankLevel:0,tankMax:1,
   skillInventory:{},
   achievements:{},
   btWins:0, battlePoints:0, totalFished:0, totalEvos:0, titles:[],
