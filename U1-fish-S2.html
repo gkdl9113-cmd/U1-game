@@ -5544,7 +5544,8 @@ function fishSave(isDisconnect){
     stocks:FG.stocks,
     stoppedByDisconnect:isDisconnect||false,lastSave:serverNow()
   };
-  localStorage.setItem('u1aquarium_s2',JSON.stringify(data));
+  const storageKey=`u1aquarium_s2_${currentUsername}`;
+  localStorage.setItem(storageKey,JSON.stringify(data));
   if(!isDisconnect){
     saveFishDataToDB();
     const t=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -5591,8 +5592,9 @@ function fishLoad(){
       return; // testuser는 여기서 끝내기
     }
 
-    // 일반 유저: 저장 데이터 로드 (S2는 별도 키 사용)
-    const raw=localStorage.getItem('u1aquarium_s2'); if(!raw) return;
+    // 일반 유저: 저장 데이터 로드 (계정별 별도 키 사용)
+    const storageKey=`u1aquarium_s2_${_uid}`;
+    const raw=localStorage.getItem(storageKey); if(!raw) return;
     const d=JSON.parse(raw);
     {
       // 일반 유저: 저장 데이터 로드
