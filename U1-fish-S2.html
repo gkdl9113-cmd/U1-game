@@ -4952,7 +4952,7 @@ function showFishDetail(typeOrIdx, fishIndex){
     if(_fdTitleObj){const _st=TITLE_RARITY_ST[_fdTitleObj.rarity];_fdTitleBadge.textContent=`[${_fdTitleObj.name}]`;_fdTitleBadge.style.color=_st.fg;_fdTitleBadge.style.background=_st.bg;_fdTitleBadge.style.padding='1px 5px';_fdTitleBadge.style.borderRadius='3px';}
     else{_fdTitleBadge.textContent='없음';_fdTitleBadge.style.color='#888';_fdTitleBadge.style.background='';_fdTitleBadge.style.padding='';}
   }
-  document.getElementById('fd-title').textContent=(f.isDead?'💀':'🐟')+' #'+(idx+1)+' '+s.name+(isYw?` Lv.${ywLv}`:'');
+  document.getElementById('fd-title').textContent=(f.isDead?'💀':'🐟')+' #'+(_fdIdx+1)+' '+s.name+(isYw?` Lv.${ywLv}`:'');
   const gd=F_GRADES[s.grade]||F_GRADES['일반'];
   document.getElementById('fd-stage').innerHTML=
     (isYw?`Lv.${ywLv}/50 · ${s.species}`:(`${f.stage}단계 · ${s.species}`))+
