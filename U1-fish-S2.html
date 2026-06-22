@@ -2160,7 +2160,7 @@ async function doLogin(){
     _sb=makeSb();
   }
   const hash=await hashPassword(v.pw);
-  const{data,error}=await _sb.from('fish_accounts').select('password_hash,fish_data').eq('username',v.uid).eq('server',ACTIVE_SERVER).single();
+  const{data,error}=await _sb.from('fish_accounts').select('password_hash,fish_data').eq('username',v.uid).eq('server',ACTIVE_SERVER).eq('season',2).single();
   if(error||!data){entryStatus('아이디를 찾을 수 없습니다. 회원가입을 먼저 하세요.','#C00000');return;}
   if(data.password_hash!==hash){entryStatus('비밀번호가 틀렸습니다','#C00000');document.getElementById('e-pw').value='';document.getElementById('e-pw').focus();return;}
   currentUsername=v.uid;
@@ -2181,7 +2181,8 @@ function _buildInitialFishData(){
     fishes:{goldfish:{quantity:1,level:1,exp:0},snakehead:{quantity:0,level:1,exp:0},guppy:{quantity:0,level:1,exp:0},tropical:{quantity:0,level:1,exp:0},piranha:{quantity:0,level:1,exp:0},clownfish:{quantity:0,level:1,exp:0},mandarin:{quantity:0,level:1,exp:0},electric:{quantity:0,level:1,exp:0},turtle:{quantity:0,level:1,exp:0},yongwang:{quantity:0,level:1,exp:0},yeongeum:{quantity:0,level:1,exp:0},eelyw:{quantity:0,level:1,exp:0},haelyong:{quantity:0,level:1,exp:0},megalodonte:{quantity:0,level:1,exp:0},geumlin:{quantity:0,level:1,exp:0}},
     money:100,food:5,spFood:0,
     tankLevel:0,tankMax:15,
-    rods:{rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},
+    inventory:{bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:5},
+    equipment:{equippedRod:null},
     skillInventory:{},achievements:{},
     btWins:0,battlePoints:0,fusionCrystals:0,totalFished:0,totalEvos:0,titles:[],
     stocks:{holdings:_emptyH(),realized:_emptyR(),divTick:_stockCurrentTick()},
@@ -2358,7 +2359,7 @@ async function saveFishDataToDB(){
     entryStatus('자동 로그인 중…','#595959');
     if(!_sb) _sb=makeSb();
     _sb.from('fish_accounts').select('password_hash,fish_data')
-      .eq('username',sessUid).eq('server',ACTIVE_SERVER).single()
+      .eq('username',sessUid).eq('server',ACTIVE_SERVER).eq('season',2).single()
       .then(({data,error})=>{
         if(error||!data||data.password_hash!==sessHash){
           // 세션 만료 or 서버 변경
