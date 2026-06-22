@@ -2180,7 +2180,7 @@ function _buildInitialFishData(){
   return{
     fishes:{goldfish:{quantity:1,level:1,exp:0},snakehead:{quantity:0,level:1,exp:0},guppy:{quantity:0,level:1,exp:0},tropical:{quantity:0,level:1,exp:0},piranha:{quantity:0,level:1,exp:0},clownfish:{quantity:0,level:1,exp:0},mandarin:{quantity:0,level:1,exp:0},electric:{quantity:0,level:1,exp:0},turtle:{quantity:0,level:1,exp:0},yongwang:{quantity:0,level:1,exp:0},yeongeum:{quantity:0,level:1,exp:0},eelyw:{quantity:0,level:1,exp:0},haelyong:{quantity:0,level:1,exp:0},megalodonte:{quantity:0,level:1,exp:0},geumlin:{quantity:0,level:1,exp:0}},
     money:100,food:5,spFood:0,
-    tankLevel:0,tankMax:15,
+    tankLevel:0,tankMax:1,
     inventory:{bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:5},
     equipment:{equippedRod:null},
     skillInventory:{},achievements:{},
@@ -3106,7 +3106,7 @@ function fishResizeCanvas(){
 
 function fishStartLoops(){
   fishStopLoops(); FG.paused=false;
-  FG.tickInterval=setInterval(fishTick,1000);
+  FG.tickInterval=setInterval(fishTick,30000);
   FG.swimInterval=setInterval(fishDraw,50);
   FG.saveInterval=setInterval(()=>fishAutoSave(),10000);
 }
