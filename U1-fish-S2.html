@@ -2180,7 +2180,7 @@ function _buildInitialFishData(){
     fishes:{goldfish:{quantity:1,level:1,exp:0},snakehead:{quantity:0,level:1,exp:0},guppy:{quantity:0,level:1,exp:0},tropical:{quantity:0,level:1,exp:0},piranha:{quantity:0,level:1,exp:0},clownfish:{quantity:0,level:1,exp:0},mandarin:{quantity:0,level:1,exp:0},electric:{quantity:0,level:1,exp:0},turtle:{quantity:0,level:1,exp:0},yongwang:{quantity:0,level:1,exp:0},yeongeum:{quantity:0,level:1,exp:0},eelyw:{quantity:0,level:1,exp:0},haelyong:{quantity:0,level:1,exp:0},megalodonte:{quantity:0,level:1,exp:0},geumlin:{quantity:0,level:1,exp:0}},
     money:100,food:5,spFood:0,
     tankLevel:0,tankMax:1,
-    inventory:{bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:5},
+    inventory:{bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},
     equipment:{equippedRod:null},
     skillInventory:{},achievements:{},
     btWins:0,battlePoints:0,fusionCrystals:0,totalFished:0,totalEvos:0,titles:[],
@@ -2300,6 +2300,8 @@ function applyFishData(d){
   FG.money=d.money??100;FG.food=d.food??5;FG.spFood=d.spFood??0;
   FG.tankLevel=d.tankLevel??0;FG.tankMax=d.tankMax??1;
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
+  FG.inventory=Object.assign({bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},d.inventory||{});
+  FG.equipment=d.equipment||{equippedRod:null};
   FG.skillInventory=d.skillInventory||{};
   FG.achievements=d.achievements||{};
   FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.fusionCrystals=d.fusionCrystals||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;FG.titles=d.titles||[];
@@ -2334,6 +2336,7 @@ async function saveFishDataToDB(){
     money:FG.money,food:FG.food,spFood:FG.spFood,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,fishCodex:FG.fishCodex,
+    inventory:FG.inventory,equipment:FG.equipment,
     skillInventory:FG.skillInventory,
     achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],
     stocks:FG.stocks,
@@ -3032,8 +3035,8 @@ const FG={
     megalodonte:{quantity:0,level:1,exp:0,fish:[]},
     geumlin:{quantity:0,level:1,exp:0,fish:[]}
   },
-  inventory:{bait_common:50,bait_normal:0,bait_high:0,bait_rare:10,bait_hero:2,bait_legend:0,rods:[{id:'rod1',level:0,durability:100,maxDurability:100}],hoe:50},
-  equipment:{equippedRod:{id:'rod1',level:0,durability:100,maxDurability:100}},
+  inventory:{bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},
+  equipment:{equippedRod:null},
   battlePick:[],
   legendPick:[],
   money:100,food:5,spFood:0,autoFeeders:[],
@@ -5629,8 +5632,8 @@ function fishLoad(){
         if(!f.fish) f.fish=[];
       });
       FG.money=d.money??100;FG.food=d.food??5;
-      FG.inventory=Object.assign({bait_common:50,bait_normal:0,bait_high:0,bait_rare:10,bait_hero:2,bait_legend:0,rods:[{id:'rod1',level:0,durability:100,maxDurability:100}],hoe:50},d.inventory||{});
-      FG.equipment=Object.assign({equippedRod:{id:'rod1',level:0,durability:100,maxDurability:100}},d.equipment||{});
+      FG.inventory=Object.assign({bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},d.inventory||{});
+      FG.equipment=d.equipment||{equippedRod:null};
     }
 
     FG.autoFeeders=d.autoFeeders||[];
@@ -5672,8 +5675,8 @@ function fishReset(){
 
   Object.assign(FG,{
     fishes:{goldfish:{quantity:_isTest?5:1,level:1,exp:0,fish:testGoldfishes},snakehead:{quantity:0,level:1,exp:0,fish:[]},guppy:{quantity:0,level:1,exp:0,fish:[]},tropical:{quantity:0,level:1,exp:0,fish:[]},piranha:{quantity:0,level:1,exp:0,fish:[]},clownfish:{quantity:0,level:1,exp:0,fish:[]},mandarin:{quantity:0,level:1,exp:0,fish:[]},electric:{quantity:0,level:1,exp:0,fish:[]},turtle:{quantity:0,level:1,exp:0,fish:[]},yongwang:{quantity:0,level:1,exp:0,fish:[]},yeongeum:{quantity:0,level:1,exp:0,fish:[]},eelyw:{quantity:0,level:1,exp:0,fish:[]},haelyong:{quantity:0,level:1,exp:0,fish:[]},megalodonte:{quantity:0,level:1,exp:0,fish:[]},geumlin:{quantity:0,level:1,exp:0,fish:[]}},
-    inventory:_isTest?{bait_common:200,bait_normal:200,bait_high:200,bait_rare:100,bait_hero:100,bait_legend:50,rods:[{id:'rod1',level:0,durability:100,maxDurability:100}],hoe:200}:{bait_common:50,bait_normal:0,bait_high:0,bait_rare:10,bait_hero:2,bait_legend:0,rods:[{id:'rod1',level:0,durability:100,maxDurability:100}],hoe:50},
-    equipment:{equippedRod:{id:'rod1',level:0,durability:100,maxDurability:100}},
+    inventory:_isTest?{bait_common:200,bait_normal:200,bait_high:200,bait_rare:100,bait_hero:100,bait_legend:50,rods:[{id:'rod1',level:0,durability:100,maxDurability:100}],hoe:200}:{bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},
+    equipment:{equippedRod:_isTest?{id:'rod1',level:0,durability:100,maxDurability:100}:null},
     money:_isTest?10000000:100,
     food:_isTest?100:5,
     autoFeeders:[],
