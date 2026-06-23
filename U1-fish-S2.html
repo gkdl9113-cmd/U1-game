@@ -4363,7 +4363,8 @@ function combineEvolve(type,stage){
   const sameIdx=data.fish.map((x,i)=>({x,i})).filter(o=>!o.x.isDead&&(o.x.stage||1)===stage).map(o=>o.i);
   if(sameIdx.length<3){u1Toast(`같은 단계 3마리 필요 (현재 ${sameIdx.length}마리)`,'#C00000');return false;}
   const nameStart=(F_SPECIES[type][stage]||{}).name||type;
-  // 3마리 소모 (역순 splice)
+  // 소모할 3마리 보관 후 제거 (역순 splice)
+  const used=sameIdx.slice(0,3).map(i=>data.fish[i]);
   sameIdx.slice(0,3).sort((a,b)=>b-a).forEach(i=>data.fish.splice(i,1));
   data.quantity=Math.max(0,(data.quantity||0)-3);
   // 확률 판정
@@ -4372,10 +4373,12 @@ function combineEvolve(type,stage){
   let jump=0;
   if(r<cfg.p1) jump=1; else if(r<cfg.p1+cfg.p2) jump=2;
   if(jump===0){
-    // 실패: 3마리 소진, 결과 없음
+    // 실패: 소모한 3마리 중 1마리만 남김 (2마리 손실)
+    const keep=used[0];
+    if(keep){ data.fish.push(keep); data.quantity=(data.quantity||0)+1; }
     FG.totalEvos++;
     fishRenderInfo(); fishQuickSave();
-    u1Toast(`💥 진화 실패! ${nameStart} 3마리를 잃었습니다`,'#C00000');
+    u1Toast(`💥 진화 실패! ${nameStart} 2마리 소실 (1마리 남음)`,'#C00000');
     return true;
   }
   const newStage=Math.min(maxStage,stage+jump);
