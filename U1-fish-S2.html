@@ -2302,6 +2302,7 @@ function applyFishData(d){
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
   FG.inventory=Object.assign({bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},d.inventory||{});
   FG.equipment=d.equipment||{equippedRod:null};
+  FG.inventory.rods=FG.equipment.equippedRod?[FG.equipment.equippedRod]:[]; // 장착 낚시대와 동기화(동일 참조)
   FG.skillInventory=d.skillInventory||{};
   FG.achievements=d.achievements||{};
   FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.fusionCrystals=d.fusionCrystals||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;FG.titles=d.titles||[];
@@ -3266,7 +3267,7 @@ function fishingRenderRodBtns(){
   const div=document.getElementById('fishing-rod-btns');if(!div)return;
   const isIdle=FMG.state==='idle'||FMG.state==='result';
   div.innerHTML=F_SHOP.filter(r=>r.type==='rod').map(r=>{
-    const cnt=FG.rods[r.id]||0;
+    const cnt=(FG.equipment?.equippedRod?.id===r.id)?1:0;
     const dis=cnt===0||!isIdle;
     return `<button onclick="fishingSelectRod('${r.id}')" ${dis?'disabled':''}
       style="flex:1;min-width:72px;padding:6px 4px;border:1.5px solid ${cnt>0&&isIdle?'#217346':'#ccc'};
@@ -5634,6 +5635,7 @@ function fishLoad(){
       FG.money=d.money??100;FG.food=d.food??5;
       FG.inventory=Object.assign({bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},d.inventory||{});
       FG.equipment=d.equipment||{equippedRod:null};
+      FG.inventory.rods=FG.equipment.equippedRod?[FG.equipment.equippedRod]:[];
     }
 
     FG.autoFeeders=d.autoFeeders||[];
@@ -6029,8 +6031,8 @@ function fishOpenShop(){
     </div>
   </div>`;
   div.innerHTML+=F_SHOP.map(item=>{
-    const cnt=item.type==='rod'?(FG.rods[item.id]||0):0;
-    const disabled=FG.money<item.price;
+    const owned=item.type==='rod'&&!!FG.equipment?.equippedRod;
+    const disabled=FG.money<item.price||owned;
     const btnStyle=`background:${disabled?'#E8E8E8':'#217346'};color:${disabled?'#999':'#fff'};border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:${disabled?'default':'pointer'};font-family:inherit;white-space:nowrap`;
     if(item.type==='rod'){
       let gradesHtml;
@@ -6050,14 +6052,14 @@ function fishOpenShop(){
       return `<div style="padding:7px 0;border-bottom:1px solid #F0F0F0">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
           <div style="flex:1;min-width:0">
-            <div style="font-size:12px;font-weight:700">${item.name} <span style="color:#217346;font-weight:700;font-size:10px">${cnt}개 보유</span></div>
+            <div style="font-size:12px;font-weight:700">${item.name} ${owned?'<span style="color:#217346;font-weight:700;font-size:10px">보유 중</span>':''}</div>
             <div style="font-size:10px;color:#555;margin:2px 0">${item.desc} | 게이지 ${Math.round(item.gaugeWidth*100)}%</div>
             <div style="margin-top:3px">${gradesHtml}</div>
           </div>
-          <button onclick="fishBuy('${item.id}')" ${disabled?'disabled':''} style="${btnStyle}">${item.price.toLocaleString()}원</button>
+          <button onclick="fishBuy('${item.id}')" ${disabled?'disabled':''} style="${btnStyle}">${owned?'보유 중':item.price.toLocaleString()+'원'}</button>
         </div></div>`;
     }
-    const cntTxt=item.type==='rod'?` <span style="color:#217346;font-weight:700">(${cnt}개 보유)</span>`:'';
+    const cntTxt='';
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F0F0F0">
       <div><div style="font-size:12px;font-weight:700">${item.name}${cntTxt}</div><div style="font-size:10px;color:#888">${item.desc}</div></div>
       <button onclick="fishBuy('${item.id}')" ${disabled?'disabled':''} style="${btnStyle}">${item.price.toLocaleString()}원</button></div>`;
@@ -6571,6 +6573,23 @@ function shopBuyRod(rodId){
   fishRenderInfo();fishOpenShop();fishQuickSave();
 }
 
+// S2 낚시대 강화 (강화 재료 미정 → 임시로 돈 기반)
+function rodName(id){return {rod1:'나무 낚시대'}[id]||'낚시대';}
+function rodEnhanceCost(rod){return (rod.level+1)*1000;}
+function rodEnhance(){
+  const rod=FG.equipment?.equippedRod; if(!rod) return;
+  if(rod.level>=10){u1Toast('이미 최대 강화입니다','#C05000');return;}
+  const cost=rodEnhanceCost(rod);
+  if(FG.money<cost){u1Toast(`돈이 부족합니다 (💰${cost.toLocaleString()}원 필요)`,'#C00000');return;}
+  FG.money-=cost;
+  rod.level+=1;
+  rod.maxDurability+=20;
+  rod.durability=rod.maxDurability; // 강화 시 내구도 가득
+  FG.inventory.rods=[rod];
+  u1Toast(`🔧 강화 성공! ${rodName(rod.id)} +${rod.level} (최대 내구도 ${rod.maxDurability})`,'#2D4A7A');
+  fishRenderInfo();openInventory();fishQuickSave();
+}
+
 // S2 호미 구매 함수
 function shopBuyHoe(){
   const price=2000;
@@ -6836,18 +6855,23 @@ function openInventory(){
   }).join('');
 
   const rodsDiv=document.getElementById('inventory-rods');
-  const rods=FG.inventory.rods||[];
-  if(rods.length===0){
-    rodsDiv.innerHTML='<div style="color:#666">보유 중인 낚시대가 없습니다</div>';
+  const rod=FG.equipment?.equippedRod;
+  if(!rod){
+    rodsDiv.innerHTML='<div style="color:#666">보유 중인 낚시대가 없습니다 (상점에서 구매)</div>';
   } else {
-    rodsDiv.innerHTML=rods.map((r,i)=>{
-      const durPct=Math.round((r.durability/r.maxDurability)*100);
-      const durColor=durPct>50?'#4CAF50':durPct>20?'#FF9800':'#F44336';
-      return `<div style="padding:6px;background:#E3F2FD;border-radius:3px;border-left:3px solid ${durColor}">
-        <div style="font-size:9px;font-weight:700;color:#0D47A1">낚시대 #${i+1}</div>
-        <div style="font-size:8px;color:#1976D2;margin-top:2px">Lv.${r.level} | 내구도 ${r.durability}/${r.maxDurability} (${durPct}%)</div>
-      </div>`;
-    }).join('');
+    const durPct=Math.round((rod.durability/rod.maxDurability)*100);
+    const durColor=durPct>50?'#4CAF50':durPct>20?'#FF9800':'#F44336';
+    const maxed=rod.level>=10;
+    const cost=rodEnhanceCost(rod);
+    const canEnh=!maxed&&FG.money>=cost;
+    rodsDiv.innerHTML=`<div style="padding:8px;background:#E3F2FD;border-radius:4px;border-left:3px solid ${durColor}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:11px;font-weight:700;color:#0D47A1">🎣 ${rodName(rod.id)} <span style="color:#C05000">+${rod.level}</span> <span style="font-size:8px;color:#1976D2">(장착 중)</span></div>
+        <button onclick="rodEnhance()" ${canEnh?'':'disabled'} style="background:${canEnh?'#C05000':'#CCC'};color:#fff;border:none;padding:4px 9px;border-radius:4px;font-size:10px;font-weight:700;cursor:${canEnh?'pointer':'default'};font-family:inherit;white-space:nowrap">${maxed?'최대 강화':`강화 +${rod.level+1} · 💰${cost.toLocaleString()}`}</button>
+      </div>
+      <div style="font-size:9px;color:#1976D2;margin-top:4px">내구도 ${rod.durability}/${rod.maxDurability} (${durPct}%)</div>
+      <div style="height:5px;background:#BBDEFB;border-radius:3px;margin-top:3px;overflow:hidden"><div style="width:${durPct}%;height:100%;background:${durColor}"></div></div>
+    </div>`;
   }
 
   document.getElementById('inventory-hoe-count').textContent=FG.inventory.hoe||0;
@@ -6866,14 +6890,18 @@ function fishBuy(id){
     addFish(fishType,1);FG.fishPos=null;
     fishRenderInfo();fishStartLoops();hideDlg('f-shop-modal');return;
   }
+  if(item.type==='rod'){
+    if(FG.equipment?.equippedRod){document.getElementById('f-status').textContent='이미 낚시대를 보유 중입니다 (인벤토리에서 강화하세요)';return;}
+    FG.money-=item.price;
+    const rod={id:item.id,level:0,durability:100,maxDurability:100};
+    FG.equipment={...(FG.equipment||{}),equippedRod:rod};
+    FG.inventory.rods=[rod];
+    document.getElementById('f-status').textContent=`🎣 ${item.name} 구매! 자동 장착됨`;
+    setTimeout(()=>fishUpdateStatus(),2000);
+    fishRenderInfo();fishOpenShop();fishQuickSave();return;
+  }
   FG.money-=item.price;
   if(item.type==='food') FG.food+=item.qty;
-  // auto 타입 제거 (autoFeeders로 대체)
-  if(item.type==='rod'){
-    FG.rods[item.id]=(FG.rods[item.id]||0)+1;
-    document.getElementById('f-status').textContent=`🎣 ${item.name} 구매! (${FG.rods[item.id]}개 보유)`;
-    setTimeout(()=>fishUpdateStatus(),2000);
-  }
   fishRenderInfo();fishOpenShop();fishQuickSave();
 }
 
