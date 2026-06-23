@@ -405,6 +405,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <span style="font-size:10px;color:#595959;padding:0 6px">💰 <strong id="f-money">100</strong>원</span>
     <span style="font-size:10px;color:#595959;padding:0 4px">🍤 <strong id="f-food-count">5</strong>개</span>
     <span style="font-size:10px;color:#8B6914;padding:0 4px" title="전설전 배틀포인트">👑 <strong id="f-battle-points">0</strong>BP</span>
+    <span id="f-acc-title" onclick="openTitleEquip()" title="계정 칭호 변경" style="display:none;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;margin:0 4px;cursor:pointer"></span>
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishingEnter()"><span class="xl-rico">🎣</span><span class="xl-rlbl" id="f-rod-lbl">낚시</span></button>
     <button class="xl-rbtn" onclick="diggingEnter()"><span class="xl-rico">🔨</span><span class="xl-rlbl">갯벌파기</span></button>
@@ -603,9 +604,9 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       </div>
       <!-- 칭호 -->
       <div id="fd-title-row" style="display:flex;align-items:center;justify-content:space-between;background:#FAFAFA;border:1px solid #E8E8E8;border-radius:4px;padding:5px 8px;margin-bottom:6px">
-        <span style="font-size:10px;color:#555">🏅 칭호</span>
+        <span style="font-size:10px;color:#555">👤 계정 칭호</span>
         <span id="fd-title-badge" style="font-size:10px;font-weight:700;color:#888">없음</span>
-        <button id="fd-title-btn" onclick="openTitleEquip(_fdIdx)" style="background:#92400E;color:#FEF9C3;border:none;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit">장착</button>
+        <button id="fd-title-btn" onclick="openTitleEquip()" style="background:#92400E;color:#FEF9C3;border:none;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit">변경</button>
       </div>
       <!-- 진화 조건 -->
       <div style="font-size:10px;color:#595959;background:#FFF9C4;border:1px solid #FFC000;border-radius:3px;padding:5px;margin-bottom:6px" id="fd-evo">진화 조건: ⭐0/100 | 💰300원</div>
@@ -2183,7 +2184,7 @@ function _buildInitialFishData(){
     inventory:{bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},
     equipment:{equippedRod:null},
     skillInventory:{},achievements:{},
-    btWins:0,battlePoints:0,fusionCrystals:0,totalFished:0,totalEvos:0,titles:[],
+    btWins:0,battlePoints:0,fusionCrystals:0,totalFished:0,totalEvos:0,titles:[],equippedTitle:null,
     stocks:{holdings:_emptyH(),realized:_emptyR(),divTick:_stockCurrentTick()},
     fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{},megalodonte:{},geumlin:{}},
     lastSave:serverNow()
@@ -2306,6 +2307,9 @@ function applyFishData(d){
   FG.skillInventory=d.skillInventory||{};
   FG.achievements=d.achievements||{};
   FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.fusionCrystals=d.fusionCrystals||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;FG.titles=d.titles||[];
+  FG.equippedTitle=d.equippedTitle||null;
+  // 구버전(물고기별 칭호) → 계정 칭호 자동 이월: 장착된 게 없으면 물고기에 달린 칭호 1개 승계
+  if(!FG.equippedTitle){for(const td of Object.values(FG.fishes)){const ff=(td.fish||[]).find(x=>x.title);if(ff){FG.equippedTitle=ff.title;break;}}}
   const _emptyHoldings=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,{shares:0,avgCost:0}]));
   const _emptyRealized=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,0]));
   FG.stocks=d.stocks||{holdings:_emptyHoldings(),realized:_emptyRealized(),divTick:_stockCurrentTick()};
@@ -2339,7 +2343,7 @@ async function saveFishDataToDB(){
     rods:FG.rods,fishCodex:FG.fishCodex,
     inventory:FG.inventory,equipment:FG.equipment,
     skillInventory:FG.skillInventory,
-    achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],
+    achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],equippedTitle:FG.equippedTitle||null,
     stocks:FG.stocks,
     lastSave:serverNow()
   };
@@ -2859,6 +2863,9 @@ const TITLE_POOL=[
 const TITLE_RARITY_ST={일반:{bg:'#E8E8E8',fg:'#444'},희귀:{bg:'#DBEAFE',fg:'#1D4ED8'},영웅:{bg:'#EDE9FE',fg:'#7C3AED'},전설:{bg:'#FEF9C3',fg:'#92400E'},초월:{bg:'#7F0000',fg:'#FFD700'}};
 const TITLE_REFUND={일반:3,희귀:6,영웅:10,전설:15,초월:0};
 function _titleEf(f){const t=f&&f.title?TITLE_POOL.find(x=>x.id===f.title):null;return t?t.effect:{};}
+// 계정(아이디) 단위 장착 칭호 효과 — 모든 물고기/배틀/경제에 일괄 적용
+function accTitleEf(){const t=FG.equippedTitle?TITLE_POOL.find(x=>x.id===FG.equippedTitle):null;return t?t.effect:{};}
+function accTitleObj(){return FG.equippedTitle?TITLE_POOL.find(x=>x.id===FG.equippedTitle):null;}
 
 const LOTTERY_PRIZES=[
   {rank:1,grade:'1등',amount:100000,count:1,  bg:'#FFD700',fg:'#7F4F00'},
@@ -3094,7 +3101,7 @@ function totalIncome(){
   Object.entries(FG.fishes).forEach(([type,data])=>{
     if(data.quantity>0) total+=fIncomeWithSkills(type)*data.quantity;
   });
-  return total;
+  return Math.floor(total*(1+(accTitleEf().income||0))); // 칭호 수입 보너스
 }
 function getAliveSpecies(){return Object.entries(FG.fishes).filter(([,data])=>data.quantity>0);}
 function getTotalFishCount(){return Object.values(FG.fishes).reduce((a,d)=>a+(d.quantity||0),0);}
@@ -4041,12 +4048,13 @@ function fishCalcOffline(seconds){
       const calcSeconds=Math.min(ticks,activeSeconds);
       const inc=Math.floor(calcSeconds/30)*stageIncome;
       totalOff+=inc;
-      // 그 후 포만감 감소
-      f.fullness=Math.max(0,f.fullness-Math.floor(ticks/s.foodRate));
+      // 그 후 포만감 감소 (칭호 포만감 소비 감소 적용)
+      f.fullness=Math.max(0,f.fullness-Math.floor((ticks/s.foodRate)*(1-(accTitleEf().foodRate||0))));
       // HP 오프라인 감소 없음 — 복귀 후 실시간 틱이 정상 처리
       if(_isYwFish({type:type})) f.xp+=Math.floor(ticks/10)*s.xpRate*0.5;
     });
   });
+  totalOff=Math.floor(totalOff*(1+(accTitleEf().income||0))); // 칭호 수입 보너스
   FG.money+=totalOff;
   if(totalOff>0){
     document.getElementById('f-status').textContent=`오프라인 보상: +${totalOff}원`;
@@ -4094,6 +4102,7 @@ function fishTick(){
     }
   });
 
+  inc=Math.floor(inc*(1+(accTitleEf().income||0))); // 칭호 수입 보너스
   FG.money+=inc;
   if(inc>0) checkAchievements('money');
   fishRenderInfo();
@@ -4414,6 +4423,8 @@ function fishRenderInfo(){
   document.getElementById('f-food-count').textContent=FG.food.toLocaleString();
   const _bpEl=document.getElementById('f-battle-points');
   if(_bpEl) _bpEl.textContent=(FG.battlePoints||0);
+  const _atEl=document.getElementById('f-acc-title');
+  if(_atEl){const _ato=accTitleObj();if(_ato){const _st=TITLE_RARITY_ST[_ato.rarity]||TITLE_RARITY_ST['일반'];_atEl.style.display='inline-block';_atEl.textContent=`[${_ato.name}]`;_atEl.style.background=_st.bg;_atEl.style.color=_st.fg;}else{_atEl.style.display='none';}}
 
   const list=document.getElementById('f-fish-list');
   if(list){
@@ -4562,34 +4573,36 @@ function renderTitleGacha(results){
   const listEl=document.getElementById('tg-list');
   if(!listEl) return;
   if(owned.length===0){listEl.innerHTML='<div style="font-size:11px;color:#999;text-align:center;padding:16px">보유한 칭호가 없습니다</div>';return;}
-  const rarityOrder=['전설','영웅','희귀','일반'];
+  const rarityOrder=['초월','전설','영웅','희귀','일반'];
   const sorted=[...owned].map(id=>TITLE_POOL.find(t=>t.id===id)).filter(Boolean).sort((a,b)=>rarityOrder.indexOf(a.rarity)-rarityOrder.indexOf(b.rarity));
   listEl.innerHTML=sorted.map(t=>{
     const st=TITLE_RARITY_ST[t.rarity]||TITLE_RARITY_ST['일반'];
-    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#FAFAFA;border:1px solid #E8E8E8;border-radius:5px">
+    const equipped=(FG.equippedTitle||null)===t.id;
+    return `<div onclick="titleEquip('${t.id}')" title="클릭하여 계정에 장착" style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:${equipped?'#EFF6FF':'#FAFAFA'};border:${equipped?'2px solid #2563EB':'1px solid #E8E8E8'};border-radius:5px;cursor:pointer">
       <span style="background:${st.bg};color:${st.fg};font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;flex-shrink:0">${t.rarity}</span>
       <div style="flex:1;min-width:0">
         <div style="font-size:11px;font-weight:700">[${t.name}]</div>
         <div style="font-size:9px;color:#777">${t.efDesc}</div>
       </div>
+      ${equipped?'<span style="font-size:9px;color:#2563EB;font-weight:700;flex-shrink:0">장착 중</span>':'<span style="font-size:9px;color:#aaa;flex-shrink:0">장착</span>'}
     </div>`;
   }).join('');
 }
-function openTitleEquip(fishIdx){
-  const f=FG.fishes[fishIdx];if(!f) return;
-  const s=fStage(f);
+// 계정(아이디) 칭호 장착 모달 — 장착한 칭호가 모든 물고기/배틀/수입에 적용
+function openTitleEquip(){
+  const cur=accTitleObj();
   const nameEl=document.getElementById('te-fish-name');
-  if(nameEl) nameEl.textContent=`🐟 #${fishIdx+1} ${s.name}  현재 칭호: ${f.title?(('['+( TITLE_POOL.find(t=>t.id===f.title)||{}).name+']')||'없음'):'없음'}`;
+  if(nameEl) nameEl.textContent=`👤 계정 칭호 (모든 물고기·배틀·수입에 적용)  현재: ${cur?'['+cur.name+']':'없음'}`;
   const listEl=document.getElementById('te-list');
   if(!listEl) return;
   const owned=FG.titles||[];
   if(owned.length===0){listEl.innerHTML='<div style="font-size:11px;color:#999;text-align:center;padding:16px">보유 칭호 없음<br><span style="font-size:10px">BP샵 → 칭호 가챠에서 뽑으세요</span></div>';showDlg('title-equip-modal');return;}
-  const rarityOrder=['전설','영웅','희귀','일반'];
+  const rarityOrder=['초월','전설','영웅','희귀','일반'];
   const sorted=[...owned].map(id=>TITLE_POOL.find(t=>t.id===id)).filter(Boolean).sort((a,b)=>rarityOrder.indexOf(a.rarity)-rarityOrder.indexOf(b.rarity));
   listEl.innerHTML=[{id:null,name:'없음',rarity:'일반',efDesc:'칭호 해제'},...sorted].map(t=>{
     const st=t.id?TITLE_RARITY_ST[t.rarity]:null;
-    const equipped=f.title===t.id;
-    return `<div onclick="titleEquip(${fishIdx},'${t.id}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:${equipped?'#EFF6FF':'#FAFAFA'};border:${equipped?'2px solid #2563EB':'1px solid #E8E8E8'};border-radius:6px;cursor:pointer">
+    const equipped=(FG.equippedTitle||null)===t.id;
+    return `<div onclick="titleEquip('${t.id}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:${equipped?'#EFF6FF':'#FAFAFA'};border:${equipped?'2px solid #2563EB':'1px solid #E8E8E8'};border-radius:6px;cursor:pointer">
       ${t.id?`<span style="background:${st.bg};color:${st.fg};font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;flex-shrink:0">${t.rarity}</span>`:'<span style="font-size:14px">❌</span>'}
       <div style="flex:1">
         <div style="font-size:11px;font-weight:700">${t.id?`[${t.name}]`:t.name}</div>
@@ -4600,13 +4613,15 @@ function openTitleEquip(fishIdx){
   }).join('');
   showDlg('title-equip-modal');
 }
-function titleEquip(fishIdx,titleId){
-  const f=FG.fishes[fishIdx];if(!f) return;
-  f.title=(!titleId||f.title===titleId)?null:titleId;
+function titleEquip(titleId){
+  const id=(titleId==='null'||!titleId)?null:titleId;
+  FG.equippedTitle=(id&&FG.equippedTitle===id)?null:id; // 같은 칭호 다시 누르면 해제
   fishQuickSave();
   hideDlg('title-equip-modal');
-  showFishDetail(fishIdx);
+  if(document.getElementById('title-gacha-modal')?.classList.contains('on')) renderTitleGacha(null);
+  if(_fdType&&FG.fishes[_fdType]?.fish?.[_fdIdx]) showFishDetail(_fdType,_fdIdx);
   fishRenderInfo();
+  u1Toast(FG.equippedTitle?`👤 칭호 장착: [${accTitleObj()?.name}]`:'칭호 해제됨','#2563EB');
 }
 function showDlg(id){document.getElementById(id)?.classList.add('on');}
 
@@ -4981,8 +4996,8 @@ function showFishDetail(typeOrIdx, fishIndex){
   const s=fStage(f);
   const isYw=_isYwFish(f);
   const ywLv=f.level||1;
-  const _fdTitleObj=f.title?TITLE_POOL.find(t=>t.id===f.title):null;
-  const tef=_titleEf(f); const as=1+(tef.allStat||0);
+  const _fdTitleObj=accTitleObj();
+  const tef=accTitleEf(); const as=1+(tef.allStat||0);
   const _fdTitleBadge=document.getElementById('fd-title-badge');
   if(_fdTitleBadge){
     if(_fdTitleObj){const _st=TITLE_RARITY_ST[_fdTitleObj.rarity];_fdTitleBadge.textContent=`[${_fdTitleObj.name}]`;_fdTitleBadge.style.color=_st.fg;_fdTitleBadge.style.background=_st.bg;_fdTitleBadge.style.padding='1px 5px';_fdTitleBadge.style.borderRadius='3px';}
@@ -5597,7 +5612,7 @@ function fishSave(isDisconnect){
     money:FG.money,food:FG.food,spFood:FG.spFood,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,
     rods:FG.rods,skillInventory:FG.skillInventory,
-    achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],
+    achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],equippedTitle:FG.equippedTitle||null,
     stocks:FG.stocks,
     stoppedByDisconnect:isDisconnect||false,lastSave:serverNow()
   };
@@ -5673,6 +5688,7 @@ function fishLoad(){
     FG.skillInventory=d.skillInventory||{};
     FG.achievements=d.achievements||{};
     FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.fusionCrystals=d.fusionCrystals||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;FG.titles=d.titles||[];
+    FG.equippedTitle=d.equippedTitle||null;
     const _eh2=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,{shares:0,avgCost:0}]));
     const _er2=()=>Object.fromEntries(Object.keys(STOCKS_DEF).map(k=>[k,0]));
     FG.stocks=d.stocks||{holdings:_eh2(),realized:_er2(),divTick:_stockCurrentTick()};
@@ -8615,8 +8631,8 @@ function startBattleGame(){
   btMyFishData=_btSource.map(f=>{
     const s=fStage(f);
     const isYwF=_isYwFish(f);
-    // 칭호 배틀 스탯 적용
-    const tef=_titleEf(f); const as=1+(tef.allStat||0);
+    // 칭호 배틀 스탯 적용 (계정 칭호 → 출전 전원에 적용)
+    const tef=accTitleEf(); const as=1+(tef.allStat||0);
     const baseAtk=isYwF?s.atk+(f.bonusAtk||0)*YW_PER_PT.atk:s.atk;
     const baseDef=isYwF?s.def+(f.bonusDef||0)*YW_PER_PT.def:s.def;
     const baseAgi=isYwF?s.agi+(f.bonusAgi||0)*YW_PER_PT.agi:s.agi;
@@ -8631,7 +8647,7 @@ function startBattleGame(){
       luk:Math.floor(baseLuk*(1+(tef.luk||0))*as),
       color:s.color,fin:s.fin,species:s.species,fullness:f.fullness||80,
       skill1:f.skill1||null,skill2:f.skill2||null,
-      title:f.title||null,
+      title:FG.equippedTitle||null,
       ...(isYwF?{level:f.level||1}:{})};
   });
   if(!btMyFishData.length){
