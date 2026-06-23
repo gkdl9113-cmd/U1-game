@@ -570,7 +570,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 </div>
 
 <!-- 물고기 상세창 -->
-<div class="xl-dlg-ov" id="fish-detail-modal" style="display:none;align-items:center;justify-content:center" onclick="if(event.target===this) hideDlg('fish-detail-modal')">
+<div class="xl-dlg-ov" id="fish-detail-modal" onclick="if(event.target===this) hideDlg('fish-detail-modal')">
   <div class="xl-dlg" style="min-width:260px;max-height:85dvh;display:flex;flex-direction:column;overflow:hidden">
     <div class="xl-dlg-title" style="background:#1F3864;flex-shrink:0">🐟 물고기 정보 <button class="xl-dlg-x" onclick="hideDlg('fish-detail-modal')">✕</button></div>
     <div class="xl-dlg-body" style="padding:12px;flex:1;overflow-y:auto;min-height:0">
@@ -5029,11 +5029,11 @@ function showFishDetail(typeOrIdx, fishIndex){
       :`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px">
           <span style="color:#004D40;font-weight:700">🐢 Lv.${ywLv} → ${ywLv+1}</span>
           <span style="color:#555">⭐ ${Math.floor(f.xp)}/${xpNeedYw}</span>
-          <button onclick="ywFeedSpecial(${idx})" style="background:${FG.spFood>0?'#5D4037':'#9E9E9E'};color:#FFE0B2;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:${FG.spFood>0?'pointer':'default'};font-family:inherit">🍖 특수먹이 (${FG.spFood}개)</button>
+          <button onclick="ywFeedSpecial(${_fdIdx})" style="background:${FG.spFood>0?'#5D4037':'#9E9E9E'};color:#FFE0B2;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:${FG.spFood>0?'pointer':'default'};font-family:inherit">🍖 특수먹이 (${FG.spFood}개)</button>
           ${canUp
-            ?`<button onclick="ywLevelUp(${idx})" style="background:#004D40;color:#FFD700;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">⬆️ 레벨업 (💰${ywGoldCost(f).toLocaleString()}원)</button>`
+            ?`<button onclick="ywLevelUp(${_fdIdx})" style="background:#004D40;color:#FFD700;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">⬆️ 레벨업 (💰${ywGoldCost(f).toLocaleString()}원)</button>`
             :`<span style="color:#888;font-size:9px">비용 💰${ywGoldCost(f).toLocaleString()}원</span>`}
-          ${hasPts?`<button onclick="ywOpenStatAlloc(${idx})" style="background:#C05000;color:#fff;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">📊 스탯배분 (${f.statPoints}pts)</button>`:''}
+          ${hasPts?`<button onclick="ywOpenStatAlloc(${_fdIdx})" style="background:#C05000;color:#fff;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">📊 스탯배분 (${f.statPoints}pts)</button>`:''}
         </div>`;
   } else if(f.stage<5){
     evoEl.innerHTML=`진화 조건: ⭐${Math.floor(f.xp)}/${s.xpNeed} | 💰${s.evoCost}원`;
