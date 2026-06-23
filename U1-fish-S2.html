@@ -8339,7 +8339,8 @@ function adminOpenEdit(username,server){
       if(error||!data){alert('데이터 로드 실패: '+(error?.message||'없음'));return;}
       _admEditTarget={username,server,fish_data:data.fish_data||{}};
       const fd=data.fish_data||{};
-      const alive=_fdFlatFish(fd).map(e=>e.f).filter(f=>!f.isDead);
+      const flat=_fdFlatFish(fd);
+      const alive=flat.map(e=>e.f).filter(f=>!f.isDead);
       const best=[...alive].sort((a,b)=>(b.stage||0)-(a.stage||0))[0];
       // 참고용 단계 표시
       const stageEl=document.getElementById('adm-edit-stage');
@@ -8351,7 +8352,7 @@ function adminOpenEdit(username,server){
       // 물고기 현황
       document.getElementById('adm-edit-title').innerHTML=
         `유저: <strong>${esc(username)}</strong> (${server})<br>
-        <span style="font-size:10px;color:#888">생존 ${alive.length}마리 / 전체 ${fishes.length}마리 | 💰${(fd.money||0).toLocaleString()}원 🍤${fd.food||0} 🍖${fd.spFood||0} ⚔️${fd.battlePoints||0}BP</span>`;
+        <span style="font-size:10px;color:#888">생존 ${alive.length}마리 / 전체 ${flat.length}마리 | 💰${(fd.money||0).toLocaleString()}원 🍤${fd.food||0} 🍖${fd.spFood||0} ⚔️${fd.battlePoints||0}BP</span>`;
       document.getElementById('adm-edit-modal').classList.add('on');
     });
 }
