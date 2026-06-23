@@ -2319,6 +2319,7 @@ function applyFishData(d){
   FG.money=d.money??100;FG.food=d.food??5;FG.spFood=d.spFood??0;
   FG.tankLevel=d.tankLevel??0;FG.tankMax=d.tankMax??1;
   FG.auxFishes=Array.isArray(d.auxFishes)?d.auxFishes:[];FG.auxMax=d.auxMax??AUX_MAX_DEFAULT;
+  _normalizeAllFish(); // 옛/관리자 지급 물고기 스탯 누락 백필
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
   FG.inventory=Object.assign({bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},d.inventory||{});
   FG.equipment=d.equipment||{equippedRod:null};
@@ -3126,6 +3127,28 @@ function getSpeciesData(type){return FG.fishes[type]||{quantity:0,level:1,exp:0}
 function fStage(arg){
   if(arg&&typeof arg==='object'){const sp=F_SPECIES[arg.type||'goldfish']||F_SPECIES.goldfish;return sp[arg.stage||1]||sp[1];}
   const sp=F_SPECIES[arg||'goldfish']||F_SPECIES.goldfish;return sp[1];
+}
+// 누락 필드(옛/관리자 지급 물고기) 종 정보로 백필 — 로드 시 정규화
+function _normalizeFish(f,type){
+  if(!f||typeof f!=='object') return f;
+  if(!f.type) f.type=type||'goldfish';
+  if(f.stage==null) f.stage=1;
+  const sp=F_SPECIES[f.type]||F_SPECIES.goldfish;
+  const s=sp[f.stage]||sp[1];
+  if(f.maxHp==null) f.maxHp=s.hp;
+  if(f.hp==null) f.hp=f.maxHp;
+  if(f.atk==null) f.atk=s.atk;
+  if(f.def==null) f.def=s.def;
+  if(f.agi==null) f.agi=s.agi;
+  if(f.luk==null) f.luk=s.luk;
+  if(f.grade==null) f.grade=s.grade;
+  if(f.fullness==null) f.fullness=80;
+  if(f.isDead==null) f.isDead=false;
+  return f;
+}
+function _normalizeAllFish(){
+  Object.entries(FG.fishes||{}).forEach(([type,d])=>{ if(d&&Array.isArray(d.fish)) d.fish.forEach(f=>_normalizeFish(f,type)); });
+  if(Array.isArray(FG.auxFishes)) FG.auxFishes.forEach(f=>_normalizeFish(f,f&&f.type));
 }
 function fishStage(){return F_STAGES[1];}
 function _isYwFish(f){return f.type==='yongwang'||f.type==='yeongeum'||f.type==='eelyw'||f.type==='haelyong'||f.type==='megalodonte'||f.type==='geumlin';}
@@ -4325,20 +4348,36 @@ function fishCheckEvoReady(){
   const btn=document.getElementById('f-evo-btn');
   if(btn){btn.style.opacity=canEvo?'1':'0.4';btn.style.outline=canEvo?'2px solid #217346':'none';}
 }
-// 진화: 같은 종류·같은 단계 3마리 조합 → 1마리 상위 단계 (확률적 점프)
+// 진화 확률표 (시작단계별: p1=+1단계 성공, p2=+2단계 성공, 나머지=실패)
+const EVO_P={
+  1:{p1:0.60,p2:0.10}, // 실패 30%
+  2:{p1:0.50,p2:0.10}, // 실패 40%
+  3:{p1:0.40,p2:0.10}, // 실패 50%
+  4:{p1:0.20,p2:0.00}, // 실패 80%
+};
+// 진화: 같은 종류·같은 단계 3마리 조합 → 확률적으로 상위 단계 1마리(실패 시 소멸)
 function combineEvolve(type,stage){
   const data=FG.fishes[type]; if(!data||!Array.isArray(data.fish)) return false;
-  if((stage||1)>=5){u1Toast('이미 최고 단계입니다!','#C05000');return false;}
   const maxStage=(F_SPECIES[type]||[]).length-1;
-  if(stage>=maxStage){u1Toast('이미 최고 단계입니다!','#C05000');return false;}
+  if((stage||1)>=maxStage){u1Toast('이미 최고 단계입니다!','#C05000');return false;}
   const sameIdx=data.fish.map((x,i)=>({x,i})).filter(o=>!o.x.isDead&&(o.x.stage||1)===stage).map(o=>o.i);
   if(sameIdx.length<3){u1Toast(`같은 단계 3마리 필요 (현재 ${sameIdx.length}마리)`,'#C00000');return false;}
+  const nameStart=(F_SPECIES[type][stage]||{}).name||type;
   // 3마리 소모 (역순 splice)
   sameIdx.slice(0,3).sort((a,b)=>b-a).forEach(i=>data.fish.splice(i,1));
   data.quantity=Math.max(0,(data.quantity||0)-3);
-  // 단계 점프: +1(60%) / +2(30%) / +3(10%), 최대 단계 한계
+  // 확률 판정
+  const cfg=EVO_P[stage]||{p1:0.5,p2:0.1};
   const r=Math.random();
-  const jump=r<0.6?1:(r<0.9?2:3);
+  let jump=0;
+  if(r<cfg.p1) jump=1; else if(r<cfg.p1+cfg.p2) jump=2;
+  if(jump===0){
+    // 실패: 3마리 소진, 결과 없음
+    FG.totalEvos++;
+    fishRenderInfo(); fishQuickSave();
+    u1Toast(`💥 진화 실패! ${nameStart} 3마리를 잃었습니다`,'#C00000');
+    return true;
+  }
   const newStage=Math.min(maxStage,stage+jump);
   const nf=createNewFish(type,newStage);
   data.fish.push(nf); data.quantity=(data.quantity||0)+1;
@@ -4551,7 +4590,7 @@ function fishRenderInfo(){
         const stage=f.stage||1;
         const spec=F_SPECIES[type]&&F_SPECIES[type][stage]?F_SPECIES[type][stage]:s;
         const fname=spec.name||s.name;
-        return `<div style="padding:6px;background:#F9F9F9;border-radius:4px;margin-bottom:4px;cursor:pointer;border:1px solid #DDD;transition:all 0.2s" onmouseover="this.style.background='#E8F5E9'" onmouseout="this.style.background='#F9F9F9'" onclick="showFishDetail('${type}',${i})"><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700"><span>${fname}</span><span>❤️${f.hp}/${f.maxHp}</span></div><div style="font-size:9px;color:#F57C00;margin-top:2px">🍖 포만감 ${f.fullness}/100</div><div style="display:flex;justify-content:space-around;font-size:9px;color:#666;margin-top:3px"><span>⚔️${f.atk}</span><span>🛡️${f.def}</span><span>⚡${f.agi}</span><span>✨${f.luk}</span></div></div>`;
+        return `<div style="padding:6px;background:#F9F9F9;border-radius:4px;margin-bottom:4px;cursor:pointer;border:1px solid #DDD;transition:all 0.2s" onmouseover="this.style.background='#E8F5E9'" onmouseout="this.style.background='#F9F9F9'" onclick="showFishDetail('${type}',${i})"><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700"><span>${fname}</span><span>❤️${Math.ceil(f.hp??spec.hp)}/${f.maxHp??spec.hp}</span></div><div style="font-size:9px;color:#F57C00;margin-top:2px">🍖 포만감 ${Math.floor(f.fullness??80)}/100</div><div style="display:flex;justify-content:space-around;font-size:9px;color:#666;margin-top:3px"><span>⚔️${f.atk??spec.atk}</span><span>🛡️${f.def??spec.def}</span><span>⚡${f.agi??spec.agi}</span><span>✨${f.luk??spec.luk}</span></div></div>`;
       }).join(''):'<div style="font-size:9px;color:#999;padding:6px">물고기 정보 없음</div>';
 
       return `<div style="padding:8px;background:#fff;border-bottom:1px solid #E8E8E8">
@@ -5186,9 +5225,12 @@ function showFishDetail(typeOrIdx, fishIndex){
             :`<span style="color:#888;font-size:9px">비용 💰${ywGoldCost(f).toLocaleString()}원</span>`}
           ${hasPts?`<button onclick="ywOpenStatAlloc(${_fdIdx})" style="background:#C05000;color:#fff;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">📊 스탯배분 (${f.statPoints}pts)</button>`:''}
         </div>`;
-  } else if((f.stage||1)<5){
-    const _cnt=(typeData.fish||[]).filter(x=>!x.isDead&&(x.stage||1)===(f.stage||1)).length;
-    evoEl.innerHTML=`🧬 같은 단계 <strong>3마리 조합</strong> 진화 (보유 ${_cnt}/3마리)`;
+  } else if((f.stage||1)<((F_SPECIES[_fdType]||[]).length-1)){
+    const _st=f.stage||1;
+    const _cnt=(typeData.fish||[]).filter(x=>!x.isDead&&(x.stage||1)===_st).length;
+    const _ev=EVO_P[_st]||{p1:0.5,p2:0.1};
+    const _succ=Math.round((_ev.p1+_ev.p2)*100);
+    evoEl.innerHTML=`🧬 같은 단계 <strong>3마리 조합</strong> 진화 (보유 ${_cnt}/3마리) · 성공 ${_succ}%`;
   } else {
     evoEl.textContent='🏆 최고 단계';
   }
@@ -5801,6 +5843,7 @@ function fishLoad(){
     FG.autoFeeders=d.autoFeeders||[];
     FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||15;
     FG.auxFishes=Array.isArray(d.auxFishes)?d.auxFishes:[];FG.auxMax=d.auxMax??AUX_MAX_DEFAULT;
+    _normalizeAllFish();
     FG.skillInventory=d.skillInventory||{};
     FG.achievements=d.achievements||{};
     FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.fusionCrystals=d.fusionCrystals||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;FG.titles=d.titles||[];
