@@ -3168,7 +3168,8 @@ function fishPause(){
 }
 function fishResume(){
   if(!FG.paused) return; FG.paused=false;
-  if(FG.pausedAt){const el=(Date.now()-FG.pausedAt)/1000;if(el>5)fishCalcOffline(el);FG.pausedAt=null;}
+  // 오프라인 수익/포만감 감소는 visibilitychange 핸들러(_applyOfflineElapsed)에서 단 한 번만 처리
+  FG.pausedAt=null;
   fishStartLoops(); fishRenderInfo();
   document.getElementById('f-status').textContent='▶ 재개';
   setTimeout(()=>fishUpdateStatus(),2000);
@@ -3223,7 +3224,7 @@ document.addEventListener('visibilitychange',()=>{
     if(FG.plazaFishIds[2]) _plzS[2].hiddenAt=Date.now();
   } else {
     const savedAt=_tabHiddenAt||parseInt(localStorage.getItem('_tabHiddenAt')||'0');
-    if(savedAt&&fishActive) _applyOfflineElapsed(savedAt);
+    if(savedAt&&currentUsername&&myName) _applyOfflineElapsed(savedAt); // 복귀 시 오프라인 1회 처리(로그인 상태면)
     // 광장: 복귀 시 경과 시간만큼 수입 보상 후 루프 재시작
     [1,2].forEach(pid=>{
       if(!FG.plazaFishIds[pid]) return;
