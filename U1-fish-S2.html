@@ -2805,12 +2805,12 @@ const F_SHOP=[
 const BAIT_ORDER=['bait_common','bait_normal','bait_high','bait_rare','bait_hero','bait_legend'];
 const ROD_ORDER=['rod1','rod2','rod3','rod4','rod5','rod6'];
 const ROD_TIERS={
-  rod1:{tier:1,name:'나무 낚시대',  gauge:0.30,maxDur:100,fragToNext:'frag_rod2',upMoney:5000},
-  rod2:{tier:2,name:'반카본 낚시대',gauge:0.34,maxDur:120,fragToNext:'frag_rod3',upMoney:20000},
-  rod3:{tier:3,name:'카본 낚시대',  gauge:0.38,maxDur:140,fragToNext:'frag_rod4',upMoney:50000},
-  rod4:{tier:4,name:'글래스 낚시대',gauge:0.42,maxDur:160,fragToNext:'frag_rod5',upMoney:120000},
-  rod5:{tier:5,name:'티타늄 낚시대',gauge:0.46,maxDur:180,fragToNext:'frag_rod6',upMoney:300000},
-  rod6:{tier:6,name:'다이아 낚시대',gauge:0.50,maxDur:200,fragToNext:null,    upMoney:0},
+  rod1:{tier:1,name:'나무 낚시대',  gauge:0.30,maxDur:100,fragToNext:'frag_rod2',upMoney:5000,  enhMul:1},
+  rod2:{tier:2,name:'반카본 낚시대',gauge:0.34,maxDur:120,fragToNext:'frag_rod3',upMoney:20000, enhMul:2},
+  rod3:{tier:3,name:'카본 낚시대',  gauge:0.38,maxDur:140,fragToNext:'frag_rod4',upMoney:50000, enhMul:4},
+  rod4:{tier:4,name:'글래스 낚시대',gauge:0.42,maxDur:160,fragToNext:'frag_rod5',upMoney:120000,enhMul:8},
+  rod5:{tier:5,name:'티타늄 낚시대',gauge:0.46,maxDur:180,fragToNext:'frag_rod6',upMoney:300000,enhMul:16},
+  rod6:{tier:6,name:'다이아 낚시대',gauge:0.50,maxDur:200,fragToNext:null,    upMoney:0,     enhMul:32},
 };
 const FRAG_NAMES={frag_rod2:'반카본 조각',frag_rod3:'카본 조각',frag_rod4:'글래스 조각',frag_rod5:'티타늄 조각',frag_rod6:'다이아 조각'};
 const ROD_ENHANCE_MAX=10;     // 최대 강화 단계
@@ -6605,7 +6605,7 @@ function shopBuyRod(rodId){
 
 // S2 낚시대 강화/승급 (강화=돈, 승급=조각+돈)
 function rodName(id){return ROD_TIERS[id]?.name||'낚시대';}
-function rodEnhanceCost(rod){return (rod.level+1)*1000;}
+function rodEnhanceCost(rod){return (rod.level+1)*1000*(ROD_TIERS[rod.id]?.enhMul||1);}
 function rodEnhance(){
   const rod=FG.equipment?.equippedRod; if(!rod) return;
   if(rod.level>=ROD_ENHANCE_MAX){u1Toast('이미 +10강입니다. 승급하세요!','#C05000');return;}
