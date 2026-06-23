@@ -2827,11 +2827,11 @@ const F_SHOP=[
 const BAIT_ORDER=['bait_common','bait_normal','bait_high','bait_rare','bait_hero','bait_legend'];
 const ROD_ORDER=['rod1','rod2','rod3','rod4','rod5','rod6'];
 const ROD_TIERS={
-  rod1:{tier:1,name:'나무 낚시대',  gauge:0.30,maxDur:100,fragToNext:'frag_rod2',upMoney:5000,  enhMul:1},
-  rod2:{tier:2,name:'반카본 낚시대',gauge:0.34,maxDur:120,fragToNext:'frag_rod3',upMoney:20000, enhMul:2},
-  rod3:{tier:3,name:'카본 낚시대',  gauge:0.38,maxDur:140,fragToNext:'frag_rod4',upMoney:50000, enhMul:4},
-  rod4:{tier:4,name:'글래스 낚시대',gauge:0.42,maxDur:160,fragToNext:'frag_rod5',upMoney:120000,enhMul:8},
-  rod5:{tier:5,name:'티타늄 낚시대',gauge:0.46,maxDur:180,fragToNext:'frag_rod6',upMoney:300000,enhMul:16},
+  rod1:{tier:1,name:'나무 낚시대',  gauge:0.10,maxDur:100,fragToNext:'frag_rod2',upMoney:5000,  enhMul:1},
+  rod2:{tier:2,name:'반카본 낚시대',gauge:0.18,maxDur:120,fragToNext:'frag_rod3',upMoney:20000, enhMul:2},
+  rod3:{tier:3,name:'카본 낚시대',  gauge:0.26,maxDur:140,fragToNext:'frag_rod4',upMoney:50000, enhMul:4},
+  rod4:{tier:4,name:'글래스 낚시대',gauge:0.34,maxDur:160,fragToNext:'frag_rod5',upMoney:120000,enhMul:8},
+  rod5:{tier:5,name:'티타늄 낚시대',gauge:0.42,maxDur:180,fragToNext:'frag_rod6',upMoney:300000,enhMul:16},
   rod6:{tier:6,name:'다이아 낚시대',gauge:0.50,maxDur:200,fragToNext:null,    upMoney:0,     enhMul:32},
 };
 const FRAG_NAMES={frag_rod2:'반카본 조각',frag_rod3:'카본 조각',frag_rod4:'글래스 조각',frag_rod5:'티타늄 조각',frag_rod6:'다이아 조각'};
@@ -2850,6 +2850,29 @@ const BAIT_GRADE_TABLE={
   bait_hero:[{grade:'고급',w:20},{grade:'희귀',w:50},{grade:'영웅',w:30}],
   bait_legend:[{grade:'희귀',w:20},{grade:'영웅',w:50},{grade:'전설',w:30}],
 };
+// 미끼별 낚시 성공/등급 확률 — 낚시대 강화 레벨(0~10)에 따라 +0강→+10강 선형 보간
+// gA=하위등급(주력), gB=상위등급(고확률 보너스). 총 성공률 = pA+pB, 나머지는 실패.
+const BAIT_CATCH={
+  bait_common:{gA:'일반', pA0:0.70,pA10:0.80},                                  // 하급: 일반 70→80%
+  bait_normal:{gA:'일반', pA0:0.60,pA10:0.50, gB:'중급', pB0:0.20,pB10:0.40},   // 중급: 일반/중급
+  bait_high:  {gA:'중급', pA0:0.60,pA10:0.50, gB:'고급', pB0:0.20,pB10:0.40},   // 고급: 중급/고급
+  bait_rare:  {gA:'고급', pA0:0.60,pA10:0.50, gB:'희귀', pB0:0.20,pB10:0.40},   // 희귀: 고급/희귀
+  bait_hero:  {gA:'희귀', pA0:0.60,pA10:0.50, gB:'영웅', pB0:0.20,pB10:0.40},   // 영웅: 희귀/영웅
+  bait_legend:{gA:'영웅', pA0:0.60,pA10:0.50, gB:'전설', pB0:0.20,pB10:0.40},   // 전설: 영웅/전설
+};
+// 타이밍 성공 후 호출: 미끼+강화레벨로 성공 여부와 잡힌 등급 결정
+function _baitCatchResult(baitId,rodLevel){
+  const c=BAIT_CATCH[baitId];
+  if(!c) return {success:Math.random()<0.5,grade:'일반'};
+  const L=Math.max(0,Math.min(ROD_ENHANCE_MAX,rodLevel||0))/ROD_ENHANCE_MAX;
+  const lerp=(a,b)=>a+(b-a)*L;
+  const pA=lerp(c.pA0,c.pA10);
+  const pB=c.gB?lerp(c.pB0,c.pB10):0;
+  const r=Math.random();
+  if(c.gB&&r<pB) return {success:true,grade:c.gB};   // 상위 등급
+  if(r<pB+pA)    return {success:true,grade:c.gA};   // 하위 등급
+  return {success:false};
+}
 // 미끼 어종 → 영물 확률표 (normal=일반구간, special=황금구간)
 const BAIT_YW_TABLE={
   turtle:{main:{type:'yongwang',stage:1},normal:{mainProb:0.01,otherProb:0.005},special:{mainProb:0.05,otherProb:0.010}},
@@ -3689,11 +3712,10 @@ function _endFishingDrag(e){
   }
 
   if(FMG.usedBait){
-    const baitProbs={bait_common:0.5,bait_rare:0.65,bait_hero:0.85};
-    const prob=baitProbs[FMG.usedBait]||0.5;
-    if(Math.random()<prob){
-      const gradeTable=BAIT_GRADE_TABLE[FMG.usedBait]||rod.grades;
-      const {type:picked,stage:pickedStage}=pickSpeciesByGrade(gradeTable);
+    const rodLv=FG.equipment?.equippedRod?.level||0;
+    const res=_baitCatchResult(FMG.usedBait,rodLv);
+    if(res.success){
+      const {type:picked,stage:pickedStage}=pickSpeciesByGrade([{grade:res.grade,w:100}]);
       updateFishCodex(picked,pickedStage);
       // 올바른 등급으로 물고기 추가
       if(!FG.fishes[picked]) FG.fishes[picked]={quantity:0,level:1,exp:0,fish:[]};
@@ -3708,7 +3730,7 @@ function _endFishingDrag(e){
       document.getElementById('frow-sp').textContent=cs.name;
       _fishingShowResult(true,`🎣 ${cs.name} 낚았습니다!`,cs.grade);
     } else {
-      _fishingShowResult(false,'거의 다 왔는데... 물고기가 빠져나갔습니다 🐟💨');
+      _fishingShowResult(false,'아깝다! 물고기가 빠져나갔습니다 🐟💨');
     }
   } else {
     _baitFallbackCatch(rod,false);
