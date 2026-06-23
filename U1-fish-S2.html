@@ -4069,10 +4069,10 @@ function fishTick(){
   Object.entries(FG.fishes).forEach(([type,data])=>{
     if(data.quantity<=0||!data.fish) return;
 
-    // 개별 물고기별 수입 계산 (stage 반영, 포만감 0이면 수익 없음)
+    // 개별 물고기별 수입 계산 (stage 반영) — 온라인 수익은 포만감 무관(오프라인에만 영향)
     let typeIncome=0;
     data.fish.forEach(f=>{
-      if(f.isDead||f.fullness<=0) return; // 포만감 0이면 수익 없음
+      if(f.isDead) return; // 살아있으면 포만감과 무관하게 온라인 수익 발생
       const stageIncome=STAGE_INCOME[type]?.[f.stage]||2;
       typeIncome+=stageIncome;
     });
