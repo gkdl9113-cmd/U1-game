@@ -1641,6 +1641,29 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
+<!-- 칭호 지급 모달 -->
+<div class="xl-dlg-ov" id="adm-title-modal">
+  <div class="adm-modal-dark" style="min-width:360px;max-width:440px">
+    <div class="adm-modal-hdr">🏅 칭호 지급 <button onclick="hideDlg('adm-title-modal')" style="background:none;border:none;color:#7A9BBF;cursor:pointer;font-size:16px;padding:0">✕</button></div>
+    <div class="adm-modal-body">
+      <div id="adm-title-target" style="font-size:12px;color:#A0C4E8;margin-bottom:12px"></div>
+      <div class="adm-form-row">
+        <label>🏅 칭호</label>
+        <select class="adm-form-select" id="adm-title-sel"></select>
+      </div>
+      <div class="adm-form-row" style="border-bottom:none;display:flex;align-items:center;gap:8px">
+        <label style="margin:0">바로 장착</label>
+        <input type="checkbox" id="adm-title-equip" checked style="width:18px;height:18px;cursor:pointer">
+      </div>
+      <div id="adm-title-owned" style="margin:10px 0;padding:8px;background:#0F1724;border-radius:4px;font-size:11px;color:#7A9BBF;min-height:38px"></div>
+      <div class="adm-btn-row">
+        <button class="adm-btn secondary" onclick="hideDlg('adm-title-modal')">취소</button>
+        <button class="adm-btn primary" onclick="adminGiveTitle()" style="background:#3D2E0A;color:#FBBF24">🏅 지급</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 상사 크리 보스키 오버레이 -->
 <div id="boss-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#fff;overflow:auto;font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:clamp(10px,1.4vw,14px);color:#000">
   <div style="background:#217346;color:#fff;padding:3px 10px;font-size:11px;display:flex;justify-content:space-between;flex-shrink:0">
@@ -2496,7 +2519,7 @@ function sendChallenge(game){
   if((game==='battle'||game==='legend_battle')&&isBattleBlocked(myName,challengeTarget.name)){u1Toast(`🚫 해당 상대와의 배틀은 제한되어 있습니다.`,'#C00000');return;}
   if((game==='battle'||game==='legend_battle')&&_btDailyCount()>=DAILY_BATTLE_LIMIT){u1Toast(`오늘 배틀 횟수(${DAILY_BATTLE_LIMIT}판)를 모두 사용했습니다. 내일 다시 도전하세요.`,'#C00000');return;}
   if(game==='legend_battle'){
-    const hasLegend=_allFishFlat().some(f=>!f.isDead&&LEGEND_BATTLE_GRADES.has(_fishSpec(f).grade));
+    const hasLegend=Object.values(FG.fishes).some(f=>!f.isDead&&LEGEND_BATTLE_GRADES.has(fStage(f).grade));
     if(!hasLegend){u1Toast('👑 전설 이상 물고기가 없으면 전설전을 신청할 수 없습니다.','#C00000');return;}
   }
   sbSend('challenge',{targetId:challengeTarget.id,fromId:myId,fromName:myName,game,digits:4});
@@ -2513,7 +2536,7 @@ function acceptChallenge(){
     u1Toast('배틀이 제한된 계정입니다.','#C00000');return;
   }
   if(pendingChallenge.game==='legend_battle'){
-    const hasLegend=_allFishFlat().some(f=>!f.isDead&&LEGEND_BATTLE_GRADES.has(_fishSpec(f).grade));
+    const hasLegend=Object.values(FG.fishes).some(f=>!f.isDead&&LEGEND_BATTLE_GRADES.has(fStage(f).grade));
     if(!hasLegend){
       sbSend('challenge_reject',{targetId:pendingChallenge.fromId,fromId:myId,fromName:myName});
       pendingChallenge=null;
@@ -4516,7 +4539,7 @@ async function seasonReset(){
       const{data:prev}=await _sb.from('fish_accounts').select('fish_data').eq('username',u).eq('server',ACTIVE_SERVER).eq('season',2).single();
       const hasS1=(prev?.fish_data?.titles||[]).includes('ti_S1군림자');
       const newData=hasS1?{titles:['ti_S1군림자']}:{};
-      await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',u).eq('server',ACTIVE_SERVER);
+      await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',u).eq('server',ACTIVE_SERVER).eq('season',2);
     }
     // 광장 데이터 전체 삭제
     await _sb.from('plaza').delete().neq('user_id','__KEEP__');
@@ -6408,9 +6431,8 @@ function openBattlePick(legendTab){
   if(!FG.legendPick) FG.legendPick=[];
   _btPickLegendMode=legendTab??!!(currentGame&&currentGame.type==='legend_battle');
   // 죽거나 조건 어긋난 물고기 정리
-  const _liveIds=new Set(_allFishFlat().filter(f=>!f.isDead).map(f=>f.id));
-  FG.battlePick=FG.battlePick.filter(p=>p&&_liveIds.has(p.id));
-  FG.legendPick=FG.legendPick.filter(p=>p&&_liveIds.has(p.id)&&LEGEND_BATTLE_GRADES.has(_fishSpec(p).grade));
+  FG.battlePick=FG.battlePick.filter(p=>Object.values(FG.fishes).some(f=>f.id===p.id&&!f.isDead));
+  FG.legendPick=FG.legendPick.filter(p=>Object.values(FG.fishes).some(f=>f.id===p.id&&!f.isDead)&&LEGEND_BATTLE_GRADES.has(fStage(p).grade));
   _applyBtPickTabStyle();
   renderBattlePickGrid();
   document.getElementById('btpick-modal').classList.add('on');
@@ -7957,6 +7979,19 @@ document.addEventListener('keydown',e=>{
 // 관리자
 // ══════════════════════════════════════════════════════════
 let _admEditTarget=null; // {username, server, fish_data}
+// 임의의 fish_data(객체형 fishes)를 개별 물고기 배열로 평탄화 — 관리자 도구 공용
+function _fdFlatFish(fd){
+  const out=[]; const fishes=fd&&fd.fishes;
+  if(fishes&&typeof fishes==='object'&&!Array.isArray(fishes)){
+    for(const[type,d]of Object.entries(fishes)){
+      if(!d||!Array.isArray(d.fish)) continue;
+      d.fish.forEach((f,i)=>{ if(f){ f.type=f.type||type; out.push({f,type,i}); } });
+    }
+  } else if(Array.isArray(fishes)){ // 구버전 배열 호환
+    fishes.forEach((f,i)=>{ if(f) out.push({f,type:f.type||'goldfish',i}); });
+  }
+  return out;
+}
 
 
 let _admGiveTarget=null;
@@ -8063,17 +8098,21 @@ async function adminConfirmGiveFish(){
   if(!s){alert('물고기 정보를 찾을 수 없습니다');return;}
   // DB에서 현재 데이터 로드
   const{data,error}=await _sb.from('fish_accounts').select('fish_data')
-    .eq('username',_admGiveTarget.username).eq('server',_admGiveTarget.server).single();
+    .eq('username',_admGiveTarget.username).eq('server',_admGiveTarget.server).eq('season',2).single();
   if(error||!data){alert('데이터 로드 실패: '+(error?.message||'없음'));return;}
   const fd=data.fish_data||{};
-  const fishes=fd.fishes||[];
-  const newFish={id:'adm_'+Date.now(),type,stage,
+  // 새 모델: fishes[종류].fish[] 에 추가 + quantity 증가
+  if(!fd.fishes||typeof fd.fishes!=='object'||Array.isArray(fd.fishes)) fd.fishes={};
+  if(!fd.fishes[type]) fd.fishes[type]={quantity:0,level:1,exp:0,fish:[]};
+  if(!Array.isArray(fd.fishes[type].fish)) fd.fishes[type].fish=[];
+  const newFish={id:'adm_'+Date.now()+Math.random().toString(36).slice(2),type,stage,
     hp:s.hp,maxHp:s.hp,fullness:80,xp:0,isDead:false};
-  fishes.push(newFish);
-  const newData={...fd,fishes,lastSave:serverNow()};
+  fd.fishes[type].fish.push(newFish);
+  fd.fishes[type].quantity=(fd.fishes[type].quantity||0)+1;
+  const newData={...fd,lastSave:serverNow()};
   const{error:e2}=await _sb.from('fish_accounts')
     .update({fish_data:newData,updated_at:new Date().toISOString()})
-    .eq('username',_admGiveTarget.username).eq('server',_admGiveTarget.server);
+    .eq('username',_admGiveTarget.username).eq('server',_admGiveTarget.server).eq('season',2);
   if(e2){alert('저장 실패: '+e2.message);return;}
   hideDlg('adm-give-modal');
   document.getElementById('adm-status').textContent=
@@ -8088,31 +8127,32 @@ let _admSkillTarget=null; // {username, server, fish_data}
 
 async function adminOpenSkill(username,server){
   const{data,error}=await _sb.from('fish_accounts').select('fish_data')
-    .eq('username',username).eq('server',server).single();
+    .eq('username',username).eq('server',server).eq('season',2).single();
   if(error||!data){alert('데이터 로드 실패: '+(error?.message||'없음'));return;}
   _admSkillTarget={username,server,fish_data:data.fish_data||{}};
   document.getElementById('adm-skill-title').textContent=`${username} (${server})`;
-  // 물고기 목록 셀렉트 채우기
-  const fishes=(_admSkillTarget.fish_data.fishes||[]);
+  // 물고기 목록 셀렉트 채우기 (개별 물고기 평탄화)
+  const flat=_fdFlatFish(_admSkillTarget.fish_data);
+  _admSkillTarget.flat=flat;
   const sel=document.getElementById('adm-skill-fish-sel');
-  sel.innerHTML=fishes.map((f,i)=>{
-    const s=fStage(f);
+  sel.innerHTML=flat.map((e,i)=>{
+    const f=e.f, s=_fishSpec(f);
     const sk=f.skill1?` [${FISH_SKILLS[f.skill1]?.name||f.skill1}]`:'';
     const dead=f.isDead?'💀 ':'🐟 ';
     return `<option value="${i}">${dead}#${i+1} ${s.name} (${s.grade})${sk}</option>`;
   }).join('');
-  if(!fishes.length) sel.innerHTML='<option>물고기 없음</option>';
+  if(!flat.length) sel.innerHTML='<option>물고기 없음</option>';
   adminSkillOnFishChange();
   document.getElementById('adm-skill-modal').classList.add('on');
 }
 
 function adminSkillOnFishChange(){
   const idx=parseInt(document.getElementById('adm-skill-fish-sel').value);
-  const fishes=_admSkillTarget?.fish_data?.fishes||[];
-  const f=fishes[idx];
+  const flat=_admSkillTarget?.flat||[];
+  const f=flat[idx]?.f;
   const sel1=document.getElementById('adm-skill-slot1');
   if(!f){document.getElementById('adm-skill-preview').innerHTML='';sel1.innerHTML='<option value="">없음</option>';return;}
-  const s=fStage(f);
+  const s=_fishSpec(f);
   const fishType=f.type||'goldfish';
   // 전용스킬 (해당 어종만)
   const speciesSkills=Object.entries(FISH_SKILLS).filter(([,sk])=>sk.species===fishType);
@@ -8148,18 +8188,18 @@ async function adminConfirmSkill(){
 
   // Load current data from DB instead of stale _admSkillTarget.fish_data
   const{data:currentRecord,error:fetchErr}=await _sb.from('fish_accounts')
-    .select('fish_data').eq('username',_admSkillTarget.username).eq('server',_admSkillTarget.server).single();
+    .select('fish_data').eq('username',_admSkillTarget.username).eq('server',_admSkillTarget.server).eq('season',2).single();
   if(fetchErr||!currentRecord){alert('데이터 로드 실패');return;}
 
-  const currentFishes=currentRecord.fish_data.fishes||[];
-  if(idx>=currentFishes.length){alert('물고기를 선택하세요');return;}
-
-  if(sk1){currentFishes[idx].skill1=sk1;}else{delete currentFishes[idx].skill1;}
-  if(sk2){currentFishes[idx].skill2=sk2;}else{delete currentFishes[idx].skill2;}
-  const newData={...currentRecord.fish_data,fishes:currentFishes,lastSave:serverNow()};
+  const freshFlat=_fdFlatFish(currentRecord.fish_data);
+  const ent=freshFlat[idx];
+  if(!ent){alert('물고기를 선택하세요');return;}
+  if(sk1){ent.f.skill1=sk1;}else{delete ent.f.skill1;}
+  if(sk2){ent.f.skill2=sk2;}else{delete ent.f.skill2;}
+  const newData={...currentRecord.fish_data,lastSave:serverNow()};
   const{error}=await _sb.from('fish_accounts')
     .update({fish_data:newData,updated_at:new Date().toISOString()})
-    .eq('username',_admSkillTarget.username).eq('server',_admSkillTarget.server);
+    .eq('username',_admSkillTarget.username).eq('server',_admSkillTarget.server).eq('season',2);
   if(error){alert('저장 실패: '+error.message);return;}
   hideDlg('adm-skill-modal');
   const sk1Name=sk1?(FISH_SKILLS[sk1]?.name||sk1):'없음';
@@ -8167,6 +8207,46 @@ async function adminConfirmSkill(){
   document.getElementById('adm-status').textContent=
     `✅ ${_admSkillTarget.username} #${idx+1} 전용:${sk1Name} / 공용:${sk2Name}`;
   sbSend('data_reload',{targetName:_admSkillTarget.username,fromAdmin:ADMIN_USERNAME});
+  adminLoadUsers();
+}
+
+// ── 관리자: 칭호 지급 ──────────────────────────────────────
+let _admTitleTarget=null;
+function adminOpenTitle(username,server){
+  _admTitleTarget={username,server};
+  document.getElementById('adm-title-target').textContent=`▶ ${username} (${server}) 에게 칭호 지급`;
+  const sel=document.getElementById('adm-title-sel');
+  sel.innerHTML=TITLE_POOL.map(t=>`<option value="${t.id}">[${t.rarity}] ${t.name} — ${t.efDesc}</option>`).join('');
+  const ownedEl=document.getElementById('adm-title-owned');
+  ownedEl.textContent='보유 칭호 불러오는 중…';
+  _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).eq('season',2).single()
+    .then(({data})=>{
+      const fd=data?.fish_data||{};
+      const owned=Array.isArray(fd.titles)?fd.titles:[];
+      const eq=fd.equippedTitle;
+      const names=owned.map(id=>TITLE_POOL.find(t=>t.id===id)?.name||id);
+      ownedEl.innerHTML=`보유 칭호 ${owned.length}개: ${names.length?names.map(n=>'['+n+']').join(' '):'없음'}<br>장착 중: ${eq?('['+(TITLE_POOL.find(t=>t.id===eq)?.name||eq)+']'):'없음'}`;
+    });
+  document.getElementById('adm-title-modal').classList.add('on');
+}
+async function adminGiveTitle(){
+  if(!_admTitleTarget) return;
+  const{username,server}=_admTitleTarget;
+  const titleId=document.getElementById('adm-title-sel').value;
+  const doEquip=document.getElementById('adm-title-equip').checked;
+  if(!titleId){alert('칭호를 선택하세요');return;}
+  const{data,error:e1}=await _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).eq('season',2).single();
+  if(e1||!data){alert('데이터 로드 실패: '+(e1?.message||'없음'));return;}
+  const fd=data.fish_data||{};
+  const titles=Array.isArray(fd.titles)?[...fd.titles]:[];
+  if(!titles.includes(titleId)) titles.push(titleId);
+  const newData={...fd,titles,...(doEquip?{equippedTitle:titleId}:{}),lastSave:serverNow()};
+  const{error}=await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',username).eq('server',server).eq('season',2);
+  if(error){alert('저장 실패: '+error.message);return;}
+  hideDlg('adm-title-modal');
+  const tName=TITLE_POOL.find(t=>t.id===titleId)?.name||titleId;
+  document.getElementById('adm-status').textContent=`✅ ${username} 칭호 [${tName}] 지급${doEquip?' + 장착':''}`;
+  sbSend('data_reload',{targetName:username,fromAdmin:ADMIN_USERNAME});
   adminLoadUsers();
 }
 
@@ -8243,6 +8323,7 @@ function adminRenderTable(rows){
         ${isAdmin?'':`
           <button class="adm-act-btn green" onclick="adminOpenGiveFish('${r.username}','${r.server}')">🐟 지급</button>
           <button class="adm-act-btn" onclick="adminOpenSkill('${r.username}','${r.server}')">🎯 스킬</button>
+          <button class="adm-act-btn" onclick="adminOpenTitle('${r.username}','${r.server}')">🏅 칭호</button>
           <button class="adm-act-btn" onclick="adminOpenEdit('${r.username}','${r.server}')">✏️ 수정</button>
           <button class="adm-act-btn red" onclick="adminKickAndRefresh('${r.username}','${r.server}')">⚠️ 강제로그아웃</button>
           <button class="adm-act-btn red" onclick="adminResetUser('${r.username}','${r.server}')">🗑️ 초기화</button>
@@ -8253,14 +8334,13 @@ function adminRenderTable(rows){
 }
 
 function adminOpenEdit(username,server){
-  _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).single()
+  _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).eq('season',2).single()
     .then(({data,error})=>{
       if(error||!data){alert('데이터 로드 실패: '+(error?.message||'없음'));return;}
       _admEditTarget={username,server,fish_data:data.fish_data||{}};
       const fd=data.fish_data||{};
-      const fishes=fd.fishes||[];
-      const alive=fishes.filter(f=>!f.isDead);
-      const best=alive.sort((a,b)=>b.stage-a.stage)[0];
+      const alive=_fdFlatFish(fd).map(e=>e.f).filter(f=>!f.isDead);
+      const best=[...alive].sort((a,b)=>(b.stage||0)-(a.stage||0))[0];
       // 참고용 단계 표시
       const stageEl=document.getElementById('adm-edit-stage');
       if(stageEl) stageEl.value=best?.stage||1;
@@ -8284,10 +8364,10 @@ async function adminSaveEdit(){
   const spFood=parseInt(document.getElementById('adm-edit-spfood').value)||0;
   const battlePoints=parseInt(document.getElementById('adm-edit-bp').value)||0;
   // 최신 DB 데이터 재조회 후 덮어씀 (fishes 등 다른 데이터 유지)
-  const{data,error:e1}=await _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).single();
+  const{data,error:e1}=await _sb.from('fish_accounts').select('fish_data').eq('username',username).eq('server',server).eq('season',2).single();
   if(e1||!data){alert('데이터 로드 실패: '+(e1?.message||'없음'));return;}
   const newData={...(data.fish_data||{}),money,food,spFood,battlePoints,lastSave:serverNow()};
-  const{error}=await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',username).eq('server',server);
+  const{error}=await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',username).eq('server',server).eq('season',2);
   if(error){alert('저장 실패: '+error.message);return;}
   hideDlg('adm-edit-modal');
   document.getElementById('adm-status').textContent=`✅ ${username} 수정 완료 (💰${money.toLocaleString()}원 🍤${food} 🍖${spFood} ⚔️${battlePoints}BP)`;
@@ -8365,7 +8445,7 @@ async function adminResetUser(username,server){
   if(!confirm(`⚠️ [${username}] (${server}) 계정의 게임 데이터를 초기화합니다.\n계정(아이디/비밀번호)은 유지됩니다.\n\n정말 초기화하시겠습니까?`)) return;
   const{error}=await _sb.from('fish_accounts')
     .update({fish_data:_buildInitialFishData(),updated_at:new Date().toISOString()})
-    .eq('username',username).eq('server',server);
+    .eq('username',username).eq('server',server).eq('season',2);
   if(error){alert('초기화 실패: '+error.message);return;}
   // 접속 중인 유저에게 강제 새로고침 신호 전송
   sbSend('data_reload',{targetName:username,fromAdmin:ADMIN_USERNAME,forceReset:true});
