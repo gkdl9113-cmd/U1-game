@@ -2800,6 +2800,25 @@ const F_SHOP=[
    grades:[{grade:'일반',w:93},{grade:'중급',w:5},{grade:'희귀',w:2}],
    desc:'성공률 30%'},
 ];
+
+// ── S2 낚시대 6단계 시스템 (미끼 누적 해금) ──────────────────
+const BAIT_ORDER=['bait_common','bait_normal','bait_high','bait_rare','bait_hero','bait_legend'];
+const ROD_ORDER=['rod1','rod2','rod3','rod4','rod5','rod6'];
+const ROD_TIERS={
+  rod1:{tier:1,name:'나무 낚시대',  gauge:0.30,maxDur:100,fragToNext:'frag_rod2',upMoney:5000},
+  rod2:{tier:2,name:'반카본 낚시대',gauge:0.34,maxDur:120,fragToNext:'frag_rod3',upMoney:20000},
+  rod3:{tier:3,name:'카본 낚시대',  gauge:0.38,maxDur:140,fragToNext:'frag_rod4',upMoney:50000},
+  rod4:{tier:4,name:'글래스 낚시대',gauge:0.42,maxDur:160,fragToNext:'frag_rod5',upMoney:120000},
+  rod5:{tier:5,name:'티타늄 낚시대',gauge:0.46,maxDur:180,fragToNext:'frag_rod6',upMoney:300000},
+  rod6:{tier:6,name:'다이아 낚시대',gauge:0.50,maxDur:200,fragToNext:null,    upMoney:0},
+};
+const FRAG_NAMES={frag_rod2:'반카본 조각',frag_rod3:'카본 조각',frag_rod4:'글래스 조각',frag_rod5:'티타늄 조각',frag_rod6:'다이아 조각'};
+const ROD_ENHANCE_MAX=10;     // 최대 강화 단계
+const ROD_ENHANCE_PER=0.01;   // 강화 1당 초록 게이지 +1%p
+const ROD_FRAG_DROP=0.20;     // 낚시 성공 시 다음 단계 조각 드롭 확률
+const ROD_PROMOTE_FRAG=10;    // 승급에 필요한 조각 수
+function rodAllowedBaits(id){return BAIT_ORDER.slice(0,(ROD_TIERS[id]?.tier||1));}
+function rodGaugeFraction(rod){return Math.min(0.7,(ROD_TIERS[rod.id]?.gauge||0.30)+(rod.level||0)*ROD_ENHANCE_PER);}
 // 미끼별 등급 확률표
 const BAIT_GRADE_TABLE={
   bait_common:[{grade:'일반',w:100}],
@@ -3266,16 +3285,15 @@ function _fishingCleanup(){
 function fishingRenderRodBtns(){
   const div=document.getElementById('fishing-rod-btns');if(!div)return;
   const isIdle=FMG.state==='idle'||FMG.state==='result';
-  div.innerHTML=F_SHOP.filter(r=>r.type==='rod').map(r=>{
-    const cnt=(FG.equipment?.equippedRod?.id===r.id)?1:0;
-    const dis=cnt===0||!isIdle;
-    return `<button onclick="fishingSelectRod('${r.id}')" ${dis?'disabled':''}
-      style="flex:1;min-width:72px;padding:6px 4px;border:1.5px solid ${cnt>0&&isIdle?'#217346':'#ccc'};
-      background:${cnt>0&&isIdle?'#E8F5ED':'#F0F0F0'};color:${cnt>0&&isIdle?'#1A5C35':'#999'};
-      font-size:10px;font-weight:700;cursor:${dis?'default':'pointer'};border-radius:4px;font-family:inherit;line-height:1.4">
-      ${r.name}<br><span style="font-size:9px;font-weight:400">${cnt}개 보유</span>
-    </button>`;
-  }).join('');
+  const rod=FG.equipment?.equippedRod;
+  if(!rod){div.innerHTML='<div style="flex:1;font-size:10px;color:#999;text-align:center;padding:6px">낚시대가 없습니다 (상점에서 구매)</div>';return;}
+  const on=isIdle;
+  div.innerHTML=`<button onclick="fishingSelectRod('${rod.id}')" ${on?'':'disabled'}
+    style="flex:1;min-width:72px;padding:6px 4px;border:1.5px solid ${on?'#217346':'#ccc'};
+    background:${on?'#E8F5ED':'#F0F0F0'};color:${on?'#1A5C35':'#999'};
+    font-size:10px;font-weight:700;cursor:${on?'pointer':'default'};border-radius:4px;font-family:inherit;line-height:1.4">
+    ${rodName(rod.id)} <span style="color:#C05000">+${rod.level}</span><br><span style="font-size:9px;font-weight:400">내구도 ${rod.durability}/${rod.maxDurability} · 성공 ${Math.round(rodGaugeFraction(rod)*100)}%</span>
+  </button>`;
 }
 
 function fishingSelectRod(rodId){
@@ -3321,6 +3339,9 @@ function fishingSelectRod(rodId){
 function selectPersistentBait(baitId){
   const cnt=FG.inventory[baitId]||0;
   if(cnt<=0) return;
+  if(!rodAllowedBaits(FG.equipment?.equippedRod?.id||'rod1').includes(baitId)){
+    u1Toast('현재 낚시대로는 이 미끼를 쓸 수 없습니다 (낚시대 승급 필요)','#C05000');return;
+  }
   if(FMG.selectedPersistentBait===baitId){
     FMG.selectedPersistentBait=null; // 토글
   } else {
@@ -3478,7 +3499,8 @@ function fishingStartGauge(){
   if(dg){
     dg.style.display='block';
     const gaugebar=dg.querySelector('[style*="height:24px"]');
-    const successZoneWidth=gaugebar.clientWidth*0.35;
+    const _eqRod=FG.equipment?.equippedRod;
+    const successZoneWidth=gaugebar.clientWidth*(_eqRod?rodGaugeFraction(_eqRod):0.35);
     const successZoneStart=Math.random()*(gaugebar.clientWidth-successZoneWidth);
     FMG.successZoneStart=successZoneStart;
     FMG.successZoneWidth=successZoneWidth;
@@ -3654,6 +3676,7 @@ function _endFishingDrag(e){
       FG.fishes[picked].fish.push(newFish);
       const cs=F_SPECIES[picked][pickedStage];
       FG.totalFished++;checkAchievements('fish',{grade:cs.grade,isYw:_isYwFish({type:picked})});
+      _tryRodFragDrop();
       fishQuickSave();
       document.getElementById('frow-sp').textContent=cs.name;
       _fishingShowResult(true,`🎣 ${cs.name} 낚았습니다!`,cs.grade);
@@ -4352,19 +4375,26 @@ function fishRenderInfo(){
   const baitSelectBtns=document.getElementById('bait-select-btns');
   if(baitSelectBtns){
     const baitTypes=[
-      {id:'bait_common',name:'일반',icon:'🪱'},
-      {id:'bait_rare',name:'희귀',icon:'🐠'},
-      {id:'bait_hero',name:'영웅',icon:'✨'}
+      {id:'bait_common',name:'하급',icon:'🪱'},
+      {id:'bait_normal',name:'중급',icon:'🐟'},
+      {id:'bait_high',name:'고급',icon:'🐠'},
+      {id:'bait_rare',name:'희귀',icon:'⭐'},
+      {id:'bait_hero',name:'영웅',icon:'✨'},
+      {id:'bait_legend',name:'전설',icon:'👑'}
     ];
+    const allowed=rodAllowedBaits(FG.equipment?.equippedRod?.id||'rod1');
     baitSelectBtns.innerHTML=baitTypes.map(b=>{
       const cnt=FG.inventory[b.id]||0;
+      const ok=allowed.includes(b.id); // 낚시대 등급이 허용하는 미끼만
+      const usable=ok&&cnt>0;
       const selected=FMG.selectedPersistentBait===b.id;
+      const lockTitle=ok?`${cnt}개`:'현재 낚시대로는 사용 불가';
       return `<button onclick="selectPersistentBait('${b.id}')"
         style="background:${selected?'#217346':'#E8E8E8'};color:${selected?'#fff':'#333'};border:1px solid ${selected?'#1A5C35':'#CCC'};
-        padding:4px 8px;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:${cnt>0?'1':'0.4'}"
-        ${cnt>0?'':'disabled'}
-        title="${cnt}개">
-        ${b.icon} ${b.name}(${cnt})
+        padding:4px 8px;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:${usable?'1':'0.4'}"
+        ${usable?'':'disabled'}
+        title="${lockTitle}">
+        ${ok?'':'🔒'}${b.icon} ${b.name}(${cnt})
       </button>`;
     }).join('');
   }
@@ -6573,21 +6603,58 @@ function shopBuyRod(rodId){
   fishRenderInfo();fishOpenShop();fishQuickSave();
 }
 
-// S2 낚시대 강화 (강화 재료 미정 → 임시로 돈 기반)
-function rodName(id){return {rod1:'나무 낚시대'}[id]||'낚시대';}
+// S2 낚시대 강화/승급 (강화=돈, 승급=조각+돈)
+function rodName(id){return ROD_TIERS[id]?.name||'낚시대';}
 function rodEnhanceCost(rod){return (rod.level+1)*1000;}
 function rodEnhance(){
   const rod=FG.equipment?.equippedRod; if(!rod) return;
-  if(rod.level>=10){u1Toast('이미 최대 강화입니다','#C05000');return;}
+  if(rod.level>=ROD_ENHANCE_MAX){u1Toast('이미 +10강입니다. 승급하세요!','#C05000');return;}
   const cost=rodEnhanceCost(rod);
-  if(FG.money<cost){u1Toast(`돈이 부족합니다 (💰${cost.toLocaleString()}원 필요)`,'#C00000');return;}
+  if(FG.money<cost){u1Toast(`돈이 부족합니다 (💰${cost.toLocaleString()}원)`,'#C00000');return;}
   FG.money-=cost;
   rod.level+=1;
-  rod.maxDurability+=20;
   rod.durability=rod.maxDurability; // 강화 시 내구도 가득
   FG.inventory.rods=[rod];
-  u1Toast(`🔧 강화 성공! ${rodName(rod.id)} +${rod.level} (최대 내구도 ${rod.maxDurability})`,'#2D4A7A');
+  u1Toast(`🔧 ${rodName(rod.id)} +${rod.level} 강화! (성공률 ${Math.round(rodGaugeFraction(rod)*100)}%)`,'#2D4A7A');
   fishRenderInfo();openInventory();fishQuickSave();
+}
+function rodRepairCost(rod){return (rod.maxDurability-rod.durability)*5;}
+function rodRepair(){
+  const rod=FG.equipment?.equippedRod; if(!rod) return;
+  if(rod.durability>=rod.maxDurability){u1Toast('내구도가 이미 가득입니다','#C05000');return;}
+  const cost=rodRepairCost(rod);
+  if(FG.money<cost){u1Toast(`돈이 부족합니다 (💰${cost.toLocaleString()}원)`,'#C00000');return;}
+  FG.money-=cost; rod.durability=rod.maxDurability;
+  FG.inventory.rods=[rod];
+  u1Toast(`🔧 내구도 수리 완료! (${rod.maxDurability}/${rod.maxDurability})`,'#2D4A7A');
+  fishRenderInfo();openInventory();fishQuickSave();
+}
+function rodPromote(){
+  const rod=FG.equipment?.equippedRod; if(!rod) return;
+  const cur=ROD_TIERS[rod.id];
+  if(!cur||!cur.fragToNext){u1Toast('이미 최종 단계 낚시대입니다','#C05000');return;}
+  if(rod.level<ROD_ENHANCE_MAX){u1Toast('+10강 달성 후 승급할 수 있습니다','#C05000');return;}
+  const fk=cur.fragToNext, have=FG.inventory[fk]||0;
+  if(have<ROD_PROMOTE_FRAG){u1Toast(`${FRAG_NAMES[fk]} ${ROD_PROMOTE_FRAG}개 필요 (보유 ${have}개)`,'#C00000');return;}
+  if(FG.money<cur.upMoney){u1Toast(`돈이 부족합니다 (💰${cur.upMoney.toLocaleString()}원)`,'#C00000');return;}
+  FG.inventory[fk]=have-ROD_PROMOTE_FRAG;
+  FG.money-=cur.upMoney;
+  const nextId=ROD_ORDER[cur.tier]; // cur.tier(1기반) → 다음 등급
+  const nt=ROD_TIERS[nextId];
+  const newRod={id:nextId,level:0,durability:nt.maxDur,maxDurability:nt.maxDur};
+  FG.equipment.equippedRod=newRod;
+  FG.inventory.rods=[newRod];
+  u1Toast(`🎉 승급 성공! ${nt.name} 획득!`,'#7A4FC0');
+  fishRenderInfo();openInventory();fishQuickSave();
+}
+// 낚시 성공 시 다음 단계 조각 드롭
+function _tryRodFragDrop(){
+  const rod=FG.equipment?.equippedRod; if(!rod) return;
+  const fk=ROD_TIERS[rod.id]?.fragToNext; if(!fk) return;
+  if(Math.random()<ROD_FRAG_DROP){
+    FG.inventory[fk]=(FG.inventory[fk]||0)+1;
+    u1Toast(`🧩 ${FRAG_NAMES[fk]} 획득! (${FG.inventory[fk]}/${ROD_PROMOTE_FRAG})`,'#6A4FB0');
+  }
 }
 
 // S2 호미 구매 함수
@@ -6861,16 +6928,39 @@ function openInventory(){
   } else {
     const durPct=Math.round((rod.durability/rod.maxDurability)*100);
     const durColor=durPct>50?'#4CAF50':durPct>20?'#FF9800':'#F44336';
-    const maxed=rod.level>=10;
+    const maxed=rod.level>=ROD_ENHANCE_MAX;
     const cost=rodEnhanceCost(rod);
     const canEnh=!maxed&&FG.money>=cost;
+    const tier=ROD_TIERS[rod.id]||{};
+    const baitsTxt=rodAllowedBaits(rod.id).map(bid=>({bait_common:'하급',bait_normal:'중급',bait_high:'고급',bait_rare:'희귀',bait_hero:'영웅',bait_legend:'전설'}[bid])).join('·');
+    // 승급 영역
+    let promoteHtml='';
+    if(tier.fragToNext){
+      const fk=tier.fragToNext, have=FG.inventory[fk]||0;
+      const fragOK=have>=ROD_PROMOTE_FRAG, lvOK=rod.level>=ROD_ENHANCE_MAX, moneyOK=FG.money>=tier.upMoney;
+      const canProm=fragOK&&lvOK&&moneyOK;
+      promoteHtml=`<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #90CAF9">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:9px;color:#5E35B1;font-weight:700">⬆️ 승급 → ${ROD_TIERS[ROD_ORDER[tier.tier]]?.name||'-'}</div>
+          <button onclick="rodPromote()" ${canProm?'':'disabled'} style="background:${canProm?'#7A4FC0':'#CCC'};color:#fff;border:none;padding:4px 9px;border-radius:4px;font-size:10px;font-weight:700;cursor:${canProm?'pointer':'default'};font-family:inherit;white-space:nowrap">승급</button>
+        </div>
+        <div style="font-size:8px;color:#7E57C2;margin-top:3px">${lvOK?'✅':'❌'} +10강 · ${fragOK?'✅':'❌'} ${FRAG_NAMES[fk]} ${have}/${ROD_PROMOTE_FRAG} · ${moneyOK?'✅':'❌'} 💰${tier.upMoney.toLocaleString()}</div>
+      </div>`;
+    } else {
+      promoteHtml=`<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #90CAF9;font-size:9px;color:#5E35B1;font-weight:700">👑 최종 단계 낚시대</div>`;
+    }
     rodsDiv.innerHTML=`<div style="padding:8px;background:#E3F2FD;border-radius:4px;border-left:3px solid ${durColor}">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div style="font-size:11px;font-weight:700;color:#0D47A1">🎣 ${rodName(rod.id)} <span style="color:#C05000">+${rod.level}</span> <span style="font-size:8px;color:#1976D2">(장착 중)</span></div>
-        <button onclick="rodEnhance()" ${canEnh?'':'disabled'} style="background:${canEnh?'#C05000':'#CCC'};color:#fff;border:none;padding:4px 9px;border-radius:4px;font-size:10px;font-weight:700;cursor:${canEnh?'pointer':'default'};font-family:inherit;white-space:nowrap">${maxed?'최대 강화':`강화 +${rod.level+1} · 💰${cost.toLocaleString()}`}</button>
+        <button onclick="rodEnhance()" ${canEnh?'':'disabled'} style="background:${canEnh?'#C05000':'#CCC'};color:#fff;border:none;padding:4px 9px;border-radius:4px;font-size:10px;font-weight:700;cursor:${canEnh?'pointer':'default'};font-family:inherit;white-space:nowrap">${maxed?'+10 (최대)':`강화 +${rod.level+1} · 💰${cost.toLocaleString()}`}</button>
       </div>
-      <div style="font-size:9px;color:#1976D2;margin-top:4px">내구도 ${rod.durability}/${rod.maxDurability} (${durPct}%)</div>
+      <div style="font-size:9px;color:#1976D2;margin-top:4px">🪱 사용 미끼: ${baitsTxt} · 낚시 성공률 ${Math.round(rodGaugeFraction(rod)*100)}%</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
+        <div style="font-size:9px;color:#1976D2">내구도 ${rod.durability}/${rod.maxDurability} (${durPct}%)</div>
+        ${rod.durability<rod.maxDurability?`<button onclick="rodRepair()" ${FG.money>=rodRepairCost(rod)?'':'disabled'} style="background:${FG.money>=rodRepairCost(rod)?'#1976D2':'#CCC'};color:#fff;border:none;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">🔧 수리 💰${rodRepairCost(rod).toLocaleString()}</button>`:''}
+      </div>
       <div style="height:5px;background:#BBDEFB;border-radius:3px;margin-top:3px;overflow:hidden"><div style="width:${durPct}%;height:100%;background:${durColor}"></div></div>
+      ${promoteHtml}
     </div>`;
   }
 
@@ -6893,7 +6983,8 @@ function fishBuy(id){
   if(item.type==='rod'){
     if(FG.equipment?.equippedRod){document.getElementById('f-status').textContent='이미 낚시대를 보유 중입니다 (인벤토리에서 강화하세요)';return;}
     FG.money-=item.price;
-    const rod={id:item.id,level:0,durability:100,maxDurability:100};
+    const _md=ROD_TIERS[item.id]?.maxDur||100;
+    const rod={id:item.id,level:0,durability:_md,maxDurability:_md};
     FG.equipment={...(FG.equipment||{}),equippedRod:rod};
     FG.inventory.rods=[rod];
     document.getElementById('f-status').textContent=`🎣 ${item.name} 구매! 자동 장착됨`;
