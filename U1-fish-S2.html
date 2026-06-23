@@ -2198,7 +2198,7 @@ function _buildInitialFishData(){
   return{
     fishes:{goldfish:{quantity:1,level:1,exp:0},snakehead:{quantity:0,level:1,exp:0},guppy:{quantity:0,level:1,exp:0},tropical:{quantity:0,level:1,exp:0},piranha:{quantity:0,level:1,exp:0},clownfish:{quantity:0,level:1,exp:0},mandarin:{quantity:0,level:1,exp:0},electric:{quantity:0,level:1,exp:0},turtle:{quantity:0,level:1,exp:0},yongwang:{quantity:0,level:1,exp:0},yeongeum:{quantity:0,level:1,exp:0},eelyw:{quantity:0,level:1,exp:0},haelyong:{quantity:0,level:1,exp:0},megalodonte:{quantity:0,level:1,exp:0},geumlin:{quantity:0,level:1,exp:0}},
     money:100,food:5,spFood:0,
-    tankLevel:0,tankMax:1,
+    tankLevel:0,tankMax:1,auxFishes:[],auxMax:AUX_MAX_DEFAULT,
     inventory:{bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},
     equipment:{equippedRod:null},
     skillInventory:{},achievements:{},
@@ -2318,6 +2318,7 @@ function applyFishData(d){
   }
   FG.money=d.money??100;FG.food=d.food??5;FG.spFood=d.spFood??0;
   FG.tankLevel=d.tankLevel??0;FG.tankMax=d.tankMax??1;
+  FG.auxFishes=Array.isArray(d.auxFishes)?d.auxFishes:[];FG.auxMax=d.auxMax??AUX_MAX_DEFAULT;
   FG.rods=Object.assign({rod1:0,rod2:0,rod3:0,rod4:0,rod5:0,rod6:0},d.rods||{});
   FG.inventory=Object.assign({bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},d.inventory||{});
   FG.equipment=d.equipment||{equippedRod:null};
@@ -2357,7 +2358,7 @@ async function saveFishDataToDB(){
   const data={
     fishes:FG.fishes,
     money:FG.money,food:FG.food,spFood:FG.spFood,
-    tankLevel:FG.tankLevel,tankMax:FG.tankMax,
+    tankLevel:FG.tankLevel,tankMax:FG.tankMax,auxFishes:FG.auxFishes||[],auxMax:FG.auxMax??AUX_MAX_DEFAULT,
     rods:FG.rods,fishCodex:FG.fishCodex,
     inventory:FG.inventory,equipment:FG.equipment,
     skillInventory:FG.skillInventory,
@@ -3146,7 +3147,11 @@ function totalIncome(){
   return Math.floor(total*(1+(accTitleEf().income||0))); // 칭호 수입 보너스
 }
 function getAliveSpecies(){return Object.entries(FG.fishes).filter(([,data])=>data.quantity>0);}
-function getTotalFishCount(){return Object.values(FG.fishes).reduce((a,d)=>a+(d.quantity||0),0);}
+// 메인 수조는 '종류 수'로 카운트 (같은 종류 여러 마리 = 1칸)
+function getTotalFishCount(){return Object.values(FG.fishes).filter(d=>(d.quantity||0)>0).length;}
+// 보조 수조(새 종류 임시 보관)
+const AUX_MAX_DEFAULT=5, AUX_EXPAND_STEP=5;
+function auxExpandCost(){return (FG.auxMax||AUX_MAX_DEFAULT)*1000;}
 function aliveFishes(){return Object.values(FG.fishes).filter(f=>f.quantity>0);}
 
 // S2 물고기 추가 (수량 기반)
@@ -3303,6 +3308,7 @@ function fishingEnter(){
   _fishingSetCells('-','-','-','-','-');
   _fishingSetFormula(`=FISHING.SELECT("${equippedRod.id} (내구도: ${equippedRod.durability}/${equippedRod.maxDurability})")`);
   fishingRenderRodBtns();
+  fishRenderAux();
   _fishingSetMsg('낚시 시작 준비 완료','낚시 버튼을 누르거나 스페이스바 ⎵');
   _fishingSetState('낚시 준비');
   _fishingBobStart('idle');
@@ -3311,6 +3317,56 @@ function fishingEnter(){
 
   // 스페이스바로 낚시 시작
   document.addEventListener('keydown',_fishingSpacebarStart);
+}
+
+// ── 보조 수조 (새 종류 임시 보관) ──────────────────────────
+function fishRenderAux(){
+  FG.auxFishes=FG.auxFishes||[]; if(FG.auxMax==null) FG.auxMax=AUX_MAX_DEFAULT;
+  const info=document.getElementById('aux-tank-info');
+  if(info) info.textContent=`${FG.auxFishes.length}/${FG.auxMax}칸`;
+  const tb=document.getElementById('aux-fish-tbody');
+  const _c='border:1px solid #D0D0D0;padding:3px 5px;font-size:10px;color:#333';
+  const _sticky='background:#F2F2F2;border:1px solid #D0D0D0;text-align:center;font-size:10px;color:#555;position:sticky;left:0;z-index:1';
+  if(tb){
+    tb.innerHTML=FG.auxFishes.length?FG.auxFishes.map((f,i)=>{
+      const s=_fishSpec(f);
+      const gd=F_GRADES[s.grade]||F_GRADES['일반'];
+      return `<tr>
+        <td style="${_sticky}">${i+7}</td>
+        <td style="${_c};text-align:center">${i+1}</td>
+        <td style="${_c}">${s.name}</td>
+        <td style="${_c};text-align:center"><span style="padding:1px 5px;border-radius:3px;background:${gd.bg};color:${gd.fg};font-weight:700">${s.grade}</span></td>
+        <td style="${_c}">${Math.floor(f.fullness||0)}%</td>
+        <td style="${_c};text-align:center"><button onclick="fishAuxMove(${i})" style="background:#217346;color:#fff;border:none;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit">메인으로</button></td>
+      </tr>`;
+    }).join(''):`<tr><td style="${_sticky}">7</td><td colspan="5" style="${_c};text-align:center;color:#999">보관 중인 물고기 없음</td></tr>`;
+  }
+  const exTxt=document.getElementById('aux-expand-txt');
+  if(exTxt) exTxt.textContent=`보조수조 확장 +${AUX_EXPAND_STEP}칸`;
+  const exBtn=document.getElementById('aux-expand-btn');
+  if(exBtn) exBtn.textContent=`확장 💰${auxExpandCost().toLocaleString()}`;
+}
+function fishAuxMove(i){
+  const f=FG.auxFishes?.[i]; if(!f) return;
+  const type=f.type;
+  const inMain=(FG.fishes[type]?.quantity||0)>0;
+  if(!inMain && getTotalFishCount()>=FG.tankMax){ u1Toast('메인 수조 칸이 부족합니다 (수조를 확장하세요)','#C00000'); return; }
+  if(!FG.fishes[type]) FG.fishes[type]={quantity:0,level:1,exp:0,fish:[]};
+  if(!FG.fishes[type].fish) FG.fishes[type].fish=[];
+  // 같은 종류는 메인에서 1칸이므로, 보조에 있던 같은 종류 전부 메인으로 이동
+  const moving=FG.auxFishes.filter(x=>x.type===type);
+  moving.forEach(x=>{FG.fishes[type].fish.push(x);FG.fishes[type].quantity=(FG.fishes[type].quantity||0)+1;});
+  FG.auxFishes=FG.auxFishes.filter(x=>x.type!==type);
+  fishRenderAux(); fishRenderInfo(); fishQuickSave();
+  u1Toast(`🐟 ${_fishSpec(f).species} ${moving.length}마리를 메인 수조로 이동`,'#217346');
+}
+function fishAuxExpand(){
+  if(FG.auxMax==null) FG.auxMax=AUX_MAX_DEFAULT;
+  const cost=auxExpandCost();
+  if(FG.money<cost){u1Toast(`돈이 부족합니다 (💰${cost.toLocaleString()}원)`,'#C00000');return;}
+  FG.money-=cost; FG.auxMax+=AUX_EXPAND_STEP;
+  fishRenderAux(); fishRenderInfo(); fishQuickSave();
+  u1Toast(`📦 보조수조 확장! (+${AUX_EXPAND_STEP}칸 → 총 ${FG.auxMax}칸)`,'#1F3864');
 }
 
 function fishingExit(){
@@ -3354,7 +3410,7 @@ function fishingSelectRod(rodId){
     return;
   }
   if(equippedRod.durability<=0){u1Toast('낚시대 내구도가 없습니다!','#C00000');return;}
-  if(getTotalFishCount()>=FG.tankMax){u1Toast('수조가 꽉 찼습니다!','#C00000');return;}
+  // 메인 수조가 가득해도 낚시 가능 — 새 종류는 보조수조로 보관됨
 
   // 미끼가 선택되어 있는지 확인
   if(!FMG.selectedPersistentBait){
@@ -3717,18 +3773,32 @@ function _endFishingDrag(e){
     if(res.success){
       const {type:picked,stage:pickedStage}=pickSpeciesByGrade([{grade:res.grade,w:100}]);
       updateFishCodex(picked,pickedStage);
-      // 올바른 등급으로 물고기 추가
-      if(!FG.fishes[picked]) FG.fishes[picked]={quantity:0,level:1,exp:0,fish:[]};
-      FG.fishes[picked].quantity+=1;
-      if(!FG.fishes[picked].fish) FG.fishes[picked].fish=[];
       const newFish=createNewFish(picked,pickedStage);
-      FG.fishes[picked].fish.push(newFish);
       const cs=F_SPECIES[picked][pickedStage];
       FG.totalFished++;checkAchievements('fish',{grade:cs.grade,isYw:_isYwFish({type:picked})});
       _tryRodFragDrop();
-      fishQuickSave();
       document.getElementById('frow-sp').textContent=cs.name;
-      _fishingShowResult(true,`🎣 ${cs.name} 낚았습니다!`,cs.grade);
+      const inMain=(FG.fishes[picked]?.quantity||0)>0;
+      if(inMain){
+        // 메인에 이미 있는 종류 → 칸 차지 없이 바로 메인
+        if(!FG.fishes[picked].fish) FG.fishes[picked].fish=[];
+        FG.fishes[picked].quantity+=1;
+        FG.fishes[picked].fish.push(newFish);
+        _fishingShowResult(true,`🎣 ${cs.name} 낚았습니다!`,cs.grade);
+      } else {
+        // 새 종류 → 보조수조 보관 (가득하면 자동 판매)
+        FG.auxFishes=FG.auxFishes||[];
+        const auxMax=FG.auxMax||AUX_MAX_DEFAULT;
+        if(FG.auxFishes.length>=auxMax){
+          const price=getFishSellPrice(newFish); FG.money+=price;
+          _fishingShowResult(true,`🎣 ${cs.name}! 보조수조 가득 → 자동 판매 +${price.toLocaleString()}원`,cs.grade);
+        } else {
+          FG.auxFishes.push(newFish);
+          fishRenderAux();
+          _fishingShowResult(true,`🎣 ${cs.name} (새 종류 → 보조수조 보관)`,cs.grade);
+        }
+      }
+      fishQuickSave();
     } else {
       _fishingShowResult(false,'아깝다! 물고기가 빠져나갔습니다 🐟💨');
     }
@@ -3849,7 +3919,6 @@ function fishingTryAgain(){
     _fishingSetMsg('낚시대 내구도 없음','상점에서 낚싯대를 구매하세요');
     return;
   }
-  if(getTotalFishCount()>=FG.tankMax){_fishingSetMsg('수조가 꽉 찼습니다','물고기를 판매하거나 방생하세요');return;}
   _fishingSetCells('-','-','-','-','-');
   _fishingSetFormula(`=FISHING.SELECT("${equippedRod.id} (${equippedRod.durability}/${equippedRod.maxDurability})")`);
   fishingRenderRodBtns();
@@ -4497,7 +4566,7 @@ function fishRenderInfo(){
   const ti=document.getElementById('f-total-income');
   if(ti) ti.textContent=totalIncome()+'원/30초';
   const tk=document.getElementById('f-tank-info');
-  if(tk) tk.textContent=getTotalFishCount()+'/'+FG.tankMax+'마리';
+  if(tk) tk.textContent=getTotalFishCount()+'/'+FG.tankMax+'종';
   const au=document.getElementById('f-auto-status');
   if(au){
     const totalRods=Object.values(FG.rods||{}).reduce((a,b)=>a+b,0);
@@ -5639,14 +5708,14 @@ function fishDraw(){
     idx++;
   });
   c.fillStyle='rgba(33,115,70,0.75)';c.font='bold 10px monospace';c.textAlign='right';
-  c.fillText(`🐟 ${aliveFishes().length}/${FG.tankMax}마리`,W-6,H-6);
+  c.fillText(`🐟 ${getTotalFishCount()}/${FG.tankMax}종`,W-6,H-6);
 }
 
 function fishSave(isDisconnect){
   const data={
     fishes:FG.fishes,
     money:FG.money,food:FG.food,spFood:FG.spFood,
-    tankLevel:FG.tankLevel,tankMax:FG.tankMax,
+    tankLevel:FG.tankLevel,tankMax:FG.tankMax,auxFishes:FG.auxFishes||[],auxMax:FG.auxMax??AUX_MAX_DEFAULT,
     rods:FG.rods,skillInventory:FG.skillInventory,
     achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],equippedTitle:FG.equippedTitle||null,
     stocks:FG.stocks,
@@ -5721,6 +5790,7 @@ function fishLoad(){
 
     FG.autoFeeders=d.autoFeeders||[];
     FG.tankLevel=d.tankLevel||0;FG.tankMax=d.tankMax||15;
+    FG.auxFishes=Array.isArray(d.auxFishes)?d.auxFishes:[];FG.auxMax=d.auxMax??AUX_MAX_DEFAULT;
     FG.skillInventory=d.skillInventory||{};
     FG.achievements=d.achievements||{};
     FG.btWins=d.btWins||0;FG.battlePoints=d.battlePoints||0;FG.fusionCrystals=d.fusionCrystals||0;FG.totalFished=d.totalFished||0;FG.totalEvos=d.totalEvos||0;FG.titles=d.titles||[];
@@ -6150,7 +6220,7 @@ function fishOpenShop(){
 if(FG.tankLevel<9){
     const nl=FG.tankLevel+1,price=F_TANK_PRICES[nl],canBuy=FG.money>=price;
     div.innerHTML+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0">
-      <div><div style="font-size:12px;font-weight:700">수조 확장 Lv.${nl}</div><div style="font-size:10px;color:#888">최대 ${nl+1}마리 (현재 ${getTotalFishCount()}/${FG.tankMax})</div></div>
+      <div><div style="font-size:12px;font-weight:700">수조 확장 Lv.${nl}</div><div style="font-size:10px;color:#888">최대 ${nl+1}종 (현재 ${getTotalFishCount()}/${FG.tankMax}종)</div></div>
       <button onclick="fishBuyTank(${nl})" ${canBuy?'':'disabled'}
         style="background:${canBuy?'#217346':'#E8E8E8'};color:${canBuy?'#fff':'#999'};border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:${canBuy?'pointer':'default'};font-family:inherit;white-space:nowrap">
         ${price.toLocaleString()}원</button></div>`;
@@ -8613,7 +8683,7 @@ function fishRenderInfoMobile(){
   const ti=document.getElementById('f-total-income-m');
   if(ti) ti.textContent=totalIncome()+'원/30초';
   const tk=document.getElementById('f-tank-info-m');
-  if(tk) tk.textContent=getTotalFishCount()+'/'+FG.tankMax+'마리';
+  if(tk) tk.textContent=getTotalFishCount()+'/'+FG.tankMax+'종';
 }
 
 // 모바일 사이드바 플레이어 목록도 업데이트
