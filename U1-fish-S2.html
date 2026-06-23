@@ -399,6 +399,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
     <div class="xl-rsep"></div>
     <button class="xl-rbtn" onclick="fishOpenShop()"><span class="xl-rico">🛒</span><span class="xl-rlbl">상점</span></button>
     <button class="xl-rbtn" onclick="openSkillInventory()"><span class="xl-rico">✨</span><span class="xl-rlbl">스킬</span></button>
+    <button class="xl-rbtn" onclick="openTitleEquip()"><span class="xl-rico">🏅</span><span class="xl-rlbl">칭호</span></button>
     <button class="xl-rbtn" id="f-evo-btn" onclick="fishEvolve()" style="opacity:.4"><span class="xl-rico">⬆️</span><span class="xl-rlbl">진화</span></button>
     <button class="xl-rbtn" onclick="openBattlePick()"><span class="xl-rico">⚔️</span><span class="xl-rlbl" id="btpick-ribbon-lbl">출전 선택</span></button>
     <div class="xl-rsep"></div>
@@ -601,12 +602,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
           <div style="background:#E8E8E8;border:1px dashed #B4B4B4;border-radius:3px;padding:6px;text-align:center;font-size:10px;color:#999">슬롯 1<br><span style="font-size:9px">추가 예정</span></div>
           <div style="background:#E8E8E8;border:1px dashed #B4B4B4;border-radius:3px;padding:6px;text-align:center;font-size:10px;color:#999">슬롯 2<br><span style="font-size:9px">추가 예정</span></div>
         </div>
-      </div>
-      <!-- 칭호 -->
-      <div id="fd-title-row" style="display:flex;align-items:center;justify-content:space-between;background:#FAFAFA;border:1px solid #E8E8E8;border-radius:4px;padding:5px 8px;margin-bottom:6px">
-        <span style="font-size:10px;color:#555">👤 계정 칭호</span>
-        <span id="fd-title-badge" style="font-size:10px;font-weight:700;color:#888">없음</span>
-        <button id="fd-title-btn" onclick="openTitleEquip()" style="background:#92400E;color:#FEF9C3;border:none;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit">변경</button>
       </div>
       <!-- 진화 조건 -->
       <div style="font-size:10px;color:#595959;background:#FFF9C4;border:1px solid #FFC000;border-radius:3px;padding:5px;margin-bottom:6px" id="fd-evo">진화 조건: ⭐0/100 | 💰300원</div>
@@ -4996,13 +4991,7 @@ function showFishDetail(typeOrIdx, fishIndex){
   const s=fStage(f);
   const isYw=_isYwFish(f);
   const ywLv=f.level||1;
-  const _fdTitleObj=accTitleObj();
-  const tef=accTitleEf(); const as=1+(tef.allStat||0);
-  const _fdTitleBadge=document.getElementById('fd-title-badge');
-  if(_fdTitleBadge){
-    if(_fdTitleObj){const _st=TITLE_RARITY_ST[_fdTitleObj.rarity];_fdTitleBadge.textContent=`[${_fdTitleObj.name}]`;_fdTitleBadge.style.color=_st.fg;_fdTitleBadge.style.background=_st.bg;_fdTitleBadge.style.padding='1px 5px';_fdTitleBadge.style.borderRadius='3px';}
-    else{_fdTitleBadge.textContent='없음';_fdTitleBadge.style.color='#888';_fdTitleBadge.style.background='';_fdTitleBadge.style.padding='';}
-  }
+  const tef=accTitleEf(); const as=1+(tef.allStat||0); // 계정 칭호 효과(스탯 표시에 반영)
   document.getElementById('fd-title').textContent=(f.isDead?'💀':'🐟')+' #'+(_fdIdx+1)+' '+s.name+(isYw?` Lv.${ywLv}`:'');
   const gd=F_GRADES[s.grade]||F_GRADES['일반'];
   document.getElementById('fd-stage').innerHTML=
