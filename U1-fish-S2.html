@@ -2496,7 +2496,7 @@ function sendChallenge(game){
   if((game==='battle'||game==='legend_battle')&&isBattleBlocked(myName,challengeTarget.name)){u1Toast(`🚫 해당 상대와의 배틀은 제한되어 있습니다.`,'#C00000');return;}
   if((game==='battle'||game==='legend_battle')&&_btDailyCount()>=DAILY_BATTLE_LIMIT){u1Toast(`오늘 배틀 횟수(${DAILY_BATTLE_LIMIT}판)를 모두 사용했습니다. 내일 다시 도전하세요.`,'#C00000');return;}
   if(game==='legend_battle'){
-    const hasLegend=Object.values(FG.fishes).some(f=>!f.isDead&&LEGEND_BATTLE_GRADES.has(fStage(f).grade));
+    const hasLegend=_allFishFlat().some(f=>!f.isDead&&LEGEND_BATTLE_GRADES.has(_fishSpec(f).grade));
     if(!hasLegend){u1Toast('👑 전설 이상 물고기가 없으면 전설전을 신청할 수 없습니다.','#C00000');return;}
   }
   sbSend('challenge',{targetId:challengeTarget.id,fromId:myId,fromName:myName,game,digits:4});
@@ -2513,7 +2513,7 @@ function acceptChallenge(){
     u1Toast('배틀이 제한된 계정입니다.','#C00000');return;
   }
   if(pendingChallenge.game==='legend_battle'){
-    const hasLegend=Object.values(FG.fishes).some(f=>!f.isDead&&LEGEND_BATTLE_GRADES.has(fStage(f).grade));
+    const hasLegend=_allFishFlat().some(f=>!f.isDead&&LEGEND_BATTLE_GRADES.has(_fishSpec(f).grade));
     if(!hasLegend){
       sbSend('challenge_reject',{targetId:pendingChallenge.fromId,fromId:myId,fromName:myName});
       pendingChallenge=null;
@@ -6385,6 +6385,17 @@ const GRADE_CLR={'일반':'#555','중급':'#1565C0','고급':'#558B2F','희귀':
 
 let _btPickLegendMode=false;
 function _curPick(){return _btPickLegendMode?(FG.legendPick||(FG.legendPick=[])):(FG.battlePick||(FG.battlePick=[]));}
+// 모든 종류의 개별 물고기를 평탄화(각 fish 객체에 type 보강). 배틀/출전선택 공용
+function _allFishFlat(){
+  const out=[];
+  for(const[type,d]of Object.entries(FG.fishes)){
+    if(!d||!Array.isArray(d.fish)) continue;
+    for(const f of d.fish){ if(f){ if(!f.type) f.type=type; out.push(f); } }
+  }
+  return out;
+}
+// 물고기의 실제 단계 종 정보(이름/등급/스탯). fStage는 항상 1단계만 반환하므로 별도 사용
+function _fishSpec(f){const sp=F_SPECIES[f.type||'goldfish']||F_SPECIES.goldfish;return sp[f.stage]||sp[1];}
 function _updateBtPickRibbonLabel(){
   const lbl=document.getElementById('btpick-ribbon-lbl');
   if(!lbl) return;
@@ -6397,8 +6408,9 @@ function openBattlePick(legendTab){
   if(!FG.legendPick) FG.legendPick=[];
   _btPickLegendMode=legendTab??!!(currentGame&&currentGame.type==='legend_battle');
   // 죽거나 조건 어긋난 물고기 정리
-  FG.battlePick=FG.battlePick.filter(p=>Object.values(FG.fishes).some(f=>f.id===p.id&&!f.isDead));
-  FG.legendPick=FG.legendPick.filter(p=>Object.values(FG.fishes).some(f=>f.id===p.id&&!f.isDead)&&LEGEND_BATTLE_GRADES.has(fStage(p).grade));
+  const _liveIds=new Set(_allFishFlat().filter(f=>!f.isDead).map(f=>f.id));
+  FG.battlePick=FG.battlePick.filter(p=>p&&_liveIds.has(p.id));
+  FG.legendPick=FG.legendPick.filter(p=>p&&_liveIds.has(p.id)&&LEGEND_BATTLE_GRADES.has(_fishSpec(p).grade));
   _applyBtPickTabStyle();
   renderBattlePickGrid();
   document.getElementById('btpick-modal').classList.add('on');
@@ -6430,13 +6442,13 @@ function renderBattlePickGrid(){
   document.getElementById('btpick-count').textContent=`선택: ${selCount}/3`;
   const hint=document.getElementById('btpick-hint');
   if(hint) hint.textContent=_btPickLegendMode?'전설 이상만 출전 가능 · 최대 3마리':'최대 3마리 선택';
-  const alive=Object.values(FG.fishes).map((f,i)=>({f,i})).filter(({f})=>!f.isDead);
+  const alive=_allFishFlat().filter(f=>!f.isDead).map((f,i)=>({f,i}));
   if(!alive.length){
     document.getElementById('btpick-grid').innerHTML='<div style="text-align:center;color:#888;padding:24px">살아있는 물고기가 없습니다</div>';
     return;
   }
   const items=alive.map(({f,i})=>{
-    const s=fStage(f);
+    const s=_fishSpec(f);
     const isSel=selIds.has(f.id);
     const isLegendLocked=_btPickLegendMode&&!LEGEND_BATTLE_GRADES.has(s.grade);
     const blocked=isLegendLocked||(!isSel&&selCount>=3);
@@ -6460,9 +6472,9 @@ function renderBattlePickGrid(){
   document.getElementById('btpick-grid').innerHTML=`<div style="display:flex;flex-direction:column;gap:5px">${items}</div>`;
 }
 function toggleBattlePickFish(fishId){
-  const fish=Object.values(FG.fishes).find(f=>f.id===fishId);
+  const fish=_allFishFlat().find(f=>f.id===fishId);
   if(!fish||fish.isDead) return;
-  const sd=fStage(fish);
+  const sd=_fishSpec(fish);
   if(_btPickLegendMode&&!LEGEND_BATTLE_GRADES.has(sd.grade)){u1Toast('👑 전설전에는 전설 이상 물고기만 출전 가능합니다','#C00000');return;}
   const pick=_curPick();
   const idx=pick.findIndex(f=>f.id===fishId);
@@ -8614,12 +8626,14 @@ function startBattleGame(){
   // 출전 선택 물고기 우선 사용, 없으면 생존 물고기 중 랜덤 3마리
   const _isLegendBattle=currentGame.type==='legend_battle';
   const _savedPick=_isLegendBattle?(FG.legendPick||[]):(FG.battlePick||[]);
-  const _pickAlive=_savedPick.filter(f=>FG.fishes.includes(f)&&!f.isDead&&(!_isLegendBattle||LEGEND_BATTLE_GRADES.has(fStage(f).grade)));
-  const _alive=Object.values(FG.fishes).filter(f=>!f.isDead&&(!_isLegendBattle||LEGEND_BATTLE_GRADES.has(fStage(f).grade)));
+  const _pickIds=new Set(_savedPick.map(f=>f&&f.id).filter(Boolean));
+  const _flatAlive=_allFishFlat().filter(f=>!f.isDead&&(!_isLegendBattle||LEGEND_BATTLE_GRADES.has(_fishSpec(f).grade)));
+  const _pickAlive=_flatAlive.filter(f=>_pickIds.has(f.id));
+  const _alive=_flatAlive;
   const _randPick=_alive.slice().sort(()=>Math.random()-.5).slice(0,3);
-  const _btSource=_pickAlive.length>0?_pickAlive:_randPick;
+  const _btSource=(_pickAlive.length>0?_pickAlive:_randPick).slice(0,3);
   btMyFishData=_btSource.map(f=>{
-    const s=fStage(f);
+    const s=_fishSpec(f);
     const isYwF=_isYwFish(f);
     // 칭호 배틀 스탯 적용 (계정 칭호 → 출전 전원에 적용)
     const tef=accTitleEf(); const as=1+(tef.allStat||0);
