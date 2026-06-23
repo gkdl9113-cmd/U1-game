@@ -517,7 +517,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 <div class="xl-bottombar">
-  <div class="xl-stabs"><button class="xl-stab on">수조1</button><button class="xl-stab" onclick="openInventory()">🎒 인벤토리</button><button class="xl-stab" onclick="fishOpenFeeders()">🍤 먹이통</button><button class="xl-stab" onclick="fishOpenShop()">상점</button><button class="xl-stab" onclick="openStock()">🐟 수산시장</button><button class="xl-stab" onclick="fishOpenCodex()">📖 도감</button><button class="xl-stab-plus">＋</button></div>
+  <div class="xl-stabs"><button class="xl-stab on">수조1</button><button class="xl-stab" onclick="openInventory()">🎒 인벤토리</button><button class="xl-stab" onclick="fishOpenShop()">상점</button><button class="xl-stab" onclick="openStock()">🐟 수산시장</button><button class="xl-stab" onclick="fishOpenCodex()">📖 도감</button><button class="xl-stab-plus">＋</button></div>
   <div class="xl-statusbar"><span class="xl-sitem" id="f-status">준비</span><span class="xl-sitem" id="f-save-status">저장 안 됨</span><span class="xl-sitem">100%</span></div>
 </div>
 </div>
@@ -610,9 +610,8 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <!-- 진화 조건 -->
       <div style="font-size:10px;color:#595959;background:#FFF9C4;border:1px solid #FFC000;border-radius:3px;padding:5px;margin-bottom:6px" id="fd-evo">진화 조건: ⭐0/100 | 💰300원</div>
       <div style="font-size:10px;color:#C05000;background:#FFF0E8;border:1px solid #F4B8A0;border-radius:3px;padding:4px 5px;margin-bottom:8px" id="fd-sell-info" style="display:none"></div>
-      <div style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid #F0F0F0;margin-bottom:8px" id="fd-feeder-row"></div>
       <div class="xl-dlg-btns">
-        <button class="xl-dlg-btn" id="fd-feed-btn" onclick="feedFishOne(_fdIdx);hideDlg('fish-detail-modal')">🍤 먹이주기</button>
+        <button class="xl-dlg-btn" id="fd-feed-btn" onclick="feedFishOne(_fdType,_fdIdx)">🍤 먹이주기</button>
         <button class="xl-dlg-btn ok" id="fd-evo-btn" onclick="(_selectedFish&&evolveOneFish(_selectedFish.type))||evolveOneFish(FG.fishes[_fdIdx])">⬆️ 진화</button>
         <button class="xl-dlg-btn" id="fd-buy-btn" style="display:none;background:#217346;color:#fff" onclick="deadFishAction(_fdIdx)">🐟 구매(55원)</button>
         <button class="xl-dlg-btn" id="fd-sell-btn" onclick="sellFish(_fdIdx)" style="display:none;background:#C05000;color:#fff;border-color:#A04000">💰 판매</button>
@@ -4138,7 +4137,8 @@ function deadFishAction(idx){
 
 function fishFeed(){
   if(FG.food<=0){document.getElementById('f-status').textContent='먹이가 없습니다! 상점에서 구매하세요.';return;}
-  const alive=aliveFishes();
+  // 모든 종류의 개별 물고기 중 살아있는 것
+  const alive=Object.values(FG.fishes).flatMap(d=>d.fish||[]).filter(f=>!f.isDead);
   if(alive.length===0) return;
   // 마리 수만큼 먹이 소모, 각각 +15
   const canFeed=Math.min(alive.length,FG.food);
@@ -4148,12 +4148,14 @@ function fishFeed(){
   setTimeout(()=>fishUpdateStatus(),1500);
   fishQuickSave();
 }
-function feedFishOne(idx){
-  const f=FG.fishes[idx]; if(!f||f.isDead) return;
+function feedFishOne(type,idx){
+  const f=FG.fishes[type]?.fish?.[idx]; if(!f||f.isDead) return;
   if(FG.food<=0){u1Toast('먹이가 없습니다!','#C00000');return;}
   FG.food--;f.fullness=Math.min(100,f.fullness+15);
   fishRenderInfo();fishQuickSave();
-  document.getElementById('f-status').textContent='🍤 #'+(idx+1)+' 먹이 (+15)';
+  // 상세창이 같은 물고기로 열려있으면 즉시 갱신
+  if(document.getElementById('fish-detail-modal').classList.contains('on')&&_fdType===type&&_fdIdx===idx) showFishDetail(type,idx);
+  document.getElementById('f-status').textContent='🍤 '+fStage(type).name+' 먹이 (+15)';
   setTimeout(()=>fishUpdateStatus(),1500);
 }
 function fishUpdateStatus(){
@@ -4999,16 +5001,6 @@ function showFishDetail(typeOrIdx, fishIndex){
       return `<div onclick="openSkillAssign('${_fdType}',${_fdIdx},${slotNum})" style="background:#F0F0FF;border:1px dashed #A5B4FC;border-radius:3px;padding:6px;text-align:center;font-size:10px;color:#888;cursor:pointer" onmouseover="this.style.background='#E8E8FF'" onmouseout="this.style.background='#F0F0FF'">${slotLabel}<br><span style="font-size:9px;color:#A5B4FC">+ 스킬 장착</span></div>`;
     };
     fdSkills.innerHTML=renderSlot(f.skill1,'전용스킬',1)+renderSlot(f.skill2,'공용스킬',2);
-  }
-  // 먹이통 배정 표시
-  const assignedIdx=FG.autoFeeders.findIndex(fd=>fd.targetIdx===_fdIdx);
-  const fdFeeder=document.getElementById('fd-feeder-row');
-  if(fdFeeder){
-    const assignedTxt=assignedIdx>=0?`먹이통 ${assignedIdx+1}번 배정됨`:'배정 없음 (랜덤)';
-    const btnTxt=assignedIdx>=0?'배정 해제':'이 물고기에 배정';
-    const hasFeeder=FG.autoFeeders.length>0;
-    fdFeeder.innerHTML=`<span style="color:#595959;font-size:11px">🍤 먹이통: <strong>${assignedTxt}</strong></span>
-      ${hasFeeder&&!f.isDead?`<button onclick="fishAssignFeeder('${_fdType}',${_fdIdx})" style="margin-left:6px;background:${assignedIdx>=0?'#C00000':'#217346'};color:#fff;border:none;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">${btnTxt}</button>`:''}`;
   }
   const _baseAgi=isYw?(s.agi+(f.bonusAgi||0)*YW_PER_PT.agi)||0:s.agi||0;
   const _baseLuk=isYw?(s.luk+(f.bonusLuk||0)*YW_PER_PT.luk)||0:s.luk||0;
@@ -8350,7 +8342,7 @@ function fishRenderInfoMobile(){
     return `<div style="padding:8px 10px;background:${bg};${bdTop}cursor:pointer" onclick="showFishDetail('${type}',${i});toggleMobileStats()">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
         <span style="font-size:11px;font-weight:800;color:${f.isDead?'#999':'#1F3864'}">${f.isDead?'💀':'🐟'} #${i+1} ${s.name}</span>
-        ${f.isDead?'':`<button onpointerdown="event.preventDefault()" onclick="event.stopPropagation();feedFishOne(${i})" style="background:#F59E0B;color:#fff;border:none;border-radius:3px;font-size:10px;padding:2px 7px;cursor:pointer;font-family:inherit">🍤</button>`}
+        ${f.isDead?'':`<button onpointerdown="event.preventDefault()" onclick="event.stopPropagation();feedFishOne('${type}',${i})" style="background:#F59E0B;color:#fff;border:none;border-radius:3px;font-size:10px;padding:2px 7px;cursor:pointer;font-family:inherit">🍤</button>`}
       </div>
       ${f.isDead?'<div style="font-size:10px;color:#999;text-align:center">사망 — 클릭하여 구매</div>':`
       <div style="font-size:10px;color:#888;display:flex;justify-content:space-between;margin-bottom:1px"><span>❤️ HP</span><span>${Math.ceil(f.hp)}/${f.maxHp}</span></div>
