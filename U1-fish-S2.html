@@ -11,6 +11,7 @@ U1-fish Season 2 — 물고기 수량 기반 시스템
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>수족관_관리대장_2026.xlsx - Microsoft Excel</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐟%3C/text%3E%3C/svg%3E">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI',sans-serif;background:#F2F2F2;color:#1F1F1F;height:100dvh;overflow:hidden;max-width:480px;margin:0 auto;display:flex;flex-direction:column;font-size:13px;user-select:none}
@@ -905,7 +906,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
 </div>
 
 <!-- ══ 갯벌 파기 화면 ══ -->
-<div id="s-digging" class="scr" style="display:none;flex-direction:column;background:#D4C5B9">
+<div id="s-digging" class="scr" style="flex-direction:column;background:#D4C5B9">
   <div style="flex-shrink:0;background:#8B7355;border-bottom:2px solid #5D4037;padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
     <div style="flex:1">
       <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="diggingExit()">✕</button></div>
@@ -3457,7 +3458,7 @@ function fishingStartGauge(){
   FMG.autoGaugeDir=Math.random()>0.5?1:-1;
   FMG.dragGaugeOffset=0;
   FMG.gaugeStartTime=Date.now();
-  FMG.gaugeTimeout=setTimeout(()=>fishingGaugeTimeOut(),60000);
+  FMG.gaugeTimeout=setTimeout(()=>fishingGaugeTimeOut(),30000);
   FMG.successZoneHoldTime=0;
   FMG.successZoneHoldStart=null;
   FMG.successZoneRequiredTime=2000;
@@ -6597,8 +6598,7 @@ function diggingEnter(){
     return;
   }
   _diggingGame={hoeCount:FG.inventory.hoe,baits:[],found:[],isPlaying:true};
-  document.getElementById('s-fishing').style.display='none';
-  document.getElementById('s-digging').style.display='flex';
+  show('s-digging');
   // 화면이 렌더링된 후 배치
   setTimeout(()=>{
     generateBaits();
@@ -6608,13 +6608,10 @@ function diggingEnter(){
 }
 
 function diggingExit(){
-  if(_diggingGame.isPlaying){
-    FG.inventory.hoe=_diggingGame.hoeCount;
-    for(let b of _diggingGame.found){
-      FG.inventory[b.type]=(FG.inventory[b.type]||0)+1;
-    }
-    fishQuickSave();
-  }
+  // 호미·획득물은 클릭 시점에 이미 인벤토리에 반영됨 → 저장만 한 번
+  _diggingGame.isPlaying=false;
+  FG.inventory.hoe=_diggingGame.hoeCount;
+  fishQuickSave();
   show('s-fishworld');
   fishRenderInfo();
 }
@@ -6706,6 +6703,7 @@ function clickGround(e){
   const clickY=e.clientY-rect.top;
 
   _diggingGame.hoeCount--;
+  FG.inventory.hoe=_diggingGame.hoeCount;   // 호미 소모 즉시 반영
 
   // 클릭 위치에서 50px 이내의 미끼 찾기
   let hitBait=null;
@@ -6719,6 +6717,7 @@ function clickGround(e){
   if(hitBait){
     hitBait.found=true;
     _diggingGame.found.push(hitBait);
+    FG.inventory[hitBait.type]=(FG.inventory[hitBait.type]||0)+1;   // 획득 즉시 인벤토리 적립
     const names={bait_normal:'중급',bait_high:'고급',bait_rare:'희귀',bait_hero:'영웅',bait_legend:'전설'};
     u1Toast(`✅ ${names[hitBait.type]} 미끼 획득!`,'#2E7D32');
   } else {
@@ -6758,7 +6757,9 @@ function clickBait(id,e){
 
   bait.found=true;
   _diggingGame.hoeCount--;
+  FG.inventory.hoe=_diggingGame.hoeCount;   // 호미 소모 즉시 반영
   _diggingGame.found.push(bait);
+  FG.inventory[bait.type]=(FG.inventory[bait.type]||0)+1;   // 획득 즉시 인벤토리 적립
 
   const names={bait_normal:'중급',bait_high:'고급',bait_rare:'희귀',bait_hero:'영웅',bait_legend:'전설'};
   u1Toast(`✅ ${names[bait.type]} 미끼 획득!`,'#2E7D32');
@@ -6775,6 +6776,9 @@ function endDiggingRound(allFound){
   _diggingGame.isPlaying=false;
   const msg=allFound?`🎉 모든 미끼를 찾았습니다! 호미 ${_diggingGame.hoeCount}개 남음`:`⚠️ 호미가 모두 소모되었습니다! 획득: ${_diggingGame.found.length}개`;
   u1Toast(msg,allFound?'#2E7D32':'#F57C00');
+
+  // 획득물은 이미 인벤토리에 반영됨 → 라운드 결과 저장
+  fishQuickSave();
 
   // 못 찾은 미끼 표시
   showMissedBaits();
@@ -6813,7 +6817,11 @@ function showMissedBaits(){
 }
 
 function nextDiggingRound(){
-  if(_diggingGame.hoeCount<=0) return;
+  if(_diggingGame.hoeCount<=0){
+    u1Toast('호미가 없습니다! 상점에서 구매하세요','#C00000');
+    return;
+  }
+  // 이전 라운드 획득물은 이미 인벤토리에 적립됨 → 표시용 상태만 새 라운드로
   _diggingGame={hoeCount:_diggingGame.hoeCount,baits:[],found:[],isPlaying:true};
   generateBaits();
   renderDiggingScreen();
