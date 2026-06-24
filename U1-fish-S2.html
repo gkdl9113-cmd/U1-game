@@ -2784,7 +2784,7 @@ function _lotteryInitPool(){
 }
 async function _lotteryGetPool(){
   const{data}=await _sb.from('fish_accounts').select('fish_data')
-    .eq('username',LOTTERY_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).single();
+    .eq('username',LOTTERY_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).maybeSingle();
   return data?.fish_data||null;
 }
 async function _lotteryEnsurePool(){
@@ -3120,7 +3120,6 @@ function _applyOfflineElapsed(hiddenAt){
   _tabHiddenAt=0;localStorage.removeItem('_tabHiddenAt');
   if(elapsed>30){
     const cappedElapsed=Math.min(elapsed,14400);
-    fishCalcOfflineAutoFeed(cappedElapsed);
     fishCalcOffline(cappedElapsed);
     fishCalcOfflineRod(cappedElapsed);
     FG.lastTick=serverNow();
@@ -6939,7 +6938,7 @@ async function _lotteryCommitPool(){
   const p=ltPendingPool;ltPendingPool=null;
   await _sb.from('fish_accounts').update({
     fish_data:p,updated_at:new Date().toISOString()
-  }).eq('username',LOTTERY_USERNAME).eq('server',ACTIVE_SERVER);
+  }).eq('username',LOTTERY_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2);
 }
 
 async function closeLotteryModal(){
@@ -7176,13 +7175,13 @@ const BATTLEBAN_USERNAME='__BATTLEBAN__';
 let BATTLE_BAN_PAIRS=[]; // [[userA, userB], ...]
 async function loadBattleBanList(){
   try{
-    const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',BATTLEBAN_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).single();
+    const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',BATTLEBAN_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).maybeSingle();
     BATTLE_BAN_PAIRS=data?.fish_data?.pairs||[];
   }catch(e){BATTLE_BAN_PAIRS=[];}
 }
 async function saveBattleBanList(){
   await _sb.from('fish_accounts').upsert({
-    username:BATTLEBAN_USERNAME,server:ACTIVE_SERVER,
+    username:BATTLEBAN_USERNAME,server:ACTIVE_SERVER,season:2,
     password_hash:'__BATTLEBAN__',
     fish_data:{pairs:BATTLE_BAN_PAIRS},
     updated_at:new Date().toISOString()
@@ -7231,7 +7230,7 @@ function _logMoney(type,amount,detail=''){
 let _stockSettingsLoaded=false;
 async function loadStockSettings(){
   try{
-    const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',STOCK_SETTINGS_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).single();
+    const{data}=await _sb.from('fish_accounts').select('fish_data').eq('username',STOCK_SETTINGS_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).maybeSingle();
     _stockVolOverrides=data?.fish_data?.vols||{};
     _stockBearBias=data?.fish_data?.bearBias??STOCK_BEAR_BIAS_DEFAULT;
     _stockPriceAnchors=data?.fish_data?.anchor||{};
@@ -7241,7 +7240,7 @@ async function loadStockSettings(){
 }
 async function _saveStockSettingsToDB(){
   const{error}=await _sb.from('fish_accounts').upsert({
-    username:STOCK_SETTINGS_USERNAME,server:ACTIVE_SERVER,
+    username:STOCK_SETTINGS_USERNAME,server:ACTIVE_SERVER,season:2,
     password_hash:'__STOCK__',
     fish_data:{vols:_stockVolOverrides,bearBias:_stockBearBias,anchor:_stockPriceAnchors,delisted:[..._stockDelisted]},
     updated_at:new Date().toISOString()
@@ -7398,7 +7397,7 @@ const NUMLT_ACCUM_RATE_DEFAULT=600; // 원/시간 기본값 (10원/시간 → 60
 
 async function getJackpotData(){
   const{data}=await _sb.from('fish_accounts').select('fish_data')
-    .eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).single();
+    .eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2).maybeSingle();
   return data?.fish_data||null;
 }
 
@@ -7413,7 +7412,7 @@ async function _jackpotApplyAccum(jd){
   const newJd={...jd,pool:jd.pool+add,lastAccum:now};
   await _sb.from('fish_accounts').update({
     fish_data:newJd,updated_at:new Date().toISOString()
-  }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
+  }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2);
   return newJd;
 }
 
@@ -7423,7 +7422,7 @@ async function ensureJackpot(){
     const target=Math.floor(Math.random()*(NUMLT_MAX+1));
     jd={pool:NUMLT_START,target,round:1,lastAccum:Date.now(),accumRate:NUMLT_ACCUM_RATE_DEFAULT};
     await _sb.from('fish_accounts').upsert({
-      username:NUMLT_USERNAME,server:ACTIVE_SERVER,
+      username:NUMLT_USERNAME,server:ACTIVE_SERVER,season:2,
       password_hash:'__JACKPOT__',fish_data:jd,
       updated_at:new Date().toISOString()
     },{onConflict:'username,server'});
@@ -7475,7 +7474,7 @@ async function buyNumberLottery(){
     await _sb.from('fish_accounts').update({
       fish_data:{pool:newPool,target:newTarget,round:(jd.round||1)+1,...keepFields,lastAccum:Date.now()},
       updated_at:new Date().toISOString()
-    }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
+    }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2);
     resultEl.style.cssText='display:block;text-align:center;padding:14px;border-radius:6px;background:#FFD700;color:#7F4F00;font-size:15px;font-weight:900;margin-bottom:10px';
     resultEl.innerHTML=`🎉 JACKPOT 당첨!<br>+${jd.pool.toLocaleString()}원 수령!<br><span style="font-size:11px;font-weight:400">당첨 번호: ${jd.target}</span>`;
     document.getElementById('numlt-pool').textContent=newPool.toLocaleString()+'원';
@@ -7485,7 +7484,7 @@ async function buyNumberLottery(){
     await _sb.from('fish_accounts').update({
       fish_data:{pool:newPool,target:newTarget,round:(jd.round||1)+1,...keepFields},
       updated_at:new Date().toISOString()
-    }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
+    }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2);
     fishQuickSave();
     resultEl.style.cssText='display:block;text-align:center;padding:12px;border-radius:6px;background:#F2F2F2;color:#555;font-size:12px;font-weight:700;margin-bottom:10px;border:1px solid #DDD';
     resultEl.innerHTML=`😢 꽝!<br>당첨 번호: <strong>${jd.target}</strong> / 내 번호: <strong>${num}</strong><br><span style="font-size:10px;color:#888">잭팟 적립: +1,000원 → 현재 ${newPool.toLocaleString()}원</span>`;
@@ -8267,7 +8266,7 @@ async function adminSaveJackpotSettings(){
   const{error}=await _sb.from('fish_accounts').update({
     fish_data:{...jd,accumRate:rate,lastAccum:Date.now()},
     updated_at:new Date().toISOString()
-  }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
+  }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2);
   if(error){alert('저장 실패: '+error.message);return;}
   hideDlg('adm-jackpot-modal');
   u1Toast(`✅ 잭팟 적립 속도 ${rate}원/시간으로 변경`,'#217346');
@@ -8277,7 +8276,7 @@ async function adminResetLottery(){
   if(!confirm('행운복권 풀을 150장으로 초기화하시겠습니까?')) return;
   const init=_lotteryInitPool();
   const{error}=await _sb.from('fish_accounts').upsert({
-    username:LOTTERY_USERNAME,server:ACTIVE_SERVER,
+    username:LOTTERY_USERNAME,server:ACTIVE_SERVER,season:2,
     password_hash:'__LOTTERY__',fish_data:init,
     updated_at:new Date().toISOString()
   },{onConflict:'username,server'});
@@ -8291,7 +8290,7 @@ async function adminResetJackpot(){
   const{error}=await _sb.from('fish_accounts').update({
     fish_data:{pool:NUMLT_START,target,round:1},
     updated_at:new Date().toISOString()
-  }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER);
+  }).eq('username',NUMLT_USERNAME).eq('server',ACTIVE_SERVER).eq('season',2);
   if(error){alert('초기화 실패: '+error.message);return;}
   alert('잭팟 초기화 완료! (10,000원, 새 번호 설정)');
 }
