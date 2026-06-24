@@ -3000,8 +3000,16 @@ function _normalizeFish(f,type){
   return f;
 }
 function _normalizeAllFish(){
-  Object.entries(FG.fishes||{}).forEach(([type,d])=>{ if(d&&Array.isArray(d.fish)) d.fish.forEach(f=>_normalizeFish(f,type)); });
+  Object.entries(FG.fishes||{}).forEach(([type,d])=>{
+    if(!d) return;
+    if(d.level==null) d.level=1;            // 종 레벨 보장(수익 NaN 방지)
+    if(Array.isArray(d.fish)){
+      d.fish.forEach(f=>_normalizeFish(f,type));
+      d.quantity=d.fish.length;             // 수량을 실제 물고기 수와 동기화
+    }
+  });
   if(Array.isArray(FG.auxFishes)) FG.auxFishes.forEach(f=>_normalizeFish(f,f&&f.type));
+  if(!Number.isFinite(FG.money)) FG.money=0; // 옛 버그로 NaN이 된 돈 복구
 }
 function fishStage(){return F_STAGES[1];}
 function _isYwFish(f){return f.type==='yongwang'||f.type==='yeongeum'||f.type==='eelyw'||f.type==='haelyong'||f.type==='megalodonte'||f.type==='geumlin';}
@@ -4039,18 +4047,19 @@ function fishTick(){
 
   let inc=0;
   Object.entries(FG.fishes).forEach(([type,data])=>{
-    if(data.quantity<=0||!data.fish) return;
+    if(!data||!Array.isArray(data.fish)||data.fish.length===0) return;
 
     // 개별 물고기별 수입 계산 (stage 반영) — 온라인 수익은 포만감 무관(오프라인에만 영향)
     let typeIncome=0;
     data.fish.forEach(f=>{
       if(f.isDead) return; // 살아있으면 포만감과 무관하게 온라인 수익 발생
-      const stageIncome=STAGE_INCOME[type]?.[f.stage]||2;
+      const stageIncome=STAGE_INCOME[type]?.[f.stage||1]||2;
       typeIncome+=stageIncome;
     });
+    if(typeIncome<=0) return;
 
-    // 레벨 보너스 (종 레벨 기준)
-    const levelBonus=1+(data.level-1)*0.1; // 레벨당 10% 증가
+    // 레벨 보너스 (종 레벨 기준, NaN 방지)
+    const levelBonus=1+((data.level||1)-1)*0.1; // 레벨당 10% 증가
     const totalIncome=Math.floor(typeIncome*levelBonus);
     inc+=totalIncome;
 
