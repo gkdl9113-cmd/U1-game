@@ -3022,7 +3022,7 @@ function fIncomeWithSkills(type){
 function totalIncome(){
   let total=0;
   Object.entries(FG.fishes).forEach(([type,data])=>{
-    if(data.quantity>0) total+=fIncomeWithSkills(type)*data.quantity;
+    (data.fish||[]).forEach(f=>{ if(!f.isDead) total+=STAGE_INCOME[type]?.[f.stage||1]||2; });
   });
   return Math.floor(total*(1+(accTitleEf().income||0))); // 칭호 수입 보너스
 }
@@ -4940,7 +4940,7 @@ function showFishDetail(typeOrIdx, fishIndex){
   } else {
     if(_xpRow) _xpRow.style.display='none';
   }
-  const _baseInc=fIncomeWithSkills(f);
+  const _baseInc=fIncome(f);
   const _effInc=tef.income>0?Math.floor(_baseInc*(1+tef.income)):_baseInc;
   const _incEl=document.getElementById('fd-income');
   _incEl.textContent=_effInc+'원/30초'; _incEl.style.color=_effInc>_baseInc?'#B8860B':'';
@@ -8441,7 +8441,7 @@ function fishRenderInfoMobile(){
       <div style="background:#F3F4F6;border-radius:3px;height:6px;overflow:hidden"><div style="width:${xpPct}%;height:100%;background:#4472C4;border-radius:3px"></div></div>
       <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:#888">
         <span>⚔️${s.atk||0} 🛡️${s.def||0}</span>
-        <span style="color:#217346;font-weight:700">💰${STAGE_INCOME[f.stage]||2}/30초</span>
+        <span style="color:#217346;font-weight:700">💰${fIncome(f)}/30초</span>
       </div>
       ${canEvo?'<div style="font-size:10px;color:#217346;font-weight:700;margin-top:3px;text-align:center">⬆️ 진화 가능!</div>':''}
       `}
