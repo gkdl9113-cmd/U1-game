@@ -6705,13 +6705,13 @@ function clickGround(e){
   _diggingGame.hoeCount--;
   FG.inventory.hoe=_diggingGame.hoeCount;   // 호미 소모 즉시 반영
 
-  // 클릭 위치에서 50px 이내의 미끼 찾기
-  let hitBait=null;
+  // 클릭 위치에서 가까운 미끼 찾기 (판정 반경)
+  const HIT_RADIUS=45;
+  let hitBait=null, hitDist=HIT_RADIUS;
   for(let b of _diggingGame.baits){
-    if(!b.found&&Math.hypot(b.x-clickX,b.y-clickY)<30){
-      hitBait=b;
-      break;
-    }
+    if(b.found) continue;
+    const d=Math.hypot(b.x-clickX,b.y-clickY);
+    if(d<hitDist){ hitDist=d; hitBait=b; }   // 범위 내 가장 가까운 미끼 선택
   }
 
   if(hitBait){
