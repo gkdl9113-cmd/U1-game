@@ -2989,9 +2989,9 @@ const ACHIEVEMENTS=[
   {id:'money_100k',   cat:'재산', icon:'💰', name:'큰 부자',           desc:'재산 1,000,000원 달성',                       reward:{money:200000,   spFood:0}, trigger:'money',      check:()=>FG.money>=1000000},
   {id:'money_10m',    cat:'재산', icon:'💎', name:'대부호',            desc:'재산 10,000,000원 달성',                      reward:{money:1000000,  spFood:0}, trigger:'money',      check:()=>FG.money>=10000000},
   // 영물
-  {id:'yw_first',     cat:'영물', icon:'🐢', name:'첫 영물',           desc:'처음으로 영물을 메인 수조에 보유했습니다',    reward:{money:0,        spFood:3}, trigger:'yw',         check:()=>Object.values(FG.fishes).some(f=>_isYwFish(f)&&!f.isDead)},
-  {id:'yw_lv10',      cat:'영물', icon:'🐢', name:'영물 성장',         desc:'영물이 레벨 10에 도달했습니다',               reward:{money:0,        spFood:5}, trigger:'ywlevel',    check:(e)=>e&&e.level>=10, prog:()=>{const lv=Math.max(0,...Object.values(FG.fishes).filter(f=>_isYwFish(f)).map(f=>f.level||1));return{c:Math.min(lv,10),m:10};}},
-  {id:'yw_lv30',      cat:'영물', icon:'🐢', name:'영물 각성',         desc:'영물이 레벨 30에 도달했습니다',               reward:{money:0,        spFood:15}, trigger:'ywlevel',   check:(e)=>e&&e.level>=30, prog:()=>{const lv=Math.max(0,...Object.values(FG.fishes).filter(f=>_isYwFish(f)).map(f=>f.level||1));return{c:Math.min(lv,30),m:30};}},
+  {id:'yw_first',     cat:'영물', icon:'🐢', name:'첫 영물',           desc:'처음으로 영물을 메인 수조에 보유했습니다',    reward:{money:0,        spFood:3}, trigger:'yw',         check:()=>_allFishFlat().some(f=>_isYwFish(f)&&!f.isDead)},
+  {id:'yw_lv10',      cat:'영물', icon:'🐢', name:'영물 성장',         desc:'영물이 레벨 10에 도달했습니다',               reward:{money:0,        spFood:5}, trigger:'ywlevel',    check:(e)=>e&&e.level>=10, prog:()=>{const lv=Math.max(0,..._allFishFlat().filter(f=>_isYwFish(f)).map(f=>f.level||1));return{c:Math.min(lv,10),m:10};}},
+  {id:'yw_lv30',      cat:'영물', icon:'🐢', name:'영물 각성',         desc:'영물이 레벨 30에 도달했습니다',               reward:{money:0,        spFood:15}, trigger:'ywlevel',   check:(e)=>e&&e.level>=30, prog:()=>{const lv=Math.max(0,..._allFishFlat().filter(f=>_isYwFish(f)).map(f=>f.level||1));return{c:Math.min(lv,30),m:30};}},
   // 기타
   {id:'spfood_first', cat:'기타', icon:'🍖', name:'특수먹이 첫 사용', desc:'처음으로 특수먹이를 사용했습니다',            reward:{money:5000,     spFood:0}, trigger:'spfood_use', check:()=>true},
 ];
@@ -3023,13 +3023,13 @@ function checkAchievements(trigger,extra){
 function _retroCheckAchievements(){
   // 현재 FG 상태에서 직접 판단 가능한 도전과제 소급 감지
   // 영물 보유
-  if(Object.values(FG.fishes).some(f=>_isYwFish(f)&&!f.isDead)) checkAchievements('yw');
+  if(_allFishFlat().some(f=>_isYwFish(f)&&!f.isDead)) checkAchievements('yw');
   // 도감
   checkAchievements('codex');
   // 재산
   checkAchievements('money');
   // 영물 레벨
-  const maxYwLv=Math.max(0,...Object.values(FG.fishes).filter(f=>_isYwFish(f)).map(f=>f.level||1));
+  const maxYwLv=Math.max(0,..._allFishFlat().filter(f=>_isYwFish(f)).map(f=>f.level||1));
   if(maxYwLv>=1) checkAchievements('ywlevel',{level:maxYwLv});
 }
 
@@ -3267,7 +3267,7 @@ function _applyOfflineElapsed(hiddenAt){
     const mins=Math.floor(elapsed/60),secs=Math.floor(elapsed%60);
     document.getElementById('f-status').textContent=`⏰ ${mins}분 ${secs}초 자리 비움 처리 완료`;
     setTimeout(()=>fishUpdateStatus(),3000);
-    Object.values(FG.fishes).forEach(f=>{if(!f.isDead&&f.hp<=0) fishDieOne(f);});
+    _allFishFlat().forEach(f=>{if(!f.isDead&&f.hp<=0) fishDieOne(f);});
   }
 }
 document.addEventListener('visibilitychange',()=>{
@@ -4247,10 +4247,15 @@ function fishTick(){
 }
 
 function removeDeadFishes(){
-  const deadCount=Object.values(FG.fishes).filter(f=>f.isDead).length;
+  const deadCount=_allFishFlat().filter(f=>f.isDead).length;
   if(deadCount===0) return;
   if(!confirm(`사망한 물고기 ${deadCount}마리를 모두 삭제하시겠습니까?\n\n삭제된 물고기는 복구할 수 없습니다.`)) return;
-  FG.fishes=Object.values(FG.fishes).filter(f=>!f.isDead);
+  Object.values(FG.fishes).forEach(d=>{
+    if(!Array.isArray(d.fish)) return;
+    const before=d.fish.length;
+    d.fish=d.fish.filter(f=>!f.isDead);
+    d.quantity=Math.max(0,(d.quantity||0)-(before-d.fish.length));
+  });
   fishRenderInfo();fishQuickSave();
   u1Toast(`💀 사망 물고기 ${deadCount}마리 삭제 완료`,'#555');
 }
@@ -4258,7 +4263,7 @@ function removeDeadFishes(){
 function fishDieOne(f){
   f.isDead=true;f.hp=0;f.xp=0;f.fullness=0;
   fishRenderInfo();
-  if(aliveFishes().length===0){
+  if(!_allFishFlat().some(x=>!x.isDead)){
     fishStopLoops();
     const canBuy=FG.money>=55;
     const btn=document.querySelector('#result-notify .xl-notify-btn:first-child');
@@ -4267,7 +4272,7 @@ function fishDieOne(f){
     if(cbtn) cbtn.style.display='none';
     showResultNotify('💀','모든 물고기가 죽었습니다 😢\n\n'+(canBuy?'금붕어 치어 구매 (55원)\n현재: '+FG.money+'원':'돈 부족 (55원 필요)\n현재: '+FG.money+'원'));
   } else {
-    document.getElementById('f-status').textContent='💀 물고기 #'+(FG.fishes.indexOf(f)+1)+' 사망';
+    document.getElementById('f-status').textContent='💀 '+(_fishSpec(f).name||'물고기')+' 사망';
     setTimeout(()=>fishUpdateStatus(),3000);
   }
 }
@@ -4943,8 +4948,8 @@ const YW_PER_PT={hp:100,atk:10,def:20,agi:3,luk:5};
 function ywXpNeed(f){return(f.level||1)*500;}
 function ywGoldCost(f){return(f.level||1)*50000;}
 
-function ywFeedSpecial(idx){
-  const f=FG.fishes[idx];if(!f||!_isYwFish(f)||f.isDead) return;
+function ywFeedSpecial(type,idx){
+  const f=FG.fishes[type]?.fish?.[idx];if(!f||!_isYwFish(f)||f.isDead) return;
   if(FG.spFood<=0){u1Toast('특수먹이가 없습니다','#C00000');return;}
   const lv=f.level||1;
   if(lv>=YW_MAX_LV){u1Toast('이미 최대 레벨입니다','#888');return;}
@@ -4954,12 +4959,12 @@ function ywFeedSpecial(idx){
   const xpNeed=ywXpNeed(f);
   const pct=Math.min(100,Math.floor(f.xp/xpNeed*100));
   u1Toast(`🍖 특수먹이 급여 → XP +500 (${Math.floor(f.xp)}/${xpNeed}, ${pct}%)  남은 특수먹이: ${FG.spFood}개`,'#004D40');
-  showFishDetail(idx);
+  showFishDetail(type,idx);
   fishQuickSave();
 }
 
-function ywLevelUp(idx){
-  const f=FG.fishes[idx];if(!f||!_isYwFish(f)) return;
+function ywLevelUp(type,idx){
+  const f=FG.fishes[type]?.fish?.[idx];if(!f||!_isYwFish(f)) return;
   const lv=f.level||1;
   if(lv>=YW_MAX_LV){u1Toast('최대 레벨입니다','#888');return;}
   if(f.xp<ywXpNeed(f)){u1Toast('XP가 부족합니다','#C00000');return;}
@@ -4970,17 +4975,17 @@ function ywLevelUp(idx){
   f.level=lv+1;
   f.statPoints=(f.statPoints||0)+5;
   checkAchievements('ywlevel',{level:f.level});
-  showFishDetail(idx);
+  showFishDetail(type,idx);
   saveFishDataToDB();
   u1Toast(`🐢 Lv.${f.level} 달성! 스탯 50포인트 획득!`,'#004D40');
-  setTimeout(()=>ywOpenStatAlloc(idx),400);
+  setTimeout(()=>ywOpenStatAlloc(type,idx),400);
 }
 
-let _ywAllocIdx=-1,_ywAllocPend={hp:0,atk:0,def:0,agi:0,luk:0},_ywAllocTotalPts=0;
-function ywOpenStatAlloc(idx){
-  const f=FG.fishes[idx];if(!f||!_isYwFish(f)) return;
+let _ywAllocType=null,_ywAllocIdx=-1,_ywAllocPend={hp:0,atk:0,def:0,agi:0,luk:0},_ywAllocTotalPts=0;
+function ywOpenStatAlloc(type,idx){
+  const f=FG.fishes[type]?.fish?.[idx];if(!f||!_isYwFish(f)) return;
   if((f.statPoints||0)<=0){u1Toast('배분할 포인트가 없습니다','#888');return;}
-  _ywAllocIdx=idx;
+  _ywAllocType=type;_ywAllocIdx=idx;
   _ywAllocPend={hp:0,atk:0,def:0,agi:0,luk:0};
   _ywAllocTotalPts=f.statPoints||0;
   document.getElementById('yw-alloc-title').textContent=`🐢 Lv.${f.level||1} 스탯 배분`;
@@ -4988,7 +4993,7 @@ function ywOpenStatAlloc(idx){
   document.getElementById('yw-statalloc-modal').classList.add('on');
 }
 function ywRenderAlloc(){
-  const f=FG.fishes[_ywAllocIdx];if(!f) return;
+  const f=FG.fishes[_ywAllocType]?.fish?.[_ywAllocIdx];if(!f) return;
   const s=fStage(f);
   const used=Object.values(_ywAllocPend).reduce((a,b)=>a+b,0);
   const remaining=_ywAllocTotalPts-used;
@@ -5024,7 +5029,7 @@ function ywAllocMinus(key){
   _ywAllocPend[key]--;ywRenderAlloc();
 }
 function ywStatAllocConfirm(){
-  const f=FG.fishes[_ywAllocIdx];if(!f||!_isYwFish(f)) return;
+  const f=FG.fishes[_ywAllocType]?.fish?.[_ywAllocIdx];if(!f||!_isYwFish(f)) return;
   const used=Object.values(_ywAllocPend).reduce((a,b)=>a+b,0);
   if(used===0){u1Toast('포인트를 배분해주세요','#888');return;}
   const addHp=_ywAllocPend.hp*YW_PER_PT.hp;
@@ -5035,16 +5040,16 @@ function ywStatAllocConfirm(){
   f.bonusLuk=(f.bonusLuk||0)+_ywAllocPend.luk;
   f.statPoints=_ywAllocTotalPts-used;
   hideDlg('yw-statalloc-modal');
-  showFishDetail(_ywAllocIdx);
+  showFishDetail(_ywAllocType,_ywAllocIdx);
   saveFishDataToDB();
   u1Toast(`✅ 스탯 ${used}pts 배분 완료!`,'#004D40');
 }
 
 // ─── 스킬 배정 ───
-let _saFishIdx=-1,_saSlot=0;
-function openSkillAssign(fishIdx,slot){
-  _saFishIdx=fishIdx;_saSlot=slot;
-  const f=FG.fishes[fishIdx];if(!f)return;
+let _saType=null,_saIdx=-1,_saSlot=0;
+function openSkillAssign(type,idx,slot){
+  _saType=type;_saIdx=idx;_saSlot=slot;
+  const f=FG.fishes[type]?.fish?.[idx];if(!f)return;
   const slotKey=slot===1?'skill1':'skill2';
   const curSkId=f[slotKey];const curSk=FISH_SKILLS[curSkId];
   document.getElementById('sk-assign-label').textContent=slot===1?'⚔️ 전용스킬 슬롯':'🌐 공용스킬 슬롯';
@@ -5087,7 +5092,7 @@ function openSkillAssign(fishIdx,slot){
   document.getElementById('skill-assign-modal').classList.add('on');
 }
 function skillAssignConfirm(skillId){
-  const f=FG.fishes[_saFishIdx];if(!f)return;
+  const f=FG.fishes[_saType]?.fish?.[_saIdx];if(!f)return;
   const slotKey=_saSlot===1?'skill1':'skill2';
   const existing=f[slotKey];
   if(existing&&FISH_SKILLS[existing]) FG.skillInventory[existing]=(FG.skillInventory[existing]||0)+1;
@@ -5095,19 +5100,19 @@ function skillAssignConfirm(skillId){
   if(FG.skillInventory[skillId]<=0) delete FG.skillInventory[skillId];
   f[slotKey]=skillId;
   hideDlg('skill-assign-modal');
-  showFishDetail(_saFishIdx);
+  showFishDetail(_saType,_saIdx);
   saveFishDataToDB();
   u1Toast('✨ '+FISH_SKILLS[skillId].name+' 장착!','#4F46E5');
 }
 function skillAssignRemove(){
-  const f=FG.fishes[_saFishIdx];if(!f)return;
+  const f=FG.fishes[_saType]?.fish?.[_saIdx];if(!f)return;
   const slotKey=_saSlot===1?'skill1':'skill2';
   const existing=f[slotKey];
   if(existing&&FISH_SKILLS[existing]){
     FG.skillInventory[existing]=(FG.skillInventory[existing]||0)+1;
     delete f[slotKey];
     hideDlg('skill-assign-modal');
-    showFishDetail(_saFishIdx);
+    showFishDetail(_saType,_saIdx);
     saveFishDataToDB();
     u1Toast('🗑️ '+FISH_SKILLS[existing].name+' 제거됨','#888');
   }
@@ -5222,11 +5227,11 @@ function showFishDetail(typeOrIdx, fishIndex){
       :`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px">
           <span style="color:#004D40;font-weight:700">🐢 Lv.${ywLv} → ${ywLv+1}</span>
           <span style="color:#555">⭐ ${Math.floor(f.xp)}/${xpNeedYw}</span>
-          <button onclick="ywFeedSpecial(${_fdIdx})" style="background:${FG.spFood>0?'#5D4037':'#9E9E9E'};color:#FFE0B2;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:${FG.spFood>0?'pointer':'default'};font-family:inherit">🍖 특수먹이 (${FG.spFood}개)</button>
+          <button onclick="ywFeedSpecial('${_fdType}',${_fdIdx})" style="background:${FG.spFood>0?'#5D4037':'#9E9E9E'};color:#FFE0B2;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:${FG.spFood>0?'pointer':'default'};font-family:inherit">🍖 특수먹이 (${FG.spFood}개)</button>
           ${canUp
-            ?`<button onclick="ywLevelUp(${_fdIdx})" style="background:#004D40;color:#FFD700;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">⬆️ 레벨업 (💰${ywGoldCost(f).toLocaleString()}원)</button>`
+            ?`<button onclick="ywLevelUp('${_fdType}',${_fdIdx})" style="background:#004D40;color:#FFD700;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">⬆️ 레벨업 (💰${ywGoldCost(f).toLocaleString()}원)</button>`
             :`<span style="color:#888;font-size:9px">비용 💰${ywGoldCost(f).toLocaleString()}원</span>`}
-          ${hasPts?`<button onclick="ywOpenStatAlloc(${_fdIdx})" style="background:#C05000;color:#fff;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">📊 스탯배분 (${f.statPoints}pts)</button>`:''}
+          ${hasPts?`<button onclick="ywOpenStatAlloc('${_fdType}',${_fdIdx})" style="background:#C05000;color:#fff;border:none;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">📊 스탯배분 (${f.statPoints}pts)</button>`:''}
         </div>`;
   } else if((f.stage||1)<((F_SPECIES[_fdType]||[]).length-1)){
     const _st=f.stage||1;
@@ -6085,7 +6090,7 @@ function openBtHpPick(){
 function btHpHeal(fishId){
   const bp=FG.battlePoints||0;
   if(bp<1){u1Toast('BP가 부족합니다','#C00000');hideDlg('bt-hp-pick-modal');return;}
-  const f=Object.values(FG.fishes).find(f=>f.id===fishId);
+  const f=_allFishFlat().find(f=>f.id===fishId);
   if(!f||f.isDead){u1Toast('대상 물고기를 찾을 수 없습니다','#C00000');return;}
   const s=fStage(f);
   FG.battlePoints-=1;
@@ -6568,6 +6573,14 @@ function _allFishFlat(){
 }
 // 물고기의 실제 단계 종 정보(이름/등급/스탯). fStage는 항상 1단계만 반환하므로 별도 사용
 function _fishSpec(f){const sp=F_SPECIES[f.type||'goldfish']||F_SPECIES.goldfish;return sp[f.stage]||sp[1];}
+// 전투 결과(HP/사망)를 원본 물고기에 id로 되돌림
+function _btApplyResult(bf,isTimeout){
+  const tf=_allFishFlat().find(x=>x.id===bf.origId); if(!tf) return;
+  if(isTimeout){ tf.hp=Math.max(1,Math.floor(bf.curHp)); return; }
+  tf.hp=Math.max(0,Math.floor(bf.curHp));
+  if(bf.deathSaved){ tf.hp=Math.max(1,Math.floor(tf.maxHp*0.1)); tf.isDead=false; }
+  else if(bf.isDead||bf.curHp<=0){ tf.isDead=true; tf.hp=0; }
+}
 function _updateBtPickRibbonLabel(){
   const lbl=document.getElementById('btpick-ribbon-lbl');
   if(!lbl) return;
@@ -6580,8 +6593,9 @@ function openBattlePick(legendTab){
   if(!FG.legendPick) FG.legendPick=[];
   _btPickLegendMode=legendTab??!!(currentGame&&currentGame.type==='legend_battle');
   // 죽거나 조건 어긋난 물고기 정리
-  FG.battlePick=FG.battlePick.filter(p=>Object.values(FG.fishes).some(f=>f.id===p.id&&!f.isDead));
-  FG.legendPick=FG.legendPick.filter(p=>Object.values(FG.fishes).some(f=>f.id===p.id&&!f.isDead)&&LEGEND_BATTLE_GRADES.has(fStage(p).grade));
+  const _liveIds=new Set(_allFishFlat().filter(f=>!f.isDead).map(f=>f.id));
+  FG.battlePick=FG.battlePick.filter(p=>p&&_liveIds.has(p.id));
+  FG.legendPick=FG.legendPick.filter(p=>p&&_liveIds.has(p.id)&&LEGEND_BATTLE_GRADES.has(fStage(p).grade));
   _applyBtPickTabStyle();
   renderBattlePickGrid();
   document.getElementById('btpick-modal').classList.add('on');
@@ -8697,7 +8711,7 @@ function fwSendChatMobile(){
 function fishRenderInfoMobile(){
   const list=document.getElementById('f-fish-list-m');
   if(!list) return;
-  const _mDeadCnt=Object.values(FG.fishes).filter(f=>f.isDead).length;
+  const _mDeadCnt=_allFishFlat().filter(f=>f.isDead).length;
   const _mDeadBtn=_mDeadCnt>0?`<div style="padding:6px 10px;background:#FFF0F0;border-bottom:1px solid #FFD0D0"><button onclick="removeDeadFishes()" style="width:100%;background:#C00000;color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:700;padding:6px 8px;cursor:pointer;font-family:inherit">💀 사망 물고기 ${_mDeadCnt}마리 일괄 삭제</button></div>`:'';
   list.innerHTML=_mDeadBtn+Object.entries(FG.fishes).flatMap(([type,typeData])=>typeData.fish&&typeData.fish.length>0?typeData.fish.map((f,i)=>{
     const s=fStage(f);
@@ -8870,7 +8884,7 @@ function startBattleGame(){
     const baseDef=isYwF?s.def+(f.bonusDef||0)*YW_PER_PT.def:s.def;
     const baseAgi=isYwF?s.agi+(f.bonusAgi||0)*YW_PER_PT.agi:s.agi;
     const baseLuk=isYwF?s.luk+(f.bonusLuk||0)*YW_PER_PT.luk:s.luk;
-    return{origIdx:FG.fishes.indexOf(f),name:s.name,grade:s.grade,type:f.type||'goldfish',
+    return{origId:f.id,name:s.name,grade:s.grade,type:f.type||'goldfish',
       stage:f.stage,
       hp:Math.floor(f.hp*(1+(tef.hp||0))),
       maxHp:Math.floor(f.maxHp*(1+(tef.hp||0))),
@@ -9914,22 +9928,7 @@ function btShowResult(myAlive,oppAlive,timeoutResult=null){
   const draw=isTimeout?(timeoutResult==='draw'):false;
 
   // ── 실제 HP/사망 반영 ──────────────────────────────
-  btFishes.filter(f=>f.side==='my').forEach(f=>{
-    if(f.origIdx==null||!FG.fishes[f.origIdx]) return;
-    if(isTimeout){
-      // 시간초과: 물고기 죽지 않음, 남은 HP로 귀환 (최소 1)
-      FG.fishes[f.origIdx].hp=Math.max(1,Math.floor(f.curHp));
-    } else {
-      FG.fishes[f.origIdx].hp=Math.max(0,Math.floor(f.curHp));
-      if(f.deathSaved){
-        FG.fishes[f.origIdx].hp=Math.max(1,Math.floor(FG.fishes[f.origIdx].maxHp*0.1));
-        FG.fishes[f.origIdx].isDead=false;
-      } else if(f.isDead||f.curHp<=0){
-        FG.fishes[f.origIdx].isDead=true;
-        FG.fishes[f.origIdx].hp=0;
-      }
-    }
-  });
+  btFishes.filter(f=>f.side==='my').forEach(f=>_btApplyResult(f,isTimeout));
 
   // ── 승리 보상 계산 ───────────────────────────────
   let totalReward=0;
@@ -10028,17 +10027,7 @@ function btShowResult(myAlive,oppAlive,timeoutResult=null){
 function onBattleForfeit(payload){
   clearInterval(btInterval);btInterval=null;
   // 내 물고기 현재 배틀 상태 반영
-  btFishes.filter(f=>f.side==='my').forEach(f=>{
-    if(f.origIdx==null||!FG.fishes[f.origIdx]) return;
-    FG.fishes[f.origIdx].hp=Math.max(0,Math.floor(f.curHp));
-    if(f.deathSaved){
-      FG.fishes[f.origIdx].hp=Math.max(1,Math.floor(FG.fishes[f.origIdx].maxHp*0.1));
-      FG.fishes[f.origIdx].isDead=false;
-    } else if(f.isDead||f.curHp<=0){
-      FG.fishes[f.origIdx].isDead=true;
-      FG.fishes[f.origIdx].hp=0;
-    }
-  });
+  btFishes.filter(f=>f.side==='my').forEach(f=>_btApplyResult(f,false));
   // 승리 보상 (상대가 탈주했으므로 살아있는 적 물고기에 대해 절반 보상)
   let totalReward=0;
   const rewardLines=[];
@@ -10087,17 +10076,7 @@ function battleExit(){
   clearInterval(btInterval);btInterval=null;
   // 배틀 중 도중 이탈: 현재 배틀 상태를 FG.fishes에 반영 + 패배 처리
   if(wasInBattle){
-    btFishes.filter(f=>f.side==='my').forEach(f=>{
-      if(f.origIdx==null||!FG.fishes[f.origIdx]) return;
-      FG.fishes[f.origIdx].hp=Math.max(0,Math.floor(f.curHp));
-      if(f.deathSaved){
-        FG.fishes[f.origIdx].hp=Math.max(1,Math.floor(FG.fishes[f.origIdx].maxHp*0.1));
-        FG.fishes[f.origIdx].isDead=false;
-      } else if(f.isDead||f.curHp<=0){
-        FG.fishes[f.origIdx].isDead=true;
-        FG.fishes[f.origIdx].hp=0;
-      }
-    });
+    btFishes.filter(f=>f.side==='my').forEach(f=>_btApplyResult(f,false));
     fishRenderInfo();
     fishSave();
     // 상대에게 탈주 알림 (상대 자동 승리)
