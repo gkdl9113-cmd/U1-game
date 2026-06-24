@@ -549,6 +549,7 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
       <div class="xl-dlg-btns">
         <button class="xl-dlg-btn" id="fd-feed-btn" onclick="feedFishOne(_fdType,_fdIdx)">🍤 먹이주기</button>
         <button class="xl-dlg-btn ok" id="fd-evo-btn" onclick="fdEvolve()">⬆️ 진화</button>
+        <button class="xl-dlg-btn ok" id="fd-fusion-btn" onclick="fdFusion()" style="display:none;background:#7C3AED;color:#fff;border-color:#5E35B1">💠 합성</button>
         <button class="xl-dlg-btn" id="fd-buy-btn" style="display:none;background:#217346;color:#fff" onclick="deadFishAction(_fdType,_fdIdx)">🐟 구매(55원)</button>
         <button class="xl-dlg-btn" id="fd-sell-btn" onclick="sellFish(_fdType,_fdIdx)" style="display:none;background:#C05000;color:#fff;border-color:#A04000">💰 판매</button>
       </div>
@@ -926,30 +927,6 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
   </div>
 </div>
 
-<!-- ══ 물고기 상세창 모달 ══ -->
-<div class="xl-dlg-ov" id="fish-detail-modal-s2">
-  <div class="xl-dlg" style="min-width:300px;background:#F5F5F5">
-    <div class="xl-dlg-title" style="background:#217346;color:#fff">🐟 물고기 정보 <button class="xl-dlg-x" onclick="hideDlg('fish-detail-modal-s2')">✕</button></div>
-    <div class="xl-dlg-body" style="padding:16px">
-      <div id="fish-detail-content"></div>
-      <div style="display:flex;gap:8px;margin-top:16px">
-        <button class="xl-dlg-btn ok" id="fd-fusion-btn" onclick="openFusionSelect()" style="display:none">💠 합성</button>
-        <button class="xl-dlg-btn ok" onclick="showEvolutionSelect()">진화</button>
-        <button class="xl-dlg-btn cancel" onclick="hideDlg('fish-detail-modal-s2')">닫기</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ 물고기 진화 선택 모달 ══ -->
-<div class="xl-dlg-ov" id="fish-evolution-modal">
-  <div class="xl-dlg" style="min-width:320px;background:#F5F5F5">
-    <div class="xl-dlg-title" style="background:#7C3AED;color:#fff">⬆️ 물고기 진화 <button class="xl-dlg-x" onclick="hideDlg('fish-evolution-modal')">✕</button></div>
-    <div class="xl-dlg-body" style="padding:16px">
-      <div id="fish-evolution-content"></div>
-    </div>
-  </div>
-</div>
 
 <!-- 미니게임 메뉴 (플레이어 선택) -->
 <div class="xl-dlg-ov" id="minigame-modal">
@@ -4301,72 +4278,6 @@ function sellFish(type,idx){
   document.getElementById('f-status').textContent=`${s.name} 판매 (${price.toLocaleString()}원)`;
 }
 
-// S2 진화 시스템: 같은 물고기 3마리 조합
-let _evolutionCombination=[];
-function startEvolutionCombination(fishType){
-  _evolutionCombination=[fishType];
-  u1Toast(`${fishType} 진화 조합 시작! 같은 물고기 2마리를 더 선택하세요`,'#8B5CF6');
-}
-function addToCombination(fishType){
-  if(_evolutionCombination[0]!==fishType){
-    u1Toast('같은 종류의 물고기만 선택 가능합니다','#C00000');
-    return;
-  }
-  _evolutionCombination.push(fishType);
-  if(_evolutionCombination.length===3){
-    processEvolution(fishType);
-  } else {
-    u1Toast(`${3-_evolutionCombination.length}마리 더 선택`,'#8B5CF6');
-  }
-}
-function processEvolution(fishType){
-  const current=FG.fishes[fishType];
-  if(!current||current.quantity<3){
-    u1Toast('같은 물고기 3마리가 필요합니다','#C00000');
-    _evolutionCombination=[];
-    return;
-  }
-  // 3마리 소모
-  current.quantity-=3;
-  // 진화 확률 (일반→희귀 50%, 영웅 40%, 전설 10%)
-  const grades=['희귀','영웅','전설'];
-  const probs=[0.5,0.9,1.0]; // 누적 확률
-  const rand=Math.random();
-  let newGrade='희귀';
-  for(let i=0;i<probs.length;i++){
-    if(rand<probs[i]){newGrade=grades[i];break;}
-  }
-  // 새로운 물고기 생성 (스탯 ±10%)
-  const baseSpec=F_SPECIES[fishType]?.[1];
-  if(!baseSpec) return;
-  const statRatio=0.9+Math.random()*0.2; // ±10%
-  const newFish={
-    id:'evo_'+Date.now(),
-    type:fishType,
-    stage:1,
-    hp:Math.floor(baseSpec.hp*statRatio),
-    maxHp:Math.floor(baseSpec.hp*statRatio),
-    atk:Math.floor((baseSpec.atk||10)*statRatio),
-    def:Math.floor((baseSpec.def||5)*statRatio),
-    agi:Math.floor((baseSpec.agi||8)*statRatio),
-    luk:Math.floor((baseSpec.luk||3)*statRatio),
-    fullness:80,
-    isDead:false,
-    level:1,
-    exp:0
-  };
-  // 새 물고기 추가 또는 기존 종류에 합치기
-  if(!FG.fishes[fishType+'_'+newGrade]){
-    FG.fishes[fishType+'_'+newGrade]={quantity:1,level:1,exp:0,fish:[newFish]};
-  } else {
-    FG.fishes[fishType+'_'+newGrade].quantity++;
-    FG.fishes[fishType+'_'+newGrade].fish.push(newFish);
-  }
-  FG.totalEvos++;
-  u1Toast(`⬆️ ${fishType}(3마리) → ${newGrade} 등급 1마리 진화! (확률: ${newGrade==='희귀'?'50%':newGrade==='영웅'?'40%':'10%'})`,'#8B5CF6');
-  _evolutionCombination=[];
-  fishRenderInfo();fishQuickSave();
-}
 
 function fishRenderInfo(){
   // 모든 물고기 fish 배열 초기화 (없으면 생성)
@@ -5101,6 +5012,7 @@ function showFishDetail(typeOrIdx, fishIndex){
   if(f.isDead){
     if(feedBtn) feedBtn.style.display='none';
     if(evoBtn) evoBtn.style.display='none';
+    {const _fb=document.getElementById('fd-fusion-btn');if(_fb)_fb.style.display='none';}
     if(buyBtn){
       buyBtn.style.display='';
       if(aliveFishes().length>0){
@@ -5120,6 +5032,12 @@ function showFishDetail(typeOrIdx, fishIndex){
       const _can=(f.stage||1)<5&&_cnt>=3;
       evoBtn.style.display='';evoBtn.style.opacity=_can?'1':'0.5';evoBtn.style.cursor=_can?'pointer':'default';
     }}
+    // 영물 합성 버튼: 같은 단계 영물 3마리 이상
+    const fusionBtn=document.getElementById('fd-fusion-btn');
+    if(fusionBtn){
+      const _ycnt=(typeData.fish||[]).filter(x=>!x.isDead&&(x.stage||1)===(f.stage||1)).length;
+      fusionBtn.style.display=(isYw&&_ycnt>=3)?'':'none';
+    }
     if(buyBtn) buyBtn.style.display='none';
     // 판매 버튼 + 가격 표시
     const sp=getFishSellPrice(f);
@@ -5780,70 +5698,6 @@ function createNewFish(type,stage=1){
   return fish;
 }
 
-let _selectedFish=null; // 선택된 물고기
-
-// 진화 선택 표시
-function showEvolutionSelect(){
-  if(!_selectedFish) return;
-  const {type}=_selectedFish;
-  const typeData=FG.fishes[type];
-
-  // 같은 종류 3마리 이상 필요
-  if(!typeData.fish||typeData.fish.length<3){
-    u1Toast('같은 물고기 3마리가 필요합니다!','#C00000');
-    return;
-  }
-
-  const html=`
-    <div style="text-align:center;margin-bottom:12px;font-size:12px;color:#666">
-      같은 물고기 3마리 → 1마리 진화<br>
-      <span style="color:#F57C00;font-weight:700">10% 확률</span>로 다른 등급으로 진화!
-    </div>
-    <div style="background:#FFF9C4;padding:12px;border-radius:6px;text-align:center;margin-bottom:12px;font-size:11px;color:#666">
-      🐟 ${F_SPECIES[type].name} 3마리를 선택합니다
-    </div>
-    <button class="xl-dlg-btn ok" style="width:100%" onclick="executeEvolution()">진화 실행</button>
-    <button class="xl-dlg-btn cancel" style="width:100%;margin-top:8px" onclick="hideDlg('fish-evolution-modal')">취소</button>
-  `;
-
-  document.getElementById('fish-evolution-content').innerHTML=html;
-  hideDlg('fish-detail-modal-s2');
-  document.getElementById('fish-evolution-modal').classList.add('on');
-}
-
-// 진화 실행
-function executeEvolution(){
-  if(!_selectedFish) return;
-  const {type}=_selectedFish;
-  const typeData=FG.fishes[type];
-
-  if(!typeData.fish||typeData.fish.length<3){
-    u1Toast('진화 실패!','#C00000');
-    return;
-  }
-
-  // 3마리 제거
-  const removed=typeData.fish.splice(0,3);
-  typeData.quantity=Math.max(0,typeData.quantity-3);
-
-  // 진화 확률: 10% 확률로 다른 등급
-  const isEvolution=Math.random()<0.1;
-  const grades=['희귀','영웅','전설'];
-  const newGrade=isEvolution?grades[Math.floor(Math.random()*grades.length)]:'일반';
-
-  // 새 물고기 생성 (스탯은 원본 기반)
-  const newFish=createNewFish(type,newGrade);
-  typeData.fish.push(newFish);
-  typeData.quantity++;
-
-  const msg=isEvolution?`🎉 ${newGrade}! 진화 성공!`:'✅ 진화 완료!';
-  u1Toast(msg,isEvolution?'#7C3AED':'#217346');
-
-  hideDlg('fish-evolution-modal');
-  fishRenderInfo();
-  fishQuickSave();
-  _selectedFish=null;
-}
 
 function _getYwByGrade(grade){
   const candidates=[];
@@ -10798,117 +10652,37 @@ function hlCashOut(){
 const YONGWANG_GRADE={'yongwang':'하급','yeongeum':'중급','eelyw':'중급','haelyong':'중급','megalodonte':'상급','geumlin':'상급'};
 const YONGWANG_BY_GRADE={하급:['yongwang'],중급:['yeongeum','eelyw','haelyong'],상급:['megalodonte','geumlin']};
 const YONGWANG_NAMES={yongwang:'용왕',yeongeum:'영금',eelyw:'뱀장어',haelyong:'해용',megalodonte:'메갈로돈트',geumlin:'금린어'};
-
-function openFusionSelect(){
-  if(!_selectedFish)return;
-  const {type,fishIndex}=_selectedFish;
-  const typeData=FG.fishes[type];
-  if(!typeData||!typeData.fish||!typeData.fish[fishIndex]){u1Toast('물고기를 찾을 수 없음','#C00000');return;}
-
-  const selectedStage=typeData.fish[fishIndex].stage;
-  const sameStageCount=typeData.fish.filter(f=>f.stage===selectedStage).length;
-  if(sameStageCount<3){u1Toast(`같은 등급 영물 3마리 필요 (현재 ${sameStageCount}마리)`,'#C00000');return;}
-
-  const grade=YONGWANG_GRADE[type];
-  const resultPool=YONGWANG_BY_GRADE[grade].filter(t=>t!==type);
-  const fishName=F_SPECIES[type][selectedStage].name;
-
-  let html=`<div style="text-align:center;margin-bottom:12px;font-size:11px;color:#666">
-    <strong>${fishName} 영물 3마리</strong><br>
-    💠 융합수정 1개 + 💰 1,000,000원<br>
-    <span style="color:#7C3AED;font-weight:700">${grade} → 다른 종으로 변환</span>
-  </div>`;
-
-  if(grade==='하급'){
-    html+=`<div style="background:#E8F5E9;padding:10px;border-radius:6px;margin-bottom:12px;font-size:10px">
-      🟢 하급 69% · 🟡 중급 30% · 🔴 상급 1%
-    </div>`;
-  } else if(grade==='중급'){
-    html+=`<div style="background:#FFF9C4;padding:10px;border-radius:6px;margin-bottom:12px;font-size:10px">
-      🟡 중급 90% · 🔴 상급 10%
-    </div>`;
-  }
-
-  html+=`<div style="background:#F5F5F5;padding:12px;border-radius:6px;margin-bottom:12px">
-    <div style="font-weight:700;color:#333;margin-bottom:8px;font-size:11px">가능한 변환 종</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">`;
-
-  resultPool.forEach(t=>{
-    html+=`<div style="background:#fff;padding:8px;border-radius:4px;text-align:center;font-size:11px;border:1px solid #DDD">
-      ${YONGWANG_NAMES[t]}
-    </div>`;
-  });
-
-  html+=`</div></div>
-    <div style="display:flex;gap:6px">
-      <button class="xl-dlg-btn ok" onclick="doYongwangFusion('${type}');hideDlg('fish-detail-modal-s2')" style="flex:1">🔄 합성하기</button>
-      <button class="xl-dlg-btn cancel" onclick="hideDlg('fish-detail-modal-s2')" style="flex:1">취소</button>
-    </div>`;
-
-  document.getElementById('fish-detail-content').innerHTML=html;
-}
-
-function doYongwangFusion(type){
-  if(!_selectedFish){u1Toast('선택된 물고기 없음','#C00000');return;}
-  const {fishIndex}=_selectedFish;
-  const typeData=FG.fishes[type];
-  if(!typeData||!typeData.fish||!typeData.fish[fishIndex]){u1Toast('물고기를 찾을 수 없음','#C00000');return;}
-
-  const selectedStage=typeData.fish[fishIndex].stage;
-  const sameStageIndices=typeData.fish.map((f,i)=>f.stage===selectedStage?i:-1).filter(i=>i>=0);
-  if(sameStageIndices.length<3){u1Toast(`같은 등급 영물 3마리 필요 (현재 ${sameStageIndices.length}마리)`,'#C00000');return;}
-
-  if(FG.money<1000000){u1Toast('돈 부족 (1,000,000원 필요)','#C00000');return;}
-  if(FG.fusionCrystals<1){u1Toast('융합수정 부족','#C00000');return;}
-
-  const grade=YONGWANG_GRADE[type];
-  const roll=Math.random()*100;
-  let resultGrade=grade;
-
-  if(grade==='하급'){
-    if(roll<1) resultGrade='상급';
-    else if(roll<31) resultGrade='중급';
-  } else if(grade==='중급'){
-    if(roll<10) resultGrade='상급';
-  }
-
-  const resultPool=YONGWANG_BY_GRADE[resultGrade].filter(t=>t!==type);
-  if(resultPool.length===0){u1Toast('변환 가능한 종 없음','#C00000');return;}
-
-  const resultType=resultPool[Math.floor(Math.random()*resultPool.length)];
-
-  // 같은 등급 영물 3마리 제거 (역순으로 제거해야 인덱스 꼬이지 않음)
-  const toRemove=sameStageIndices.slice(0,3).sort((a,b)=>b-a);
-  toRemove.forEach(idx=>typeData.fish.splice(idx,1));
-
-  FG.money-=1000000;
-  FG.fusionCrystals-=1;
-  FG.fishes[type].quantity-=3;
-  FG.fishes[resultType].quantity+=1;
-  FG.fishes[resultType].level=1;
-  FG.fishes[resultType].exp=0;
-
-  const gradeEmoji={하급:'🟢',중급:'🟡',상급:'🔴'}[resultGrade]||'';
-  u1Toast(`${gradeEmoji} ${YONGWANG_NAMES[resultType]} 영물 획득!`,'#7C3AED');
-
-  fishRenderInfo();
-  fishQuickSave();
-  hideDlg('fish-detail-modal-s2');
-}
-
-function releaseFish(){
-  if(!_selectedFish){u1Toast('선택된 물고기 없음','#C00000');return;}
-  const {type,fishIndex}=_selectedFish;
-  const typeData=FG.fishes[type];
-  if(!typeData||!typeData.fish||!typeData.fish[fishIndex]){u1Toast('물고기를 찾을 수 없음','#C00000');return;}
-
-  const fishName=F_SPECIES[type][typeData.fish[fishIndex].stage].name;
-  typeData.fish.splice(fishIndex,1);
-  typeData.quantity-=1;
-  u1Toast(`🐟 ${fishName}을(를) 방생했습니다!`,'#217346');
-  fishRenderInfo();
-  fishQuickSave();
-  hideDlg('fish-detail-modal-s2');
+// 영물 합성: 같은 종류·같은 단계 영물 3마리 + 융합수정 1 + 100만원 → 다른 종 영물 1마리(확률 등급)
+function fdFusion(){
+  const data=FG.fishes[_fdType]; const f=data?.fish?.[_fdIdx]; if(!f||f.isDead) return;
+  if(!_isYwFish(f)){u1Toast('영물만 합성할 수 있습니다','#C00000');return;}
+  const stage=f.stage||1;
+  const sameIdx=data.fish.map((x,i)=>({x,i})).filter(o=>!o.x.isDead&&(o.x.stage||1)===stage).map(o=>o.i);
+  if(sameIdx.length<3){u1Toast(`같은 영물 3마리 필요 (현재 ${sameIdx.length}마리)`,'#C00000');return;}
+  if((FG.fusionCrystals||0)<1){u1Toast('융합수정이 부족합니다 (BP샵에서 구매)','#C00000');return;}
+  if(FG.money<1000000){u1Toast('돈이 부족합니다 (1,000,000원)','#C00000');return;}
+  const grade=YONGWANG_GRADE[_fdType];
+  const probTxt=grade==='하급'?'하급 69% · 중급 30% · 상급 1%':grade==='중급'?'중급 90% · 상급 10%':'상급 100%';
+  if(!confirm(`${_fishSpec(f).name} 3마리 + 💠융합수정 1 + 💰1,000,000원으로 합성합니다.\n\n결과 등급: ${probTxt}\n(현재와 다른 종으로 변환)\n\n진행할까요?`)) return;
+  // 결과 등급 판정
+  const roll=Math.random()*100; let rg=grade;
+  if(grade==='하급'){ if(roll<1) rg='상급'; else if(roll<31) rg='중급'; }
+  else if(grade==='중급'){ if(roll<10) rg='상급'; }
+  const pool=(YONGWANG_BY_GRADE[rg]||[]).filter(t=>t!==_fdType);
+  const rt=pool.length?pool[Math.floor(Math.random()*pool.length)]:_fdType;
+  // 3마리 소모
+  sameIdx.slice(0,3).sort((a,b)=>b-a).forEach(i=>data.fish.splice(i,1));
+  data.quantity=Math.max(0,(data.quantity||0)-3);
+  FG.money-=1000000; FG.fusionCrystals-=1;
+  // 결과 영물 생성(개별 fish 객체 포함)
+  if(!FG.fishes[rt]) FG.fishes[rt]={quantity:0,level:1,exp:0,fish:[]};
+  if(!Array.isArray(FG.fishes[rt].fish)) FG.fishes[rt].fish=[];
+  FG.fishes[rt].fish.push(createNewFish(rt,1));
+  FG.fishes[rt].quantity=(FG.fishes[rt].quantity||0)+1;
+  checkAchievements('yw');
+  const ge={하급:'🟢',중급:'🟡',상급:'🔴'}[rg]||'';
+  u1Toast(`${ge} ${YONGWANG_NAMES[rt]} 영물 획득!`,'#7C3AED');
+  fishRenderInfo(); fishQuickSave(); hideDlg('fish-detail-modal');
 }
 
 function fishingGaugeTimeOut(){
