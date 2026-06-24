@@ -9442,10 +9442,8 @@ function btDrawWeather(c,W,H){
 // ── 캔버스 그리기 ─────────────────────────────────────────
 function btDraw(W,H){
   const c=btCtx;
-  // 흰색 배경
+  // 흰색 엑셀 배경
   c.fillStyle='#FFFFFF';c.fillRect(0,0,W,H);
-  // 날씨 배경 틴트
-  if(btCurrentWeather){c.fillStyle=btCurrentWeather.bg;c.fillRect(0,0,W,H);}
   // 엑셀 격자
   c.strokeStyle='rgba(208,208,208,0.6)';c.lineWidth=0.5;
   const cw=Math.max(24,W/14),ch=Math.max(18,H/9);
@@ -9454,11 +9452,9 @@ function btDraw(W,H){
   // 중앙 팀 경계선 (파랑↔빨강)
   c.strokeStyle='rgba(100,100,200,0.2)';c.lineWidth=1.5;c.setLineDash([8,6]);
   c.beginPath();c.moveTo(W/2,0);c.lineTo(W/2,H);c.stroke();c.setLineDash([]);
-  // 팀 영역 표시
+  // 팀 영역 표시(연한 틴트)
   c.fillStyle='rgba(220,235,255,0.15)';c.fillRect(0,0,W/2,H);
   c.fillStyle='rgba(255,220,220,0.15)';c.fillRect(W/2,0,W/2,H);
-  // 날씨 이펙트
-  btDrawWeather(c,W,H);
 
   // 상대 물고기 먼저, 내 물고기 나중에 그려서 겹칠 때 내 것이 위에 보임
   const drawOrder=[...btFishes].sort((a,b)=>a.side==='my'?1:-1);
