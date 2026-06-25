@@ -2762,7 +2762,8 @@ const TITLE_POOL=[
   {id:'ti_미식가',  name:'미식가',  rarity:'영웅',efDesc:'포만감 소비 -20%',      effect:{foodRate:0.20}},
   {id:'ti_황제',    name:'황제',    rarity:'전설',efDesc:'배틀 모든 스탯 +5%',   effect:{allStat:0.05}},
   {id:'ti_독재자',  name:'독재자',  rarity:'전설',efDesc:'수입 +5% · 배틀 승리 시 BP +2',effect:{income:0.05,bpBonus:2}},
-  {id:'ti_S1군림자',name:'S2 군림자',rarity:'초월',efDesc:'수입 +20% · 승리 BP +1 · 선제 30%',effect:{income:0.20,bpBonus:1,firstStrike:0.30}},
+  {id:'ti_S1군림자',name:'S1 군림자',rarity:'초월',efDesc:'수입 +20% · 승리 BP +1 · 선제 30%',effect:{income:0.20,bpBonus:1,firstStrike:0.30}},
+  {id:'ti_S2군림자',name:'S2 군림자',rarity:'초월',efDesc:'수입 +20% · 승리 BP +1 · 선제 30%',effect:{income:0.20,bpBonus:1,firstStrike:0.30}},
 ];
 const TITLE_RARITY_ST={일반:{bg:'#E8E8E8',fg:'#444'},희귀:{bg:'#DBEAFE',fg:'#1D4ED8'},영웅:{bg:'#EDE9FE',fg:'#7C3AED'},전설:{bg:'#FEF9C3',fg:'#92400E'},초월:{bg:'#7F0000',fg:'#FFD700'}};
 const TITLE_REFUND={일반:3,희귀:6,영웅:10,전설:15,초월:0};
@@ -4472,11 +4473,11 @@ async function seasonReset(){
     // 전체 플레이어 목록 조회
     const{data:allRows}=await _sb.from('fish_accounts').select('username').eq('server',ACTIVE_SERVER);
     const toReset=(allRows||[]).map(r=>r.username).filter(u=>!SYS_ACCOUNTS.includes(u));
-    // 계정은 유지, 게임 데이터 초기화 (S1 군림자 칭호는 보존)
+    // 계정은 유지, 게임 데이터 초기화 (군림자 칭호 S1·S2 모두 보존)
     for(const u of toReset){
       const{data:prev}=await _sb.from('fish_accounts').select('fish_data').eq('username',u).eq('server',ACTIVE_SERVER).eq('season',2).single();
-      const hasS1=(prev?.fish_data?.titles||[]).includes('ti_S1군림자');
-      const newData=hasS1?{titles:['ti_S1군림자']}:{};
+      const keepTitles=(prev?.fish_data?.titles||[]).filter(t=>t==='ti_S1군림자'||t==='ti_S2군림자');
+      const newData=keepTitles.length?{titles:keepTitles}:{};
       await _sb.from('fish_accounts').update({fish_data:newData,updated_at:new Date().toISOString()}).eq('username',u).eq('server',ACTIVE_SERVER).eq('season',2);
     }
     // 전체 클라이언트에 시즌 종료 브로드캐스트
@@ -4488,11 +4489,11 @@ async function seasonReset(){
   }
 }
 function buyS1Title(){
-  if((FG.titles||[]).includes('ti_S1군림자')){u1Toast('이미 보유 중입니다','#555');return;}
+  if((FG.titles||[]).includes('ti_S2군림자')){u1Toast('이미 보유 중입니다','#555');return;}
   if((FG.battlePoints||0)<200){u1Toast('BP 부족 (필요 200BP)','#C00000');return;}
   FG.battlePoints-=200;
   FG.titles=FG.titles||[];
-  FG.titles.push('ti_S1군림자');
+  FG.titles.push('ti_S2군림자');
   seasonReset();
   hideDlg('f-shop-modal');
   u1Toast('👑 [S2 군림자] 칭호 획득! (초월)','#7F0000');
@@ -5869,7 +5870,7 @@ function fishOpenShop(){
     {id:'fusion_crystal',icon:'💠',name:'융합수정',cost:5,desc:'영물 합성에 필요 · 1개'},
   ];
   // 초월 칭호 섹션
-  const _hasS1=( FG.titles||[]).includes('ti_S1군림자');
+  const _hasS1=( FG.titles||[]).includes('ti_S2군림자');
   const _canS1=_bp>=200&&!_hasS1;
   div.innerHTML+=`<div style="background:linear-gradient(135deg,#3D0000,#7F0000);border-radius:6px;padding:10px 12px;margin-bottom:8px;border:1px solid #FFD70055">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -8797,9 +8798,10 @@ function calcBattleEvents(p1Fish,p2Fish,rng,weather){
   // 스킬: 선봉 - 배틀 시작 시 atkCd -60
   p1.forEach(f=>{if(f.skill1==='cm_선봉'||f.skill2==='cm_선봉') f.atkCd=Math.max(0,f.atkCd-60);});
   p2.forEach(f=>{if(f.skill1==='cm_선봉'||f.skill2==='cm_선봉') f.atkCd=Math.max(0,f.atkCd-60);});
-  // 칭호: S1 군림자 - 30% 확률 선제 공격 (atkCd=0)
-  p1.forEach(f=>{if(f.title==='ti_S1군림자'&&rng()<0.30) f.atkCd=0;});
-  p2.forEach(f=>{if(f.title==='ti_S1군림자'&&rng()<0.30) f.atkCd=0;});
+  // 칭호 선제 공격(군림자 S1·S2): effect.firstStrike 확률로 atkCd=0
+  const _fsProb=f=>((TITLE_POOL.find(t=>t.id===f.title)||{}).effect||{}).firstStrike||0;
+  p1.forEach(f=>{const p=_fsProb(f);if(p&&rng()<p) f.atkCd=0;});
+  p2.forEach(f=>{const p=_fsProb(f);if(p&&rng()<p) f.atkCd=0;});
   // 스킬: 위압감 - 배틀 시작 시 적 전체 ATK -10%
   if(p1.some(f=>f.skill1==='sn_위압감'||f.skill2==='sn_위압감')) p2.forEach(f=>{f.atk=Math.floor(f.atk*0.9);});
   if(p2.some(f=>f.skill1==='sn_위압감'||f.skill2==='sn_위압감')) p1.forEach(f=>{f.atk=Math.floor(f.atk*0.9);});
