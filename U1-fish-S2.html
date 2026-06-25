@@ -3455,7 +3455,14 @@ function fishingMissBite(){
 }
 
 function fishingAreaClick(){
-  if(FMG.state==='bite'){
+  if(FMG.state==='waiting'){
+    // 입질 전에 성급하게 챔 → 실패
+    clearTimeout(FMG.biteTimer);FMG.biteTimer=null;
+    FMG.state='result';
+    const ba=document.getElementById('fishing-bite-alert');if(ba)ba.style.display='none';
+    _fishingBobStart('idle');
+    _fishingShowResult(false,'너무 일찍 챘다! 물고기가 도망쳤습니다 🐟💨');
+  } else if(FMG.state==='bite'){
     clearTimeout(FMG.biteWindowTimer);FMG.biteWindowTimer=null;
     fishingStartGauge();
   } else if(FMG.state==='gauge'){
@@ -3475,7 +3482,7 @@ function fishingStartGauge(){
   FMG.autoGaugeDir=Math.random()>0.5?1:-1;
   FMG.dragGaugeOffset=0;
   FMG.gaugeStartTime=Date.now();
-  FMG.gaugeTimeout=setTimeout(()=>fishingGaugeTimeOut(),20000);
+  FMG.gaugeTimeout=setTimeout(()=>fishingGaugeTimeOut(),10000);
   FMG.successZoneHoldTime=0;
   FMG.successZoneHoldStart=null;
   FMG.successZoneRequiredTime=2000;
@@ -3827,7 +3834,7 @@ document.addEventListener('keydown',function(e){
   } else if(k===' '){
     e.preventDefault();
     const st=FMG.state;
-    if(st==='bite'||st==='gauge') fishingAreaClick();
+    if(st==='waiting'||st==='bite'||st==='gauge') fishingAreaClick();
     else if(st==='result') fishingTryAgain();
   }
 });
@@ -5707,18 +5714,24 @@ function createNewFish(type,stage=1){
   const sp=F_SPECIES[type]||F_SPECIES.goldfish;
   const stageNum=typeof stage==='string'?1:stage; // stage가 문자열이면 1로 (호환성)
   const s=sp[stageNum]||sp[1];
-  const variance=1+((Math.random()-0.5)*0.2); // ±10% 랜덤
+  // 중급 이하(일반·중급)는 변이폭 ±25% + 반올림 → 작은 스탯도 개체차가 보이게.
+  // 그 외(고급 이상)는 기존 ±10% 내림 유지.
+  const lowTier=(s.grade==='일반'||s.grade==='중급');
+  const spread=lowTier?0.5:0.2;            // ±25% vs ±10%
+  const rnd=lowTier?Math.round:Math.floor;
+  const variance=1+((Math.random()-0.5)*spread);
+  const mh=Math.max(1,rnd(s.hp*variance));
   const fish={
     id:`${type}_${Date.now()}_${Math.random().toString(36).slice(2,9)}`,
     type:type,
     stage:stageNum,
     grade:s.grade,
-    hp:Math.floor(s.hp*variance),
-    maxHp:Math.floor(s.hp*variance),
-    atk:Math.floor(s.atk*variance),
-    def:Math.floor(s.def*variance),
-    agi:Math.floor(s.agi*variance),
-    luk:Math.floor(s.luk*variance),
+    hp:mh,
+    maxHp:mh,
+    atk:Math.max(1,rnd(s.atk*variance)),
+    def:rnd(s.def*variance),
+    agi:Math.max(1,rnd(s.agi*variance)),
+    luk:Math.max(1,rnd(s.luk*variance)),
     fullness:80,
     xp:0,
     isDead:false
