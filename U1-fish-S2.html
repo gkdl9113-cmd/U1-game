@@ -5186,13 +5186,128 @@ function _fishStyleFlatVector(c,fx,fy,size,dir,s){
   c.beginPath();c.arc(ex,ey,size*0.12,0,_TAU);c.fillStyle='#fff';c.fill();
   c.beginPath();c.arc(ex+dir*size*0.02,ey,size*0.065,0,_TAU);c.fillStyle='#1b1b1b';c.fill();
 }
-// 라우터: 4종 새 스타일(비교용), 나머지는 기존 벡터 유지
+// ── 플랫 벡터 디자인(전 종, 종별 특색) ──────────────────────────
+function _flatEye(c,ex,ey,r){
+  c.beginPath();c.arc(ex,ey,r*0.16,0,_TAU);c.fillStyle='#fff';c.fill();
+  c.beginPath();c.arc(ex,ey,r*0.085,0,_TAU);c.fillStyle='#1b1b1b';c.fill();
+  c.beginPath();c.arc(ex+r*0.05,ey-r*0.05,r*0.03,0,_TAU);c.fillStyle='#fff';c.fill();
+}
+function _flatTail(c,fx,fy,size,dir,kind){
+  const x0=fx-dir*size*0.7;c.beginPath();
+  if(kind==='fanwide'){c.moveTo(x0,fy);c.quadraticCurveTo(fx-dir*size*1.7,fy-size*1.05,fx-dir*size*1.35,fy);c.quadraticCurveTo(fx-dir*size*1.7,fy+size*1.05,x0,fy);}
+  else if(kind==='fork'){c.moveTo(x0,fy);c.lineTo(fx-dir*size*1.55,fy-size*0.7);c.lineTo(fx-dir*size*1.18,fy);c.lineTo(fx-dir*size*1.55,fy+size*0.7);}
+  else if(kind==='point'){c.moveTo(fx-dir*size*0.85,fy);c.lineTo(fx-dir*size*1.22,fy-size*0.34);c.lineTo(fx-dir*size*1.22,fy+size*0.34);}
+  else if(kind==='crescent'){c.moveTo(x0,fy);c.quadraticCurveTo(fx-dir*size*1.2,fy-size*0.2,fx-dir*size*1.55,fy-size*0.78);c.quadraticCurveTo(fx-dir*size*1.25,fy,fx-dir*size*1.55,fy+size*0.78);c.quadraticCurveTo(fx-dir*size*1.2,fy+size*0.2,x0,fy);}
+  else if(kind==='ribbon'){c.moveTo(x0,fy-size*0.1);c.quadraticCurveTo(fx-dir*size*1.6,fy-size*0.7,fx-dir*size*2.1,fy-size*1.2);c.quadraticCurveTo(fx-dir*size*1.5,fy-size*0.3,fx-dir*size*0.92,fy);c.quadraticCurveTo(fx-dir*size*1.5,fy+size*0.3,fx-dir*size*2.1,fy+size*1.2);c.quadraticCurveTo(fx-dir*size*1.6,fy+size*0.7,x0,fy+size*0.1);}
+  else{c.moveTo(x0,fy);c.lineTo(fx-dir*size*1.45,fy-size*0.62);c.quadraticCurveTo(fx-dir*size*1.62,fy,fx-dir*size*1.45,fy+size*0.62);}
+  c.closePath();c.fill();
+}
+function _flatDorsal(c,fx,fy,size,dir,kind){
+  c.beginPath();
+  if(kind==='sail'){c.moveTo(fx-dir*size*0.1,fy-size*0.5);c.quadraticCurveTo(fx+dir*size*0.1,fy-size*1.05,fx+dir*size*0.5,fy-size*0.45);}
+  else if(kind==='long'){c.moveTo(fx-dir*size*0.6,fy-size*0.4);c.quadraticCurveTo(fx,fy-size*0.72,fx+dir*size*0.5,fy-size*0.42);}
+  else{c.moveTo(fx-dir*size*0.15,fy-size*0.55);c.quadraticCurveTo(fx+dir*size*0.1,fy-size*0.95,fx+dir*size*0.45,fy-size*0.5);}
+  c.closePath();c.fill();
+}
+function _flatBody(c,fx,fy,rx,ry,dir,lite,col,mid){
+  c.beginPath();
+  c.moveTo(fx+dir*rx*1.15,fy);
+  c.quadraticCurveTo(fx+dir*rx*0.45,fy-ry*1.15,fx-dir*rx*0.45,fy-ry*0.95);
+  c.quadraticCurveTo(fx-dir*rx*0.92,fy-ry*0.42,fx-dir*rx*0.92,fy);
+  c.quadraticCurveTo(fx-dir*rx*0.92,fy+ry*0.42,fx-dir*rx*0.45,fy+ry*0.95);
+  c.quadraticCurveTo(fx+dir*rx*0.45,fy+ry*1.15,fx+dir*rx*1.15,fy);
+  c.closePath();
+  const g=c.createLinearGradient(fx,fy-ry,fx,fy+ry);g.addColorStop(0,lite);g.addColorStop(0.5,col);g.addColorStop(1,mid);
+  c.fillStyle=g;c.fill();
+  c.fillStyle='rgba(255,255,255,0.15)';
+  c.beginPath();c.moveTo(fx+dir*rx*1.0,fy+ry*0.12);c.quadraticCurveTo(fx+dir*rx*0.2,fy+ry*0.95,fx-dir*rx*0.5,fy+ry*0.6);c.quadraticCurveTo(fx+dir*rx*0.2,fy+ry*0.4,fx+dir*rx*1.0,fy+ry*0.12);c.closePath();c.fill();
+}
+const FLATCFG={
+  _default:{rx:1.05,ry:0.72,tail:'fan',dorsal:'round'},
+  goldfish:{rx:1.05,ry:0.74,tail:'fan',dorsal:'round'},
+  snakehead:{rx:1.22,ry:0.5,tail:'point',dorsal:'long'},
+  guppy:{rx:0.82,ry:0.62,tail:'fanwide',dorsal:'sail'},
+  tropical:{rx:0.95,ry:0.64,tail:'fork',dorsal:'round'},
+  piranha:{rx:1.05,ry:0.6,tail:'crescent',dorsal:'round'},
+  clownfish:{rx:1.0,ry:0.68,tail:'fan',dorsal:'round',stripes:true},
+  mandarin:{rx:1.0,ry:0.6,tail:'crescent',dorsal:'round'},
+  yeongeum:{rx:0.9,ry:0.62,tail:'ribbon',dorsal:'round'},
+  geumlin:{rx:1.06,ry:0.7,tail:'fan',dorsal:'round'}
+};
+function _flatNormal(c,fx,fy,size,dir,s,type){
+  const col=s.color||'#FF8C00',acc=s.fin||col;
+  const mid=_fxShade(col,-0.14),dark=_fxShade(col,-0.4),lite=_fxShade(col,0.45),finD=_fxShade(acc,-0.28);
+  const cfg=FLATCFG[type]||FLATCFG._default,rx=size*cfg.rx,ry=size*cfg.ry;
+  c.fillStyle=finD;_flatTail(c,fx,fy,size,dir,cfg.tail);
+  c.fillStyle=finD;if(cfg.dorsal)_flatDorsal(c,fx,fy,size,dir,cfg.dorsal);
+  _flatBody(c,fx,fy,rx,ry,dir,lite,col,mid);
+  if(cfg.stripes){c.save();c.beginPath();c.ellipse(fx,fy,rx*1.02,ry,0,0,_TAU);c.clip();c.fillStyle='rgba(255,255,255,0.9)';[0.5,-0.05,-0.55].forEach(o=>{c.beginPath();c.ellipse(fx+dir*rx*o,fy,rx*0.12,ry*1.2,0,0,_TAU);c.fill();});c.restore();}
+  c.strokeStyle=dark;c.lineWidth=Math.max(1,size*0.045);
+  c.beginPath();c.arc(fx+dir*rx*0.5,fy,ry*0.7,dir>0?-0.9:Math.PI+0.9,dir>0?0.9:Math.PI-0.9);c.stroke();
+  _flatEye(c,fx+dir*rx*0.72,fy-ry*0.12,size);
+}
+function _flatShark(c,fx,fy,size,dir,s){
+  const col=s.color||'#5A6B7A',mid=_fxShade(col,-0.16),dark=_fxShade(col,-0.42),lite=_fxShade(col,0.4);
+  c.fillStyle=mid;
+  c.beginPath();c.moveTo(fx-dir*size*0.9,fy);c.lineTo(fx-dir*size*1.7,fy-size*0.95);c.lineTo(fx-dir*size*1.32,fy-size*0.05);c.lineTo(fx-dir*size*1.7,fy+size*0.25);c.lineTo(fx-dir*size*1.18,fy+size*0.55);c.closePath();c.fill();
+  c.beginPath();c.moveTo(fx-dir*size*0.1,fy-size*0.55);c.lineTo(fx+dir*size*0.18,fy-size*1.25);c.lineTo(fx+dir*size*0.55,fy-size*0.5);c.closePath();c.fill();
+  c.beginPath();c.moveTo(fx+dir*size*0.35,fy+size*0.35);c.lineTo(fx-dir*size*0.05,fy+size*1.0);c.lineTo(fx+dir*size*0.55,fy+size*0.5);c.closePath();c.fill();
+  c.beginPath();
+  c.moveTo(fx+dir*size*1.48,fy+size*0.06);
+  c.quadraticCurveTo(fx+dir*size*0.6,fy-size*0.72,fx-dir*size*0.3,fy-size*0.5);
+  c.quadraticCurveTo(fx-dir*size*0.86,fy-size*0.2,fx-dir*size*0.9,fy);
+  c.quadraticCurveTo(fx-dir*size*0.86,fy+size*0.26,fx-dir*size*0.3,fy+size*0.5);
+  c.quadraticCurveTo(fx+dir*size*0.6,fy+size*0.6,fx+dir*size*1.48,fy+size*0.06);
+  c.closePath();
+  const g=c.createLinearGradient(fx,fy-size*0.6,fx,fy+size*0.6);g.addColorStop(0,lite);g.addColorStop(0.45,col);g.addColorStop(1,mid);c.fillStyle=g;c.fill();
+  c.fillStyle='rgba(255,255,255,0.82)';
+  c.beginPath();c.moveTo(fx+dir*size*1.32,fy+size*0.12);c.quadraticCurveTo(fx+dir*size*0.3,fy+size*0.6,fx-dir*size*0.4,fy+size*0.44);c.quadraticCurveTo(fx+dir*size*0.3,fy+size*0.3,fx+dir*size*1.32,fy+size*0.12);c.closePath();c.fill();
+  c.strokeStyle=dark;c.lineWidth=Math.max(1,size*0.05);
+  for(let i=0;i<3;i++){const gx=fx+dir*(size*0.5-i*size*0.13);c.beginPath();c.moveTo(gx,fy-size*0.28);c.lineTo(gx,fy+size*0.26);c.stroke();}
+  c.beginPath();c.moveTo(fx+dir*size*1.42,fy+size*0.16);c.lineTo(fx+dir*size*1.02,fy+size*0.24);c.stroke();
+  _flatEye(c,fx+dir*size*0.98,fy-size*0.12,size);
+}
+function _flatEel(c,fx,fy,size,dir,s,type){
+  const col=s.color||'#FFD835',acc=s.fin||col,mid=_fxShade(col,-0.16),lite=_fxShade(col,0.45);
+  const L=size*1.55,h=size*0.36;
+  c.fillStyle=_fxShade(acc,-0.12);c.beginPath();
+  if(type==='eelyw'){c.moveTo(fx-dir*L*0.92,fy);c.lineTo(fx-dir*L*1.55,fy-size*0.6);c.lineTo(fx-dir*L*1.2,fy);c.lineTo(fx-dir*L*1.62,fy+size*0.05);c.lineTo(fx-dir*L*1.15,fy+size*0.6);}
+  else{c.moveTo(fx-dir*L*0.92,fy);c.lineTo(fx-dir*L*1.6,fy-size*0.28);c.lineTo(fx-dir*L*1.6,fy+size*0.28);}
+  c.closePath();c.fill();
+  c.beginPath();
+  c.moveTo(fx+dir*L*0.95,fy);
+  c.quadraticCurveTo(fx+dir*L*0.4,fy-h*1.5,fx-dir*L*0.2,fy-h*1.15);
+  c.quadraticCurveTo(fx-dir*L*0.78,fy-h*0.8,fx-dir*L*0.92,fy);
+  c.quadraticCurveTo(fx-dir*L*0.78,fy+h*0.8,fx-dir*L*0.2,fy+h*1.15);
+  c.quadraticCurveTo(fx+dir*L*0.4,fy+h*1.5,fx+dir*L*0.95,fy);
+  c.closePath();
+  const g=c.createLinearGradient(fx,fy-h*1.5,fx,fy+h*1.5);g.addColorStop(0,lite);g.addColorStop(0.5,col);g.addColorStop(1,mid);c.fillStyle=g;c.fill();
+  if(type==='haelyong'){c.fillStyle=_fxShade(acc,-0.22);for(let i=-1;i<=2;i++){const px=fx-dir*L*0.2*i;c.beginPath();c.moveTo(px-dir*size*0.12,fy-h*1.1);c.lineTo(px,fy-h*1.95);c.lineTo(px+dir*size*0.12,fy-h*1.1);c.closePath();c.fill();}}
+  c.fillStyle='rgba(255,255,255,0.13)';c.beginPath();c.ellipse(fx+dir*L*0.15,fy+h*0.45,L*0.5,h*0.5,0,0,_TAU);c.fill();
+  _flatEye(c,fx+dir*L*0.72,fy-h*0.3,size*0.95);
+}
+function _flatTurtle(c,fx,fy,size,dir,s,type){
+  const col=s.color||'#4CAF50',mid=_fxShade(col,-0.18),dark=_fxShade(col,-0.42),r=size*0.95;
+  c.fillStyle=_fxShade(col,0.18);
+  [[-0.5,-0.72],[-0.5,0.72],[0.55,-0.58],[0.55,0.58]].forEach(o=>{c.beginPath();c.ellipse(fx+dir*r*o[0],fy+r*o[1],r*0.32,r*0.18,o[1]>0?0.5:-0.5,0,_TAU);c.fill();});
+  c.beginPath();c.moveTo(fx-dir*r*0.85,fy);c.lineTo(fx-dir*r*1.15,fy-r*0.15);c.lineTo(fx-dir*r*1.15,fy+r*0.15);c.closePath();c.fill();
+  c.fillStyle=_fxShade(col,0.22);c.beginPath();c.ellipse(fx+dir*r*1.02,fy-r*0.05,r*0.34,r*0.28,0,0,_TAU);c.fill();
+  _flatEye(c,fx+dir*r*1.14,fy-r*0.1,size*0.85);
+  c.beginPath();c.ellipse(fx,fy,r,r*0.82,0,0,_TAU);
+  const g=c.createRadialGradient(fx-dir*r*0.2,fy-r*0.3,r*0.1,fx,fy,r);g.addColorStop(0,_fxShade(col,0.3));g.addColorStop(1,mid);c.fillStyle=g;c.fill();
+  c.strokeStyle=dark;c.lineWidth=Math.max(1,size*0.05);c.stroke();
+  c.beginPath();c.ellipse(fx,fy,r*0.55,r*0.45,0,0,_TAU);c.stroke();
+  for(let a=0;a<6;a++){const ang=a/6*_TAU;c.beginPath();c.moveTo(fx+Math.cos(ang)*r*0.55,fy+Math.sin(ang)*r*0.45);c.lineTo(fx+Math.cos(ang)*r,fy+Math.sin(ang)*r*0.82);c.stroke();}
+  if(type==='yongwang'){c.fillStyle='#FFD54A';c.beginPath();c.moveTo(fx+dir*r*0.82,fy-r*0.32);c.lineTo(fx+dir*r*0.92,fy-r*0.62);c.lineTo(fx+dir*r*1.02,fy-r*0.38);c.lineTo(fx+dir*r*1.12,fy-r*0.64);c.lineTo(fx+dir*r*1.18,fy-r*0.32);c.closePath();c.fill();}
+}
+// 라우터: 모든 종을 플랫 벡터 스타일로(종별 특색 반영)
 function drawFishShape(c,fx,fy,size,dir,s,type){
-  if(type==='goldfish')   return _fishStyleCartoon(c,fx,fy,size,dir,s);
-  if(type==='guppy')      return _fishStyleChibi(c,fx,fy,size,dir,s);
-  if(type==='clownfish')  return _fishStyleLowpoly(c,fx,fy,size,dir,s);
-  if(type==='megalodonte')return _fishStyleFlatVector(c,fx,fy,size,dir,s);
-  return _drawFishVector(c,fx,fy,size,dir,s,type);
+  c.lineJoin='round';c.lineCap='round';
+  c.fillStyle='rgba(0,0,0,0.06)';c.beginPath();c.ellipse(fx,fy+size*0.62,size*1.0,size*0.38,0,0,_TAU);c.fill();
+  if(type==='megalodonte')return _flatShark(c,fx,fy,size,dir,s);
+  if(type==='electric'||type==='eelyw'||type==='haelyong')return _flatEel(c,fx,fy,size,dir,s,type);
+  if(type==='turtle'||type==='yongwang')return _flatTurtle(c,fx,fy,size,dir,s,type);
+  return _flatNormal(c,fx,fy,size,dir,s,type);
 }
 function _drawFishVector(c,fx,fy,size,dir,s,type){
   c.fillStyle='rgba(0,0,0,0.06)';
