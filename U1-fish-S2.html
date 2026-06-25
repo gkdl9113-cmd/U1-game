@@ -1490,12 +1490,12 @@ body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI
         <div style="font-size:11px;color:#A0C4E8;font-weight:700;margin-bottom:8px">📉 상승/하락 편향</div>
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:11px;color:#4ADE80;white-space:nowrap">상승 우세</span>
-          <input id="adm-stock-bias" type="range" min="-30" max="50" step="1" value="2"
+          <input id="adm-stock-bias" type="range" min="-30" max="50" step="1" value="1"
             oninput="document.getElementById('adm-stock-bias-val').textContent=this.value>0?'하락 '+this.value+'%':this.value<0?'상승 '+Math.abs(this.value)+'%':'중립'"
             style="flex:1;accent-color:#217346">
           <span style="font-size:11px;color:#FB7185;white-space:nowrap">하락 우세</span>
         </div>
-        <div id="adm-stock-bias-val" style="font-size:12px;color:#E2E8F0;text-align:center;margin-top:4px;font-weight:bold">하락 2%</div>
+        <div id="adm-stock-bias-val" style="font-size:12px;color:#E2E8F0;text-align:center;margin-top:4px;font-weight:bold">하락 1%</div>
         <div style="font-size:9px;color:#4A6A8A;margin-top:4px">양수 = 하락 우세 / 음수 = 상승 우세 / 0 = 중립</div>
       </div>
       <div class="adm-btn-row" style="margin-top:16px">
@@ -9882,7 +9882,7 @@ const STOCK_TICK_MS=600000;      // 10분 = 1틱 (화면 갱신 주기)
 const STOCK_TICKS_PER_PERIOD=1; // 1틱 = 10분 = 등락폭 기준 단위 (틱당 직접 적용)
 const STOCK_DIV_INTERVAL=72;    // 12시간 = 72틱마다 배당
 const STOCK_DIV_RATE=0.01;      // 배당률 1%
-const STOCK_BEAR_BIAS_DEFAULT=0.02;  // 기본 하락 2% 우세 (관리자 슬라이더로 조정 가능)
+const STOCK_BEAR_BIAS_DEFAULT=0.01;  // 기본 하락 1% 우세 (관리자 슬라이더로 조정 가능)
 const STOCK_REVERT=0.08;             // 극단 구간에서 되돌리는 강도 (0원 폭주/무한 폭등만 방지)
 const STOCK_REVERT_BAND=0.5;         // 기준가 ±50% 이내는 되돌림 없음(공정한 랜덤워크), 그 밖에서만 되돌림 작동
 const STOCK_DELIST_FLOOR_RATIO=0.02; // 기준가의 2% 이하가
