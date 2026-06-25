@@ -5567,15 +5567,17 @@ function fishDraw(){
     const fx=fp.x*W,fy=fp.y*H;
     const dir=fp.dx>=0?1:-1;
 
-    // 물고기 모양 그리기
-    const fs=F_SPECIES[type]?.[1];
+    // 보유 개체 중 가장 높은 단계(등급)의 디자인으로 표시
+    const _stages=(data.fish||[]).map(f=>f.stage||1);
+    const _maxStage=_stages.length?Math.max(..._stages):1;
+    const fs=F_SPECIES[type]?.[_maxStage]||F_SPECIES[type]?.[1];
     drawFishShape(c,fx,fy,size,dir,fs,type);
 
-    // 수량 표시
+    // 수량 표시 (한글 이름)
     c.font=`bold 14px '맑은 고딕',sans-serif`;
     c.textAlign='center';
     c.fillStyle='#333';
-    c.fillText(`${type}×${data.quantity}`,fx,fy+size*2);
+    c.fillText(`${(fs&&fs.name)||type}×${data.quantity}`,fx,fy+size*2);
 
     idx++;
   });
