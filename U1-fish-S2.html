@@ -6650,10 +6650,17 @@ function _diggingRestoreState(){
   };
   _diggingGame.found=_diggingGame.baits.filter(b=>b.found);
 }
+// 화면 크기에 따른 아이콘 축소 배율 (좁은 화면에서 미끼/구덩이가 너무 커 겹치는 것 방지)
+function _dgScale(){
+  const f=document.getElementById('digging-field-main');
+  const m=Math.min(f?.clientWidth||550, f?.clientHeight||320);
+  return Math.max(0.55,Math.min(1,m/360));
+}
 // 판 자리(구덩이) HTML — 꽝/적중 모두 표시, 클릭 방해 안 하도록 pointer-events:none
 function _diggingDigMarksHTML(){
+  const ds=Math.round(22*_dgScale());
   return (_diggingGame.digs||[]).map(d=>`
-    <div style="position:absolute;left:${d.x}px;top:${d.y}px;width:22px;height:22px;transform:translate(-50%,-50%);
+    <div style="position:absolute;left:${d.x}px;top:${d.y}px;width:${ds}px;height:${ds}px;transform:translate(-50%,-50%);
       background:radial-gradient(circle at 50% 38%, #6D4C3D 0%, #3E2723 72%);
       border:1px solid ${d.hit?'#2E7D32':'#2E1A12'};border-radius:50%;
       box-shadow:inset 0 2px 3px rgba(0,0,0,.55);opacity:.9;pointer-events:none">
@@ -6761,13 +6768,14 @@ function renderDiggingScreen(){
   const colors={bait_normal:'#D4A574',bait_high:'#FF9800',bait_rare:'#2196F3',bait_hero:'#7C3AED',bait_legend:'#FFD700'};
 
   // 판 자리(구덩이) + 찾은 미끼 표시
+  const _sc=_dgScale(), _bs=Math.round(40*_sc), _fs=Math.round(20*_sc);
   field.innerHTML=_diggingDigMarksHTML()+_diggingGame.baits.filter(b=>b.found).map(b=>`
     <div style="
       position:absolute;
       left:${b.x}px;
       top:${b.y}px;
-      width:40px;
-      height:40px;
+      width:${_bs}px;
+      height:${_bs}px;
       transform:translate(-50%,-50%);
       background:${colors[b.type]};
       border:2px solid #8B7355;
@@ -6775,7 +6783,7 @@ function renderDiggingScreen(){
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:20px;
+      font-size:${_fs}px;
       animation:popIn 0.4s ease-out;
       box-shadow:0 0 12px rgba(0,0,0,0.4);
       font-weight:700;
@@ -6875,15 +6883,17 @@ function clickBait(id,e){
 
 function endDiggingRound(allFound){
   _diggingGame.isPlaying=false;
-  const msg=allFound?`🎉 모든 미끼를 찾았습니다! 호미 ${_diggingGame.hoeCount}개 남음`:`⚠️ 호미가 모두 소모되었습니다! 획득: ${_diggingGame.found.length}개`;
-  u1Toast(msg,allFound?'#2E7D32':'#F57C00');
-
-  // 라운드 종료 → 진행상태 active=false로 저장 후 기록
   _diggingSaveState();
   fishQuickSave();
 
-  // 못 찾은 미끼 + 판 자리 표시
-  showMissedBaits();
+  if(allFound){
+    u1Toast(`🎉 모든 미끼를 찾았습니다! 호미 ${_diggingGame.hoeCount}개 남음`,'#2E7D32');
+    showMissedBaits(); // 전부 찾았으니 표시(사실상 찾은 것만)
+  }else{
+    // 호미 소진: 못 찾은 미끼는 숨긴 채 유지 → 호미 구매하면 그대로 이어서 진행
+    u1Toast('🔨 호미가 떨어졌습니다! 구매하거나 다음 게임을 누르세요','#F57C00');
+    renderDiggingScreen();
+  }
 }
 
 function showMissedBaits(){
@@ -6892,13 +6902,14 @@ function showMissedBaits(){
   const colors={bait_normal:'#D4A574',bait_high:'#FF9800',bait_rare:'#2196F3',bait_hero:'#7C3AED',bait_legend:'#FFD700'};
 
   // 판 자리(구덩이) + 모든 미끼 표시 (찾은 것은 색깔, 못 찾은 것은 어두운 색)
+  const _sc=_dgScale(), _bs=Math.round(40*_sc), _fs=Math.round(20*_sc);
   const baitElements=_diggingGame.baits.map(b=>`
     <div style="
       position:absolute;
       left:${b.x}px;
       top:${b.y}px;
-      width:40px;
-      height:40px;
+      width:${_bs}px;
+      height:${_bs}px;
       transform:translate(-50%,-50%);
       background:${b.found?colors[b.type]:'#888888'};
       border:2px solid ${b.found?'#8B7355':'#555'};
@@ -6906,7 +6917,7 @@ function showMissedBaits(){
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:20px;
+      font-size:${_fs}px;
       box-shadow:${b.found?'0 0 12px rgba(0,0,0,0.4)':'0 2px 4px rgba(0,0,0,0.2)'};
       font-weight:700;
       opacity:${b.found?'1':'0.6'};
