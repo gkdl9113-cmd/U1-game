@@ -3530,7 +3530,7 @@ function _startDragGaugeAnimation(){
   const animate=()=>{
     if(FMG.state!=='drag')return;
     const elapsed=(Date.now()-FMG.gaugeStartTime)/1000;
-    const speed=400;
+    const speed=300;
     const basePos=(elapsed*speed)%(FMG.gaugebarWidth*2);
     let pos;
     if(FMG.autoGaugeDir>0){
