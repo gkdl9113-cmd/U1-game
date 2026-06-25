@@ -15,6 +15,7 @@ U1-fish Season 2 — 물고기 수량 기반 시스템
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Segoe UI',sans-serif;background:#F2F2F2;color:#1F1F1F;height:100dvh;overflow:hidden;max-width:480px;margin:0 auto;display:flex;flex-direction:column;font-size:13px;user-select:none}
+body.dig-fullscreen{max-width:none}
 .scr{display:none;flex-direction:column;height:100%;overflow:hidden}
 .scr.on{display:flex}
 .xl-titlebar{background:#217346;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 8px;height:30px;flex-shrink:0}
@@ -6667,12 +6668,45 @@ function _diggingDigMarksHTML(){
     </div>`).join('');
 }
 
+// 갯벌 전체화면(폭 제한 해제 포함) — 좁은 창에서도 넓게 사용
+function _diggingEnterFS(){
+  document.body.classList.add('dig-fullscreen');
+  const el=document.documentElement;
+  const fn=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
+  if(fn){try{const p=fn.call(el);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
+}
+function _diggingExitFS(){
+  document.body.classList.remove('dig-fullscreen');
+  if(document.fullscreenElement||document.webkitFullscreenElement){
+    const fn=document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen;
+    if(fn){try{const p=fn.call(document);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
+  }
+}
+// 화면 크기 변경(전체화면 전환·창 리사이즈) 시 미끼/구덩이를 비율 유지하며 재배치
+let _digLastW=0,_digLastH=0;
+function _diggingOnResize(){
+  const f=document.getElementById('digging-field-main');
+  if(!f) return;
+  const W=f.clientWidth,H=f.clientHeight;
+  if(!W||!H) return;
+  if(_digLastW&&_digLastH&&(W!==_digLastW||H!==_digLastH)){
+    const sx=W/_digLastW, sy=H/_digLastH;
+    _diggingGame.baits.forEach(b=>{b.x*=sx;b.y*=sy;});
+    (_diggingGame.digs||[]).forEach(d=>{d.x*=sx;d.y*=sy;});
+    _digLastW=W;_digLastH=H;
+    renderDiggingScreen();
+  }else{ _digLastW=W;_digLastH=H; }
+}
+
 function diggingEnter(){
   if(!FG.inventory.hoe||FG.inventory.hoe<=0){
     u1Toast('호미가 없습니다!','#C00000');
     return;
   }
+  _diggingEnterFS();          // 사용자 클릭 제스처 내에서 전체화면 요청
   show('s-digging');
+  window.addEventListener('resize',_diggingOnResize);
+  document.addEventListener('fullscreenchange',_diggingOnResize);
   // 화면이 렌더링된 후 배치
   setTimeout(()=>{
     // 저장된 진행 중 게임이 있으면 이어하기, 없으면 새 갯벌 생성
@@ -6684,6 +6718,8 @@ function diggingEnter(){
       generateBaits();
     }
     renderDiggingScreen();
+    const f=document.getElementById('digging-field-main');
+    _digLastW=f?.clientWidth||0; _digLastH=f?.clientHeight||0; // 전환 후 리사이즈 재배치 기준
     fishRenderInfo();
   },10);
 }
@@ -6712,6 +6748,10 @@ function diggingExit(){
   FG.inventory.hoe=_diggingGame.hoeCount;
   _diggingSaveState();
   fishQuickSave();
+  window.removeEventListener('resize',_diggingOnResize);
+  document.removeEventListener('fullscreenchange',_diggingOnResize);
+  _digLastW=0;_digLastH=0;
+  _diggingExitFS();
   show('s-fishworld');
   fishRenderInfo();
 }
