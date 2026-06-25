@@ -3043,7 +3043,7 @@ function getAliveSpecies(){return Object.entries(FG.fishes).filter(([,data])=>da
 // 메인 수조는 '종류 수'로 카운트 (같은 종류 여러 마리 = 1칸)
 function getTotalFishCount(){return Object.values(FG.fishes).filter(d=>(d.quantity||0)>0).length;}
 // 보조 수조(새 종류 임시 보관)
-const AUX_MAX_DEFAULT=5, AUX_EXPAND_STEP=5;
+const AUX_MAX_DEFAULT=5, AUX_EXPAND_STEP=5, AUX_MAX_CAP=10;
 function auxExpandCost(){return (FG.auxMax||AUX_MAX_DEFAULT)*1000;}
 function aliveFishes(){return Object.values(FG.fishes).filter(f=>f.quantity>0);}
 
@@ -3191,6 +3191,7 @@ function fishingEnter(){
 // ── 보조 수조 (새 종류 임시 보관) ──────────────────────────
 function fishRenderAux(){
   FG.auxFishes=FG.auxFishes||[]; if(FG.auxMax==null) FG.auxMax=AUX_MAX_DEFAULT;
+  if(FG.auxMax>AUX_MAX_CAP) FG.auxMax=AUX_MAX_CAP; // 상한(10칸) 초과분 클램프
   const info=document.getElementById('aux-tank-info');
   if(info) info.textContent=`${FG.auxFishes.length}/${FG.auxMax}칸`;
   const tb=document.getElementById('aux-fish-tbody');
@@ -3210,10 +3211,15 @@ function fishRenderAux(){
       </tr>`;
     }).join(''):`<tr><td style="${_sticky}">7</td><td colspan="5" style="${_c};text-align:center;color:#999">보관 중인 물고기 없음</td></tr>`;
   }
+  const atCap=(FG.auxMax||0)>=AUX_MAX_CAP;
   const exTxt=document.getElementById('aux-expand-txt');
-  if(exTxt) exTxt.textContent=`보조수조 확장 +${AUX_EXPAND_STEP}칸`;
+  if(exTxt) exTxt.textContent=atCap?`보조수조 최대 ${AUX_MAX_CAP}칸`:`보조수조 확장 +${AUX_EXPAND_STEP}칸`;
   const exBtn=document.getElementById('aux-expand-btn');
-  if(exBtn) exBtn.textContent=`확장 💰${auxExpandCost().toLocaleString()}`;
+  if(exBtn){
+    exBtn.textContent=atCap?`최대 확장됨 (${AUX_MAX_CAP}칸)`:`확장 💰${auxExpandCost().toLocaleString()}`;
+    exBtn.disabled=atCap;
+    exBtn.style.opacity=atCap?'0.5':'1';
+  }
 }
 function fishAuxMove(i){
   const f=FG.auxFishes?.[i]; if(!f) return;
@@ -3231,9 +3237,10 @@ function fishAuxMove(i){
 }
 function fishAuxExpand(){
   if(FG.auxMax==null) FG.auxMax=AUX_MAX_DEFAULT;
+  if(FG.auxMax>=AUX_MAX_CAP){u1Toast(`보조수조는 최대 ${AUX_MAX_CAP}칸까지입니다`,'#C00000');return;}
   const cost=auxExpandCost();
   if(FG.money<cost){u1Toast(`돈이 부족합니다 (💰${cost.toLocaleString()}원)`,'#C00000');return;}
-  FG.money-=cost; FG.auxMax+=AUX_EXPAND_STEP;
+  FG.money-=cost; FG.auxMax=Math.min(AUX_MAX_CAP,FG.auxMax+AUX_EXPAND_STEP);
   fishRenderAux(); fishRenderInfo(); fishQuickSave();
   u1Toast(`📦 보조수조 확장! (+${AUX_EXPAND_STEP}칸 → 총 ${FG.auxMax}칸)`,'#1F3864');
 }
@@ -3249,7 +3256,10 @@ function fishingExit(){
 function _fishingCleanup(){
   if(FMG.biteTimer){clearTimeout(FMG.biteTimer);FMG.biteTimer=null;}
   if(FMG.biteWindowTimer){clearTimeout(FMG.biteWindowTimer);FMG.biteWindowTimer=null;}
+  if(FMG.gaugeTimeout){clearTimeout(FMG.gaugeTimeout);FMG.gaugeTimeout=null;}
   if(FMG.gaugeRaf){cancelAnimationFrame(FMG.gaugeRaf);FMG.gaugeRaf=null;}
+  if(document.pointerLockElement)document.exitPointerLock(); // 커서 사라짐 방지
+  {const _a=document.getElementById('fishing-area');if(_a)_a.style.cursor='default';}
   const gw=document.getElementById('fishing-gauge-wrap');if(gw)gw.style.display='none';
   const dg=document.getElementById('fishing-drag-gauge');if(dg)dg.style.display='none';
   const ba=document.getElementById('fishing-bite-alert');if(ba)ba.style.display='none';
@@ -3462,7 +3472,7 @@ function fishingStartGauge(){
   FMG.autoGaugeDir=Math.random()>0.5?1:-1;
   FMG.dragGaugeOffset=0;
   FMG.gaugeStartTime=Date.now();
-  FMG.gaugeTimeout=setTimeout(()=>fishingGaugeTimeOut(),30000);
+  FMG.gaugeTimeout=setTimeout(()=>fishingGaugeTimeOut(),20000);
   FMG.successZoneHoldTime=0;
   FMG.successZoneHoldStart=null;
   FMG.successZoneRequiredTime=2000;
@@ -10725,6 +10735,7 @@ function fishingGaugeTimeOut(){
   const area=document.getElementById('fishing-area');
   if(area){
     area.style.cursor='default';
+    if(document.pointerLockElement)document.exitPointerLock(); // 포인터락 해제 안 하면 커서가 사라진 채로 남음
     area.removeEventListener('mousedown',_startFishingDrag);
     area.removeEventListener('mousemove',_moveFishingDrag);
     area.removeEventListener('mouseup',_endFishingDrag);
