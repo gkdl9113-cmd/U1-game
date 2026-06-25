@@ -2218,12 +2218,15 @@ function applyFishData(d){
     }
   }
   FG.lastTick=Date.now();
+  _fishLoaded=true; // 로드 완료 → 이제부터 저장 허용
   loadBattleBanList();
 }
 
 let _dbSaving=false; // 중복 저장 방지
+let _fishLoaded=false; // 데이터 로드 완료 전 저장 금지(계정 초기화 버그 방지)
 async function saveFishDataToDB(){
   if(!currentUsername||!_sb||_dbSaving) return;
+  if(!_fishLoaded) return; // 로드 전 기본 FG(money 100·0마리)가 실계정을 덮어쓰는 것 차단
   _dbSaving=true;
   const data={
     fishes:FG.fishes,
@@ -5872,11 +5875,14 @@ function fishDraw(){
 }
 
 function fishSave(isDisconnect){
+  if(!_fishLoaded) return; // 로드 전 기본 FG 저장 차단(계정 초기화 방지)
   const data={
     fishes:FG.fishes,
     money:FG.money,food:FG.food,spFood:FG.spFood,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,auxFishes:FG.auxFishes||[],auxMax:FG.auxMax??AUX_MAX_DEFAULT,
-    rods:FG.rods,skillInventory:FG.skillInventory,
+    rods:FG.rods,fishCodex:FG.fishCodex,
+    inventory:FG.inventory,equipment:FG.equipment,
+    skillInventory:FG.skillInventory,
     achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],equippedTitle:FG.equippedTitle||null,
     stocks:FG.stocks,
     digging:FG.digging||null,
@@ -5927,12 +5933,13 @@ function fishLoad(){
       FG.inventory={bait_common:200,bait_normal:200,bait_high:200,bait_rare:100,bait_hero:100,bait_legend:50,rods:[{id:'rod1',level:0,durability:100,maxDurability:100}],hoe:200};
       FG.equipment={equippedRod:{id:'rod1',level:0,durability:100,maxDurability:100}};
       FG.fishes.goldfish={quantity:5,level:1,exp:0,fish:[]};
+      _fishLoaded=true;
       return; // testuser는 여기서 끝내기
     }
 
     // 일반 유저: 저장 데이터 로드 (계정별 별도 키 사용)
     const storageKey=`u1aquarium_s2_${_uid}`;
-    const raw=localStorage.getItem(storageKey); if(!raw) return;
+    const raw=localStorage.getItem(storageKey); if(!raw){_fishLoaded=true;return;}
     const d=JSON.parse(raw);
     {
       // 일반 유저: 저장 데이터 로드
@@ -5975,7 +5982,8 @@ function fishLoad(){
     }
     FG.lastTick=Date.now();
     FG.lastAutoFeed=Date.now();
-  }catch(e){FG.fishes.goldfish={quantity:1,level:1,exp:0};}
+    _fishLoaded=true;
+  }catch(e){FG.fishes.goldfish={quantity:1,level:1,exp:0};_fishLoaded=true;}
 }
 function fishReset(){
   if(!confirm('저장 데이터를 삭제하고 처음부터 시작할까요?')) return;
