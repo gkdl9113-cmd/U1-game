@@ -5235,12 +5235,15 @@ function _flatAura(c,fx,fy,size,type){
     sp.addColorStop(0,`rgba(${rgb},0.55)`);sp.addColorStop(1,`rgba(${rgb},0)`);
     c.fillStyle=sp;c.beginPath();c.arc(px,py,size*0.45,0,_TAU);c.fill();}
 }
-// 이빨 한 줄 (x1,y1)-(x2,y2) 따라 삼각 이빨, depth만큼 입 안쪽으로
+// 이빨 한 줄 (x1,y1)-(x2,y2) 따라 삼각 이빨, 잇몸선에 수직으로 depth만큼 입 안쪽으로
 function _teethRow(c,x1,y1,x2,y2,depth,n){
+  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1;
+  const px=-dy/len,py=dx/len; // 잇몸선 단위 수직벡터
   c.fillStyle='#fff';
   for(let i=0;i<n;i++){const t1=i/n,t2=(i+1)/n;
-    const ax=x1+(x2-x1)*t1,ay=y1+(y2-y1)*t1,bx=x1+(x2-x1)*t2,by=y1+(y2-y1)*t2;
-    c.beginPath();c.moveTo(ax,ay);c.lineTo(bx,by);c.lineTo((ax+bx)/2,(ay+by)/2+depth);c.closePath();c.fill();}
+    const ax=x1+dx*t1,ay=y1+dy*t1,bx=x1+dx*t2,by=y1+dy*t2;
+    const mx=(ax+bx)/2+px*depth,my=(ay+by)/2+py*depth;
+    c.beginPath();c.moveTo(ax,ay);c.lineTo(bx,by);c.lineTo(mx,my);c.closePath();c.fill();}
 }
 function _flatTail(c,fx,fy,size,dir,kind){
   const x0=fx-dir*size*0.7;c.beginPath();
@@ -5348,13 +5351,17 @@ function _flatShark(c,fx,fy,size,dir,s){
   // 흰 배
   c.fillStyle='rgba(255,255,255,0.8)';
   c.beginPath();c.moveTo(fx+dir*size*0.95,fy+size*0.22);c.quadraticCurveTo(fx+dir*size*0.2,fy+size*0.6,fx-dir*size*0.4,fy+size*0.44);c.quadraticCurveTo(fx+dir*size*0.2,fy+size*0.3,fx+dir*size*0.95,fy+size*0.22);c.closePath();c.fill();
-  // 벌린 입(어두운 빨강)
-  const tipx=fx+dir*size*1.52;
-  c.fillStyle='#3a0b0b';
-  c.beginPath();c.moveTo(tipx,fy-size*0.04);c.lineTo(fx+dir*size*1.12,fy-size*0.3);c.lineTo(fx+dir*size*0.95,fy+size*0.02);c.lineTo(fx+dir*size*1.1,fy+size*0.46);c.closePath();c.fill();
-  // 이빨(윗니 아래로 / 아랫니 위로)
-  _teethRow(c,tipx,fy-size*0.04,fx+dir*size*1.12,fy-size*0.3,+size*0.2,5);
-  _teethRow(c,tipx,fy-size*0.01,fx+dir*size*1.1,fy+size*0.46,-size*0.2,5);
+  // 벌린 입 — 앞으로 벌어진 삼각 아가리(어두운 빨강)
+  const ufx=fx+dir*size*1.62,ufy=fy-size*0.10; // 윗턱 앞 끝
+  const ubx=fx+dir*size*1.12,uby=fy-size*0.30; // 윗턱 뒤(몸통 앞 모서리와 일치)
+  const lfx=fx+dir*size*1.54,lfy=fy+size*0.40; // 아랫턱 앞 끝
+  const lbx=fx+dir*size*1.10,lby=fy+size*0.46; // 아랫턱 뒤(몸통 앞 모서리와 일치)
+  const thx=fx+dir*size*0.95,thy=fy+size*0.02; // 목구멍(깊은 안쪽)
+  c.fillStyle='#2a0707';
+  c.beginPath();c.moveTo(ufx,ufy);c.lineTo(ubx,uby);c.lineTo(thx,thy);c.lineTo(lbx,lby);c.lineTo(lfx,lfy);c.closePath();c.fill();
+  // 이빨 — 잇몸선에 수직(윗니 아래로 / 아랫니 위로). dir 곱해 좌우 어느쪽이든 입 안쪽 향함
+  _teethRow(c,ubx,uby,ufx,ufy,size*0.16*dir,6);
+  _teethRow(c,lfx,lfy,lbx,lby,size*0.16*dir,6);
   // 아가미 슬릿
   c.strokeStyle=dark;c.lineWidth=Math.max(1,size*0.05);
   for(let i=0;i<3;i++){const gx=fx+dir*(size*0.42-i*size*0.13);c.beginPath();c.moveTo(gx,fy-size*0.3);c.lineTo(gx,fy+size*0.28);c.stroke();}
