@@ -5143,11 +5143,55 @@ function _fishStyleLowpoly(c,fx,fy,size,dir,s){
   c.beginPath();c.arc(ex,ey,size*0.2,0,_TAU);c.fillStyle='#fff';c.fill();
   c.beginPath();c.arc(ex+dir*size*0.04,ey,size*0.1,0,_TAU);c.fillStyle='#111';c.fill();
 }
-// 라우터: 3종만 새 스타일(비교용), 나머지는 기존 벡터 유지
+// 스타일D: 모던 플랫 벡터 일러스트 (유선형 + 매끈한 곡선 + 깔끔한 그라데이션) (메갈로돈)
+function _fishStyleFlatVector(c,fx,fy,size,dir,s){
+  const col=s.color||'#FF8C00',mid=_fxShade(col,-0.12),dark=_fxShade(col,-0.38),lite=_fxShade(col,0.45);
+  c.lineJoin='round';c.lineCap='round';
+  c.fillStyle='rgba(0,0,0,0.06)';c.beginPath();c.ellipse(fx,fy+size*0.62,size*1.05,size*0.4,0,0,_TAU);c.fill();
+  // 꼬리: 매끈한 두 갈래 곡선
+  c.fillStyle=_fxShade(col,-0.25);
+  c.beginPath();
+  c.moveTo(fx-dir*size*0.7,fy);
+  c.quadraticCurveTo(fx-dir*size*1.7,fy-size*0.2,fx-dir*size*1.95,fy-size*0.9);
+  c.quadraticCurveTo(fx-dir*size*1.3,fy-size*0.32,fx-dir*size*1.0,fy);
+  c.quadraticCurveTo(fx-dir*size*1.3,fy+size*0.32,fx-dir*size*1.95,fy+size*0.9);
+  c.quadraticCurveTo(fx-dir*size*1.7,fy+size*0.2,fx-dir*size*0.7,fy);
+  c.closePath();c.fill();
+  // 등지느러미: 매끈한 곡선
+  c.fillStyle=_fxShade(col,-0.3);
+  c.beginPath();c.moveTo(fx-dir*size*0.25,fy-size*0.55);
+  c.quadraticCurveTo(fx+dir*size*0.15,fy-size*1.1,fx+dir*size*0.55,fy-size*0.5);c.closePath();c.fill();
+  // 몸통: 유선형 teardrop
+  c.beginPath();
+  c.moveTo(fx+dir*size*1.28,fy);
+  c.quadraticCurveTo(fx+dir*size*0.5,fy-size*0.82,fx-dir*size*0.45,fy-size*0.6);
+  c.quadraticCurveTo(fx-dir*size*0.88,fy-size*0.25,fx-dir*size*0.88,fy);
+  c.quadraticCurveTo(fx-dir*size*0.88,fy+size*0.25,fx-dir*size*0.45,fy+size*0.6);
+  c.quadraticCurveTo(fx+dir*size*0.5,fy+size*0.82,fx+dir*size*1.28,fy);
+  c.closePath();
+  const g=c.createLinearGradient(fx,fy-size*0.7,fx,fy+size*0.7);
+  g.addColorStop(0,lite);g.addColorStop(0.5,col);g.addColorStop(1,mid);
+  c.fillStyle=g;c.fill();
+  // 광택 배 면
+  c.fillStyle='rgba(255,255,255,0.16)';
+  c.beginPath();c.moveTo(fx+dir*size*1.1,fy+size*0.08);
+  c.quadraticCurveTo(fx+dir*size*0.3,fy+size*0.72,fx-dir*size*0.5,fy+size*0.5);
+  c.quadraticCurveTo(fx+dir*size*0.2,fy+size*0.32,fx+dir*size*1.1,fy+size*0.08);
+  c.closePath();c.fill();
+  // 아가미 곡선
+  c.strokeStyle=_fxShade(col,-0.35);c.lineWidth=Math.max(1,size*0.05);
+  c.beginPath();c.arc(fx+dir*size*0.55,fy,size*0.45,dir>0?-0.9:Math.PI+0.9,dir>0?0.9:Math.PI-0.9);c.stroke();
+  // 눈
+  const ex=fx+dir*size*0.82,ey=fy-size*0.05;
+  c.beginPath();c.arc(ex,ey,size*0.12,0,_TAU);c.fillStyle='#fff';c.fill();
+  c.beginPath();c.arc(ex+dir*size*0.02,ey,size*0.065,0,_TAU);c.fillStyle='#1b1b1b';c.fill();
+}
+// 라우터: 4종 새 스타일(비교용), 나머지는 기존 벡터 유지
 function drawFishShape(c,fx,fy,size,dir,s,type){
-  if(type==='goldfish') return _fishStyleCartoon(c,fx,fy,size,dir,s);
-  if(type==='guppy')    return _fishStyleChibi(c,fx,fy,size,dir,s);
-  if(type==='clownfish')return _fishStyleLowpoly(c,fx,fy,size,dir,s);
+  if(type==='goldfish')   return _fishStyleCartoon(c,fx,fy,size,dir,s);
+  if(type==='guppy')      return _fishStyleChibi(c,fx,fy,size,dir,s);
+  if(type==='clownfish')  return _fishStyleLowpoly(c,fx,fy,size,dir,s);
+  if(type==='megalodonte')return _fishStyleFlatVector(c,fx,fy,size,dir,s);
   return _drawFishVector(c,fx,fy,size,dir,s,type);
 }
 function _drawFishVector(c,fx,fy,size,dir,s,type){
