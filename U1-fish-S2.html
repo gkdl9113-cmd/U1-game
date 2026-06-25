@@ -5097,93 +5097,23 @@ function showFishDetail(typeOrIdx, fishIndex){
 }
 
 // ── 어종별 물고기 그리기 헬퍼 ─────────────────────────────
-// ── 레트로 픽셀 스프라이트(도트) ──────────────────────────────
-// 종별 도트맵을 정의하고 칸을 정수 픽셀로 그림. 색은 등급별 spec(s.color/s.fin)에서 파생.
-// 글자: X외곽선 B몸통 D그림자 L밝음 F지느러미 G지느러미그림자 S줄무늬 W눈흰자 K눈동자
-function _pxRGB(hex){const m=/^#?([0-9a-f]{6})$/i.exec(hex||'');if(!m)return[136,136,136];const n=parseInt(m[1],16);return[(n>>16)&255,(n>>8)&255,n&255];}
-function _pxCl(v){return Math.max(0,Math.min(255,Math.round(v)));}
-function _pxDark(hex,a){const[r,g,b]=_pxRGB(hex);return`rgb(${_pxCl(r*(1-a))},${_pxCl(g*(1-a))},${_pxCl(b*(1-a))})`;}
-function _pxLight(hex,a){const[r,g,b]=_pxRGB(hex);return`rgb(${_pxCl(r+(255-r)*a)},${_pxCl(g+(255-g)*a)},${_pxCl(b+(255-b)*a)})`;}
-function _pxPal(s){const body=s.color||'#FF8C00',acc=s.fin||body;return{
-  X:_pxDark(body,0.62),B:body,D:_pxDark(body,0.26),L:_pxLight(body,0.42),
-  F:acc,G:_pxDark(acc,0.3),S:'#FFFFFF',W:'#FFFFFF',K:'#1B1B1B'};}
-const _PXD=[ // 기본 물고기
-"...............",
-"...X....XXXX...",
-".XXFX..XBLLBX..",
-"XFFFXBBBBLLBBX.",
-"XFFFXBBBBBBWKBX",
-"XFFFXBBBBLLBBX.",
-".XXFX..XBLLBX..",
-"...X....XXXX...",
-"..............."];
-const _PXEEL=[ // 길쭉한 뱀장어
-"....................",
-"..........XXXXXX....",
-"...XXXXXXXBBLLBBBX..",
-"XFFFBBBBBBBBBBBWKBX.",
-"...XXXXXXXBBLLBBBX..",
-"..........XXXXXX....",
-"...................."];
-const _PXSHARK=[ // 상어(메갈로돈)
-"..................",
-".......XXX........",
-"......XDDDX.......",
-"X....XBBBBBXX.....",
-"XFX.XBBBLLBBBXX...",
-"XFFXBBBBBBBBBBBWX.",
-"XFFXBBBBBBBBBBBBKX",
-"XFFXBBBBBBBBBBBWX.",
-"XFX.XBBBLLBBBXX...",
-"X....XBBBBBXX.....",
-"......XGGGX.......",
-".................."];
-const _PXGUPPY=[ // 큰 부채꼬리 구피
-"................",
-"XX.....XXXX.....",
-"FFFX..XBLLBX....",
-"FFFFXXBBBBBBX...",
-"FFFFFXBBBBBWKBX.",
-"FFFFXXBBBBBBX...",
-"FFFX..XBLLBX....",
-"XX.....XXXX.....",
-"................"];
-const _PXCLOWN=[ // 흰동가리(흰 줄무늬)
-"...............",
-"...X...XXXXX...",
-".XXFX.XBSBBSBX.",
-"XFFFXBBSBBSBBWX",
-"XFFFXBSBBSBBBKX",
-"XFFFXBBSBBSBBWX",
-".XXFX.XBSBBSBX.",
-"...X...XXXXX...",
-"..............."];
-const _PXTURTLE=[ // 거북이(등껍질+다리)
-"..............",
-"....XXXXXX....",
-"..XXDDDDDDXX..",
-".XDLLDDLLDDX..",
-"FXDLLDDLLDDXBWK",
-".XDLLDDLLDDX..",
-"..XXDDDDDDXX..",
-"...XX.FF.XX...",
-".............."];
-const PXFISH={_default:_PXD,guppy:_PXGUPPY,clownfish:_PXCLOWN,
-  eelyw:_PXEEL,electric:_PXEEL,megalodonte:_PXSHARK,turtle:_PXTURTLE,yongwang:_PXTURTLE};
+// ── 레트로 픽셀(도트) 스타일 ──────────────────────────────
+// 기존 벡터 모양을 저해상도 오프스크린에 그린 뒤 nearest-neighbor로 확대 → 도트 느낌.
+// _PXW/_PXH를 줄이면 더 굵은 도트(레트로), 키우면 더 매끄러움.
+let _pxFishCv=null,_pxFishCtx=null;
+const _PXW=72,_PXH=44;
 function drawFishShape(c,fx,fy,size,dir,s,type){
-  const map=PXFISH[type]||PXFISH._default;
-  const gh=map.length, gw=map.reduce((m,r)=>Math.max(m,r.length),0);
-  const px=Math.max(2,Math.round((size*2.7)/gw));
-  const ox=Math.round(fx-(gw*px)/2), oy=Math.round(fy-(gh*px)/2);
-  const pal=_pxPal(s);
-  for(let r=0;r<gh;r++){const row=map[r];
-    for(let col=0;col<row.length;col++){
-      const ch=row[col]; if(ch==='.'||ch===' ')continue;
-      const color=pal[ch]; if(!color)continue;
-      const sx=dir>=0?col:(gw-1-col);
-      c.fillStyle=color; c.fillRect(ox+sx*px, oy+r*px, px, px);
-    }
-  }
+  if(!_pxFishCv){_pxFishCv=document.createElement('canvas');_pxFishCv.width=_PXW;_pxFishCv.height=_PXH;_pxFishCtx=_pxFishCv.getContext('2d');}
+  const octx=_pxFishCtx;
+  octx.clearRect(0,0,_PXW,_PXH);
+  octx.imageSmoothingEnabled=false;
+  const cxp=_PXW*0.55,cyp=_PXH*0.5,ssize=_PXH*0.30;
+  _drawFishVector(octx,cxp,cyp,ssize,dir,s,type);
+  const prev=c.imageSmoothingEnabled;
+  c.imageSmoothingEnabled=false;
+  const scale=size/ssize;
+  c.drawImage(_pxFishCv,fx-cxp*scale,fy-cyp*scale,_PXW*scale,_PXH*scale);
+  c.imageSmoothingEnabled=prev;
 }
 function _drawFishVector(c,fx,fy,size,dir,s,type){
   c.fillStyle='rgba(0,0,0,0.06)';
