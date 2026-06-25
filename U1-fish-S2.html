@@ -7285,8 +7285,13 @@ function checkStockDelistCondition(cur){
   if(!_stockSettingsLoaded) return; // DB 로드 전 빈 앵커로 오판 방지
   for(const id of Object.keys(STOCKS_DEF)){
     if(_stockDelisted.has(id)) continue;
-    const price=stockGetPrice(id,cur);
-    if(price<=100) _delistStock(id);
+    // 기준가의 2% 이하가 STOCK_DELIST_STREAK틱 연속 지속될 때만 상장폐지 (일시적 급락으로는 상폐 안 됨)
+    const floor=Math.max(10,Math.round(STOCKS_DEF[id].basePrice*STOCK_DELIST_FLOOR_RATIO));
+    let dead=true;
+    for(let t=cur;t>cur-STOCK_DELIST_STREAK;t--){
+      if(stockGetPrice(id,Math.max(0,t))>floor){dead=false;break;}
+    }
+    if(dead) _delistStock(id);
   }
 }
 async function adminDelistStock(id){
@@ -7375,6 +7380,7 @@ async function adminResetStockPrices(){
   await loadStockSettings(); // vol/bias 보존 — 덮어쓰기 방지
   const cur=_stockCurrentTick();
   _stockDelisted.clear();
+  _stockBearBias=STOCK_BEAR_BIAS_DEFAULT; // 초기화 시 등락 편향도 중립으로
   const anchor={};
   for(const id of Object.keys(STOCKS_DEF)){
     _stockFloorStreak[id]=0;
@@ -9876,8 +9882,10 @@ const STOCK_TICK_MS=600000;      // 10분 = 1틱 (화면 갱신 주기)
 const STOCK_TICKS_PER_PERIOD=1; // 1틱 = 10분 = 등락폭 기준 단위 (틱당 직접 적용)
 const STOCK_DIV_INTERVAL=72;    // 12시간 = 72틱마다 배당
 const STOCK_DIV_RATE=0.01;      // 배당률 1%
-const STOCK_BEAR_BIAS_DEFAULT=0.15;
-// 가격 0원 도달 시 즉시 자동 상장폐지 (가격 바닥 = 0, 0에서 계속 0이므로 1틱이면 충분)
+const STOCK_BEAR_BIAS_DEFAULT=0;     // 평상시 중립 (하락/상승 편향은 관리자 이벤트로만)
+const STOCK_REVERT=0.05;             // 기준가로 되돌아가는 평균회귀 강도 (0원으로 흘러가 상폐되는 것 방지)
+const STOCK_DELIST_FLOOR_RATIO=0.02; // 기준가의 2% 이하가
+const STOCK_DELIST_STREAK=6;         // 6틱(=1시간) 연속 지속될 때만 자동 상장폐지
 let _stockBearBias=STOCK_BEAR_BIAS_DEFAULT; // 관리자 설정 가능, 0=중립 0.5=이벤트 항상 하락
 let _stockPriceAnchors={}; // {id:{price,tick}} - 코드 변경 시 가격 점프 방지용 기준점
 let _stockDelisted=new Set(); // 상장폐지된 종목 id Set
@@ -9887,7 +9895,7 @@ const STOCK_BUY_FEE=0.00015;   // 매수 수수료 0.015%
 const STOCK_SELL_FEE=0.00195;  // 매도 수수료 0.015% + 증권거래세 0.18%
 let _stockVolOverrides={}; // 관리자가 설정한 vol 오버라이드
 
-const STOCKS_DEF={ // vol = 30초 틱당 등락폭 (틱당 직접 적용)
+const STOCKS_DEF={ // vol = 1틱(10분)당 최대 등락폭
   gwangeo: {name:'광어',  emoji:'🐟', basePrice:50000, vol:0.04, divRate:0},
   ureok:   {name:'우럭',  emoji:'🐠', basePrice:20000, vol:0.07, divRate:0},
   dodari:  {name:'도다리',emoji:'🎣', basePrice:8000,  vol:0.15, divRate:0},
@@ -9925,7 +9933,10 @@ function stockGetPrice(id, targetTick){
     const rng=mulberry32(_stockHash(id+'@'+t));
     const r2=rng();
     const momentum=lastChange*0.25;
-    const rawChange=(r2-0.5-_stockBearBias)*vol*2+momentum;
+    // 평균회귀: 기준가보다 낮으면 위로, 높으면 아래로 당김 → 0원으로 영원히 흘러가 상폐되는 것 방지
+    const dev=(price-def.basePrice)/def.basePrice;
+    const reversion=-dev*STOCK_REVERT;
+    const rawChange=(r2-0.5-_stockBearBias)*vol*2+momentum+reversion;
     const change=Math.max(-vol,Math.min(vol,rawChange));
     price=Math.max(0,Math.round(price*(1+change)));
     lastChange=change;
