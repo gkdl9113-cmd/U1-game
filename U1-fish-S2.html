@@ -906,26 +906,36 @@ body.dig-fullscreen{max-width:none}
   </div>
 </div>
 
-<!-- ══ 갯벌 파기 화면 ══ -->
-<div id="s-digging" class="scr" style="flex-direction:column;background:#D4C5B9">
-  <div style="flex-shrink:0;background:#8B7355;border-bottom:2px solid #5D4037;padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
-    <div style="flex:1">
-      <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="diggingExit()">✕</button></div>
-      <button class="xl-tab" onclick="diggingExit()">◀ 수족관</button>
-    </div>
+<!-- ══ 갯벌 파기 화면 (엑셀 테마) ══ -->
+<div id="s-digging" class="scr">
+  <div class="xl-titlebar">
+    <div class="xl-tb-l"><span class="xl-logo">X</span><span class="xl-tb-title">갯벌채집대장_2026.xlsx - Microsoft Excel</span></div>
+    <div class="xl-wc"><button class="xl-wbtn">─</button><button class="xl-wbtn">□</button><button class="xl-wbtn xbtn" onclick="diggingExit()">✕</button></div>
   </div>
-  <div style="padding:12px;background:#C0B0A0;border-bottom:1px solid #8B7355;font-size:12px;font-weight:700;color:#3E2723">
-    🔨 갯벌 파기 | 호미: <span id="digging-hoe-count-main">0</span>개 | 획득: <span id="digging-found-count-main">0</span>/10
+  <div class="xl-tabs">
+    <button class="xl-tab" onclick="diggingExit()">◀ 수족관</button>
+    <button class="xl-tab on">갯벌터</button>
   </div>
-  <div id="digging-field-main" style="flex:1;width:100%;position:relative;user-select:none"></div>
-  <div style="padding:12px;background:#C0B0A0;border-top:1px solid #8B7355;text-align:center">
-    <div style="font-size:10px;font-weight:700;color:#5D4037;margin-bottom:6px">📦 획득한 미끼:</div>
+  <div class="xl-ribbon" style="min-height:40px;gap:6px;align-items:center">
+    <span style="font-size:11px;font-weight:700;color:#1F3864;padding:0 4px">🔨 갯벌 파기</span>
+    <div class="xl-rsep"></div>
+    <span style="font-size:11px;color:#595959;padding:0 4px">호미 <strong id="digging-hoe-count-main">0</strong>개</span>
+    <div class="xl-rsep"></div>
+    <span style="font-size:11px;color:#217346;font-weight:700;padding:0 4px">획득 <strong id="digging-found-count-main">0</strong>/10</span>
+  </div>
+  <div class="xl-fbar">
+    <div class="xl-namebox">A1</div><div class="xl-fx">fx</div>
+    <div class="xl-ftext">=DIG.MUDFLAT(셀 클릭 → 미끼 채집)</div>
+  </div>
+  <div id="digging-field-main" style="flex:1;width:100%;position:relative;user-select:none;overflow:hidden"></div>
+  <div style="padding:8px 12px;background:#F2F2F2;border-top:1px solid #C8C8C8;text-align:center;flex-shrink:0">
+    <div style="font-size:10px;font-weight:700;color:#1F3864;margin-bottom:6px">📦 획득한 미끼</div>
     <div id="digging-rewards-main" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;font-size:10px;margin-bottom:8px">
     </div>
-    <div style="display:flex;gap:6px;justify-content:center">
-      <button class="xl-tab" onclick="diggingBuyHoe()">🔨 호미 구매 (2,000원)</button>
-      <button class="xl-tab" onclick="nextDiggingRound()">다음 게임</button>
-      <button class="xl-tab" onclick="diggingExit()">종료</button>
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+      <button onclick="diggingBuyHoe()" style="background:#217346;color:#fff;border:none;border-radius:3px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🔨 호미 구매 (2,000원)</button>
+      <button onclick="nextDiggingRound()" style="background:#fff;color:#217346;border:1px solid #217346;border-radius:3px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">다음 게임</button>
+      <button onclick="diggingExit()" style="background:#fff;color:#666;border:1px solid #C8C8C8;border-radius:3px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">종료</button>
     </div>
   </div>
 </div>
@@ -6657,14 +6667,13 @@ function _dgScale(){
   const m=Math.min(f?.clientWidth||550, f?.clientHeight||320);
   return Math.max(0.55,Math.min(1,m/360));
 }
-// 판 자리(구덩이) HTML — 꽝/적중 모두 표시, 클릭 방해 안 하도록 pointer-events:none
+// 판 자리 HTML — 엑셀 '칠해진 셀' 느낌 (적중=초록, 꽝=회색). 클릭 방해 안 하도록 pointer-events:none
 function _diggingDigMarksHTML(){
-  const ds=Math.round(22*_dgScale());
+  const ds=Math.round(20*_dgScale());
   return (_diggingGame.digs||[]).map(d=>`
     <div style="position:absolute;left:${d.x}px;top:${d.y}px;width:${ds}px;height:${ds}px;transform:translate(-50%,-50%);
-      background:radial-gradient(circle at 50% 38%, #6D4C3D 0%, #3E2723 72%);
-      border:1px solid ${d.hit?'#2E7D32':'#2E1A12'};border-radius:50%;
-      box-shadow:inset 0 2px 3px rgba(0,0,0,.55);opacity:.9;pointer-events:none">
+      background:${d.hit?'rgba(33,115,70,.16)':'rgba(150,150,150,.22)'};
+      border:1px solid ${d.hit?'#70AD47':'#B4B4B4'};border-radius:2px;pointer-events:none">
     </div>`).join('');
 }
 
@@ -6806,8 +6815,10 @@ function generateBaits(){
 
 function renderDiggingScreen(){
   const field=document.getElementById('digging-field-main');
-  field.style.background='url("data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%23A0826D%22 width=%22100%22 height=%22100%22/><circle cx=%2220%22 cy=%2220%22 r=%222%22 fill=%22%238B7355%22/><circle cx=%2280%22 cy=%2250%22 r=%221.5%22 fill=%22%238B7355%22/><circle cx=%2245%22 cy=%2275%22 r=%222%22 fill=%22%238B7355%22/></svg>")';
-  field.style.cursor='crosshair';
+  // 엑셀 시트 격자 (흰 셀 + 옅은 회색 눈금선)
+  field.style.backgroundColor='#FFFFFF';
+  field.style.backgroundImage='repeating-linear-gradient(90deg,#E2E2E2 0 1px,transparent 1px 64px),repeating-linear-gradient(0deg,#E2E2E2 0 1px,transparent 1px 24px)';
+  field.style.cursor='cell';
   field.onclick=(e)=>clickGround(e);
 
   const icons={bait_normal:'🪱',bait_high:'🎣',bait_rare:'💎',bait_hero:'👑',bait_legend:'✨'};
