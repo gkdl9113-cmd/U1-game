@@ -5097,7 +5097,60 @@ function showFishDetail(typeOrIdx, fishIndex){
 }
 
 // ── 어종별 물고기 그리기 헬퍼 ─────────────────────────────
+// ── 디자인 시안: 3종을 서로 다른 스타일로(비교용) ──────────────
+function _fxRGB(hex){const m=/^#?([0-9a-f]{6})$/i.exec(hex||'');if(!m)return[136,136,136];const n=parseInt(m[1],16);return[(n>>16)&255,(n>>8)&255,n&255];}
+function _fxShade(hex,amt){let[r,g,b]=_fxRGB(hex);if(amt<0){const a=-amt;r*=1-a;g*=1-a;b*=1-a;}else{r+=(255-r)*amt;g+=(255-g)*amt;b+=(255-b)*amt;}return`rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;}
+const _TAU=Math.PI*2;
+// 스타일A: 굵은 외곽선 + 플랫 컬러 카툰 (금붕어)
+function _fishStyleCartoon(c,fx,fy,size,dir,s){
+  const col=s.color||'#FF8C00',dark=_fxShade(col,-0.45),lite=_fxShade(col,0.38),lw=Math.max(2,size*0.13);
+  c.lineJoin='round';c.lineCap='round';
+  c.fillStyle='rgba(0,0,0,0.07)';c.beginPath();c.ellipse(fx+2,fy+size*0.6,size*1.05,size*0.45,0,0,_TAU);c.fill();
+  c.fillStyle=col;c.strokeStyle=dark;c.lineWidth=lw;
+  c.beginPath();c.moveTo(fx-dir*size*0.6,fy);c.lineTo(fx-dir*size*1.5,fy-size*0.62);c.lineTo(fx-dir*size*1.5,fy+size*0.62);c.closePath();c.fill();c.stroke();
+  c.beginPath();c.ellipse(fx,fy,size*1.05,size*0.72,0,0,_TAU);c.fill();c.stroke();
+  c.fillStyle=lite;c.beginPath();c.ellipse(fx+dir*size*0.12,fy-size*0.3,size*0.55,size*0.27,0,0,_TAU);c.fill();
+  c.fillStyle=dark;c.beginPath();c.moveTo(fx-dir*size*0.1,fy+size*0.55);c.lineTo(fx-dir*size*0.5,fy+size*1.0);c.lineTo(fx+dir*size*0.25,fy+size*0.68);c.closePath();c.fill();
+  const ex=fx+dir*size*0.55,ey=fy-size*0.12;
+  c.beginPath();c.arc(ex,ey,size*0.27,0,_TAU);c.fillStyle='#fff';c.fill();c.lineWidth=Math.max(1.5,size*0.06);c.strokeStyle=dark;c.stroke();
+  c.beginPath();c.arc(ex+dir*size*0.07,ey,size*0.12,0,_TAU);c.fillStyle='#1b1b1b';c.fill();
+}
+// 스타일B: 둥글둥글 귀여운(치비) (구피)
+function _fishStyleChibi(c,fx,fy,size,dir,s){
+  const col=_fxShade(s.color||'#FF6347',0.16),acc=s.fin||col;
+  c.fillStyle='rgba(0,0,0,0.06)';c.beginPath();c.ellipse(fx,fy+size*0.62,size*0.92,size*0.4,0,0,_TAU);c.fill();
+  c.fillStyle=_fxShade(acc,0.22);
+  c.beginPath();c.moveTo(fx-dir*size*0.5,fy);c.quadraticCurveTo(fx-dir*size*1.55,fy-size*1.0,fx-dir*size*1.25,fy);c.quadraticCurveTo(fx-dir*size*1.55,fy+size*1.0,fx-dir*size*0.5,fy);c.closePath();c.fill();
+  const g=c.createRadialGradient(fx+dir*size*0.2,fy-size*0.3,size*0.1,fx,fy,size);g.addColorStop(0,_fxShade(col,0.28));g.addColorStop(1,col);
+  c.fillStyle=g;c.beginPath();c.arc(fx,fy,size*0.92,0,_TAU);c.fill();
+  c.fillStyle='rgba(255,120,150,0.5)';c.beginPath();c.arc(fx+dir*size*0.46,fy+size*0.3,size*0.16,0,_TAU);c.fill();
+  const ex=fx+dir*size*0.4,ey=fy-size*0.05;
+  c.beginPath();c.arc(ex,ey,size*0.35,0,_TAU);c.fillStyle='#fff';c.fill();
+  c.beginPath();c.arc(ex+dir*size*0.05,ey+size*0.05,size*0.2,0,_TAU);c.fillStyle='#222';c.fill();
+  c.beginPath();c.arc(ex+dir*size*0.14,ey-size*0.07,size*0.07,0,_TAU);c.fillStyle='#fff';c.fill();
+}
+// 스타일C: 각진 로우폴리(기하학) (흰동가리)
+function _fishStyleLowpoly(c,fx,fy,size,dir,s){
+  const col=s.color||'#FF4500',d1=_fxShade(col,-0.2),d2=_fxShade(col,-0.4),l1=_fxShade(col,0.3);
+  c.fillStyle='rgba(0,0,0,0.07)';c.beginPath();c.ellipse(fx,fy+size*0.58,size,size*0.4,0,0,_TAU);c.fill();
+  c.fillStyle=d1;c.beginPath();c.moveTo(fx-dir*size*0.6,fy);c.lineTo(fx-dir*size*1.5,fy-size*0.7);c.lineTo(fx-dir*size*1.15,fy);c.closePath();c.fill();
+  c.fillStyle=d2;c.beginPath();c.moveTo(fx-dir*size*0.6,fy);c.lineTo(fx-dir*size*1.5,fy+size*0.7);c.lineTo(fx-dir*size*1.15,fy);c.closePath();c.fill();
+  const P=[[fx+dir*size*1.18,fy],[fx+dir*size*0.4,fy-size*0.78],[fx-dir*size*0.5,fy-size*0.6],[fx-dir*size*0.66,fy],[fx-dir*size*0.5,fy+size*0.6],[fx+dir*size*0.4,fy+size*0.78]];
+  const faceCols=[l1,col,d1,d2,d1,col];
+  for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];c.beginPath();c.moveTo(fx,fy);c.lineTo(a[0],a[1]);c.lineTo(b[0],b[1]);c.closePath();c.fillStyle=faceCols[i];c.fill();}
+  c.fillStyle=d2;c.beginPath();c.moveTo(fx-dir*size*0.1,fy-size*0.72);c.lineTo(fx+dir*size*0.18,fy-size*1.18);c.lineTo(fx+dir*size*0.42,fy-size*0.7);c.closePath();c.fill();
+  const ex=fx+dir*size*0.6,ey=fy-size*0.12;
+  c.beginPath();c.arc(ex,ey,size*0.2,0,_TAU);c.fillStyle='#fff';c.fill();
+  c.beginPath();c.arc(ex+dir*size*0.04,ey,size*0.1,0,_TAU);c.fillStyle='#111';c.fill();
+}
+// 라우터: 3종만 새 스타일(비교용), 나머지는 기존 벡터 유지
 function drawFishShape(c,fx,fy,size,dir,s,type){
+  if(type==='goldfish') return _fishStyleCartoon(c,fx,fy,size,dir,s);
+  if(type==='guppy')    return _fishStyleChibi(c,fx,fy,size,dir,s);
+  if(type==='clownfish')return _fishStyleLowpoly(c,fx,fy,size,dir,s);
+  return _drawFishVector(c,fx,fy,size,dir,s,type);
+}
+function _drawFishVector(c,fx,fy,size,dir,s,type){
   c.fillStyle='rgba(0,0,0,0.06)';
   c.beginPath();c.ellipse(fx+2,fy+3,size,size*.42,0,0,Math.PI*2);c.fill();
   c.fillStyle=s.fin;
