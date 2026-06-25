@@ -2091,9 +2091,13 @@ function enterFishWorldWithData(dbData){
     adminInit();
     return;
   }
-  // 일반 유저 — 항상 DB 데이터 우선, 없으면 기본값
+  // 일반 유저 — DB 데이터 있으면 적용, 없으면(시즌초기화 후 빈 데이터 등) 깨끗한 초기 데이터로 시작.
+  // ⚠️ 빈 데이터일 때 applyFishData를 건너뛰면 이전 계정의 FG 잔재(돈 등)가 그대로 새 계정에 저장되는 버그가 있었음.
   if(dbData&&Object.keys(dbData).length>0){
     applyFishData(dbData);
+  }else{
+    applyFishData(_buildInitialFishData());
+    saveFishDataToDB(); // 빈 계정 행에 초기 데이터 즉시 기록
   }
   // 물고기 없으면 초기 금붕어 치어 1마리 생성 후 즉시 DB 저장 (신규가입·초기화 모두 처리)
   if(!FG.fishes||getTotalFishCount()===0){FG.fishes.goldfish={quantity:1,level:1,exp:0};saveFishDataToDB();}
