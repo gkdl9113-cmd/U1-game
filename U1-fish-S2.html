@@ -6720,14 +6720,14 @@ function generateBaits(){
 
   // 실제 화면 크기를 동적으로 읽기
   const field=document.getElementById('digging-field-main');
-  let w=field.clientWidth||550;
-  let h=field.clientHeight||320;
+  const W=field.clientWidth||550, H=field.clientHeight||320;
 
-  // 마진 설정 (화면 경계에서 떨어짐)
-  const margin=50;
-  w-=margin*2;
-  h-=margin*2;
-  const minDist=80; // 겹침 최소 거리 (더 멀게)
+  // 여백·간격을 화면 크기에 비례 (좁은 화면에서 고정값 때문에 중앙으로 몰리는 것 방지)
+  const margin=Math.max(20,Math.min(40,Math.min(W,H)*0.10));
+  const usableW=Math.max(40,W-margin*2);
+  const usableH=Math.max(40,H-margin*2);
+  // 미끼 간 최소 간격을 가용 면적/개수에 맞춰 자동 조정 (큰 화면 최대 80px)
+  const minDist=Math.max(28,Math.min(80,Math.sqrt(usableW*usableH/10)*0.62));
 
   for(let i=0;i<10;i++){
     let type='bait_normal';
@@ -6739,8 +6739,8 @@ function generateBaits(){
     let x, y, overlap, attempts=0;
     do {
       overlap=false;
-      x=Math.random()*w+margin+20;
-      y=Math.random()*h+margin+20;
+      x=margin+Math.random()*usableW;
+      y=margin+Math.random()*usableH;
       for(let b of _diggingGame.baits){
         if(Math.hypot(b.x-x,b.y-y)<minDist) overlap=true;
       }
