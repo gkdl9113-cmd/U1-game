@@ -5097,25 +5097,7 @@ function showFishDetail(typeOrIdx, fishIndex){
 }
 
 // ── 어종별 물고기 그리기 헬퍼 ─────────────────────────────
-// ── 레트로 픽셀(도트) 스타일 ──────────────────────────────
-// 기존 벡터 모양을 저해상도 오프스크린에 그린 뒤 nearest-neighbor로 확대 → 도트 느낌.
-// _PXW/_PXH를 줄이면 더 굵은 도트(레트로), 키우면 더 매끄러움.
-let _pxFishCv=null,_pxFishCtx=null;
-const _PXW=72,_PXH=44;
 function drawFishShape(c,fx,fy,size,dir,s,type){
-  if(!_pxFishCv){_pxFishCv=document.createElement('canvas');_pxFishCv.width=_PXW;_pxFishCv.height=_PXH;_pxFishCtx=_pxFishCv.getContext('2d');}
-  const octx=_pxFishCtx;
-  octx.clearRect(0,0,_PXW,_PXH);
-  octx.imageSmoothingEnabled=false;
-  const cxp=_PXW*0.55,cyp=_PXH*0.5,ssize=_PXH*0.30;
-  _drawFishVector(octx,cxp,cyp,ssize,dir,s,type);
-  const prev=c.imageSmoothingEnabled;
-  c.imageSmoothingEnabled=false;
-  const scale=size/ssize;
-  c.drawImage(_pxFishCv,fx-cxp*scale,fy-cyp*scale,_PXW*scale,_PXH*scale);
-  c.imageSmoothingEnabled=prev;
-}
-function _drawFishVector(c,fx,fy,size,dir,s,type){
   c.fillStyle='rgba(0,0,0,0.06)';
   c.beginPath();c.ellipse(fx+2,fy+3,size,size*.42,0,0,Math.PI*2);c.fill();
   c.fillStyle=s.fin;
