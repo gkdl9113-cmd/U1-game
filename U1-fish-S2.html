@@ -2059,6 +2059,7 @@ function _buildInitialFishData(){
     btWins:0,battlePoints:0,fusionCrystals:0,totalFished:0,totalEvos:0,titles:[],equippedTitle:null,
     stocks:{holdings:_emptyH(),realized:_emptyR(),divTick:_stockCurrentTick()},
     fishCodex:{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{},megalodonte:{},geumlin:{}},
+    digging:null,
     lastSave:serverNow()
   };
 }
@@ -2197,6 +2198,7 @@ function applyFishData(d){
     if(!FG.stocks.holdings[k]) FG.stocks.holdings[k]={shares:0,avgCost:0};
     if(FG.stocks.realized[k]==null) FG.stocks.realized[k]=0;
   });
+  FG.digging=d.digging||null; // 진행 중이던 갯벌파기 상태
   setTimeout(()=>{_retroCheckAchievements();migrateAchievementRewards();},1500);
   FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{},megalodonte:{},geumlin:{}};
   if(!FG.fishCodex.megalodonte) FG.fishCodex.megalodonte={};
@@ -2223,6 +2225,7 @@ async function saveFishDataToDB(){
     skillInventory:FG.skillInventory,
     achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],equippedTitle:FG.equippedTitle||null,
     stocks:FG.stocks,
+    digging:FG.digging||null,
     lastSave:serverNow()
   };
   try{
@@ -5571,6 +5574,7 @@ function fishSave(isDisconnect){
     rods:FG.rods,skillInventory:FG.skillInventory,
     achievements:FG.achievements,btWins:FG.btWins,battlePoints:FG.battlePoints||0,fusionCrystals:FG.fusionCrystals||0,totalFished:FG.totalFished,totalEvos:FG.totalEvos,titles:FG.titles||[],equippedTitle:FG.equippedTitle||null,
     stocks:FG.stocks,
+    digging:FG.digging||null,
     stoppedByDisconnect:isDisconnect||false,lastSave:serverNow()
   };
   const storageKey=`u1aquarium_s2_${currentUsername}`;
@@ -5657,6 +5661,7 @@ function fishLoad(){
       if(!FG.stocks.holdings[k]) FG.stocks.holdings[k]={shares:0,avgCost:0};
       if(FG.stocks.realized[k]==null) FG.stocks.realized[k]=0;
     });
+    FG.digging=d.digging||null;
     setTimeout(()=>{_retroCheckAchievements();migrateAchievementRewards();},1500);
     if(d.lastSave){
       const elapsed=(serverNow()-d.lastSave)/1000;
@@ -6602,29 +6607,72 @@ function shopBuyHoe(){
 let _diggingGame={
   hoeCount:0,
   baits:[],        // [{x, y, type, found}, ...]
+  digs:[],         // [{x, y, hit}, ...] 판 자리(꽝 포함)
   found:[],        // 획득한 미끼
   isPlaying:false
 };
+
+// 현재 진행 상태를 FG.digging에 저장(메모리). 좌표는 정규화(0~1)하여 화면 크기 변화에 견고.
+// 실제 DB/로컬 기록은 기존 저장(diggingExit·라운드종료·10초 자동저장)이 처리.
+function _diggingSaveState(){
+  const field=document.getElementById('digging-field-main');
+  const w=field?.clientWidth||1, h=field?.clientHeight||1;
+  const hasUnfound=_diggingGame.baits.some(b=>!b.found);
+  FG.digging={
+    active: !!(_diggingGame.isPlaying && hasUnfound && (FG.inventory.hoe||0)>0),
+    baits:_diggingGame.baits.map(b=>({nx:b.x/w,ny:b.y/h,type:b.type,found:b.found,id:b.id})),
+    digs:(_diggingGame.digs||[]).map(d=>({nx:d.x/w,ny:d.y/h,hit:d.hit}))
+  };
+}
+// FG.digging → _diggingGame 복원 (정규화 좌표를 현재 화면 크기로 환산)
+function _diggingRestoreState(){
+  const field=document.getElementById('digging-field-main');
+  const w=field?.clientWidth||1, h=field?.clientHeight||1;
+  const s=FG.digging||{};
+  _diggingGame={
+    hoeCount:FG.inventory.hoe||0,
+    baits:(s.baits||[]).map(b=>({x:b.nx*w,y:b.ny*h,type:b.type,found:b.found,id:b.id})),
+    digs:(s.digs||[]).map(d=>({x:d.nx*w,y:d.ny*h,hit:d.hit})),
+    found:[],
+    isPlaying:true
+  };
+  _diggingGame.found=_diggingGame.baits.filter(b=>b.found);
+}
+// 판 자리(구덩이) HTML — 꽝/적중 모두 표시, 클릭 방해 안 하도록 pointer-events:none
+function _diggingDigMarksHTML(){
+  return (_diggingGame.digs||[]).map(d=>`
+    <div style="position:absolute;left:${d.x}px;top:${d.y}px;width:22px;height:22px;transform:translate(-50%,-50%);
+      background:radial-gradient(circle at 50% 38%, #6D4C3D 0%, #3E2723 72%);
+      border:1px solid ${d.hit?'#2E7D32':'#2E1A12'};border-radius:50%;
+      box-shadow:inset 0 2px 3px rgba(0,0,0,.55);opacity:.9;pointer-events:none">
+    </div>`).join('');
+}
 
 function diggingEnter(){
   if(!FG.inventory.hoe||FG.inventory.hoe<=0){
     u1Toast('호미가 없습니다!','#C00000');
     return;
   }
-  _diggingGame={hoeCount:FG.inventory.hoe,baits:[],found:[],isPlaying:true};
   show('s-digging');
   // 화면이 렌더링된 후 배치
   setTimeout(()=>{
-    generateBaits();
+    // 저장된 진행 중 게임이 있으면 이어하기, 없으면 새 갯벌 생성
+    if(FG.digging&&FG.digging.active&&(FG.digging.baits||[]).some(b=>!b.found)){
+      _diggingRestoreState();
+      u1Toast('🔨 진행 중이던 갯벌을 이어서 시작합니다','#7A6A4A');
+    }else{
+      _diggingGame={hoeCount:FG.inventory.hoe,baits:[],digs:[],found:[],isPlaying:true};
+      generateBaits();
+    }
     renderDiggingScreen();
     fishRenderInfo();
   },10);
 }
 
 function diggingExit(){
-  // 호미·획득물은 클릭 시점에 이미 인벤토리에 반영됨 → 저장만 한 번
-  _diggingGame.isPlaying=false;
+  // 호미·획득물은 클릭 시점에 이미 인벤토리에 반영됨. 진행 상태 저장 후 1회 기록.
   FG.inventory.hoe=_diggingGame.hoeCount;
+  _diggingSaveState();
   fishQuickSave();
   show('s-fishworld');
   fishRenderInfo();
@@ -6681,8 +6729,8 @@ function renderDiggingScreen(){
   const icons={bait_normal:'🪱',bait_high:'🎣',bait_rare:'💎',bait_hero:'👑',bait_legend:'✨'};
   const colors={bait_normal:'#D4A574',bait_high:'#FF9800',bait_rare:'#2196F3',bait_hero:'#7C3AED',bait_legend:'#FFD700'};
 
-  // 찾은 미끼만 표시
-  field.innerHTML=_diggingGame.baits.filter(b=>b.found).map(b=>`
+  // 판 자리(구덩이) + 찾은 미끼 표시
+  field.innerHTML=_diggingDigMarksHTML()+_diggingGame.baits.filter(b=>b.found).map(b=>`
     <div style="
       position:absolute;
       left:${b.x}px;
@@ -6728,6 +6776,10 @@ function clickGround(e){
     if(d<hitDist){ hitDist=d; hitBait=b; }   // 범위 내 가장 가까운 미끼 선택
   }
 
+  // 판 자리 기록 (꽝 포함)
+  _diggingGame.digs=_diggingGame.digs||[];
+  _diggingGame.digs.push({x:clickX,y:clickY,hit:!!hitBait});
+
   if(hitBait){
     hitBait.found=true;
     _diggingGame.found.push(hitBait);
@@ -6739,6 +6791,7 @@ function clickGround(e){
   }
 
   renderDiggingScreen();
+  _diggingSaveState();   // 진행 상태 갱신(자동저장이 DB 반영)
 
   const allFound=_diggingGame.found.length===10;
   if(_diggingGame.hoeCount<=0||allFound){
@@ -6774,11 +6827,14 @@ function clickBait(id,e){
   FG.inventory.hoe=_diggingGame.hoeCount;   // 호미 소모 즉시 반영
   _diggingGame.found.push(bait);
   FG.inventory[bait.type]=(FG.inventory[bait.type]||0)+1;   // 획득 즉시 인벤토리 적립
+  _diggingGame.digs=_diggingGame.digs||[];
+  _diggingGame.digs.push({x:bait.x,y:bait.y,hit:true});
 
   const names={bait_normal:'중급',bait_high:'고급',bait_rare:'희귀',bait_hero:'영웅',bait_legend:'전설'};
   u1Toast(`✅ ${names[bait.type]} 미끼 획득!`,'#2E7D32');
 
   renderDiggingScreen();
+  _diggingSaveState();
 
   const allFound=_diggingGame.found.length===10;
   if(_diggingGame.hoeCount<=0||allFound){
@@ -6791,10 +6847,11 @@ function endDiggingRound(allFound){
   const msg=allFound?`🎉 모든 미끼를 찾았습니다! 호미 ${_diggingGame.hoeCount}개 남음`:`⚠️ 호미가 모두 소모되었습니다! 획득: ${_diggingGame.found.length}개`;
   u1Toast(msg,allFound?'#2E7D32':'#F57C00');
 
-  // 획득물은 이미 인벤토리에 반영됨 → 라운드 결과 저장
+  // 라운드 종료 → 진행상태 active=false로 저장 후 기록
+  _diggingSaveState();
   fishQuickSave();
 
-  // 못 찾은 미끼 표시
+  // 못 찾은 미끼 + 판 자리 표시
   showMissedBaits();
 }
 
@@ -6803,7 +6860,7 @@ function showMissedBaits(){
   const icons={bait_normal:'🪱',bait_high:'🎣',bait_rare:'💎',bait_hero:'👑',bait_legend:'✨'};
   const colors={bait_normal:'#D4A574',bait_high:'#FF9800',bait_rare:'#2196F3',bait_hero:'#7C3AED',bait_legend:'#FFD700'};
 
-  // 모든 미끼 표시 (찾은 것은 색깔, 못 찾은 것은 어두운 색)
+  // 판 자리(구덩이) + 모든 미끼 표시 (찾은 것은 색깔, 못 찾은 것은 어두운 색)
   const baitElements=_diggingGame.baits.map(b=>`
     <div style="
       position:absolute;
@@ -6827,7 +6884,7 @@ function showMissedBaits(){
     </div>
   `).join('');
 
-  field.innerHTML=baitElements;
+  field.innerHTML=_diggingDigMarksHTML()+baitElements;
 }
 
 function nextDiggingRound(){
@@ -6836,9 +6893,10 @@ function nextDiggingRound(){
     return;
   }
   // 이전 라운드 획득물은 이미 인벤토리에 적립됨 → 표시용 상태만 새 라운드로
-  _diggingGame={hoeCount:_diggingGame.hoeCount,baits:[],found:[],isPlaying:true};
+  _diggingGame={hoeCount:_diggingGame.hoeCount,baits:[],digs:[],found:[],isPlaying:true};
   generateBaits();
   renderDiggingScreen();
+  _diggingSaveState();
 }
 
 // S2 인벤토리 열기
