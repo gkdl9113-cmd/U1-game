@@ -5192,6 +5192,27 @@ function _flatEye(c,ex,ey,r){
   c.beginPath();c.arc(ex,ey,r*0.085,0,_TAU);c.fillStyle='#1b1b1b';c.fill();
   c.beginPath();c.arc(ex+r*0.05,ey-r*0.05,r*0.03,0,_TAU);c.fillStyle='#fff';c.fill();
 }
+// 영물 오로라(글로우 + 회전 입자)
+const YW_AURA={yeongeum:'180,100,255',yongwang:'0,200,160',eelyw:'0,229,255',haelyong:'40,120,255',megalodonte:'220,40,40',geumlin:'255,200,0'};
+function _flatAura(c,fx,fy,size,type){
+  const rgb=YW_AURA[type];if(!rgb)return;
+  const R=size*2.7,g=c.createRadialGradient(fx,fy,size*0.4,fx,fy,R);
+  g.addColorStop(0,`rgba(${rgb},0.30)`);g.addColorStop(0.5,`rgba(${rgb},0.13)`);g.addColorStop(1,`rgba(${rgb},0)`);
+  c.fillStyle=g;c.beginPath();c.arc(fx,fy,R,0,_TAU);c.fill();
+  const t=Date.now()/700;
+  for(let i=0;i<3;i++){const a=t+i*2.094,rr=size*(1.5+0.35*Math.sin(t*1.4+i));
+    const px=fx+Math.cos(a)*rr,py=fy+Math.sin(a)*rr*0.65;
+    const sp=c.createRadialGradient(px,py,0,px,py,size*0.45);
+    sp.addColorStop(0,`rgba(${rgb},0.55)`);sp.addColorStop(1,`rgba(${rgb},0)`);
+    c.fillStyle=sp;c.beginPath();c.arc(px,py,size*0.45,0,_TAU);c.fill();}
+}
+// 이빨 한 줄 (x1,y1)-(x2,y2) 따라 삼각 이빨, depth만큼 입 안쪽으로
+function _teethRow(c,x1,y1,x2,y2,depth,n){
+  c.fillStyle='#fff';
+  for(let i=0;i<n;i++){const t1=i/n,t2=(i+1)/n;
+    const ax=x1+(x2-x1)*t1,ay=y1+(y2-y1)*t1,bx=x1+(x2-x1)*t2,by=y1+(y2-y1)*t2;
+    c.beginPath();c.moveTo(ax,ay);c.lineTo(bx,by);c.lineTo((ax+bx)/2,(ay+by)/2+depth);c.closePath();c.fill();}
+}
 function _flatTail(c,fx,fy,size,dir,kind){
   const x0=fx-dir*size*0.7;c.beginPath();
   if(kind==='fanwide'){c.moveTo(x0,fy);c.quadraticCurveTo(fx-dir*size*1.7,fy-size*1.05,fx-dir*size*1.35,fy);c.quadraticCurveTo(fx-dir*size*1.7,fy+size*1.05,x0,fy);}
@@ -5247,25 +5268,44 @@ function _flatNormal(c,fx,fy,size,dir,s,type){
   _flatEye(c,fx+dir*rx*0.72,fy-ry*0.12,size);
 }
 function _flatShark(c,fx,fy,size,dir,s){
-  const col=s.color||'#5A6B7A',mid=_fxShade(col,-0.16),dark=_fxShade(col,-0.42),lite=_fxShade(col,0.4);
+  const col=s.color||'#3A4658',mid=_fxShade(col,-0.16),dark=_fxShade(col,-0.45),lite=_fxShade(col,0.42);
+  // 큰 초승달 꼬리
   c.fillStyle=mid;
-  c.beginPath();c.moveTo(fx-dir*size*0.9,fy);c.lineTo(fx-dir*size*1.7,fy-size*0.95);c.lineTo(fx-dir*size*1.32,fy-size*0.05);c.lineTo(fx-dir*size*1.7,fy+size*0.25);c.lineTo(fx-dir*size*1.18,fy+size*0.55);c.closePath();c.fill();
-  c.beginPath();c.moveTo(fx-dir*size*0.1,fy-size*0.55);c.lineTo(fx+dir*size*0.18,fy-size*1.25);c.lineTo(fx+dir*size*0.55,fy-size*0.5);c.closePath();c.fill();
-  c.beginPath();c.moveTo(fx+dir*size*0.35,fy+size*0.35);c.lineTo(fx-dir*size*0.05,fy+size*1.0);c.lineTo(fx+dir*size*0.55,fy+size*0.5);c.closePath();c.fill();
+  c.beginPath();c.moveTo(fx-dir*size*0.9,fy);c.lineTo(fx-dir*size*1.78,fy-size*1.05);c.lineTo(fx-dir*size*1.32,fy-size*0.05);c.lineTo(fx-dir*size*1.78,fy+size*0.3);c.lineTo(fx-dir*size*1.15,fy+size*0.6);c.closePath();c.fill();
+  // 큰 등지느러미
+  c.beginPath();c.moveTo(fx-dir*size*0.15,fy-size*0.55);c.lineTo(fx+dir*size*0.12,fy-size*1.4);c.lineTo(fx+dir*size*0.5,fy-size*0.5);c.closePath();c.fill();
+  // 가슴지느러미
+  c.beginPath();c.moveTo(fx+dir*size*0.3,fy+size*0.35);c.lineTo(fx-dir*size*0.1,fy+size*1.1);c.lineTo(fx+dir*size*0.55,fy+size*0.5);c.closePath();c.fill();
+  // 몸통 (앞쪽은 벌린 입에서 끊김)
   c.beginPath();
-  c.moveTo(fx+dir*size*1.48,fy+size*0.06);
-  c.quadraticCurveTo(fx+dir*size*0.6,fy-size*0.72,fx-dir*size*0.3,fy-size*0.5);
-  c.quadraticCurveTo(fx-dir*size*0.86,fy-size*0.2,fx-dir*size*0.9,fy);
-  c.quadraticCurveTo(fx-dir*size*0.86,fy+size*0.26,fx-dir*size*0.3,fy+size*0.5);
-  c.quadraticCurveTo(fx+dir*size*0.6,fy+size*0.6,fx+dir*size*1.48,fy+size*0.06);
+  c.moveTo(fx+dir*size*1.12,fy-size*0.3);                     // 윗턱 뒤
+  c.quadraticCurveTo(fx+dir*size*0.5,fy-size*0.8,fx-dir*size*0.35,fy-size*0.52);
+  c.quadraticCurveTo(fx-dir*size*0.9,fy-size*0.2,fx-dir*size*0.94,fy);
+  c.quadraticCurveTo(fx-dir*size*0.9,fy+size*0.28,fx-dir*size*0.35,fy+size*0.54);
+  c.quadraticCurveTo(fx+dir*size*0.5,fy+size*0.72,fx+dir*size*1.1,fy+size*0.46); // 아랫턱 뒤
+  c.lineTo(fx+dir*size*0.95,fy+size*0.08);
+  c.lineTo(fx+dir*size*0.95,fy-size*0.08);
   c.closePath();
-  const g=c.createLinearGradient(fx,fy-size*0.6,fx,fy+size*0.6);g.addColorStop(0,lite);g.addColorStop(0.45,col);g.addColorStop(1,mid);c.fillStyle=g;c.fill();
-  c.fillStyle='rgba(255,255,255,0.82)';
-  c.beginPath();c.moveTo(fx+dir*size*1.32,fy+size*0.12);c.quadraticCurveTo(fx+dir*size*0.3,fy+size*0.6,fx-dir*size*0.4,fy+size*0.44);c.quadraticCurveTo(fx+dir*size*0.3,fy+size*0.3,fx+dir*size*1.32,fy+size*0.12);c.closePath();c.fill();
+  const g=c.createLinearGradient(fx,fy-size*0.7,fx,fy+size*0.7);g.addColorStop(0,lite);g.addColorStop(0.45,col);g.addColorStop(1,mid);c.fillStyle=g;c.fill();
+  // 흰 배
+  c.fillStyle='rgba(255,255,255,0.8)';
+  c.beginPath();c.moveTo(fx+dir*size*0.95,fy+size*0.22);c.quadraticCurveTo(fx+dir*size*0.2,fy+size*0.6,fx-dir*size*0.4,fy+size*0.44);c.quadraticCurveTo(fx+dir*size*0.2,fy+size*0.3,fx+dir*size*0.95,fy+size*0.22);c.closePath();c.fill();
+  // 벌린 입(어두운 빨강)
+  const tipx=fx+dir*size*1.52;
+  c.fillStyle='#3a0b0b';
+  c.beginPath();c.moveTo(tipx,fy-size*0.04);c.lineTo(fx+dir*size*1.12,fy-size*0.3);c.lineTo(fx+dir*size*0.95,fy+size*0.02);c.lineTo(fx+dir*size*1.1,fy+size*0.46);c.closePath();c.fill();
+  // 이빨(윗니 아래로 / 아랫니 위로)
+  _teethRow(c,tipx,fy-size*0.04,fx+dir*size*1.12,fy-size*0.3,+size*0.2,5);
+  _teethRow(c,tipx,fy-size*0.01,fx+dir*size*1.1,fy+size*0.46,-size*0.2,5);
+  // 아가미 슬릿
   c.strokeStyle=dark;c.lineWidth=Math.max(1,size*0.05);
-  for(let i=0;i<3;i++){const gx=fx+dir*(size*0.5-i*size*0.13);c.beginPath();c.moveTo(gx,fy-size*0.28);c.lineTo(gx,fy+size*0.26);c.stroke();}
-  c.beginPath();c.moveTo(fx+dir*size*1.42,fy+size*0.16);c.lineTo(fx+dir*size*1.02,fy+size*0.24);c.stroke();
-  _flatEye(c,fx+dir*size*0.98,fy-size*0.12,size);
+  for(let i=0;i<3;i++){const gx=fx+dir*(size*0.42-i*size*0.13);c.beginPath();c.moveTo(gx,fy-size*0.3);c.lineTo(gx,fy+size*0.28);c.stroke();}
+  // 사나운 붉은 눈
+  const ex=fx+dir*size*0.8,ey=fy-size*0.22;
+  const eg=c.createRadialGradient(ex,ey,0,ex,ey,size*0.32);eg.addColorStop(0,'rgba(255,60,60,0.9)');eg.addColorStop(1,'rgba(255,60,60,0)');
+  c.fillStyle=eg;c.beginPath();c.arc(ex,ey,size*0.32,0,_TAU);c.fill();
+  c.beginPath();c.arc(ex,ey,size*0.12,0,_TAU);c.fillStyle='#fff';c.fill();
+  c.beginPath();c.arc(ex,ey,size*0.06,0,_TAU);c.fillStyle='#c00000';c.fill();
 }
 function _flatEel(c,fx,fy,size,dir,s,type){
   const col=s.color||'#FFD835',acc=s.fin||col,mid=_fxShade(col,-0.16),lite=_fxShade(col,0.45);
@@ -5284,6 +5324,10 @@ function _flatEel(c,fx,fy,size,dir,s,type){
   const g=c.createLinearGradient(fx,fy-h*1.5,fx,fy+h*1.5);g.addColorStop(0,lite);g.addColorStop(0.5,col);g.addColorStop(1,mid);c.fillStyle=g;c.fill();
   if(type==='haelyong'){c.fillStyle=_fxShade(acc,-0.22);for(let i=-1;i<=2;i++){const px=fx-dir*L*0.2*i;c.beginPath();c.moveTo(px-dir*size*0.12,fy-h*1.1);c.lineTo(px,fy-h*1.95);c.lineTo(px+dir*size*0.12,fy-h*1.1);c.closePath();c.fill();}}
   c.fillStyle='rgba(255,255,255,0.13)';c.beginPath();c.ellipse(fx+dir*L*0.15,fy+h*0.45,L*0.5,h*0.5,0,0,_TAU);c.fill();
+  if(type==='eelyw'){c.strokeStyle='#FFF176';c.lineWidth=Math.max(1.4,size*0.08);c.lineJoin='miter';
+    for(let k=0;k<2;k++){const bx=fx+dir*L*(0.15-k*0.5),by=fy-h*(1.7+k*0.3);
+      c.beginPath();c.moveTo(bx,by);c.lineTo(bx+dir*size*0.13,by+size*0.3);c.lineTo(bx-dir*size*0.05,by+size*0.34);c.lineTo(bx+dir*size*0.18,by+size*0.66);c.stroke();}
+    c.lineJoin='round';}
   _flatEye(c,fx+dir*L*0.72,fy-h*0.3,size*0.95);
 }
 function _flatTurtle(c,fx,fy,size,dir,s,type){
@@ -5303,6 +5347,7 @@ function _flatTurtle(c,fx,fy,size,dir,s,type){
 // 라우터: 모든 종을 플랫 벡터 스타일로(종별 특색 반영)
 function drawFishShape(c,fx,fy,size,dir,s,type){
   c.lineJoin='round';c.lineCap='round';
+  if(YW_AURA[type]) _flatAura(c,fx,fy,size,type);   // 영물 오로라(글로우)
   c.fillStyle='rgba(0,0,0,0.06)';c.beginPath();c.ellipse(fx,fy+size*0.62,size*1.0,size*0.38,0,0,_TAU);c.fill();
   if(type==='megalodonte')return _flatShark(c,fx,fy,size,dir,s);
   if(type==='electric'||type==='eelyw'||type==='haelyong')return _flatEel(c,fx,fy,size,dir,s,type);
