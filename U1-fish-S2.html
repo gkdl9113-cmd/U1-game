@@ -2741,6 +2741,12 @@ const ROD_ENHANCE_PER=0.01;   // 강화 1당 초록 게이지 +1%p
 const ROD_FRAG_DROP=0.20;     // 낚시 성공 시 다음 단계 조각 드롭 확률
 const ROD_PROMOTE_FRAG=10;    // 승급에 필요한 조각 수
 function rodAllowedBaits(id){return BAIT_ORDER.slice(0,(ROD_TIERS[id]?.tier||1));}
+// 장착 낚시대 표시/판정 정보. 승급된 rod2~rod6은 F_SHOP에 없으므로 ROD_TIERS로 폴백(없으면 낚시가 멈추던 버그 방지)
+function _rodShopInfo(rodId){
+  const sh=F_SHOP.find(r=>r.id===rodId); if(sh) return sh;
+  const t=ROD_TIERS[rodId]||ROD_TIERS.rod1, base=F_SHOP.find(r=>r.id==='rod1')||{};
+  return {id:rodId,name:t.name||'낚시대',type:'rod',catchProb:base.catchProb||0.30,gaugeWidth:base.gaugeWidth||0.22,gaugeSpeed:base.gaugeSpeed||130,grades:base.grades||[{grade:'일반',w:100}]};
+}
 function rodGaugeFraction(rod){return Math.min(0.7,(ROD_TIERS[rod.id]?.gauge||0.30)+(rod.level||0)*ROD_ENHANCE_PER);}
 // 미끼별 등급 확률표
 const BAIT_GRADE_TABLE={
@@ -3352,7 +3358,7 @@ function fishingSelectRod(rodId){
   // 낚시 바로 시작
   FMG.state='casting';
   fishingRenderRodBtns();
-  const rod=F_SHOP.find(r=>r.id===rodId);
+  const rod=_rodShopInfo(rodId);
   const baitName={bait_common:'일반 미끼',bait_rare:'희귀 미끼',bait_hero:'영웅 미끼'}[FMG.usedBait]||'미끼';
   _fishingSetRodInfo(`${rod.name} | 🪱 미끼 사용 중`);
   _fishingSetFormula(`=FISHING.CAST("${rod.name}","${baitName}" 사용)`);
@@ -3449,7 +3455,7 @@ function fishingConfirmBait(){
   FMG.state='casting';
   FMG.usedBait=_selectedBaitId;
   fishingRenderRodBtns();
-  const rod=F_SHOP.find(r=>r.id===rodId);
+  const rod=_rodShopInfo(rodId);
   const baitName={bait_common:'일반 미끼',bait_rare:'희귀 미끼',bait_hero:'영웅 미끼'}[_selectedBaitId]||'미끼';
   _fishingSetRodInfo(`${rod.name} | 🪱 미끼 사용 중`);
   _fishingSetFormula(`=FISHING.CAST("${rod.name}","${baitName}" 사용)`);
@@ -3463,7 +3469,7 @@ function fishingConfirmBait(){
 function fishingStartWait(){
   FMG.state='waiting';
   _fishingSetFormula('=FISHING.WAIT("입질 대기 중...")');
-  const rod=F_SHOP.find(r=>r.id===FMG.rodId);
+  const rod=_rodShopInfo(FMG.rodId);
   _fishingSetCells(1,rod?rod.name:'-','-','대기중...','⏳');
   _fishingSetMsg('입질 대기 중…','찌가 쏙 들어가면 클릭!');
   _fishingSetState('입질 대기');
@@ -3476,7 +3482,7 @@ function fishingBite(){
   FMG.state='bite';
   const ba=document.getElementById('fishing-bite-alert');
   if(ba) ba.style.display='';
-  const rod=F_SHOP.find(r=>r.id===FMG.rodId);
+  const rod=_rodShopInfo(FMG.rodId);
   _fishingSetCells(1,rod?rod.name:'-','-','⚡입질!','클릭!','fishing-cell-bite');
   _fishingSetFormula('=FISHING.BITE("⚡ 입질! 클릭하세요!")');
   _fishingSetMsg('⚡ 입질! 지금 클릭!','');
@@ -3678,7 +3684,7 @@ function _endFishingDrag(e){
     area.removeEventListener('touchend',_endFishingDrag);
   }
 
-  const rod=F_SHOP.find(r=>r.id===FMG.rodId);
+  const rod=_rodShopInfo(FMG.rodId);
   const inSuccessZone=FMG.currentGaugePos>=FMG.successZoneStart&&
     FMG.currentGaugePos<=(FMG.successZoneStart+FMG.successZoneWidth);
   const holdTimeSeconds=FMG.successZoneHoldTime/1000;
@@ -3762,7 +3768,7 @@ function _baitFallbackCatch(rod,inSpecial){
 function fishingGaugeClick(){
   // 타이밍 게이지에서 드래그로 변경되었으므로 이 함수는 사용 안 함
   return;
-  const rod=F_SHOP.find(r=>r.id===FMG.rodId);
+  const rod=_rodShopInfo(FMG.rodId);
   // 황금 존 판정 (미스릴 낚시대)
   const inSpecial=FMG.specialZoneStart>=0&&
     FMG.gaugePos>=FMG.specialZoneStart&&
