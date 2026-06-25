@@ -5255,17 +5255,46 @@ const FLATCFG={
   yeongeum:{rx:0.9,ry:0.62,tail:'ribbon',dorsal:'round'},
   geumlin:{rx:1.06,ry:0.7,tail:'fan',dorsal:'round'}
 };
+// 등급 → 티어(0 일반 ~ 5 전설). 영물 등급(하급/상급)도 매핑.
+function _gradeTier(g){return {'일반':0,'하급':0,'중급':1,'고급':2,'상급':2,'희귀':3,'영웅':4,'전설':5}[g]||0;}
+function _flatSpark(c,x,y,r,color){c.fillStyle=color;c.beginPath();c.moveTo(x,y-r);c.lineTo(x+r*0.26,y-r*0.26);c.lineTo(x+r,y);c.lineTo(x+r*0.26,y+r*0.26);c.lineTo(x,y+r);c.lineTo(x-r*0.26,y+r*0.26);c.lineTo(x-r,y);c.lineTo(x-r*0.26,y-r*0.26);c.closePath();c.fill();}
 function _flatNormal(c,fx,fy,size,dir,s,type){
   const col=s.color||'#FF8C00',acc=s.fin||col;
-  const mid=_fxShade(col,-0.14),dark=_fxShade(col,-0.4),lite=_fxShade(col,0.45),finD=_fxShade(acc,-0.28);
-  const cfg=FLATCFG[type]||FLATCFG._default,rx=size*cfg.rx,ry=size*cfg.ry;
-  c.fillStyle=finD;_flatTail(c,fx,fy,size,dir,cfg.tail);
-  c.fillStyle=finD;if(cfg.dorsal)_flatDorsal(c,fx,fy,size,dir,cfg.dorsal);
+  const mid=_fxShade(col,-0.14),dark=_fxShade(col,-0.4),lite=_fxShade(col,0.45),finD=_fxShade(acc,-0.28),finL=_fxShade(acc,0.25);
+  const tier=_gradeTier(s.grade),cfg=FLATCFG[type]||FLATCFG._default;
+  const rx=size*cfg.rx*(1+tier*0.04),ry=size*cfg.ry*(1+tier*0.04),tsz=size*(1+tier*0.1);
+  // 고급+: 뒤로 흐르는 보조 꼬리(반투명)
+  if(tier>=3){c.globalAlpha=0.45;c.fillStyle=finL;_flatTail(c,fx,fy,tsz*1.4,dir,cfg.tail);c.globalAlpha=1;}
+  // 꼬리
+  c.fillStyle=finD;_flatTail(c,fx,fy,tsz,dir,cfg.tail);
+  // 꼬리 살(라인) 중급+
+  if(tier>=1){c.strokeStyle=_fxShade(acc,-0.42);c.lineWidth=Math.max(0.8,size*0.028);
+    for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(fx-dir*tsz*0.78,fy+tsz*0.03*i);c.lineTo(fx-dir*tsz*1.4,fy+tsz*0.42*i);c.stroke();}}
+  // 등지느러미(등급별 큼)
+  c.fillStyle=finD;if(cfg.dorsal)_flatDorsal(c,fx,fy,tsz*(1+tier*0.05),dir,cfg.dorsal);
+  // 배지느러미(고급+)
+  if(tier>=2){c.fillStyle=finD;c.beginPath();c.moveTo(fx-dir*rx*0.1,fy+ry*0.72);c.lineTo(fx-dir*rx*0.5,fy+ry*1.28);c.lineTo(fx+dir*rx*0.28,fy+ry*0.88);c.closePath();c.fill();}
+  // 몸통
   _flatBody(c,fx,fy,rx,ry,dir,lite,col,mid);
+  // 줄무늬(흰동가리)
   if(cfg.stripes){c.save();c.beginPath();c.ellipse(fx,fy,rx*1.02,ry,0,0,_TAU);c.clip();c.fillStyle='rgba(255,255,255,0.9)';[0.5,-0.05,-0.55].forEach(o=>{c.beginPath();c.ellipse(fx+dir*rx*o,fy,rx*0.12,ry*1.2,0,0,_TAU);c.fill();});c.restore();}
+  // 비늘(고급+)
+  if(tier>=3){c.save();c.beginPath();c.ellipse(fx,fy,rx*1.0,ry*0.98,0,0,_TAU);c.clip();
+    c.strokeStyle='rgba(255,255,255,0.16)';c.lineWidth=Math.max(0.6,size*0.02);
+    for(let yy=-1;yy<=1;yy++)for(let xx=-2;xx<=2;xx++){c.beginPath();c.arc(fx+dir*xx*rx*0.3,fy+yy*ry*0.42,rx*0.2,Math.PI*0.15,Math.PI*0.85);c.stroke();}
+    c.restore();}
+  // 발광 테두리(고급+)
+  if(tier>=2){c.save();c.shadowColor=acc;c.shadowBlur=size*0.5*tier;c.strokeStyle=finL;c.lineWidth=Math.max(1,size*0.045);
+    c.beginPath();c.ellipse(fx,fy,rx,ry,0,0,_TAU);c.stroke();c.restore();}
+  // 아가미
   c.strokeStyle=dark;c.lineWidth=Math.max(1,size*0.045);
   c.beginPath();c.arc(fx+dir*rx*0.5,fy,ry*0.7,dir>0?-0.9:Math.PI+0.9,dir>0?0.9:Math.PI-0.9);c.stroke();
+  // 눈
   _flatEye(c,fx+dir*rx*0.72,fy-ry*0.12,size);
+  // 반짝임(영웅+)
+  if(tier>=4){const t=Date.now()/500;for(let i=0;i<tier-2;i++){const a=t+i*1.9;_flatSpark(c,fx+Math.cos(a)*rx*1.25,fy+Math.sin(a)*ry*1.5,size*0.16*(0.7+0.3*Math.sin(t*2+i)),'rgba(255,255,255,0.9)');}}
+  // 왕관(전설)
+  if(tier>=5){c.fillStyle='#FFD54A';const cx=fx+dir*rx*0.45,cyy=fy-ry*1.15;c.beginPath();c.moveTo(cx-rx*0.32,cyy+ry*0.22);c.lineTo(cx-rx*0.32,cyy-ry*0.12);c.lineTo(cx-rx*0.13,cyy+ry*0.06);c.lineTo(cx,cyy-ry*0.2);c.lineTo(cx+rx*0.13,cyy+ry*0.06);c.lineTo(cx+rx*0.32,cyy-ry*0.12);c.lineTo(cx+rx*0.32,cyy+ry*0.22);c.closePath();c.fill();}
 }
 function _flatShark(c,fx,fy,size,dir,s){
   const col=s.color||'#3A4658',mid=_fxShade(col,-0.16),dark=_fxShade(col,-0.45),lite=_fxShade(col,0.42);
