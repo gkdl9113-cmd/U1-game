@@ -5415,13 +5415,77 @@ function _flatTurtle(c,fx,fy,size,dir,s,type){
   for(let a=0;a<6;a++){const ang=a/6*_TAU;c.beginPath();c.moveTo(fx+Math.cos(ang)*r*0.55,fy+Math.sin(ang)*r*0.45);c.lineTo(fx+Math.cos(ang)*r,fy+Math.sin(ang)*r*0.82);c.stroke();}
   if(type==='yongwang'){c.fillStyle='#FFD54A';c.beginPath();c.moveTo(fx+dir*r*0.82,fy-r*0.32);c.lineTo(fx+dir*r*0.92,fy-r*0.62);c.lineTo(fx+dir*r*1.02,fy-r*0.38);c.lineTo(fx+dir*r*1.12,fy-r*0.64);c.lineTo(fx+dir*r*1.18,fy-r*0.32);c.closePath();c.fill();}
 }
+// 해룡: 뱀형 용 (뿔 머리 + 웹 날개 + 등가시 + 꼬리 지느러미) — 장어와 차별화
+function _flatDragon(c,fx,fy,size,dir,s){
+  const U=size;
+  const col=s.color||'#0A1628',acc=s.fin||'#1E90FF';
+  const mid=_fxShade(col,-0.08),lite=_fxShade(col,0.55);
+  const fin=acc,finL=_fxShade(acc,0.20),finD=_fxShade(acc,-0.30);
+  const P=[[-1.55,0.35],[-1.15,0.60],[-0.70,0.66],[-0.20,0.52],[0.25,0.25],[0.62,-0.10],[0.92,-0.50],[1.12,-0.88]]
+    .map(p=>[fx+dir*U*p[0],fy+U*p[1]]);
+  const TH=[0.09,0.22,0.32,0.35,0.33,0.27,0.20,0.14],seg=P.length-1;
+  const sample=t=>{const f=Math.max(0,Math.min(1,t))*seg,i=Math.min(seg-1,Math.floor(f)),u=f-i;
+    return [P[i][0]+(P[i+1][0]-P[i][0])*u,P[i][1]+(P[i+1][1]-P[i][1])*u,TH[i]+(TH[i+1]-TH[i])*u];};
+  const N=30,pts=[];for(let k=0;k<=N;k++)pts.push(sample(k/N));
+  const nrm=k=>{const a=pts[Math.max(0,k-1)],b=pts[Math.min(N,k+1)];let dx=b[0]-a[0],dy=b[1]-a[1];const L=Math.hypot(dx,dy)||1;let nx=-dy/L,ny=dx/L;if(ny>0){nx=-nx;ny=-ny;}return[nx,ny];}; // ny<0=위쪽
+  // 꼬리 지느러미
+  c.fillStyle=finD;const tx=P[0][0],ty=P[0][1];
+  c.beginPath();c.moveTo(tx,ty);c.lineTo(tx-dir*U*0.45,ty-U*0.55);
+  c.quadraticCurveTo(tx-dir*U*0.55,ty,tx-dir*U*0.5,ty+U*0.5);
+  c.quadraticCurveTo(tx-dir*U*0.2,ty+U*0.15,tx,ty);c.closePath();c.fill();
+  // 가슴 날개(웹)
+  const wbx=fx+dir*U*0.52,wby=fy-U*0.18;
+  const wg=c.createLinearGradient(wbx,wby-U*1.3,wbx,wby);wg.addColorStop(0,finL);wg.addColorStop(1,finD);
+  c.fillStyle=wg;c.beginPath();c.moveTo(wbx,wby);
+  c.lineTo(wbx+dir*U*0.05,wby-U*1.2);
+  c.quadraticCurveTo(wbx-dir*U*0.25,wby-U*0.78,wbx-dir*U*0.6,wby-U*0.62);
+  c.quadraticCurveTo(wbx-dir*U*0.25,wby-U*0.5,wbx-dir*U*0.45,wby-U*0.12);
+  c.quadraticCurveTo(wbx-dir*U*0.12,wby-U*0.12,wbx,wby);c.closePath();c.fill();
+  c.strokeStyle=finD;c.lineWidth=Math.max(0.8,U*0.028);
+  [[-0.6,-0.62],[-0.45,-0.12],[0.05,-1.2]].forEach(o=>{c.beginPath();c.moveTo(wbx,wby);c.lineTo(wbx+dir*U*o[0],wby+U*o[1]);c.stroke();});
+  // 몸통 아웃라인
+  const bg=c.createLinearGradient(fx,fy-U*0.9,fx,fy+U*0.95);bg.addColorStop(0,lite);bg.addColorStop(0.5,col);bg.addColorStop(1,mid);
+  c.fillStyle=bg;c.beginPath();
+  for(let k=0;k<=N;k++){const p=pts[k],n=nrm(k);const X=p[0]+n[0]*U*p[2],Y=p[1]+n[1]*U*p[2];k?c.lineTo(X,Y):c.moveTo(X,Y);}
+  for(let k=N;k>=0;k--){const p=pts[k],n=nrm(k);c.lineTo(p[0]-n[0]*U*p[2],p[1]-n[1]*U*p[2]);}
+  c.closePath();c.fill();
+  // 배 하이라이트
+  c.fillStyle='rgba(255,255,255,0.10)';c.beginPath();
+  for(let k=0;k<=N;k++){const p=pts[k],n=nrm(k);const X=p[0]-n[0]*U*p[2]*0.45,Y=p[1]-n[1]*U*p[2]*0.45;k?c.lineTo(X,Y):c.moveTo(X,Y);}
+  for(let k=N;k>=0;k--){const p=pts[k],n=nrm(k);c.lineTo(p[0]-n[0]*U*p[2],p[1]-n[1]*U*p[2]);}
+  c.closePath();c.fill();
+  // 등 가시(프릴)
+  c.fillStyle=fin;
+  for(let k=4;k<=24;k+=2){const p=pts[k],n=nrm(k);const bx=p[0]+n[0]*U*p[2]*0.9,by=p[1]+n[1]*U*p[2]*0.9,sl=U*(0.1+p[2]*0.55);
+    c.beginPath();c.moveTo(bx-dir*U*0.07,by);c.lineTo(bx+n[0]*sl-dir*U*0.04,by+n[1]*sl);c.lineTo(bx+dir*U*0.07,by);c.closePath();c.fill();}
+  // 머리
+  const hx=P[7][0],hy=P[7][1];
+  // 뿔(뒤로 스윕 2개)
+  c.fillStyle=finL;
+  [0,1].forEach(idx=>{const ox=hx-dir*U*0.02+dir*U*0.12*idx,oy=hy-U*0.08;
+    c.beginPath();c.moveTo(ox,oy);
+    c.quadraticCurveTo(ox-dir*U*0.3,oy-U*0.32,ox-dir*U*0.52,oy-U*0.5);
+    c.lineTo(ox-dir*U*0.34,oy-U*0.2);
+    c.quadraticCurveTo(ox-dir*U*0.12,oy-U*0.08,ox+dir*U*0.03,oy);c.closePath();c.fill();});
+  // 머리 베이스
+  c.fillStyle=bg;c.beginPath();c.ellipse(hx,hy,U*0.28,U*0.21,0,0,_TAU);c.fill();
+  // 주둥이(앞으로)
+  c.beginPath();c.moveTo(hx+dir*U*0.02,hy-U*0.15);
+  c.quadraticCurveTo(hx+dir*U*0.52,hy-U*0.2,hx+dir*U*0.56,hy+U*0.02);
+  c.quadraticCurveTo(hx+dir*U*0.46,hy+U*0.14,hx+dir*U*0.04,hy+U*0.13);c.closePath();c.fill();
+  // 턱 프릴
+  c.fillStyle=finD;c.beginPath();c.moveTo(hx-dir*U*0.1,hy+U*0.06);c.lineTo(hx-dir*U*0.34,hy+U*0.3);c.lineTo(hx+dir*U*0.06,hy+U*0.2);c.closePath();c.fill();
+  // 눈
+  _flatEye(c,hx+dir*U*0.2,hy-U*0.05,size*0.78);
+}
 // 라우터: 모든 종을 플랫 벡터 스타일로(종별 특색 반영)
 function drawFishShape(c,fx,fy,size,dir,s,type){
   c.lineJoin='round';c.lineCap='round';
   if(YW_AURA[type]) _flatAura(c,fx,fy,size,type);   // 영물 오로라(글로우)
   c.fillStyle='rgba(0,0,0,0.06)';c.beginPath();c.ellipse(fx,fy+size*0.62,size*1.0,size*0.38,0,0,_TAU);c.fill();
   if(type==='megalodonte')return _flatShark(c,fx,fy,size,dir,s);
-  if(type==='electric'||type==='eelyw'||type==='haelyong')return _flatEel(c,fx,fy,size,dir,s,type);
+  if(type==='haelyong')return _flatDragon(c,fx,fy,size,dir,s);
+  if(type==='electric'||type==='eelyw')return _flatEel(c,fx,fy,size,dir,s,type);
   if(type==='turtle'||type==='yongwang')return _flatTurtle(c,fx,fy,size,dir,s,type);
   return _flatNormal(c,fx,fy,size,dir,s,type);
 }
