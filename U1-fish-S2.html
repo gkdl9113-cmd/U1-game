@@ -444,6 +444,11 @@ body.dig-fullscreen{max-width:none}
         <div style="display:flex;justify-content:space-between;margin-bottom:2px">
           <span style="color:#555">🐟 수조</span><strong id="f-tank-info">0/1마리</strong>
         </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+          <span style="color:#555">💨 산소</span><strong id="f-oxygen-txt">100%</strong>
+        </div>
+        <div style="background:#E3F2FD;border-radius:2px;height:5px;overflow:hidden;margin-bottom:4px"><div id="f-oxygen-bar" style="width:100%;height:100%;background:#29B6F6"></div></div>
+        <button id="f-oxy-buy" onclick="shopBuyOxygenator()" style="width:100%;background:#0288D1;color:#fff;border:none;padding:3px;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit">💨 산소공급기 +1</button>
       </div>
     </div>
     <!-- 접속자+채팅 사이드바 -->
@@ -2087,6 +2092,7 @@ function _buildInitialFishData(){
   return{
     fishes:{goldfish:{quantity:1,level:1,exp:0},snakehead:{quantity:0,level:1,exp:0},guppy:{quantity:0,level:1,exp:0},tropical:{quantity:0,level:1,exp:0},piranha:{quantity:0,level:1,exp:0},clownfish:{quantity:0,level:1,exp:0},mandarin:{quantity:0,level:1,exp:0},electric:{quantity:0,level:1,exp:0},turtle:{quantity:0,level:1,exp:0},yongwang:{quantity:0,level:1,exp:0},yeongeum:{quantity:0,level:1,exp:0},eelyw:{quantity:0,level:1,exp:0},haelyong:{quantity:0,level:1,exp:0},megalodonte:{quantity:0,level:1,exp:0},geumlin:{quantity:0,level:1,exp:0}},
     money:100,food:5,spFood:0,
+    oxygen:100,oxygenators:1,
     tankLevel:0,tankMax:1,auxFishes:[],auxMax:AUX_MAX_DEFAULT,
     inventory:{bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},
     equipment:{equippedRod:null},
@@ -2211,6 +2217,7 @@ function applyFishData(d){
     FG.fishes.goldfish={quantity:1,level:1,exp:0,fish:[createNewFish('goldfish','일반')]};
   }
   FG.money=d.money??100;FG.food=d.food??5;FG.spFood=d.spFood??0;
+  FG.oxygen=d.oxygen??100;FG.oxygenators=d.oxygenators??1;
   FG.tankLevel=d.tankLevel??0;FG.tankMax=d.tankMax??1;
   FG.auxFishes=Array.isArray(d.auxFishes)?d.auxFishes:[];FG.auxMax=d.auxMax??AUX_MAX_DEFAULT;
   _normalizeAllFish(); // 옛/관리자 지급 물고기 스탯 누락 백필
@@ -2257,6 +2264,7 @@ async function saveFishDataToDB(){
   const data={
     fishes:FG.fishes,
     money:FG.money,food:FG.food,spFood:FG.spFood,
+    oxygen:FG.oxygen,oxygenators:FG.oxygenators,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,auxFishes:FG.auxFishes||[],auxMax:FG.auxMax??AUX_MAX_DEFAULT,
     rods:FG.rods,fishCodex:FG.fishCodex,
     inventory:FG.inventory,equipment:FG.equipment,
@@ -3016,7 +3024,7 @@ const FG={
   equipment:{equippedRod:null},
   battlePick:[],
   legendPick:[],
-  money:100,food:5,spFood:0,autoFeeders:[],
+  money:100,food:5,spFood:0,oxygen:100,oxygenators:1,autoFeeders:[],
   tankLevel:0,tankMax:1,
   skillInventory:{},
   achievements:{},
@@ -4107,6 +4115,19 @@ function fishCalcOffline(seconds){
   }
 }
 
+// ── 산소 포화도 시스템 (수조 공용) ───────────────────────────
+const OXY_PER_UNIT=10;    // 산소공급기 1대당 틱당 산소 +10 (≈물고기 10마리분)
+const OXY_HEAL_RATE=0.05; // 산소 100%일 때 틱당 최대HP 5% 회복
+const OXY_BUY_BASE=1000;  // 산소공급기 추가 구매 기준가
+const OXY_MAX_UNITS=50;   // 산소공급기 최대 보유
+// 수조 HP 회복 스킬 배율(회복의기운/장수의기운 부활)
+function _tankHealSkillBonus(){
+  let b=0;
+  _allFishFlat().forEach(f=>{if(f.isDead) return;
+    if(f.skill1==='cm_회복의기운'||f.skill2==='cm_회복의기운') b+=0.10;
+    if(f.skill1==='tu_장수의기운'||f.skill2==='tu_장수의기운') b+=0.50;});
+  return b;
+}
 function fishTick(){
   if(FG.paused) return;
   const now=Date.now();
@@ -4151,9 +4172,33 @@ function fishTick(){
   inc=Math.floor(inc*(1+(accTitleEf().income||0))); // 칭호 수입 보너스
   FG.money+=inc;
   if(inc>0) checkAchievements('money');
+
+  // 산소 포화도: 공급기로 채우고 살아있는 마리수만큼 소모, 포화도에 비례해 HP 회복
+  const _alive=_allFishFlat().filter(f=>!f.isDead);
+  const _refill=(FG.oxygenators||0)*OXY_PER_UNIT;
+  FG.oxygen=Math.max(0,Math.min(100,(FG.oxygen??100)+_refill-_alive.length));
+  if(FG.oxygen>0&&_alive.length){
+    const _frac=FG.oxygen/100, _mul=1+_tankHealSkillBonus();
+    _alive.forEach(f=>{
+      if((f.hp??f.maxHp)>=f.maxHp) return;
+      const heal=Math.max(1,Math.floor(f.maxHp*OXY_HEAL_RATE*_frac*_mul));
+      f.hp=Math.min(f.maxHp,(f.hp||0)+heal);
+    });
+  }
+
   fishRenderInfo();
 }
 
+function oxyBuyPrice(){return OXY_BUY_BASE*(FG.oxygenators||0);}
+function shopBuyOxygenator(){
+  if((FG.oxygenators||0)>=OXY_MAX_UNITS){u1Toast('산소공급기 최대치입니다','#C05000');return;}
+  const price=oxyBuyPrice();
+  if(FG.money<price){u1Toast(`돈이 부족합니다 (💨${price.toLocaleString()}원)`,'#C00000');return;}
+  FG.money-=price;
+  FG.oxygenators=(FG.oxygenators||0)+1;
+  u1Toast(`💨 산소공급기 구매! (보유 ${FG.oxygenators}대)`,'#0277BD');
+  fishRenderInfo();fishQuickSave();
+}
 function removeDeadFishes(){
   const deadCount=_allFishFlat().filter(f=>f.isDead).length;
   if(deadCount===0) return;
@@ -4458,6 +4503,18 @@ function fishRenderInfo(){
   if(ti) ti.textContent=totalIncome()+'원/30초';
   const tk=document.getElementById('f-tank-info');
   if(tk) tk.textContent=getTotalFishCount()+'/'+FG.tankMax+'종';
+  // 산소 포화도 게이지 + 공급기 구매 버튼
+  const _ox=Math.round(FG.oxygen??100), _ou=FG.oxygenators||0;
+  const oxt=document.getElementById('f-oxygen-txt');
+  if(oxt) oxt.textContent=`${_ox}% · 공급기 ${_ou}대`;
+  const oxb=document.getElementById('f-oxygen-bar');
+  if(oxb){oxb.style.width=_ox+'%';oxb.style.background=_ox>50?'#29B6F6':_ox>20?'#FFA726':'#EF5350';}
+  const oxbtn=document.getElementById('f-oxy-buy');
+  if(oxbtn){
+    const _max=_ou>=OXY_MAX_UNITS, _price=oxyBuyPrice(), _can=!_max&&FG.money>=_price;
+    oxbtn.textContent=_max?'💨 공급기 최대':`💨 산소공급기 +1 (${_price.toLocaleString()}원)`;
+    oxbtn.disabled=!_can; oxbtn.style.opacity=_can?'1':'0.5'; oxbtn.style.cursor=_can?'pointer':'default';
+  }
   const au=document.getElementById('f-auto-status');
   if(au){
     const totalRods=Object.values(FG.rods||{}).reduce((a,b)=>a+b,0);
@@ -5982,6 +6039,7 @@ function fishSave(isDisconnect){
   const data={
     fishes:FG.fishes,
     money:FG.money,food:FG.food,spFood:FG.spFood,
+    oxygen:FG.oxygen,oxygenators:FG.oxygenators,
     tankLevel:FG.tankLevel,tankMax:FG.tankMax,auxFishes:FG.auxFishes||[],auxMax:FG.auxMax??AUX_MAX_DEFAULT,
     rods:FG.rods,fishCodex:FG.fishCodex,
     inventory:FG.inventory,equipment:FG.equipment,
@@ -6035,6 +6093,7 @@ function fishLoad(){
       FG.food=100;
       FG.inventory={bait_common:200,bait_normal:200,bait_high:200,bait_rare:100,bait_hero:100,bait_legend:50,rods:[{id:'rod1',level:0,durability:100,maxDurability:100}],hoe:200};
       FG.equipment={equippedRod:{id:'rod1',level:0,durability:100,maxDurability:100}};
+      FG.oxygen=100;FG.oxygenators=50;
       FG.fishes.goldfish={quantity:5,level:1,exp:0,fish:[]};
       _fishLoaded=true;
       return; // testuser는 여기서 끝내기
@@ -6054,6 +6113,7 @@ function fishLoad(){
         if(!f.fish) f.fish=[];
       });
       FG.money=d.money??100;FG.food=d.food??5;
+      FG.oxygen=d.oxygen??100;FG.oxygenators=d.oxygenators??1;
       FG.inventory=Object.assign({bait_common:5,bait_normal:0,bait_high:0,bait_rare:0,bait_hero:0,bait_legend:0,rods:[],hoe:0},d.inventory||{});
       FG.equipment=d.equipment||{equippedRod:null};
       FG.inventory.rods=FG.equipment.equippedRod?[FG.equipment.equippedRod]:[];
@@ -6107,6 +6167,7 @@ function fishReset(){
     equipment:{equippedRod:_isTest?{id:'rod1',level:0,durability:100,maxDurability:100}:null},
     money:_isTest?10000000:100,
     food:_isTest?100:5,
+    oxygen:100,oxygenators:_isTest?50:1,
     autoFeeders:[],
     tankLevel:0,
     tankMax:15,
