@@ -611,7 +611,7 @@ body.dig-fullscreen{max-width:none}
     <div class="xl-dlg-title" style="background:#1A0A3D;color:#FFD700;border-bottom:1px solid #FFD70044">🎲 스킬 가챠 <button class="xl-dlg-x" onclick="hideDlg('skill-gacha-modal')" style="color:#FFD700">✕</button></div>
     <div class="xl-dlg-body" style="padding:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span style="font-size:11px;color:#555">💰 보유: <strong id="gacha-money-display">0</strong>원</span>
+        <span style="font-size:11px;color:#555">👑 보유: <strong id="gacha-money-display">0</strong> BP</span>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px">
           <div style="background:#E8E8E8;color:#555;font-size:8px;font-weight:700;padding:3px 2px;border-radius:2px;text-align:center">⚪일반<br>60%</div>
           <div style="background:#D6EAFF;color:#0047AB;font-size:8px;font-weight:700;padding:3px 2px;border-radius:2px;text-align:center">🔵희귀<br>30%</div>
@@ -623,8 +623,8 @@ body.dig-fullscreen{max-width:none}
         <div style="color:#999;font-size:11px;text-align:center">🎲<br>뽑기 버튼을 눌러보세요!</div>
       </div>
       <div style="display:flex;gap:6px">
-        <button id="gacha-btn-1" onclick="doSkillGacha(1)" style="flex:1;background:#4F46E5;color:#fff;border:none;padding:10px 6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.5">🎲 1회<br><span style="font-size:10px;opacity:.85">5,000원</span></button>
-        <button id="gacha-btn-10" onclick="doSkillGacha(10)" style="flex:1;background:#7C3AED;color:#fff;border:none;padding:10px 6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.5">🎲 10회<br><span style="font-size:10px;opacity:.85">48,000원</span></button>
+        <button id="gacha-btn-1" onclick="doSkillGacha(1)" style="flex:1;background:#4F46E5;color:#fff;border:none;padding:10px 6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.5">🎲 1회<br><span style="font-size:10px;opacity:.85">2 BP</span></button>
+        <button id="gacha-btn-10" onclick="doSkillGacha(10)" style="flex:1;background:#7C3AED;color:#fff;border:none;padding:10px 6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.5">🎲 10회<br><span style="font-size:10px;opacity:.85">18 BP</span></button>
       </div>
     </div>
   </div>
@@ -2599,7 +2599,8 @@ const SKILL_RARITY={
   '영웅':{bg:'#FFE8D0',fg:'#C05000',border:'#FFB070',label:'🟠 영웅'},
   '전설':{bg:'#FFF8DC',fg:'#8B6914',border:'#FFD700',label:'🟡 전설'},
 };
-const SKILL_GACHA_COST=5000;
+const SKILL_GACHA_COST=2;    // 스킬뽑기 1회 (BP)
+const SKILL_GACHA_COST10=18; // 스킬뽑기 10회 (BP)
 
 // 어종별 단계 데이터
 const F_SPECIES={
@@ -4732,7 +4733,7 @@ function openSkillInventory(){
 }
 // ─── 스킬 가챠 ───
 function openSkillGacha(){
-  document.getElementById('gacha-money-display').textContent=FG.money.toLocaleString();
+  document.getElementById('gacha-money-display').textContent=(FG.battlePoints||0);
   document.getElementById('gacha-result').innerHTML='<div style="color:#999;font-size:11px;text-align:center">🎲<br>뽑기 버튼을 눌러보세요!</div>';
   _gachaUpdateBtns();
   document.getElementById('skill-gacha-modal').classList.add('on');
@@ -4740,8 +4741,8 @@ function openSkillGacha(){
 function _gachaUpdateBtns(){
   const b1=document.getElementById('gacha-btn-1');
   const b10=document.getElementById('gacha-btn-10');
-  const can1=FG.money>=SKILL_GACHA_COST;
-  const can10=FG.money>=48000;
+  const can1=(FG.battlePoints||0)>=SKILL_GACHA_COST;
+  const can10=(FG.battlePoints||0)>=SKILL_GACHA_COST10;
   b1.disabled=!can1;b1.style.opacity=can1?'1':'0.5';
   b10.disabled=!can10;b10.style.opacity=can10?'1':'0.5';
 }
@@ -4753,11 +4754,11 @@ function _drawOneSkill(){
   return pool[Math.floor(Math.random()*pool.length)][0];
 }
 function doSkillGacha(times){
-  const cost=times===1?SKILL_GACHA_COST:48000;
-  if(FG.money<cost){u1Toast('💰 돈이 부족합니다!','#C00000');return;}
-  FG.money-=cost;
-  document.getElementById('f-money').textContent=FG.money.toLocaleString();
-  document.getElementById('gacha-money-display').textContent=FG.money.toLocaleString();
+  const cost=times===1?SKILL_GACHA_COST:SKILL_GACHA_COST10;
+  if((FG.battlePoints||0)<cost){u1Toast('👑 BP가 부족합니다!','#C00000');return;}
+  FG.battlePoints-=cost;
+  const _bp=document.getElementById('f-battle-points');if(_bp)_bp.textContent=(FG.battlePoints||0);
+  document.getElementById('gacha-money-display').textContent=(FG.battlePoints||0);
   const results=[];
   let legendId=null;
   for(let i=0;i<times;i++){
@@ -6319,13 +6320,13 @@ function btHpHeal(fishId){
 function fishOpenShop(){
   const div=document.getElementById('f-shop-items');
   // 스킬뽑기 섹션
-  const can1=FG.money>=SKILL_GACHA_COST,can10=FG.money>=48000;
+  const can1=(FG.battlePoints||0)>=SKILL_GACHA_COST,can10=(FG.battlePoints||0)>=SKILL_GACHA_COST10;
   div.innerHTML=`<div style="background:linear-gradient(135deg,#1A0A3D,#2D1060);border-radius:6px;padding:10px 12px;margin-bottom:8px">
     <div style="font-size:11px;font-weight:700;color:#FFD700;margin-bottom:6px">🎲 스킬뽑기</div>
     <div style="font-size:9px;color:#C8B8FF;margin-bottom:8px;line-height:1.6">등급별 확률: ⚪일반 60% · 🔵희귀 30% · 🟠영웅 9% · 🟡전설 1%</div>
     <div style="display:flex;gap:6px">
-      <button onclick="hideDlg('f-shop-modal');openSkillGacha()" style="flex:1;background:${can1?'#4F46E5':'#3D3D5C'};color:${can1?'#fff':'#888'};border:none;padding:7px 4px;border-radius:5px;font-size:10px;font-weight:700;cursor:${can1?'pointer':'default'};font-family:inherit;line-height:1.5">🎲 1회 뽑기<br><span style="font-size:9px;opacity:.85">5,000원</span></button>
-      <button onclick="hideDlg('f-shop-modal');openSkillGacha()" style="flex:1;background:${can10?'#7C3AED':'#3D3D5C'};color:${can10?'#fff':'#888'};border:none;padding:7px 4px;border-radius:5px;font-size:10px;font-weight:700;cursor:${can10?'pointer':'default'};font-family:inherit;line-height:1.5">🎲 10회 뽑기<br><span style="font-size:9px;opacity:.85">48,000원</span></button>
+      <button onclick="hideDlg('f-shop-modal');openSkillGacha()" style="flex:1;background:${can1?'#4F46E5':'#3D3D5C'};color:${can1?'#fff':'#888'};border:none;padding:7px 4px;border-radius:5px;font-size:10px;font-weight:700;cursor:${can1?'pointer':'default'};font-family:inherit;line-height:1.5">🎲 1회 뽑기<br><span style="font-size:9px;opacity:.85">2 BP</span></button>
+      <button onclick="hideDlg('f-shop-modal');openSkillGacha()" style="flex:1;background:${can10?'#7C3AED':'#3D3D5C'};color:${can10?'#fff':'#888'};border:none;padding:7px 4px;border-radius:5px;font-size:10px;font-weight:700;cursor:${can10?'pointer':'default'};font-family:inherit;line-height:1.5">🎲 10회 뽑기<br><span style="font-size:9px;opacity:.85">18 BP</span></button>
     </div>
   </div>`;
   // 배틀상점 섹션
