@@ -7103,7 +7103,7 @@ function _diggingSaveState(){
   const w=field?.clientWidth||1, h=field?.clientHeight||1;
   const hasUnfound=_diggingGame.baits.some(b=>!b.found);
   FG.digging={
-    active: !!(_diggingGame.isPlaying && hasUnfound && (FG.inventory.hoe||0)>0),
+    active: !!hasUnfound, // 안 찾은 미끼가 남아있으면 유지(호미 소진·종료와 무관하게 재진입 시 이어하기)
     baits:_diggingGame.baits.map(b=>({nx:b.x/w,ny:b.y/h,type:b.type,found:b.found,id:b.id})),
     digs:(_diggingGame.digs||[]).map(d=>({nx:d.x/w,ny:d.y/h,hit:d.hit}))
   };
