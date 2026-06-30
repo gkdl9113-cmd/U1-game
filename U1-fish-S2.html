@@ -7289,7 +7289,7 @@ function renderDiggingScreen(){
   const colors={bait_normal:'#D4A574',bait_high:'#FF9800',bait_rare:'#2196F3',bait_hero:'#7C3AED',bait_legend:'#FFD700'};
 
   // 판 자리(구덩이) + 찾은 미끼 표시
-  const _sc=_dgScale(), _bs=Math.round(40*_sc), _fs=Math.round(20*_sc);
+  const _sc=_dgScale(), _bs=Math.round(44*_sc), _fs=Math.round(22*_sc);
   field.innerHTML=_diggingDigMarksHTML()+_diggingGame.baits.filter(b=>b.found).map(b=>`
     <div style="
       position:absolute;
@@ -7423,7 +7423,7 @@ function showMissedBaits(){
   const colors={bait_normal:'#D4A574',bait_high:'#FF9800',bait_rare:'#2196F3',bait_hero:'#7C3AED',bait_legend:'#FFD700'};
 
   // 판 자리(구덩이) + 모든 미끼 표시 (찾은 것은 색깔, 못 찾은 것은 어두운 색)
-  const _sc=_dgScale(), _bs=Math.round(40*_sc), _fs=Math.round(20*_sc);
+  const _sc=_dgScale(), _bs=Math.round(44*_sc), _fs=Math.round(22*_sc);
   const baitElements=_diggingGame.baits.map(b=>`
     <div style="
       position:absolute;
