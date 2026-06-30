@@ -938,7 +938,9 @@ body.dig-fullscreen{max-width:none}
     <div id="digging-rewards-main" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;font-size:10px;margin-bottom:8px">
     </div>
     <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
-      <button onclick="diggingBuyHoe()" style="background:#217346;color:#fff;border:none;border-radius:3px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🔨 호미 구매 (2,000원)</button>
+      <button onclick="diggingBuyHoe(1)" style="background:#217346;color:#fff;border:none;border-radius:3px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🔨 호미 ×1 (2,000원)</button>
+      <button onclick="diggingBuyHoe(10)" style="background:#1B5E20;color:#fff;border:none;border-radius:3px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🔨 ×10 (20,000원)</button>
+      <button onclick="diggingBuyHoe(100)" style="background:#14441A;color:#fff;border:none;border-radius:3px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🔨 ×100 (200,000원)</button>
       <button onclick="nextDiggingRound()" style="background:#fff;color:#217346;border:1px solid #217346;border-radius:3px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">다음 게임</button>
       <button onclick="diggingExit()" style="background:#fff;color:#666;border:1px solid #C8C8C8;border-radius:3px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">종료</button>
     </div>
@@ -6422,9 +6424,10 @@ function fishOpenShop(){
         <div style="font-size:11px;font-weight:700;color:#F5DEB3">${_hoeItem.name}</div>
         <div style="font-size:9px;color:#D4A574;margin-top:1px">${_hoeItem.desc} · 보유: ${_hoeCount}개</div>
       </div>
-      <button onclick="shopBuyHoe()" ${FG.money>=_hoeItem.price?'':'disabled'}
-        style="background:${FG.money>=_hoeItem.price?'#7A6A4A':'#4A3D2A'};color:${FG.money>=_hoeItem.price?'#D4A574':'#9B8B6B'};border:1px solid ${FG.money>=_hoeItem.price?'#D4A574':'#9B8B6B'};padding:5px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:${FG.money>=_hoeItem.price?'pointer':'default'};font-family:inherit;white-space:nowrap;flex-shrink:0">
-        ${_hoeItem.price.toLocaleString()}원</button>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        ${[1,10,100].map(q=>{const p=_hoeItem.price*q,ok=FG.money>=p;return `<button onclick="shopBuyHoe(${q})" ${ok?'':'disabled'}
+          style="background:${ok?'#7A6A4A':'#4A3D2A'};color:${ok?'#D4A574':'#9B8B6B'};border:1px solid ${ok?'#D4A574':'#9B8B6B'};padding:5px 7px;border-radius:4px;font-size:10px;font-weight:700;cursor:${ok?'pointer':'default'};font-family:inherit;white-space:nowrap;line-height:1.3">×${q}<br><span style="font-size:8px;opacity:.85">${p.toLocaleString()}원</span></button>`;}).join('')}
+      </div>
     </div>
   </div>`;
   div.innerHTML+=`<div style="background:linear-gradient(135deg,#0D1B2A,#1A3560);border-radius:6px;padding:10px 12px;margin-bottom:8px">
@@ -7078,12 +7081,12 @@ function _tryRodFragDrop(){
 }
 
 // S2 호미 구매 함수
-function shopBuyHoe(){
-  const price=2000;
-  if(FG.money<price) return;
+function shopBuyHoe(qty=1){
+  const price=2000*qty;
+  if(FG.money<price){u1Toast(`돈이 부족합니다 (💰${price.toLocaleString()}원)`,'#C00000');return;}
   FG.money-=price;
-  FG.inventory.hoe=(FG.inventory.hoe||0)+1;
-  u1Toast(`🔨 호미 1개 구매! (보유: ${FG.inventory.hoe}개)`,'#7A6A4A');
+  FG.inventory.hoe=(FG.inventory.hoe||0)+qty;
+  u1Toast(`🔨 호미 ${qty}개 구매! (보유: ${FG.inventory.hoe}개)`,'#7A6A4A');
   fishRenderInfo();fishOpenShop();fishQuickSave();
 }
 
@@ -7201,13 +7204,13 @@ function diggingEnter(){
 }
 
 // 갯벌 화면에서 바로 호미 구매 → 호미 떨어져도 나가지 않고 이어가기
-function diggingBuyHoe(){
-  const price=2000;
+function diggingBuyHoe(qty=1){
+  const price=2000*qty;
   if(FG.money<price){u1Toast(`돈이 부족합니다 (💰${price.toLocaleString()}원)`,'#C00000');return;}
   FG.money-=price;
-  FG.inventory.hoe=(FG.inventory.hoe||0)+1;
+  FG.inventory.hoe=(FG.inventory.hoe||0)+qty;
   _diggingGame.hoeCount=FG.inventory.hoe;
-  u1Toast(`🔨 호미 1개 구매! (보유: ${FG.inventory.hoe}개)`,'#7A6A4A');
+  u1Toast(`🔨 호미 ${qty}개 구매! (보유: ${FG.inventory.hoe}개)`,'#7A6A4A');
   // 호미 부족으로 끝난 판(아직 다 못 찾음)이면 같은 갯벌 이어서 재개 (못 찾은 미끼 다시 숨김)
   if(!_diggingGame.isPlaying && _diggingGame.found.length<10){
     _diggingGame.isPlaying=true;
@@ -7234,7 +7237,7 @@ function diggingExit(){
 
 function generateBaits(){
   const baitTypes=['bait_normal','bait_high','bait_rare','bait_hero','bait_legend'];
-  const probs=[0.4,0.3,0.15,0.1,0.05];
+  const probs=[0.2,0.2,0.3,0.2,0.1]; // 중급20·고급20·희귀30·영웅20·전설10
   const cumProbs=[];
   let sum=0;
   for(let p of probs){sum+=p;cumProbs.push(sum);}
