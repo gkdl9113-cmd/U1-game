@@ -2247,6 +2247,7 @@ function applyFishData(d){
   FG.fishCodex=d.fishCodex||{goldfish:{},snakehead:{},guppy:{},tropical:{},piranha:{},clownfish:{},mandarin:{},electric:{},turtle:{},yongwang:{},yeongeum:{},eelyw:{},haelyong:{},megalodonte:{},geumlin:{}};
   if(!FG.fishCodex.megalodonte) FG.fishCodex.megalodonte={};
   if(!FG.fishCodex.geumlin) FG.fishCodex.geumlin={};
+  _backfillCodex(); // 로드 시 보유 물고기로 도감 보정(누락분 자가 치유)
   if(d.lastSave){
     const elapsed=(serverNow()-d.lastSave)/1000;
     if(elapsed>10&&elapsed<86400*30){
@@ -3121,6 +3122,15 @@ function updateFishCodex(type,stage){
   if(!FG.fishCodex[t]) FG.fishCodex[t]={};
   FG.fishCodex[t][stage]=true;
   checkAchievements('codex');
+}
+// 보유 중인(또는 보유했던) 모든 물고기로 도감 채우기 — 획득 경로 누락과 무관하게 자가 치유
+function _backfillCodex(){
+  if(!FG.fishCodex) FG.fishCodex={};
+  const reg=(t,st)=>{if(!t)return;const s=st||1;if(!FG.fishCodex[t])FG.fishCodex[t]={};FG.fishCodex[t][s]=true;};
+  Object.entries(FG.fishes||{}).forEach(([type,data])=>{
+    (data&&data.fish||[]).forEach(f=>reg(f.type||type,f.stage));
+  });
+  (FG.auxFishes||[]).forEach(f=>reg(f.type,f.stage));
 }
 
 
@@ -4345,6 +4355,7 @@ function combineEvolve(type,stage){
   const newStage=Math.min(maxStage,stage+jump);
   const nf=createNewFish(type,newStage);
   data.fish.push(nf); data.quantity=(data.quantity||0)+1;
+  updateFishCodex(type,newStage); // 진화로 얻은 단계도 도감 등록
   FG.totalEvos++; checkAchievements('evo',{stage:newStage});
   fishRenderInfo(); fishQuickSave();
   const ns=F_SPECIES[type][newStage]||{};
@@ -6732,8 +6743,9 @@ function drawMinifish(type,s,has){
 }
 
 function renderFishCodex(){
-  const types=['goldfish','snakehead','guppy','tropical','piranha','clownfish','mandarin','electric','turtle','yongwang','yeongeum','eelyw','haelyong','megalodonte'];
-  const typeNames={goldfish:'금붕어',snakehead:'가물치',guppy:'구피',tropical:'열대어',piranha:'피라냐',clownfish:'흰동가리',mandarin:'쏘가리',electric:'전기뱀장어',turtle:'거북이',yongwang:'용궁 거북이',yeongeum:'영금어',eelyw:'번개뱀장어',haelyong:'해룡',megalodonte:'메갈로돈'};
+  _backfillCodex(); // 보유 물고기로 도감 자가 치유(진화·영물 등 누락 보정)
+  const types=['goldfish','snakehead','guppy','tropical','piranha','clownfish','mandarin','electric','turtle','yongwang','yeongeum','eelyw','haelyong','megalodonte','geumlin'];
+  const typeNames={goldfish:'금붕어',snakehead:'가물치',guppy:'구피',tropical:'열대어',piranha:'피라냐',clownfish:'흰동가리',mandarin:'쏘가리',electric:'전기뱀장어',turtle:'거북이',yongwang:'용궁 거북이',yeongeum:'영금어',eelyw:'번개뱀장어',haelyong:'해룡',megalodonte:'메갈로돈',geumlin:'궐어'};
   let total=0,collected=0;
   let html='';
   types.forEach(type=>{
