@@ -4147,6 +4147,10 @@ function fishTick(){
   if(!FG.lastTick) FG.lastTick=now;
   const _prevTick=FG.lastTick; FG.lastTick=now;
   const elapsed=Math.min((now-_prevTick)/1000,5);
+  // 실제 경과시간 기준 수익 배율 — 백그라운드/가려진 창에서 타이머가 스로틀돼도 몰아서 정산
+  // (최대 4시간분까지 한 번에 정산; 그 이상은 hidden→오프라인 계산이 처리)
+  const dtSec=Math.min((now-_prevTick)/1000,14400);
+  const tickMul=dtSec/30;
 
   let inc=0;
   Object.entries(FG.fishes).forEach(([type,data])=>{
@@ -4183,8 +4187,9 @@ function fishTick(){
   });
 
   inc=Math.floor(inc*(1+(accTitleEf().income||0))); // 칭호 수입 보너스
-  FG.money+=inc;
-  if(inc>0) checkAchievements('money');
+  const gained=Math.floor(inc*tickMul); // 실제 경과시간 비례(스로틀 보정)
+  FG.money+=gained;
+  if(gained>0) checkAchievements('money');
 
   // 산소 포화도: 공급기로 채우고 살아있는 마리수만큼 소모, 포화도에 비례해 HP 회복
   const _alive=_allFishFlat().filter(f=>!f.isDead);
